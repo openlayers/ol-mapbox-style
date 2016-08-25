@@ -37,6 +37,7 @@ xhr.onload = function() {
 xhr.open('GET',
     'https://api.mapbox.com/styles/v1/mapbox/bright-v9?access_token=' + key);
 xhr.send();
+```
 
 ## API
 
@@ -56,7 +57,7 @@ source.
 
 Returns **ol.style.StyleFunction** Style function for use in
 `ol.layer.Vector` or `ol.layer.VectorTile`.
-```
+
 
 ## Building the library
 
