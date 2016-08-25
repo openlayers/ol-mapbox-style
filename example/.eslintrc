@@ -1,0 +1,6 @@
+{
+  "globals": {
+    "ol": true,
+    "olms": true
+  }
+}
