@@ -56,6 +56,7 @@ source.
 
 Returns **ol.style.StyleFunction** Style function for use in
 `ol.layer.Vector` or `ol.layer.VectorTile`.
+```
 
 ## Building the library
 
