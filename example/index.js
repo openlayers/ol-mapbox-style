@@ -18,7 +18,7 @@ var layer = new ol.layer.VectorTile({
     format: new ol.format.MVT(),
     tileGrid: tilegrid,
     tilePixelRatio: 8,
-    url: 'http://{a-d}.tiles.mapbox.com/v4/mapbox.mapbox-streets-v7/' +
+    url: 'https://{a-d}.tiles.mapbox.com/v4/mapbox.mapbox-streets-v7/' +
         '{z}/{x}/{y}.vector.pbf?access_token=' + key
   })
 });
