@@ -1,8 +1,3 @@
-var ol = require('openlayers');
-var olms = require('../');
-
-require('../node_modules/openlayers/dist/ol.css');
-
 var key = document.cookie.replace(/(?:(?:^|.*;\s*)mapbox_access_token\s*\=\s*([^;]*).*$)|^.*$/, '$1');
 if (!key) {
   key = window.prompt('Enter your Mapbox API access token:');

@@ -15,21 +15,18 @@
   "author": "Andreas Hocevar",
   "license": "BSD-2-Clause",
   "scripts": {
-    "dist": "npm run build && npm run build-example && cp example/index.html dist/example/",
-    "build": "mkdir -p dist && browserify -s olms index.js > dist/olms.js",
-    "build-example": "mkdir -p dist/example && browserify example/index.js > dist/example/index.js",
+    "dist": "mkdir -p dist && browserify -p [ standalonify --name olms --deps [ null --openlayers ol ] ] index.js > dist/olms.js",
     "doc": "documentation build index.js -f md",
     "pretest": "eslint src",
     "test": "mocha"
   },
   "dependencies": {
     "color-string": "^1.2.0",
-    "mapbox-gl-function": "1.2.1",
-    "openlayers": "3.17.1"
+    "mapbox-gl-function": "1.2.1"
   },
   "devDependencies": {
     "browserify": "13.1.0",
-    "cssify": "^1.0.3",
+    "cssify": "1.0.3",
     "documentation": "4.0.0-beta9",
     "eslint": "3.2.2",
     "eslint-config-openlayers": "5.0.0",
@@ -37,11 +34,8 @@
     "jsdom": "9.4.1",
     "jsdom-global": "2.0.0",
     "mapbox-gl-styles": "2.0.2",
-    "mocha": "2.5.3"
-  },
-  "browserify": {
-    "transform": [
-      "cssify"
-    ]
+    "mocha": "2.5.3",
+    "openlayers": "3.18.0",
+    "standalonify": "0.1.3"
   }
 }

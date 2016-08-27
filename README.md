@@ -64,4 +64,4 @@ Returns **ol.style.StyleFunction** Style function for use in
     npm install
     npm run dist
 
-The resulting binaries and an example will be in the `dist/` folder.
+The resulting binary (`olms.js`) will be in the `dist/` folder. To see the library in action, navigate to `example/index.html`.
