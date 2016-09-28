@@ -21,7 +21,8 @@
     "test": "mocha"
   },
   "dependencies": {
-    "color-string": "^1.2.0",
+    "color-string": "1.2.0",
+    "has-font": "1.0.1",
     "mapbox-gl-function": "1.2.1"
   },
   "devDependencies": {

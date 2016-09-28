@@ -7,13 +7,48 @@ License: https://raw.githubusercontent.com/boundlessgeo/ol-mapbox-gl-style/maste
 var ol = require('openlayers');
 var glfun = require('mapbox-gl-function');
 var colorToArray = require('color-string').get.rgb;
+var hasFont = require('has-font');
+
+/**
+ * Mappings of common font weight terms to numerical weights. The default is
+ * based on http://www.css3-tutorial.net/text-font/font-weight. Weight terms are
+ * all lowercase, with dashes separating words.
+ * @type {Object<string,number>}
+ */
+var fontWeights = {
+  thin: 100,
+  hairline: 100,
+  'ultra-light': 100,
+  'extra-light': 100,
+  light: 200,
+  book: 300,
+  regular: 400,
+  normal: 400,
+  plain: 400,
+  roman: 400,
+  standard: 400,
+  medium: 500,
+  'semi-bold': 600,
+  'demi-bold': 600,
+  bold: 700,
+  heavy: 800,
+  black: 800,
+  'extra-bold': 800,
+  'ultra-black': 900,
+  'extra-black': 900,
+  'ultra-bold': 900,
+  'heavy-black': 900,
+  fat: 900,
+  poster: 900
+};
 
 var functions = {
   interpolated: [
     'line-miter-limit',
     'fill-opacity',
     'line-opacity',
-    'line-width'
+    'line-width',
+    'text-size'
   ],
   'piecewise-constant': [
     'fill-color',
@@ -26,13 +61,29 @@ var defaults = {
   'line-cap': 'butt',
   'line-join': 'miter',
   'line-miter-limit' : 2,
-  'line-width': 1
+  'line-width': 1,
+  'text-color': '#000000',
+  'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+  'text-halo-color': 'rgba(0, 0, 0, 0)',
+  'text-halo-width': 0,
+  'text-max-width': 10,
+  'text-size': 16
 };
+
+var templateRegEx = /^\{(.*)\}$/;
 
 function applyDefaults(properties) {
   for (var property in defaults) {
     if (!(property in properties)) {
       properties[property] = defaults[property];
+    }
+  }
+}
+
+function applyLayoutToPaint(layer) {
+  for (var property in layer.layout) {
+    if (!layer.paint[property]) {
+      layer.paint[property] = layer.layout[property];
     }
   }
 }
@@ -44,18 +95,56 @@ function convertToFunctions(properties, type) {
   }
 }
 
+function chooseFont(properties) {
+  if (properties['text-field']) {
+    var fonts = properties['text-font'];
+    for (var i = 0, ii = fonts.length; i < ii; ++i) {
+      var parts = fonts[i].split(' ');
+      var weight = parts.pop().toLowerCase();
+      var style = 'normal';
+      if (weight == 'normal' || weight == 'italic' || weight == 'oblique') {
+        style = weight;
+        weight = parts.pop().toLowerCase();
+      }
+      for (var w in fontWeights) {
+        if (weight == w || weight == w.replace('-', '') || weight == w.replace('-', ' ')) {
+          weight = fontWeights[w];
+          break;
+        }
+      }
+      if (typeof weight != 'number') {
+        // It's not a known font-weight, could be (part of) the font-family.
+        parts.push(weight);
+        weight = 'normal';
+      }
+      var font = parts.join(' ');
+      parts.unshift(''); // Placeholder for size
+      parts.unshift(weight);
+      parts.unshift(style);
+      if (hasFont(font)) {
+        var sizeFn = properties['text-size'];
+        properties['text-font-css'] = function(zoom) {
+          parts[2] = sizeFn(zoom) + 'px';
+          // CSS font property: font-style font-weight font-size font-family
+          return parts.join(' ');
+        };
+        break;
+      }
+    }
+  }
+}
+
 function preprocess(layer) {
   if (!layer.paint) {
     layer.paint = {};
   }
+  if (!layer.ref) {
+    applyLayoutToPaint(layer);
+  }
   applyDefaults(layer.paint);
   convertToFunctions(layer.paint, 'interpolated');
   convertToFunctions(layer.paint, 'piecewise-constant');
-  if (!layer.ref) {
-    applyDefaults(layer.layout);
-    convertToFunctions(layer.layout, 'interpolated');
-    convertToFunctions(layer.layout, 'piecewise-constant');
-  }
+  chooseFont(layer.paint);
 }
 
 function resolveRef(layer, glStyleObj) {
@@ -170,6 +259,35 @@ function getStyleFunction(glStyle, source, resolutions) {
     throw new Error('glStyle version 8 required.');
   }
 
+  var ctx = document.createElement('CANVAS').getContext('2d');
+  var measureCache = {};
+  function wrapText(text, font, em) {
+    var key = em + font + text;
+    var wrappedText = measureCache[key];
+    if (!wrappedText) {
+      ctx.font = font;
+      var oneEm = ctx.measureText('M').width;
+      var width = oneEm * em;
+      var words = text.split(' ');
+      var line = '';
+      var lines = [];
+      for (var i = 0, ii = words.length; i < ii; ++i) {
+        var word = words[i];
+        if ((ctx.measureText(line + word).width <= width)) {
+          line += (line ? ' ' : '') + word;
+        } else {
+          lines.push(line);
+          line = word;
+        }
+      }
+      if (line) {
+        lines.push(line);
+      }
+      wrappedText = measureCache[key] = lines.join('\n');
+    }
+    return wrappedText;
+  }
+
   var allLayers = glStyle.layers;
   var layers = [];
   for (var i = 0, ii = allLayers.length; i < ii; ++i) {
@@ -184,6 +302,9 @@ function getStyleFunction(glStyle, source, resolutions) {
     }
   }
 
+  var textHalo = new ol.style.Stroke();
+  var textColor = new ol.style.Fill();
+
   var styles = [];
 
   return function(feature, resolution) {
@@ -194,7 +315,7 @@ function getStyleFunction(glStyle, source, resolutions) {
     var properties = feature.getProperties();
     properties['$type'] = feature.getGeometry().getType().replace('Multi', '');
     var stylesLength = -1;
-    var color, opacity, fill, layer, stroke, strokeColor, style;
+    var color, opacity, fill, layer, stroke, strokeColor, style, text;
     for (var i = 0, ii = layers.length; i < ii; ++i) {
       layer = layers[i];
       if ((layer['source-layer'] && layer['source-layer'] != properties.layer) ||
@@ -203,16 +324,16 @@ function getStyleFunction(glStyle, source, resolutions) {
         continue;
       }
       if (!layer.filter || evaluate(layer.filter, properties)) {
-        var layout = layer.layout;
         var paint = layer.paint;
-        if (properties['$type'] == 'Polygon') {
+        var type = properties['$type'];
+        if (type == 'Polygon') {
           opacity = paint['fill-opacity'](zoom);
           color = colorWithOpacity(paint['fill-color'](zoom), opacity);
           strokeColor = colorWithOpacity(paint['fill-outline-color'](zoom), opacity);
           if (color) {
             ++stylesLength;
             style = styles[stylesLength];
-            if (!style || !style.getFill()) {
+            if (!style || !style.getFill() || style.getStroke() || style.getText()) {
               style = styles[stylesLength] = new ol.style.Style({
                 fill: new ol.style.Fill()
               });
@@ -224,7 +345,7 @@ function getStyleFunction(glStyle, source, resolutions) {
           if (strokeColor) {
             ++stylesLength;
             style = styles[stylesLength];
-            if (!style || !style.getFill()) {
+            if (!style || !style.getStroke() || style.getFill() || style.getText()) {
               style = styles[stylesLength] = new ol.style.Style({
                 stroke: new ol.style.Stroke()
               });
@@ -238,23 +359,22 @@ function getStyleFunction(glStyle, source, resolutions) {
             stroke.setLineDash(null);
             style.setZIndex(i);
           }
-        }
-        if (properties['$type'] == 'LineString') {
+        } else if (type == 'LineString') {
           color = colorWithOpacity(
               paint['line-color'](zoom), paint['line-opacity'](zoom));
           var width = paint['line-width'](zoom);
           if (color && width > 0) {
             ++stylesLength;
             style = styles[stylesLength];
-            if (!style || !style.getStroke()) {
+            if (!style || !style.getStroke() || style.getFill() || style.getText()) {
               style = styles[stylesLength] = new ol.style.Style({
                 stroke: new ol.style.Stroke()
               });
             }
             stroke = style.getStroke();
-            stroke.setLineCap(layout['line-cap']);
-            stroke.setLineJoin(layout['line-join']);
-            stroke.setMiterLimit(layout['line-miter-limit'](zoom));
+            stroke.setLineCap(paint['line-cap']);
+            stroke.setLineJoin(paint['line-join']);
+            stroke.setMiterLimit(paint['line-miter-limit'](zoom));
             stroke.setColor(color);
             stroke.setWidth(width);
             stroke.setLineDash(paint['line-dasharray'] ?
@@ -263,6 +383,44 @@ function getStyleFunction(glStyle, source, resolutions) {
                 }) : null);
             style.setZIndex(i);
           }
+        }
+        var label;
+        var textField = paint['text-field'];
+        if (textField) {
+          var fieldMatch = textField.match(templateRegEx);
+          label = fieldMatch ? properties[fieldMatch[1]] : textField;
+        }
+        // TODO Add LineString handling as soon as it's supporte in OpenLayers
+        if (label && type !== 'LineString') {
+          ++stylesLength;
+          style = styles[stylesLength];
+          if (!style || !style.getText() || style.getFill() || style.getStroke()) {
+            style = styles[stylesLength] = new ol.style.Style({
+              text: new ol.style.Text({
+                text: '',
+                fill: textColor
+              })
+            });
+          }
+          text = style.getText();
+          var font = paint['text-font-css'](zoom);
+          var textTransform = paint['text-transform'];
+          if (textTransform == 'uppercase') {
+            label = label.toUpperCase();
+          } else if (textTransform == 'lowercase') {
+            label = label.toLowerCase();
+          }
+          text.setText(wrapText(label, font, paint['text-max-width']));
+          text.setFont(font);
+          text.getFill().setColor(paint['text-color']);
+          if (paint['text-halo-width']) {
+            textHalo.setWidth(paint['text-halo-width']);
+            textHalo.setColor(paint['text-halo-color']);
+            text.setStroke(textHalo);
+          } else {
+            text.setStroke(undefined);
+          }
+          style.setZIndex(i);
         }
       }
     }
@@ -274,5 +432,6 @@ function getStyleFunction(glStyle, source, resolutions) {
 }
 
 module.exports = {
-  getStyleFunction: getStyleFunction
+  getStyleFunction: getStyleFunction,
+  fontWeights: fontWeights
 };
