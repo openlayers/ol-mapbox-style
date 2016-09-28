@@ -70,8 +70,6 @@ var defaults = {
   'text-size': 16
 };
 
-var templateRegEx = /^\{(.*)\}$/;
-
 function applyDefaults(properties) {
   for (var property in defaults) {
     if (!(property in properties)) {
@@ -236,6 +234,23 @@ function colorWithOpacity(color, opacity) {
   return color;
 }
 
+var spriteRegEx = /^(.*)(\?access_token=.*)$/;
+
+function toSpriteUrl(url, extension) {
+  var parts = url.match(spriteRegEx);
+  return parts ?
+      parts[1] + extension + (parts.length > 2 ? parts[2] : '') :
+      url + extension;
+}
+
+var templateRegEx = /^(.*)\{(.*)\}(.*)$/;
+
+function fromTemplate(text, properties) {
+  var parts = text.match(templateRegEx);
+  return parts[1] + properties[parts[2]] + parts[3];
+}
+
+
 /**
  * Creates a style function from the `glStyle` object for all layers that use
  * the specified `source`, which needs to be a `"type": "vector"`
@@ -257,6 +272,30 @@ function getStyleFunction(glStyle, source, resolutions) {
   glStyle = JSON.parse(glStyle);
   if (glStyle.version != 8) {
     throw new Error('glStyle version 8 required.');
+  }
+  var spriteData;
+  var spriteImage;
+  var spriteImageSize;
+  var spriteScale;
+  if (glStyle.sprite) {
+    spriteScale = ol.has.DEVICE_PIXEL_RATIO >= 1.5 ? 0.5 : 1;
+    var xhr = new XMLHttpRequest();
+    var sizeFactor = spriteScale == 0.5 ? '@2x' : '';
+    var spriteUrl = toSpriteUrl(glStyle.sprite, sizeFactor + '.json');
+    xhr.open('GET', spriteUrl);
+    xhr.onload = xhr.onerror = function() {
+      if (!xhr.responseText) {
+        throw new Error('Sprites cannot be loaded from ' + spriteUrl);
+      }
+      spriteData = JSON.parse(xhr.responseText);
+    };
+    xhr.send();
+    var spriteImageUrl = toSpriteUrl(glStyle.sprite, sizeFactor + '.png');
+    spriteImage = new Image();
+    spriteImage.onload = function() {
+      spriteImageSize = [spriteImage.width, spriteImage.height];
+    };
+    spriteImage.src = spriteImageUrl;
   }
 
   var ctx = document.createElement('CANVAS').getContext('2d');
@@ -305,6 +344,8 @@ function getStyleFunction(glStyle, source, resolutions) {
   var textHalo = new ol.style.Stroke();
   var textColor = new ol.style.Fill();
 
+  var iconImageCache = {};
+
   var styles = [];
 
   return function(feature, resolution) {
@@ -326,6 +367,7 @@ function getStyleFunction(glStyle, source, resolutions) {
       if (!layer.filter || evaluate(layer.filter, properties)) {
         var paint = layer.paint;
         var type = properties['$type'];
+
         if (type == 'Polygon') {
           opacity = paint['fill-opacity'](zoom);
           color = colorWithOpacity(paint['fill-color'](zoom), opacity);
@@ -384,11 +426,33 @@ function getStyleFunction(glStyle, source, resolutions) {
             style.setZIndex(i);
           }
         }
+
+        var icon;
+        var iconImage = paint['icon-image'];
+        if (type == 'Point' && iconImage) {
+          ++stylesLength;
+          icon = fromTemplate(iconImage, properties);
+          style = iconImageCache[icon];
+          if (!style && spriteData) {
+            var spriteImageData = spriteData[icon];
+            style = iconImageCache[icon] = new ol.style.Style({
+              image: new ol.style.Icon({
+                img: spriteImage,
+                size: [spriteImageData.width, spriteImageData.height],
+                imgSize: spriteImageSize,
+                offset: [spriteImageData.x, spriteImageData.y],
+                scale: spriteScale
+              })
+            });
+          }
+          style.setZIndex(i);
+          styles[stylesLength] = style;
+        }
+
         var label;
         var textField = paint['text-field'];
         if (textField) {
-          var fieldMatch = textField.match(templateRegEx);
-          label = fieldMatch ? properties[fieldMatch[1]] : textField;
+          label = fromTemplate(textField, properties);
         }
         // TODO Add LineString handling as soon as it's supporte in OpenLayers
         if (label && type !== 'LineString') {
@@ -424,6 +488,7 @@ function getStyleFunction(glStyle, source, resolutions) {
         }
       }
     }
+
     if (stylesLength > -1) {
       styles.length = stylesLength + 1;
       return styles;

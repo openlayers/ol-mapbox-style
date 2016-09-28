@@ -30,12 +30,14 @@ var layer = new ol.layer.VectorTile({
 
 var xhr = new XMLHttpRequest();
 xhr.onload = function() {
+  var glStyle = JSON.parse(xhr.responseText);
+  // Override sprite to point to a web accessible URL
+  glStyle.sprite = 'https://api.mapbox.com/styles/v1/mapbox/bright-v9/sprite?access_token=' + key;
   var resolutions = tilegrid.getResolutions();
-  layer.setStyle(olms.getStyleFunction(xhr.responseText, 'mapbox', resolutions));
+  layer.setStyle(olms.getStyleFunction(glStyle, 'mapbox', resolutions));
   map.addLayer(layer);
 };
-xhr.open('GET',
-    'https://api.mapbox.com/styles/v1/mapbox/bright-v9?access_token=' + key);
+xhr.open('GET', 'https://api.mapbox.com/styles/v1/mapbox/bright-v9?access_token=' + key);
 xhr.send();
 ```
 
