@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "color-string": "1.2.0",
-    "has-font": "1.0.1",
+    "fontfaceobserver": "2.0.4",
     "mapbox-gl-function": "1.2.1"
   },
   "devDependencies": {

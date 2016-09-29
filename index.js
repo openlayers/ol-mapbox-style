@@ -7,7 +7,7 @@ License: https://raw.githubusercontent.com/boundlessgeo/ol-mapbox-gl-style/maste
 var ol = require('openlayers');
 var glfun = require('mapbox-gl-function');
 var colorToArray = require('color-string').get.rgb;
-var hasFont = require('has-font');
+var FontFaceObserver = require('fontfaceobserver');
 
 /**
  * Mappings of common font weight terms to numerical weights. The default is
@@ -93,47 +93,54 @@ function convertToFunctions(properties, type) {
   }
 }
 
-function chooseFont(properties) {
+function chooseFont(properties, onChange) {
   if (properties['text-field']) {
     var fonts = properties['text-font'];
-    for (var i = 0, ii = fonts.length; i < ii; ++i) {
-      var parts = fonts[i].split(' ');
-      var weight = parts[parts.length - 1].toLowerCase();
-      var style = 'normal';
-      if (weight == 'normal' || weight == 'italic' || weight == 'oblique') {
-        style = weight;
-        weight = parts.pop().toLowerCase();
-      }
-      for (var w in fontWeights) {
-        if (weight == w || weight == w.replace('-', '') || weight == w.replace('-', ' ')) {
-          weight = fontWeights[w];
-          break;
-        }
-      }
-      if (typeof weight == 'number') {
+    var parts = fonts[0].split(' ');
+    var maybeWeight = parts[parts.length - 1].toLowerCase();
+    var weight = 'normal';
+    var style = 'normal';
+    if (maybeWeight == 'normal' || maybeWeight == 'italic' || maybeWeight == 'oblique') {
+      style = maybeWeight;
+      parts.pop();
+      maybeWeight = parts[parts.length - 1].toLowerCase();
+    }
+    for (var w in fontWeights) {
+      if (maybeWeight == w || maybeWeight == w.replace('-', '') || maybeWeight == w.replace('-', ' ')) {
+        weight = fontWeights[w];
         parts.pop();
-      } else {
-        // It's not a known font-weight, could be (part of) the font-family.
-        weight = 'normal';
-      }
-      var font = parts.join(' ');
-      parts.unshift(''); // Placeholder for size
-      parts.unshift(weight);
-      parts.unshift(style);
-      if (hasFont(font)) {
-        var sizeFn = properties['text-size'];
-        properties['text-font-css'] = function(zoom) {
-          parts[2] = sizeFn(zoom) + 'px';
-          // CSS font property: font-style font-weight font-size font-family
-          return parts.join(' ');
-        };
         break;
       }
     }
+    if (typeof maybeWeight == 'number') {
+      weight = maybeWeight;
+    }
+    var fontFamily = parts.join(' ');
+    parts.unshift(''); // Placeholder for size
+    parts.unshift(weight);
+    parts.unshift(style);
+    var font = new FontFaceObserver(fontFamily, {
+      weight: weight,
+      style: style
+    });
+    var sizeFn = properties['text-size'];
+    properties['text-font-css'] = function(zoom) {
+      parts[2] = sizeFn(zoom) + 'px';
+      // CSS font property: font-style font-weight font-size font-family
+      return parts.join(' ');
+    };
+    font.load().then(onChange, function() {
+      // Font is not available, try next
+      if (fonts.length > 1) {
+        fonts.shift();
+        chooseFont(properties, onChange);
+        onChange();
+      }
+    });
   }
 }
 
-function preprocess(layer) {
+function preprocess(layer, onChange) {
   if (!layer.paint) {
     layer.paint = {};
   }
@@ -143,7 +150,7 @@ function preprocess(layer) {
   applyDefaults(layer.paint);
   convertToFunctions(layer.paint, 'interpolated');
   convertToFunctions(layer.paint, 'piecewise-constant');
-  chooseFont(layer.paint);
+  chooseFont(layer.paint, onChange);
 }
 
 function resolveRef(layer, glStyleObj) {
@@ -263,10 +270,13 @@ function fromTemplate(text, properties) {
  * @param {Array<number>} resolutions Resolutions for mapping resolution to
  * zoom level. For tile layers, this can be
  * `layer.getSource().getTileGrid().getResolutions()`.
+ * @param {Function} onChange Callback which will be called when the style is
+ * ready to use for rendering, and every time a new resource (e.g. icon sprite
+ * or font) is ready to be applied.
  * @return {ol.style.StyleFunction} Style function for use in
  * `ol.layer.Vector` or `ol.layer.VectorTile`.
  */
-function getStyleFunction(glStyle, source, resolutions) {
+function getStyleFunction(glStyle, source, resolutions, onChange) {
   if (typeof glStyle == 'object') {
     // We do not want to modify the original, so we deep-clone it
     glStyle = JSON.stringify(glStyle);
@@ -290,14 +300,18 @@ function getStyleFunction(glStyle, source, resolutions) {
         throw new Error('Sprites cannot be loaded from ' + spriteUrl);
       }
       spriteData = JSON.parse(xhr.responseText);
+      onChange();
     };
     xhr.send();
     var spriteImageUrl = toSpriteUrl(glStyle.sprite, sizeFactor + '.png');
     spriteImage = new window.Image();
     spriteImage.onload = function() {
       spriteImageSize = [spriteImage.width, spriteImage.height];
+      onChange();
     };
     spriteImage.src = spriteImageUrl;
+  } else {
+    window.setTimeout(onChange, 0);
   }
 
   var ctx = document.createElement('CANVAS').getContext('2d');
@@ -339,7 +353,7 @@ function getStyleFunction(glStyle, source, resolutions) {
     resolveRef(layer, glStyle);
     if (layer.source == source) {
       layers.push(layer);
-      preprocess(layer);
+      preprocess(layer, onChange);
     }
   }
 
@@ -435,7 +449,7 @@ function getStyleFunction(glStyle, source, resolutions) {
           ++stylesLength;
           icon = fromTemplate(iconImage, properties);
           style = iconImageCache[icon];
-          if (!style && spriteData) {
+          if (!style && spriteData && spriteImageSize) {
             var spriteImageData = spriteData[icon];
             style = iconImageCache[icon] = new ol.style.Style({
               image: new ol.style.Icon({
@@ -500,7 +514,42 @@ function getStyleFunction(glStyle, source, resolutions) {
   };
 }
 
+/**
+ * Applies a style function to an `ol.layer.VectorTile` with an
+ * `ol.source.VectorTile`. The style function will render all layers from the
+ * `glStyle` object that use the specified `source`, which needs to be a
+ * `"type": "vector"` source.
+ *
+ * @param {ol.layer.VectorTile} layer OpenLayers layer.
+ * @param {string|Object} glStyle Mapbox GL style object.
+ * @param {string} source `source` key from the Mapbox GL style object.
+ * @return {Promise} Promise which will be resolved when the style can be used
+ * for rendering.
+ */
+function applyStyle(layer, glStyle, source) {
+  return new Promise(function(resolve, reject) {
+    var resolutions = layer.getSource().getTileGrid().getResolutions();
+    var resolved = false;
+    function onChange() {
+      layer.changed();
+      if (!resolved) {
+        resolve();
+        resolved = true;
+      }
+    }
+    try {
+      var style = getStyleFunction(glStyle, source, resolutions, onChange);
+      layer.setStyle(style);
+    } catch (e) {
+      window.setTimeout(function() {
+        reject(e);
+      }, 0);
+    }
+  });
+}
+
 module.exports = {
+  applyStyle: applyStyle,
   getStyleFunction: getStyleFunction,
   fontWeights: fontWeights
 };

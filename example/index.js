@@ -1,3 +1,5 @@
+var baseUrl = 'https://api.mapbox.com/styles/v1/mapbox/bright-v9';
+
 var key = document.cookie.replace(/(?:(?:^|.*;\s*)mapbox_access_token\s*\=\s*([^;]*).*$)|^.*$/, '$1');
 if (!key) {
   key = window.prompt('Enter your Mapbox API access token:');
@@ -26,37 +28,11 @@ var map = new ol.Map({
   })
 });
 
-var fontsLoaded, glStyle;
-
-var addLayer = function() {
-  if (glStyle && fontsLoaded) {
-    var resolutions = tilegrid.getResolutions();
-    layer.setStyle(olms.getStyleFunction(glStyle, 'mapbox', resolutions));
-    map.addLayer(layer);
-    addLayer = function() {};
-  }
-};
-
-// Load style
-var url = 'https://api.mapbox.com/styles/v1/mapbox/bright-v9?access_token=' + key;
-var xhr = new XMLHttpRequest();
-xhr.onload = function() {
-  glStyle = JSON.parse(xhr.responseText);
-  // Override sprite to point to a web accessible URL
-  glStyle.sprite = 'https://api.mapbox.com/styles/v1/mapbox/bright-v9/sprite' +
-      '?access_token=' + key;
-  addLayer();
-};
-xhr.open('GET', url);
-xhr.send();
-
-// Load fonts used by style
-WebFont.load({
-  google: {
-    families: ['Open Sans']
-  },
-  active: function() {
-    fontsLoaded = true;
-    addLayer();
-  }
+fetch(baseUrl + '?access_token=' + key).then(function(response) {
+  response.json().then(function(glStyle) {
+    glStyle.sprite = baseUrl + '/sprite?access_token=' + key;
+    olms.applyStyle(layer, glStyle, 'mapbox').then(function() {
+      map.addLayer(layer);
+    });
+  });
 });

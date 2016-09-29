@@ -1,3 +1,6 @@
 {
-  "extends": "openlayers"
+  "extends": "openlayers",
+  "globals": {
+    Promise: false
+  }
 }
