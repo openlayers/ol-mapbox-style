@@ -42,6 +42,12 @@ Note that it is the responsibility of the application to load web fonts used by 
 
 ## API
 
+### fontWeights
+
+Mappings of common font weight terms to numerical weights. The default is
+based on <http://www.css3-tutorial.net/text-font/font-weight>. Weight terms are
+all lowercase, with dashes separating words.
+
 ### getStyleFunction
 
 Creates a style function from the `glStyle` object for all layers that use
@@ -55,10 +61,28 @@ source.
 -   `resolutions` **[Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)>** Resolutions for mapping resolution to
     zoom level. For tile layers, this can be
     `layer.getSource().getTileGrid().getResolutions()`.
+-   `onChange` **[Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)** Callback which will be called when the style is
+    ready to use for rendering, and every time a new resource (e.g. icon sprite
+    or font) is ready to be applied.
 
 Returns **ol.style.StyleFunction** Style function for use in
 `ol.layer.Vector` or `ol.layer.VectorTile`.
 
+### applyStyle
+
+Applies a style function to an `ol.layer.VectorTile` with an
+`ol.source.VectorTile`. The style function will render all layers from the
+`glStyle` object that use the specified `source`, which needs to be a
+`"type": "vector"` source.
+
+**Parameters**
+
+-   `layer` **ol.layer.VectorTile** OpenLayers layer.
+-   `glStyle` **([string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) \| [Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object))** Mapbox GL style object.
+-   `source` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** `source` key from the Mapbox GL style object.
+
+Returns **[Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)** Promise which will be resolved when the style can be used
+for rendering.
 
 ## Building the library
 
