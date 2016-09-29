@@ -119,17 +119,18 @@ function chooseFont(properties, onChange) {
     parts.unshift(''); // Placeholder for size
     parts.unshift(weight);
     parts.unshift(style);
-    var font = new FontFaceObserver(fontFamily, {
-      weight: weight,
-      style: style
-    });
     var sizeFn = properties['text-size'];
     properties['text-font-css'] = function(zoom) {
       parts[2] = sizeFn(zoom) + 'px';
       // CSS font property: font-style font-weight font-size font-family
       return parts.join(' ');
     };
-    font.load().then(onChange, function() {
+    new FontFaceObserver(fontFamily, {
+      weight: weight,
+      style: style
+    }).load().then(function() {
+      onChange();
+    }, function() {
       // Font is not available, try next
       if (fonts.length > 1) {
         fonts.shift();
@@ -304,7 +305,7 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
     };
     xhr.send();
     var spriteImageUrl = toSpriteUrl(glStyle.sprite, sizeFactor + '.png');
-    spriteImage = new window.Image();
+    spriteImage = document.createElement('IMG');
     spriteImage.onload = function() {
       spriteImageSize = [spriteImage.width, spriteImage.height];
       onChange();
@@ -529,17 +530,17 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
 function applyStyle(layer, glStyle, source) {
   return new Promise(function(resolve, reject) {
     var resolutions = layer.getSource().getTileGrid().getResolutions();
+    var style;
     var resolved = false;
     function onChange() {
-      layer.changed();
+      layer.setStyle(style);
       if (!resolved) {
         resolve();
         resolved = true;
       }
     }
     try {
-      var style = getStyleFunction(glStyle, source, resolutions, onChange);
-      layer.setStyle(style);
+      style = getStyleFunction(glStyle, source, resolutions, onChange);
     } catch (e) {
       window.setTimeout(function() {
         reject(e);
