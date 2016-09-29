@@ -28,14 +28,14 @@
   "devDependencies": {
     "browserify": "13.1.0",
     "cssify": "1.0.3",
-    "documentation": "4.0.0-beta9",
-    "eslint": "3.2.2",
+    "documentation": "4.0.0-beta10",
+    "eslint": "3.6.1",
     "eslint-config-openlayers": "5.0.0",
     "expect.js": "0.3.1",
-    "jsdom": "9.4.1",
-    "jsdom-global": "2.0.0",
+    "jsdom": "9.5.0",
+    "jsdom-global": "2.1.0",
     "mapbox-gl-styles": "2.0.2",
-    "mocha": "2.5.3",
+    "mocha": "3.1.0",
     "standalonify": "0.1.3"
   }
 }
