@@ -1,6 +1,7 @@
 {
   "globals": {
     "ol": true,
-    "olms": true
+    "olms": true,
+    "WebFont": true
   }
 }

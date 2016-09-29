@@ -41,6 +41,8 @@ xhr.open('GET', 'https://api.mapbox.com/styles/v1/mapbox/bright-v9?access_token=
 xhr.send();
 ```
 
+Note that web fonts used by the GL Style need to be loaded before calling `getStyleFunction()`.
+
 ## API
 
 ### getStyleFunction

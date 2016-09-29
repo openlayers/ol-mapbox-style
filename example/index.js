@@ -26,16 +26,37 @@ var map = new ol.Map({
   })
 });
 
+var fontsLoaded, glStyle;
+
+var addLayer = function() {
+  if (glStyle && fontsLoaded) {
+    var resolutions = tilegrid.getResolutions();
+    layer.setStyle(olms.getStyleFunction(glStyle, 'mapbox', resolutions));
+    map.addLayer(layer);
+    addLayer = function() {};
+  }
+};
+
+// Load style
 var url = 'https://api.mapbox.com/styles/v1/mapbox/bright-v9?access_token=' + key;
 var xhr = new XMLHttpRequest();
 xhr.onload = function() {
-  var glStyle = JSON.parse(xhr.responseText);
+  glStyle = JSON.parse(xhr.responseText);
   // Override sprite to point to a web accessible URL
   glStyle.sprite = 'https://api.mapbox.com/styles/v1/mapbox/bright-v9/sprite' +
       '?access_token=' + key;
-  var resolutions = tilegrid.getResolutions();
-  layer.setStyle(olms.getStyleFunction(glStyle, 'mapbox', resolutions));
-  map.addLayer(layer);
+  addLayer();
 };
 xhr.open('GET', url);
 xhr.send();
+
+// Load fonts used by style
+WebFont.load({
+  google: {
+    families: ['Open Sans']
+  },
+  active: function() {
+    fontsLoaded = true;
+    addLayer();
+  }
+});
