@@ -281,7 +281,7 @@ function getStyleFunction(glStyle, source, resolutions) {
   var spriteScale;
   if (glStyle.sprite) {
     spriteScale = ol.has.DEVICE_PIXEL_RATIO >= 1.5 ? 0.5 : 1;
-    var xhr = new XMLHttpRequest();
+    var xhr = new window.XMLHttpRequest();
     var sizeFactor = spriteScale == 0.5 ? '@2x' : '';
     var spriteUrl = toSpriteUrl(glStyle.sprite, sizeFactor + '.json');
     xhr.open('GET', spriteUrl);
@@ -293,7 +293,7 @@ function getStyleFunction(glStyle, source, resolutions) {
     };
     xhr.send();
     var spriteImageUrl = toSpriteUrl(glStyle.sprite, sizeFactor + '.png');
-    spriteImage = new Image();
+    spriteImage = new window.Image();
     spriteImage.onload = function() {
       spriteImageSize = [spriteImage.width, spriteImage.height];
     };
@@ -447,8 +447,10 @@ function getStyleFunction(glStyle, source, resolutions) {
               })
             });
           }
-          style.setZIndex(i);
-          styles[stylesLength] = style;
+          if (style) {
+            style.setZIndex(i);
+            styles[stylesLength] = style;
+          }
         }
 
         var label;

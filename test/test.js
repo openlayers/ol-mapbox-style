@@ -1,11 +1,11 @@
-require('jsdom-global')();
 var olms = require('../index.js');
 
 describe('ol-mapbox-gl-style', function() {
 
-  var brightV8 = require('../node_modules/mapbox-gl-styles/styles/bright-v8.json');
+  var brightV9 = require('../node_modules/mapbox-gl-styles/styles/bright-v9.json');
+  var resolutions = require('openlayers').tilegrid.createXYZ().getResolutions();
 
-  describe('createStyleFunction', function() {
-    olms.createStyleFunction(brightV8, 'mapbox');
+  describe('getStyleFunction', function() {
+    olms.getStyleFunction(brightV9, 'mapbox', resolutions);
   });
 });
