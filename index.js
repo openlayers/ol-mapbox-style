@@ -98,7 +98,7 @@ function chooseFont(properties) {
     var fonts = properties['text-font'];
     for (var i = 0, ii = fonts.length; i < ii; ++i) {
       var parts = fonts[i].split(' ');
-      var weight = parts.pop().toLowerCase();
+      var weight = parts[parts.length - 1].toLowerCase();
       var style = 'normal';
       if (weight == 'normal' || weight == 'italic' || weight == 'oblique') {
         style = weight;
@@ -110,9 +110,10 @@ function chooseFont(properties) {
           break;
         }
       }
-      if (typeof weight != 'number') {
+      if (typeof weight == 'number') {
+        parts.pop();
+      } else {
         // It's not a known font-weight, could be (part of) the font-family.
-        parts.push(weight);
         weight = 'normal';
       }
       var font = parts.join(' ');
