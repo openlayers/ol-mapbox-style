@@ -106,15 +106,16 @@ function fontAsCss(font, sizeFn, zoom) {
 function chooseFont(properties, onChange) {
   if (properties['text-field']) {
     var fonts = properties['text-font'];
-    if (!fontMap[fonts]) {
-      var fontData = fontMap[fonts];
-      if (!fontData) {
-        fontData = fontMap[fonts] = {
-          font: fonts[0]
-        };
-      }
-      var fontIndex = fonts.indexOf(fontData.font);
-      var parts = fonts[fontIndex].split(' ');
+    var fontData = fontMap[fonts];
+    if (!fontData) {
+      fontData = fontMap[fonts] = {
+        font: fonts[0]
+      };
+    }
+    var fontIndex = fonts.indexOf(fontData.font);
+    var parts = fontData.parts;
+    if (!parts) {
+      parts = fonts[fontIndex].split(' ');
       var maybeWeight = parts[parts.length - 1].toLowerCase();
       var weight = 'normal';
       var style = 'normal';
@@ -145,8 +146,10 @@ function chooseFont(properties, onChange) {
         onChange();
       }, function() {
         // Font is not available, try next
-        if (fonts.length > 1) {
-          fontData.font = fonts[fontIndex + 1];
+        ++fontIndex;
+        if (fontIndex < fonts.length) {
+          fontData.font = fonts[fontIndex];
+          delete fontData.parts;
           chooseFont(properties, onChange);
           onChange();
         }
