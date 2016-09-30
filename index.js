@@ -93,51 +93,65 @@ function convertToFunctions(properties, type) {
   }
 }
 
+var fontMap = {};
+
+function fontAsCss(font, sizeFn, zoom) {
+  var fontData = fontMap[font];
+  var parts = fontData.parts;
+  parts[2] = sizeFn(zoom) + 'px';
+  // CSS font property: font-style font-weight font-size font-family
+  return parts.join(' ');
+}
+
 function chooseFont(properties, onChange) {
   if (properties['text-field']) {
     var fonts = properties['text-font'];
-    var parts = fonts[0].split(' ');
-    var maybeWeight = parts[parts.length - 1].toLowerCase();
-    var weight = 'normal';
-    var style = 'normal';
-    if (maybeWeight == 'normal' || maybeWeight == 'italic' || maybeWeight == 'oblique') {
-      style = maybeWeight;
-      parts.pop();
-      maybeWeight = parts[parts.length - 1].toLowerCase();
-    }
-    for (var w in fontWeights) {
-      if (maybeWeight == w || maybeWeight == w.replace('-', '') || maybeWeight == w.replace('-', ' ')) {
-        weight = fontWeights[w];
+    if (!fontMap[fonts]) {
+      var fontData = fontMap[fonts];
+      if (!fontData) {
+        fontData = fontMap[fonts] = {
+          font: fonts[0]
+        };
+      }
+      var fontIndex = fonts.indexOf(fontData.font);
+      var parts = fonts[fontIndex].split(' ');
+      var maybeWeight = parts[parts.length - 1].toLowerCase();
+      var weight = 'normal';
+      var style = 'normal';
+      if (maybeWeight == 'normal' || maybeWeight == 'italic' || maybeWeight == 'oblique') {
+        style = maybeWeight;
         parts.pop();
-        break;
+        maybeWeight = parts[parts.length - 1].toLowerCase();
       }
-    }
-    if (typeof maybeWeight == 'number') {
-      weight = maybeWeight;
-    }
-    var fontFamily = parts.join(' ');
-    parts.unshift(''); // Placeholder for size
-    parts.unshift(weight);
-    parts.unshift(style);
-    var sizeFn = properties['text-size'];
-    properties['text-font-css'] = function(zoom) {
-      parts[2] = sizeFn(zoom) + 'px';
-      // CSS font property: font-style font-weight font-size font-family
-      return parts.join(' ');
-    };
-    new FontFaceObserver(fontFamily, {
-      weight: weight,
-      style: style
-    }).load().then(function() {
-      onChange();
-    }, function() {
-      // Font is not available, try next
-      if (fonts.length > 1) {
-        fonts.shift();
-        chooseFont(properties, onChange);
+      for (var w in fontWeights) {
+        if (maybeWeight == w || maybeWeight == w.replace('-', '') || maybeWeight == w.replace('-', ' ')) {
+          weight = fontWeights[w];
+          parts.pop();
+          break;
+        }
+      }
+      if (typeof maybeWeight == 'number') {
+        weight = maybeWeight;
+      }
+      var fontFamily = parts.join(' ');
+      parts.unshift(''); // Placeholder for size
+      parts.unshift(weight);
+      parts.unshift(style);
+      fontData.parts = parts;
+      new FontFaceObserver(fontFamily, {
+        weight: weight,
+        style: style
+      }).load().then(function() {
         onChange();
-      }
-    });
+      }, function() {
+        // Font is not available, try next
+        if (fonts.length > 1) {
+          fontData.font = fonts[fontIndex + 1];
+          chooseFont(properties, onChange);
+          onChange();
+        }
+      });
+    }
   }
 }
 
@@ -486,7 +500,7 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
             });
           }
           text = style.getText();
-          var font = paint['text-font-css'](zoom);
+          var font = fontAsCss(paint['text-font'], paint['text-size'], zoom);
           var textTransform = paint['text-transform'];
           if (textTransform == 'uppercase') {
             label = label.toUpperCase();
