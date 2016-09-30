@@ -1,6 +1,6 @@
 {
   "name": "ol-mapbox-gl-style",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "Use Mapbox GL style objects with OpenLayers",
   "main": "index.js",
   "repository": {
@@ -23,7 +23,8 @@
   "dependencies": {
     "color-string": "1.2.0",
     "fontfaceobserver": "2.0.4",
-    "mapbox-gl-function": "1.2.1"
+    "mapbox-gl-function": "1.2.1",
+    "mapbox-to-css-font": "1.0.2"
   },
   "devDependencies": {
     "browserify": "13.1.0",

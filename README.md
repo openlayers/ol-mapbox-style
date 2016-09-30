@@ -42,12 +42,6 @@ Note that it is the responsibility of the application to load web fonts used by 
 
 ## API
 
-### fontWeights
-
-Mappings of common font weight terms to numerical weights. The default is
-based on <http://www.css3-tutorial.net/text-font/font-weight>. Weight terms are
-all lowercase, with dashes separating words.
-
 ### getStyleFunction
 
 Creates a style function from the `glStyle` object for all layers that use

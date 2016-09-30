@@ -6,41 +6,9 @@ License: https://raw.githubusercontent.com/boundlessgeo/ol-mapbox-gl-style/maste
 
 var ol = require('openlayers');
 var glfun = require('mapbox-gl-function');
+var mb2css = require('mapbox-to-css-font');
 var colorToArray = require('color-string').get.rgb;
 var FontFaceObserver = require('fontfaceobserver');
-
-/**
- * Mappings of common font weight terms to numerical weights. The default is
- * based on http://www.css3-tutorial.net/text-font/font-weight. Weight terms are
- * all lowercase, with dashes separating words.
- * @type {Object<string,number>}
- */
-var fontWeights = {
-  thin: 100,
-  hairline: 100,
-  'ultra-light': 100,
-  'extra-light': 100,
-  light: 200,
-  book: 300,
-  regular: 400,
-  normal: 400,
-  plain: 400,
-  roman: 400,
-  standard: 400,
-  medium: 500,
-  'semi-bold': 600,
-  'demi-bold': 600,
-  bold: 700,
-  heavy: 800,
-  black: 800,
-  'extra-bold': 800,
-  'ultra-black': 900,
-  'extra-black': 900,
-  'ultra-bold': 900,
-  'heavy-black': 900,
-  fat: 900,
-  poster: 900
-};
 
 var functions = {
   interpolated: [
@@ -95,61 +63,33 @@ function convertToFunctions(properties, type) {
 
 var fontMap = {};
 
-function fontAsCss(font, sizeFn, zoom) {
-  var fontData = fontMap[font];
-  var parts = fontData.parts;
-  parts[2] = sizeFn(zoom) + 'px';
-  // CSS font property: font-style font-weight font-size font-family
-  return parts.join(' ');
-}
-
 function chooseFont(properties, onChange) {
   if (properties['text-field']) {
     var fonts = properties['text-font'];
     var fontData = fontMap[fonts];
     if (!fontData) {
       fontData = fontMap[fonts] = {
-        font: fonts[0]
+        css: mb2css.parseFont(fonts[fonts.length - 1])
       };
     }
-    var fontIndex = fonts.indexOf(fontData.font);
-    var parts = fontData.parts;
-    if (!parts) {
-      parts = fonts[fontIndex].split(' ');
-      var maybeWeight = parts[parts.length - 1].toLowerCase();
-      var weight = 'normal';
-      var style = 'normal';
-      if (maybeWeight == 'normal' || maybeWeight == 'italic' || maybeWeight == 'oblique') {
-        style = maybeWeight;
-        parts.pop();
-        maybeWeight = parts[parts.length - 1].toLowerCase();
-      }
-      for (var w in fontWeights) {
-        if (maybeWeight == w || maybeWeight == w.replace('-', '') || maybeWeight == w.replace('-', ' ')) {
-          weight = fontWeights[w];
-          parts.pop();
-          break;
-        }
-      }
-      if (typeof maybeWeight == 'number') {
-        weight = maybeWeight;
-      }
-      var fontFamily = parts.join(' ');
-      parts.unshift(''); // Placeholder for size
-      parts.unshift(weight);
-      parts.unshift(style);
-      fontData.parts = parts;
-      new FontFaceObserver(fontFamily, {
-        weight: weight,
-        style: style
+    var fontIndex = fontData.checking ? fonts.indexOf(fontData.checking) : 0;
+    var css = fontData.css;
+    if (!(fontData.checking || fontData.font)) {
+      fontData.checking = fonts[fontIndex];
+      css = mb2css.parseFont(fonts[fontIndex]);
+      new FontFaceObserver(css[3], {
+        weight: css[1],
+        style: css[0]
       }).load().then(function() {
+        fontData.css = css;
+        fontData.font = fontData.checking;
+        delete fontData.checking;
         onChange();
       }, function() {
         // Font is not available, try next
         ++fontIndex;
         if (fontIndex < fonts.length) {
-          fontData.font = fonts[fontIndex];
-          delete fontData.parts;
+          fontData.checking = fonts[fontIndex];
           chooseFont(properties, onChange);
           onChange();
         }
@@ -503,7 +443,7 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
             });
           }
           text = style.getText();
-          var font = fontAsCss(paint['text-font'], paint['text-size'], zoom);
+          var font = mb2css.asCss(fontMap[paint['text-font']].css, paint['text-size'](zoom));
           var textTransform = paint['text-transform'];
           if (textTransform == 'uppercase') {
             label = label.toUpperCase();
@@ -568,6 +508,5 @@ function applyStyle(layer, glStyle, source) {
 
 module.exports = {
   applyStyle: applyStyle,
-  getStyleFunction: getStyleFunction,
-  fontWeights: fontWeights
+  getStyleFunction: getStyleFunction
 };
