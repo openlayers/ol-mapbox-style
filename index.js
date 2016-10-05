@@ -420,6 +420,9 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
             });
           }
           if (style) {
+            var iconImg = style.getImage();
+            iconImg.setRotation(paint['icon-rotate'] || 0);
+            iconImg.setOpacity(paint['icon-opacity'] || 1);
             style.setZIndex(i);
             styles[stylesLength] = style;
           }
