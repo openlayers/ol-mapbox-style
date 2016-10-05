@@ -213,8 +213,12 @@ var templateRegEx = /^(.*)\{(.*)\}(.*)$/;
 
 function fromTemplate(text, properties) {
   var parts = text.match(templateRegEx);
-  var value = properties[parts[2]] || '';
-  return parts[1] + value + parts[3];
+  if (parts) {
+    var value = properties[parts[2]] || '';
+    return parts[1] + value + parts[3];
+  } else {
+    return text;
+  }
 }
 
 
