@@ -16,7 +16,9 @@ var functions = {
     'fill-opacity',
     'line-opacity',
     'line-width',
-    'text-size'
+    'text-size',
+    'icon-opacity',
+    'icon-rotate'
   ],
   'piecewise-constant': [
     'fill-color',
@@ -35,7 +37,9 @@ var defaults = {
   'text-halo-color': 'rgba(0, 0, 0, 0)',
   'text-halo-width': 0,
   'text-max-width': 10,
-  'text-size': 16
+  'text-size': 16,
+  'icon-opacity': 1,
+  'icon-rotate': 0
 };
 
 function applyDefaults(properties) {
@@ -421,8 +425,8 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
           }
           if (style) {
             var iconImg = style.getImage();
-            iconImg.setRotation(paint['icon-rotate'] || 0);
-            iconImg.setOpacity(paint['icon-opacity'] || 1);
+            iconImg.setRotation(paint['icon-rotate'](zoom));
+            iconImg.setOpacity(paint['icon-opacity'](zoom));
             style.setZIndex(i);
             styles[stylesLength] = style;
           }
