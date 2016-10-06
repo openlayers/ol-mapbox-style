@@ -16,7 +16,9 @@ var functions = {
     'fill-opacity',
     'line-opacity',
     'line-width',
-    'text-size'
+    'text-size',
+    'icon-opacity',
+    'icon-rotate'
   ],
   'piecewise-constant': [
     'fill-color',
@@ -35,7 +37,9 @@ var defaults = {
   'text-halo-color': 'rgba(0, 0, 0, 0)',
   'text-halo-width': 0,
   'text-max-width': 10,
-  'text-size': 16
+  'text-size': 16,
+  'icon-opacity': 1,
+  'icon-rotate': 0
 };
 
 function applyDefaults(properties) {
@@ -198,6 +202,10 @@ function colorWithOpacity(color, opacity) {
     }
   }
   return color;
+}
+
+function deg2rad(degrees) {
+  return degrees * Math.PI / 180;
 }
 
 var spriteRegEx = /^(.*)(\?access_token=.*)$/;
@@ -424,6 +432,9 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
             });
           }
           if (style) {
+            var iconImg = style.getImage();
+            iconImg.setRotation(deg2rad(paint['icon-rotate'](zoom)));
+            iconImg.setOpacity(paint['icon-opacity'](zoom));
             style.setZIndex(i);
             styles[stylesLength] = style;
           }
