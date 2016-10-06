@@ -1,18 +1,25 @@
 {
   "name": "ol-mapbox-gl-style",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Use Mapbox GL style objects with OpenLayers",
   "main": "index.js",
   "repository": {
     "type": "git",
     "url": "git://github.com/boundlessgeo/ol-mapbox-gl-style.git"
   },
+  "bugs": {
+    "url": "https://github.com/boundlessgeo/ol-mapbox-gl-style/issues"
+  },
   "keywords": [
     "openlayers",
     "mapbox",
     "vector tiles"
   ],
-  "author": "Andreas Hocevar",
+  "author": "Andreas Hocevar <andreas.hocevar@gmail.com>",
+  "contributors": [{
+    "name": "Christian Mayer",
+    "email": "chris@meggsimum.de"
+  }],
   "license": "BSD-2-Clause",
   "scripts": {
     "dist": "mkdir -p dist && browserify -p [ standalonify --name olms --deps [ null --openlayers ol ] ] index.js > dist/olms.js",
