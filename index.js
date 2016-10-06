@@ -16,6 +16,7 @@ var functions = {
     'fill-opacity',
     'line-opacity',
     'line-width',
+    'text-offset',
     'text-size',
     'icon-opacity',
     'icon-rotate'
@@ -32,11 +33,13 @@ var defaults = {
   'line-join': 'miter',
   'line-miter-limit' : 2,
   'line-width': 1,
+  'text-anchor': 'center',
   'text-color': '#000000',
   'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
   'text-halo-color': 'rgba(0, 0, 0, 0)',
   'text-halo-width': 0,
   'text-max-width': 10,
+  'text-offset': [0, 0],
   'text-size': 16,
   'icon-opacity': 1,
   'icon-rotate': 0
@@ -458,15 +461,27 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
             });
           }
           text = style.getText();
-          var font = mb2css.asCss(fontMap[paint['text-font']].css, paint['text-size'](zoom));
+          var textSize = paint['text-size'](zoom);
+          var font = mb2css.asCss(fontMap[paint['text-font']].css, textSize);
           var textTransform = paint['text-transform'];
           if (textTransform == 'uppercase') {
             label = label.toUpperCase();
           } else if (textTransform == 'lowercase') {
             label = label.toLowerCase();
           }
-          text.setText(wrapText(label, font, paint['text-max-width']));
+          var wrappedLabel = wrapText(label, font, paint['text-max-width']);
+          text.setText(wrappedLabel);
           text.setFont(font);
+          var offset = paint['text-offset'](zoom);
+          var yOffset = offset[1] * textSize + (wrappedLabel.split('\n').length - 1) * textSize;
+          var anchor = paint['text-anchor'];
+          if (anchor.indexOf('top') == 0) {
+            yOffset += 0.5 * textSize;
+          } else if (anchor.indexOf('bottom') == 0) {
+            yOffset -= 0.5 * textSize;
+          }
+          text.setOffsetX(offset[0] * textSize);
+          text.setOffsetY(yOffset);
           text.getFill().setColor(paint['text-color']);
           if (paint['text-halo-width']) {
             textHalo.setWidth(paint['text-halo-width']);
