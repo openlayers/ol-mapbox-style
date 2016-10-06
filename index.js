@@ -204,6 +204,10 @@ function colorWithOpacity(color, opacity) {
   return color;
 }
 
+function deg2rad(degrees) {
+  return degrees * Math.PI / 180;
+}
+
 var spriteRegEx = /^(.*)(\?access_token=.*)$/;
 
 function toSpriteUrl(url, extension) {
@@ -425,7 +429,7 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
           }
           if (style) {
             var iconImg = style.getImage();
-            iconImg.setRotation(paint['icon-rotate'](zoom));
+            iconImg.setRotation(deg2rad(paint['icon-rotate'](zoom)));
             iconImg.setOpacity(paint['icon-opacity'](zoom));
             style.setZIndex(i);
             styles[stylesLength] = style;
