@@ -19,7 +19,8 @@ var functions = {
     'text-offset',
     'text-size',
     'icon-opacity',
-    'icon-rotate'
+    'icon-rotate',
+    'icon-size'
   ],
   'piecewise-constant': [
     'fill-color',
@@ -42,7 +43,8 @@ var defaults = {
   'text-offset': [0, 0],
   'text-size': 16,
   'icon-opacity': 1,
-  'icon-rotate': 0
+  'icon-rotate': 0,
+  'icon-size': 1
 };
 
 function applyDefaults(properties) {
@@ -430,7 +432,7 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
                 size: [spriteImageData.width, spriteImageData.height],
                 imgSize: spriteImageSize,
                 offset: [spriteImageData.x, spriteImageData.y],
-                scale: spriteScale
+                scale: paint['icon-size'](zoom) * spriteScale
               })
             });
           }
