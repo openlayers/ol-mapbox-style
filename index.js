@@ -7,7 +7,7 @@ License: https://raw.githubusercontent.com/boundlessgeo/ol-mapbox-gl-style/maste
 var ol = require('openlayers');
 var glfun = require('mapbox-gl-function');
 var mb2css = require('mapbox-to-css-font');
-var colorToArray = require('color-string').get.rgb;
+var colorString = require('color-string');
 var FontFaceObserver = require('fontfaceobserver');
 
 var functions = {
@@ -16,6 +16,8 @@ var functions = {
     'fill-opacity',
     'line-opacity',
     'line-width',
+    'text-halo-width',
+    'text-max-width',
     'text-offset',
     'text-size',
     'icon-opacity',
@@ -25,14 +27,25 @@ var functions = {
   'piecewise-constant': [
     'fill-color',
     'fill-outline-color',
-    'line-color'
+    'icon-image',
+    'line-cap',
+    'line-color',
+    'line-join',
+    'line-dasharray',
+    'text-anchor',
+    'text-color',
+    'text-field',
+    'text-font',
+    'text-halo-color'
   ]
 };
 
 var defaults = {
+  'fill-opacity': 1,
   'line-cap': 'butt',
   'line-join': 'miter',
-  'line-miter-limit' : 2,
+  'line-miter-limit': 2,
+  'line-opacity': 1,
   'line-width': 1,
   'text-anchor': 'center',
   'text-color': '#000000',
@@ -66,44 +79,52 @@ function applyLayoutToPaint(layer) {
 function convertToFunctions(properties, type) {
   for (var i = 0, ii = functions[type].length; i < ii; ++i) {
     var property = functions[type][i];
-    properties[property] = glfun[type](properties[property]);
+    if (property in properties) {
+      properties[property] = glfun[type](properties[property]);
+    }
   }
 }
 
 var fontMap = {};
 
-function chooseFont(properties, onChange) {
-  if (properties['text-field']) {
-    var fonts = properties['text-font'];
-    var fontData = fontMap[fonts];
-    if (!fontData) {
-      fontData = fontMap[fonts] = {
-        css: mb2css.parseFont(fonts[fonts.length - 1])
-      };
+function chooseFont(fonts, onChange) {
+  if (!Array.isArray(fonts)) {
+    var stops = fonts.stops;
+    if (stops) {
+      for (var i = 0, ii = stops.length; i < ii; ++i) {
+        chooseFont(stops[i][1], onChange);
+      }
     }
-    var fontIndex = fontData.checking ? fonts.indexOf(fontData.checking) : 0;
-    var css = fontData.css;
-    if (!(fontData.checking || fontData.font)) {
-      fontData.checking = fonts[fontIndex];
-      css = mb2css.parseFont(fonts[fontIndex]);
-      new FontFaceObserver(css[3], {
-        weight: css[1],
-        style: css[0]
-      }).load().then(function() {
-        fontData.css = css;
-        fontData.font = fontData.checking;
-        delete fontData.checking;
+    return;
+  }
+  var fontData = fontMap[fonts];
+  if (!fontData) {
+    fontData = fontMap[fonts] = {
+      css: mb2css.parseFont(fonts[fonts.length - 1])
+    };
+  }
+  var fontIndex = fontData.checking ? fonts.indexOf(fontData.checking) : 0;
+  var css = fontData.css;
+  if (!(fontData.checking || fontData.font)) {
+    fontData.checking = fonts[fontIndex];
+    css = mb2css.parseFont(fonts[fontIndex]);
+    new FontFaceObserver(css[3], {
+      weight: css[1],
+      style: css[0]
+    }).load().then(function() {
+      fontData.css = css;
+      fontData.font = fontData.checking;
+      delete fontData.checking;
+      onChange();
+    }, function() {
+      // Font is not available, try next
+      ++fontIndex;
+      if (fontIndex < fonts.length) {
+        fontData.checking = fonts[fontIndex];
+        chooseFont(fonts, onChange);
         onChange();
-      }, function() {
-        // Font is not available, try next
-        ++fontIndex;
-        if (fontIndex < fonts.length) {
-          fontData.checking = fonts[fontIndex];
-          chooseFont(properties, onChange);
-          onChange();
-        }
-      });
-    }
+      }
+    });
   }
 }
 
@@ -115,9 +136,11 @@ function preprocess(layer, onChange) {
     applyLayoutToPaint(layer);
   }
   applyDefaults(layer.paint);
+  if (layer.paint['text-field']) {
+    chooseFont(layer.paint['text-font'], onChange);
+  }
   convertToFunctions(layer.paint, 'interpolated');
   convertToFunctions(layer.paint, 'piecewise-constant');
-  chooseFont(layer.paint, onChange);
 }
 
 function resolveRef(layer, glStyleObj) {
@@ -200,10 +223,13 @@ function getZoomForResolution(resolution, resolutions) {
 
 function colorWithOpacity(color, opacity) {
   if (color && opacity !== undefined) {
-    color = colorToArray(color);
-    color[3] *= opacity;
+    var colorData = colorString.get(color);
+    color = colorData.value;
+    color[3] = color.length > 3 ? color[3] * opacity : opacity;
     if (color[3] === 0) {
       color = undefined;
+    } else {
+      color = colorString.to[colorData.model](color);
     }
   }
   return color;
@@ -347,54 +373,59 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
     var properties = feature.getProperties();
     properties['$type'] = feature.getGeometry().getType().replace('Multi', '');
     var stylesLength = -1;
-    var color, opacity, fill, layer, stroke, strokeColor, style, text;
     for (var i = 0, ii = layers.length; i < ii; ++i) {
-      layer = layers[i];
+      var layer = layers[i];
       if ((layer['source-layer'] && layer['source-layer'] != properties.layer) ||
           ('minzoom' in layer && zoom < layer.minzoom) ||
           ('maxzoom' in layer && zoom > layer.maxzoom)) {
         continue;
       }
       if (!layer.filter || evaluate(layer.filter, properties)) {
+        var color, opacity, fill, stroke, strokeColor, style, text;
         var paint = layer.paint;
         var type = properties['$type'];
-
         if (type == 'Polygon') {
-          opacity = paint['fill-opacity'](zoom);
-          color = colorWithOpacity(paint['fill-color'](zoom), opacity);
-          strokeColor = colorWithOpacity(paint['fill-outline-color'](zoom), opacity);
-          if (color) {
-            ++stylesLength;
-            style = styles[stylesLength];
-            if (!style || !style.getFill() || style.getStroke() || style.getText()) {
-              style = styles[stylesLength] = new ol.style.Style({
-                fill: new ol.style.Fill()
-              });
+          if (!('fill-pattern' in paint)) {
+            opacity = paint['fill-opacity'](zoom);
+            color = colorWithOpacity(paint['fill-color'](zoom), opacity);
+            if (color) {
+              ++stylesLength;
+              style = styles[stylesLength];
+              if (!style || !style.getFill() || style.getStroke() || style.getText()) {
+                style = styles[stylesLength] = new ol.style.Style({
+                  fill: new ol.style.Fill()
+                });
+              }
+              fill = style.getFill();
+              fill.setColor(color);
+              style.setZIndex(i);
             }
-            fill = style.getFill();
-            fill.setColor(color);
-            style.setZIndex(i);
-          }
-          if (strokeColor) {
-            ++stylesLength;
-            style = styles[stylesLength];
-            if (!style || !style.getStroke() || style.getFill() || style.getText()) {
-              style = styles[stylesLength] = new ol.style.Style({
-                stroke: new ol.style.Stroke()
-              });
+            strokeColor = 'fill-outline-color' in paint ?
+                colorWithOpacity(paint['fill-outline-color'](zoom), opacity) :
+                color;
+            if (strokeColor) {
+              ++stylesLength;
+              style = styles[stylesLength];
+              if (!style || !style.getStroke() || style.getFill() || style.getText()) {
+                style = styles[stylesLength] = new ol.style.Style({
+                  stroke: new ol.style.Stroke()
+                });
+              }
+              stroke = style.getStroke();
+              stroke.setLineCap(defaults['line-cap']);
+              stroke.setLineJoin(defaults['line-join']);
+              stroke.setMiterLimit(defaults['line-miter-limit']);
+              stroke.setColor(strokeColor);
+              stroke.setWidth(1);
+              stroke.setLineDash(null);
+              style.setZIndex(i);
             }
-            stroke = style.getStroke();
-            stroke.setLineCap(defaults['line-cap']);
-            stroke.setLineJoin(defaults['line-join']);
-            stroke.setMiterLimit(defaults['line-miter-limit']);
-            stroke.setColor(strokeColor);
-            stroke.setWidth(1);
-            stroke.setLineDash(null);
-            style.setZIndex(i);
           }
         } else if (type == 'LineString') {
-          color = colorWithOpacity(
-              paint['line-color'](zoom), paint['line-opacity'](zoom));
+          if (!('line-pattern' in paint) && 'line-color' in paint) {
+            color = colorWithOpacity(
+                paint['line-color'](zoom), paint['line-opacity'](zoom));
+          }
           var width = paint['line-width'](zoom);
           if (color && width > 0) {
             ++stylesLength;
@@ -405,13 +436,13 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
               });
             }
             stroke = style.getStroke();
-            stroke.setLineCap(paint['line-cap']);
-            stroke.setLineJoin(paint['line-join']);
+            stroke.setLineCap(paint['line-cap'](zoom));
+            stroke.setLineJoin(paint['line-join'](zoom));
             stroke.setMiterLimit(paint['line-miter-limit'](zoom));
             stroke.setColor(color);
             stroke.setWidth(width);
             stroke.setLineDash(paint['line-dasharray'] ?
-                paint['line-dasharray'].map(function(x) {
+                paint['line-dasharray'](zoom).map(function(x) {
                   return x * width * ol.has.DEVICE_PIXEL_RATIO;
                 }) : null);
             style.setZIndex(i);
@@ -419,9 +450,9 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
         }
 
         var icon;
-        var iconImage = paint['icon-image'];
-        if (type == 'Point' && iconImage) {
+        if (type == 'Point' && 'icon-image' in paint) {
           ++stylesLength;
+          var iconImage = paint['icon-image'](zoom);
           icon = fromTemplate(iconImage, properties);
           style = iconImageCache[icon];
           if (!style && spriteData && spriteImageSize) {
@@ -446,8 +477,8 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
         }
 
         var label;
-        var textField = paint['text-field'];
-        if (textField) {
+        if ('text-field' in paint) {
+          var textField = paint['text-field'](zoom);
           label = fromTemplate(textField, properties);
         }
         // TODO Add LineString handling as soon as it's supporte in OpenLayers
@@ -464,19 +495,19 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
           }
           text = style.getText();
           var textSize = paint['text-size'](zoom);
-          var font = mb2css.asCss(fontMap[paint['text-font']].css, textSize);
+          var font = mb2css.asCss(fontMap[paint['text-font'](zoom)].css, textSize);
           var textTransform = paint['text-transform'];
           if (textTransform == 'uppercase') {
             label = label.toUpperCase();
           } else if (textTransform == 'lowercase') {
             label = label.toLowerCase();
           }
-          var wrappedLabel = wrapText(label, font, paint['text-max-width']);
+          var wrappedLabel = wrapText(label, font, paint['text-max-width'](zoom));
           text.setText(wrappedLabel);
           text.setFont(font);
           var offset = paint['text-offset'](zoom);
           var yOffset = offset[1] * textSize + (wrappedLabel.split('\n').length - 1) * textSize;
-          var anchor = paint['text-anchor'];
+          var anchor = paint['text-anchor'](zoom);
           if (anchor.indexOf('top') == 0) {
             yOffset += 0.5 * textSize;
           } else if (anchor.indexOf('bottom') == 0) {
@@ -484,10 +515,10 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
           }
           text.setOffsetX(offset[0] * textSize);
           text.setOffsetY(yOffset);
-          text.getFill().setColor(paint['text-color']);
+          text.getFill().setColor(paint['text-color'](zoom));
           if (paint['text-halo-width']) {
-            textHalo.setWidth(paint['text-halo-width']);
-            textHalo.setColor(paint['text-halo-color']);
+            textHalo.setWidth(paint['text-halo-width'](zoom));
+            textHalo.setColor(paint['text-halo-color'](zoom));
             text.setStroke(textHalo);
           } else {
             text.setStroke(undefined);
