@@ -385,7 +385,7 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
         var paint = layer.paint;
         var type = properties['$type'];
         if (type == 'Polygon') {
-          if (!('fill-pattern' in paint)) {
+          if (!('fill-pattern' in paint) && 'fill-color' in paint) {
             opacity = paint['fill-opacity'](zoom);
             color = colorWithOpacity(paint['fill-color'](zoom), opacity);
             if (color) {
