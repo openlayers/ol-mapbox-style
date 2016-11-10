@@ -1,7 +1,7 @@
 {
   "name": "ol-mapbox-style",
-  "version": "0.0.8",
-  "description": "Use Mapbox GL style objects with OpenLayers",
+  "version": "0.0.9",
+  "description": "Use Mapbox style objects with OpenLayers",
   "main": "index.js",
   "repository": {
     "type": "git",
