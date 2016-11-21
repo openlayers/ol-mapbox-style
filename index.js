@@ -421,7 +421,8 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
               style.setZIndex(i);
             }
           }
-        } else if (type == 'LineString') {
+        }
+        if (type != 'Point') {
           if (!('line-pattern' in paint) && 'line-color' in paint) {
             color = colorWithOpacity(
                 paint['line-color'](zoom), paint['line-opacity'](zoom));
