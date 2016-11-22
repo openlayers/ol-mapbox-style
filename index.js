@@ -415,9 +415,9 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
               fill.setColor(color);
               style.setZIndex(i);
             }
-            strokeColor = 'fill-outline-color' in paint ?
-                colorWithOpacity(paint['fill-outline-color'](zoom), opacity) :
-                color;
+            if ('fill-outline-color' in paint) {
+              strokeColor = colorWithOpacity(paint['fill-outline-color'](zoom), opacity);
+            }
             if (strokeColor) {
               ++stylesLength;
               style = styles[stylesLength];
