@@ -459,7 +459,7 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
             stroke.setWidth(width);
             stroke.setLineDash(paint['line-dasharray'] ?
                 paint['line-dasharray'](zoom).map(function(x) {
-                  return x * width * ol.has.DEVICE_PIXEL_RATIO;
+                  return x * width;
                 }) : null);
             style.setZIndex(i);
           }
