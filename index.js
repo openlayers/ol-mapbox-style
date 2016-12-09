@@ -36,7 +36,10 @@ var functions = {
     'text-color',
     'text-field',
     'text-font',
-    'text-halo-color'
+    'text-halo-color',
+    'circle-radius',
+    'circle-color',
+    'circle-stroke-color'
   ]
 };
 
@@ -57,7 +60,10 @@ var defaults = {
   'text-size': 16,
   'icon-opacity': 1,
   'icon-rotate': 0,
-  'icon-size': 1
+  'icon-size': 1,
+  'circle-radius' : 5,
+  'circle-color' : '#000000',
+  'circle-stroke-color' : '#000000'
 };
 
 function applyDefaults(properties) {
@@ -488,6 +494,25 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
             iconImg.setRotation(deg2rad(paint['icon-rotate'](zoom)));
             iconImg.setOpacity(paint['icon-opacity'](zoom));
             style.setZIndex(i);
+            styles[stylesLength] = style;
+          }
+        }
+
+        if (type == 'Point' && 'circle-radius' in paint) {
+          style = new ol.style.Style({
+            image: new ol.style.Circle({
+              radius: paint['circle-radius'](zoom),
+              stroke: new ol.style.Stroke({
+                color: colorWithOpacity(paint['circle-stroke-color'](zoom), opacity)
+              }),
+              fill: new ol.style.Stroke({
+                color: colorWithOpacity(paint['circle-color'](zoom), opacity)
+              })
+            })
+          });
+          if (style) {
+            style.setZIndex(i);
+            ++stylesLength;
             styles[stylesLength] = style;
           }
         }
