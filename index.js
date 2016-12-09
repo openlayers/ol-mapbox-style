@@ -499,20 +499,26 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
         }
 
         if (type == 'Point' && 'circle-radius' in paint) {
-          style = new ol.style.Style({
-            image: new ol.style.Circle({
-              radius: paint['circle-radius'](zoom),
-              stroke: new ol.style.Stroke({
-                color: colorWithOpacity(paint['circle-stroke-color'](zoom), opacity)
-              }),
-              fill: new ol.style.Stroke({
-                color: colorWithOpacity(paint['circle-color'](zoom), opacity)
+          ++stylesLength;
+          var cache_key = paint['circle-radius'] + '.' +
+            paint['circle-stroke-color'] + '.' +
+            paint['circle-color'];
+          style = iconImageCache[cache_key];
+          if(!style) {
+            style = new ol.style.Style({
+              image: new ol.style.Circle({
+                radius: paint['circle-radius'](zoom),
+                stroke: new ol.style.Stroke({
+                  color: colorWithOpacity(paint['circle-stroke-color'](zoom), opacity)
+                }),
+                fill: new ol.style.Stroke({
+                  color: colorWithOpacity(paint['circle-color'](zoom), opacity)
+                })
               })
-            })
-          });
+            });
+          }
           if (style) {
             style.setZIndex(i);
-            ++stylesLength;
             styles[stylesLength] = style;
           }
         }
