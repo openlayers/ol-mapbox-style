@@ -1,6 +1,6 @@
 {
   "name": "ol-mapbox-style",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "Use Mapbox style objects with OpenLayers",
   "main": "index.js",
   "repository": {
@@ -17,6 +17,9 @@
   ],
   "author": "Andreas Hocevar <andreas.hocevar@gmail.com>",
   "contributors": [{
+    "name": "Dan 'Ducky' Little",
+    "email": "danlittle@yahoo.com"
+  }, {
     "name": "Christian Mayer",
     "email": "chris@meggsimum.de"
   }],
