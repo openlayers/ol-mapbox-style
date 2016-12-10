@@ -22,7 +22,8 @@ var functions = {
     'text-size',
     'icon-opacity',
     'icon-rotate',
-    'icon-size'
+    'icon-size',
+    'circle-radius'
   ],
   'piecewise-constant': [
     'fill-color',
@@ -37,7 +38,6 @@ var functions = {
     'text-field',
     'text-font',
     'text-halo-color',
-    'circle-radius',
     'circle-color',
     'circle-stroke-color'
   ]
@@ -500,9 +500,9 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
 
         if (type == 'Point' && 'circle-radius' in paint) {
           ++stylesLength;
-          var cache_key = paint['circle-radius'] + '.' +
-            paint['circle-stroke-color'] + '.' +
-            paint['circle-color'];
+          var cache_key = paint['circle-radius'](zoom) + '.' +
+            paint['circle-stroke-color'](zoom) + '.' +
+            paint['circle-color'](zoom);
           style = iconImageCache[cache_key];
           if(!style) {
             style = new ol.style.Style({
@@ -517,10 +517,8 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
               })
             });
           }
-          if (style) {
-            style.setZIndex(i);
-            styles[stylesLength] = style;
-          }
+          style.setZIndex(i);
+          styles[stylesLength] = style;
         }
 
         var label;
