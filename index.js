@@ -218,12 +218,12 @@ function getZoomForResolution(resolution, resolutions) {
   var i = 0, ii = resolutions.length;
   for (; i < ii; ++i) {
     candidate = resolutions[i];
-    if (candidate < resolutions && i + 1 < ii) {
+    if (candidate < resolution && i + 1 < ii) {
       var zoomFactor = resolutions[i] / resolutions[i + 1];
-      return Math.log(resolutions[i] / resolution) / Math.log(zoomFactor);
+      return i + Math.log(resolutions[i] / resolution) / Math.log(zoomFactor);
     }
   }
-  return resolutions[ii - 1];
+  return ii - 1;
 }
 
 function colorWithOpacity(color, opacity) {
@@ -397,7 +397,7 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
       var layer = layers[i];
       if ((layer['source-layer'] && layer['source-layer'] != properties.layer) ||
           ('minzoom' in layer && zoom < layer.minzoom) ||
-          ('maxzoom' in layer && zoom > layer.maxzoom)) {
+          ('maxzoom' in layer && zoom >= layer.maxzoom)) {
         continue;
       }
       if (!layer.filter || evaluate(layer.filter, properties)) {
