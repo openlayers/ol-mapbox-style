@@ -1,6 +1,6 @@
 {
   "name": "ol-mapbox-style",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "Use Mapbox style objects with OpenLayers",
   "main": "index.js",
   "repository": {
