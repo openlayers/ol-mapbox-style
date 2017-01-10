@@ -38,7 +38,7 @@ fetch('https://api.mapbox.com/styles/v1/mapbox/bright-v9?access_token=' + key).t
 });
 ```
 
-Note that it is the responsibility of the application to load web fonts used by the GL Style.
+Note that it is the responsibility of the application to load web fonts used by the GL Style. To apply the properties of the Mapbox Style's `background` layer to the map, use the `applyBackground` function.
 
 ## API
 
@@ -52,8 +52,8 @@ source.
 
 **Parameters**
 
--   `glStyle` **([string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) \| [Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object))** Mapbox GL style object.
--   `source` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** `source` key from the Mapbox GL style object.
+-   `glStyle` **([string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) \| [Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object))** Mapbox Style object.
+-   `source` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** `source` key from the Mapbox Style object.
 -   `resolutions` **([Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)> | [undefined](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined))?** Resolutions for mapping resolution to zoom level. For tile layers, this can
     be `layer.getSource().getTileGrid().getResolutions()`. (optional, default `[156543.03392804097,
     78271.51696402048,39135.75848201024,19567.87924100512,9783.93962050256,
@@ -81,11 +81,20 @@ Applies a style function to an `ol.layer.VectorTile` with an
 **Parameters**
 
 -   `layer` **ol.layer.VectorTile** OpenLayers layer.
--   `glStyle` **([string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) \| [Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object))** Mapbox GL style object.
--   `source` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** `source` key from the Mapbox GL style object.
+-   `glStyle` **([string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) \| [Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object))** Mapbox Style object.
+-   `source` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** `source` key from the Mapbox Style object.
 
 Returns **[Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)** Promise which will be resolved when the style can be used
 for rendering.
+
+### applyBackground
+
+Applies properties of the Mapbox Style's `background` layer to the map.
+
+**Parameters**
+
+-   `map` **ol.Map** OpenLayers Map. Must have a `target` configured.
+-   `glStyle` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** Mapbox Style object.
 
 ## Building the library
 

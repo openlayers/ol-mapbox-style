@@ -613,7 +613,46 @@ function applyStyle(layer, glStyle, source) {
   });
 }
 
+/**
+ * Applies properties of the Mapbox Style's `background` layer to the map.
+ * @param {ol.Map} map OpenLayers Map. Must have a `target` configured.
+ * @param {Object} glStyle Mapbox Style object.
+ */
+function applyBackground(map, glStyle) {
+
+  var layer;
+
+  function updateStyle() {
+    var layout = layer.layout || {};
+    var paint = layer.paint || {};
+    var element = map.getTargetElement();
+    var zoom = map.getView().getZoom();
+    if ('background-color' in paint) {
+      element.style.backgroundColor =
+          glfun['piecewise-constant'](paint['background-color'])(zoom);
+    }
+    if ('background-opacity' in paint) {
+      element.style.backgroundOpacity =
+          glfun.interpolated(paint['background-opacity'])(zoom);
+    }
+    if (layout.visibility == 'none') {
+      element.style.backgroundColor = '';
+      element.style.backgroundOpacity = '';
+    }
+  }
+
+  glStyle.layers.some(function(l) {
+    if (l.type == 'background') {
+      layer = l;
+      updateStyle();
+      map.on('change:resolution', updateStyle);
+      return true;
+    }
+  });
+}
+
 module.exports = {
+  applyBackground: applyBackground,
   applyStyle: applyStyle,
   getStyleFunction: getStyleFunction
 };

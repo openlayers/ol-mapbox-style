@@ -30,6 +30,7 @@ var map = new ol.Map({
 
 fetch(baseUrl + '?access_token=' + key).then(function(response) {
   response.json().then(function(glStyle) {
+    olms.applyBackground(map, glStyle);
     glStyle.sprite = baseUrl + '/sprite?access_token=' + key;
     olms.applyStyle(layer, glStyle, 'mapbox').then(function() {
       map.addLayer(layer);
