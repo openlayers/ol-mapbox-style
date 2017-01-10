@@ -1,5 +1,5 @@
 /*
-ol-mapbox-gl-style - Use Mapbox GL style objects with OpenLayers
+ol-mapbox-style - Use Mapbox Style objects with OpenLayers
 Copyright 2016 Boundless Spatial, Inc.
 License: https://raw.githubusercontent.com/boundlessgeo/ol-mapbox-gl-style/master/LICENSE.md
 */
@@ -271,8 +271,8 @@ function fromTemplate(text, properties) {
  * the specified `source`, which needs to be a `"type": "vector"`
  * source.
  *
- * @param {string|Object} glStyle Mapbox GL style object.
- * @param {string} source `source` key from the Mapbox GL style object.
+ * @param {string|Object} glStyle Mapbox Style object.
+ * @param {string} source `source` key from the Mapbox Style object.
  * @param {Array<number>|undefined} [resolutions=[156543.03392804097,
  * 78271.51696402048, 39135.75848201024, 19567.87924100512, 9783.93962050256,
  * 4891.96981025128, 2445.98490512564, 1222.99245256282, 611.49622628141,
@@ -503,7 +503,7 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
             paint['circle-stroke-color'](zoom) + '.' +
             paint['circle-color'](zoom);
           style = iconImageCache[cache_key];
-          if(!style) {
+          if (!style) {
             style = new ol.style.Style({
               image: new ol.style.Circle({
                 radius: paint['circle-radius'](zoom),
@@ -586,8 +586,8 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
  * `"type": "vector"` source.
  *
  * @param {ol.layer.VectorTile} layer OpenLayers layer.
- * @param {string|Object} glStyle Mapbox GL style object.
- * @param {string} source `source` key from the Mapbox GL style object.
+ * @param {string|Object} glStyle Mapbox Style object.
+ * @param {string} source `source` key from the Mapbox Style object.
  * @return {Promise} Promise which will be resolved when the style can be used
  * for rendering.
  */
