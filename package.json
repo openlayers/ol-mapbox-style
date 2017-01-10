@@ -1,6 +1,6 @@
 {
   "name": "ol-mapbox-style",
-  "version": "0.0.14",
+  "version": "1.0.0",
   "description": "Use Mapbox style objects with OpenLayers",
   "main": "index.js",
   "repository": {
@@ -37,17 +37,17 @@
     "mapbox-to-css-font": "1.0.2"
   },
   "devDependencies": {
-    "browserify": "13.1.1",
+    "browserify": "13.3.0",
     "cssify": "1.0.3",
-    "documentation": "4.0.0-beta16",
-    "eslint": "3.12.1",
+    "documentation": "4.0.0-beta18",
+    "eslint": "3.13.1",
     "eslint-config-openlayers": "6.0.0",
     "expect.js": "0.3.1",
-    "jsdom": "9.8.3",
-    "jsdom-global": "2.1.0",
+    "jsdom": "9.9.1",
+    "jsdom-global": "2.1.1",
     "mapbox-gl-styles": "2.0.2",
     "mocha": "3.2.0",
-    "openlayers": "3.20.0",
+    "openlayers": "3.20.1",
     "standalonify": "0.1.3"
   }
 }
