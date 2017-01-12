@@ -5,7 +5,7 @@ License: https://raw.githubusercontent.com/boundlessgeo/ol-mapbox-gl-style/maste
 */
 
 var ol = require('openlayers');
-var glfun = require('mapbox-gl-function');
+var glfun = require('mapbox-gl-style-spec/lib/function');
 var mb2css = require('mapbox-to-css-font');
 var colorString = require('color-string');
 var FontFaceObserver = require('fontfaceobserver');
