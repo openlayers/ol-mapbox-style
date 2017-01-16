@@ -510,7 +510,7 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
                 stroke: new ol.style.Stroke({
                   color: colorWithOpacity(paint['circle-stroke-color'](zoom), opacity)
                 }),
-                fill: new ol.style.Stroke({
+                fill: new ol.style.Fill({
                   color: colorWithOpacity(paint['circle-color'](zoom), opacity)
                 })
               })
