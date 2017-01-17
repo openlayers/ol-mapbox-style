@@ -1,6 +1,6 @@
 {
   "name": "ol-mapbox-style",
-  "version": "1.0.2",
+  "version": "2.0.0-beta.1",
   "description": "Use Mapbox style objects with OpenLayers",
   "main": "index.js",
   "repository": {
@@ -16,22 +16,27 @@
     "vector tiles"
   ],
   "author": "Andreas Hocevar <andreas.hocevar@gmail.com>",
-  "contributors": [{
-    "name": "Attila Berényi",
-    "email": "aberenyi@gislab.hu"
-  }, {
-    "name": "Dan 'Ducky' Little",
-    "email": "danlittle@yahoo.com"
-  }, {
-    "name": "Christian Mayer",
-    "email": "chris@meggsimum.de"
-  }],
+  "contributors": [
+    {
+      "name": "Attila Berényi",
+      "email": "aberenyi@gislab.hu"
+    },
+    {
+      "name": "Dan 'Ducky' Little",
+      "email": "danlittle@yahoo.com"
+    },
+    {
+      "name": "Christian Mayer",
+      "email": "chris@meggsimum.de"
+    }
+  ],
   "license": "BSD-2-Clause",
   "scripts": {
-    "dist": "mkdir -p dist && browserify -p [ standalonify --name olms --deps [ null --openlayers ol ] ] index.js > dist/olms.js",
+    "prepublish": "mkdir -p dist && browserify -g [ babelify --plugins [ transform-es2015-modules-commonjs ] ] -p [ standalonify --name olms --deps [ null --ol/style/style ol.style.Style --ol/style/fill ol.style.Fill --ol/style/stroke ol.style.Stroke --ol/style/circle ol.style.Circle --ol/style/icon ol.style.Icon --ol/style/text ol.style.Text ] ] index.js > dist/olms.js",
+    "compile": "babel -d dist/ index.js",
     "doc": "documentation readme -s API index.js",
     "pretest": "eslint src",
-    "test": "mocha"
+    "test": "browserify test/test.js -g [ babelify --plugins [ transform-es2015-modules-commonjs ] ] > test/test-bundle.js && mocha test/test-bundle.js && rm test/test-bundle.js"
   },
   "dependencies": {
     "fontfaceobserver": "2.0.7",
@@ -39,7 +44,8 @@
     "mapbox-to-css-font": "1.0.2"
   },
   "devDependencies": {
-    "browserify": "13.3.0",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.18.0",
+    "babel-preset-es2015": "^6.18.0",
     "cssify": "1.0.3",
     "documentation": "4.0.0-beta.18",
     "eslint": "3.13.1",
@@ -49,7 +55,7 @@
     "jsdom-global": "2.1.1",
     "mapbox-gl-styles": "2.0.2",
     "mocha": "3.2.0",
-    "openlayers": "3.20.1",
+    "ol": "3.21.0-beta.16",
     "standalonify": "0.1.3"
   }
 }

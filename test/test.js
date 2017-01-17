@@ -1,15 +1,20 @@
-var expect = require('expect.js');
-var olms = require('../index.js');
-var ol = require('openlayers');
+import expect from 'expect.js';
+import olms from '../';
+import VectorTileLayer from 'ol/layer/vectortile';
+import VectorTileSource from 'ol/source/vectortile';
+import projCommon from 'ol/proj/common';
+import tilegrid from 'ol/tilegrid';
+import brightV9 from '../node_modules/mapbox-gl-styles/styles/bright-v9.json';
 
 describe('ol-mapbox-gl-style', function() {
 
-  var brightV9, layer;
+  projCommon.add();
+
+  var layer;
   beforeEach(function() {
-    brightV9 = require('../node_modules/mapbox-gl-styles/styles/bright-v9.json');
-    layer = new ol.layer.VectorTile({
-      source: new ol.source.VectorTile({
-        tileGrid: ol.tilegrid.createXYZ()
+    layer = new VectorTileLayer({
+      source: new VectorTileSource({
+        tileGrid: tilegrid.createXYZ({tileSize: 512, maxZoom: 22})
       })
     });
   });

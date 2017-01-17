@@ -1,13 +1,18 @@
 /*
 ol-mapbox-style - Use Mapbox Style objects with OpenLayers
-Copyright 2016 Boundless Spatial, Inc.
+Copyright 2016-present Boundless Spatial, Inc.
 License: https://raw.githubusercontent.com/boundlessgeo/ol-mapbox-gl-style/master/LICENSE.md
 */
 
-var ol = require('openlayers');
-var glfun = require('mapbox-gl-style-spec/lib/function');
-var mb2css = require('mapbox-to-css-font');
-var FontFaceObserver = require('fontfaceobserver');
+import Style from 'ol/style/style';
+import Fill from 'ol/style/fill';
+import Stroke from 'ol/style/stroke';
+import Icon from 'ol/style/icon';
+import Circle from 'ol/style/circle';
+import Text from 'ol/style/text';
+import glfun from 'mapbox-gl-style-spec/lib/function';
+import mb2css from 'mapbox-to-css-font';
+import FontFaceObserver from 'fontfaceobserver';
 
 var functions = {
   interpolated: [
@@ -299,7 +304,7 @@ function fromTemplate(text, properties) {
  * @return {ol.style.StyleFunction} Style function for use in
  * `ol.layer.Vector` or `ol.layer.VectorTile`.
  */
-function getStyleFunction(glStyle, source, resolutions, onChange) {
+export function getStyleFunction(glStyle, source, resolutions, onChange) {
   if (!resolutions) {
     resolutions = [];
     for (var res = 156543.03392804097; resolutions.length < 22; res /= 2) {
@@ -320,8 +325,8 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
   var spriteImageSize;
   var spriteScale;
   if (glStyle.sprite) {
-    spriteScale = ol.has.DEVICE_PIXEL_RATIO >= 1.5 ? 0.5 : 1;
-    var xhr = new window.XMLHttpRequest();
+    spriteScale = (window.devicePixelRatio || 1) >= 1.5 ? 0.5 : 1;
+    var xhr = new XMLHttpRequest();
     var sizeFactor = spriteScale == 0.5 ? '@2x' : '';
     var spriteUrl = toSpriteUrl(glStyle.sprite, sizeFactor + '.json');
     xhr.open('GET', spriteUrl);
@@ -387,8 +392,8 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
     }
   }
 
-  var textHalo = new ol.style.Stroke();
-  var textColor = new ol.style.Fill();
+  var textHalo = new Stroke();
+  var textColor = new Fill();
 
   var iconImageCache = {};
 
@@ -421,8 +426,8 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
               ++stylesLength;
               style = styles[stylesLength];
               if (!style || !style.getFill() || style.getStroke() || style.getText()) {
-                style = styles[stylesLength] = new ol.style.Style({
-                  fill: new ol.style.Fill()
+                style = styles[stylesLength] = new Style({
+                  fill: new Fill()
                 });
               }
               fill = style.getFill();
@@ -436,8 +441,8 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
               ++stylesLength;
               style = styles[stylesLength];
               if (!style || !style.getStroke() || style.getFill() || style.getText()) {
-                style = styles[stylesLength] = new ol.style.Style({
-                  stroke: new ol.style.Stroke()
+                style = styles[stylesLength] = new Style({
+                  stroke: new Stroke()
                 });
               }
               stroke = style.getStroke();
@@ -461,8 +466,8 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
             ++stylesLength;
             style = styles[stylesLength];
             if (!style || !style.getStroke() || style.getFill() || style.getText()) {
-              style = styles[stylesLength] = new ol.style.Style({
-                stroke: new ol.style.Stroke()
+              style = styles[stylesLength] = new Style({
+                stroke: new Stroke()
               });
             }
             stroke = style.getStroke();
@@ -487,8 +492,8 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
           style = iconImageCache[icon];
           if (!style && spriteData && spriteImageSize) {
             var spriteImageData = spriteData[icon];
-            style = iconImageCache[icon] = new ol.style.Style({
-              image: new ol.style.Icon({
+            style = iconImageCache[icon] = new Style({
+              image: new Icon({
                 img: spriteImage,
                 size: [spriteImageData.width, spriteImageData.height],
                 imgSize: spriteImageSize,
@@ -513,13 +518,13 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
             paint['circle-color'](zoom);
           style = iconImageCache[cache_key];
           if (!style) {
-            style = new ol.style.Style({
-              image: new ol.style.Circle({
+            style = new Style({
+              image: new Circle({
                 radius: paint['circle-radius'](zoom),
-                stroke: new ol.style.Stroke({
+                stroke: new Stroke({
                   color: colorWithOpacity(paint['circle-stroke-color'](zoom), opacity)
                 }),
-                fill: new ol.style.Fill({
+                fill: new Fill({
                   color: colorWithOpacity(paint['circle-color'](zoom), opacity)
                 })
               })
@@ -539,8 +544,8 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
           ++stylesLength;
           style = styles[stylesLength];
           if (!style || !style.getText() || style.getFill() || style.getStroke()) {
-            style = styles[stylesLength] = new ol.style.Style({
-              text: new ol.style.Text({
+            style = styles[stylesLength] = new Style({
+              text: new Text({
                 text: '',
                 fill: textColor
               })
@@ -600,7 +605,7 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
  * @return {Promise} Promise which will be resolved when the style can be used
  * for rendering.
  */
-function applyStyle(layer, glStyle, source) {
+export function applyStyle(layer, glStyle, source) {
   return new Promise(function(resolve, reject) {
     var resolutions = layer.getSource().getTileGrid().getResolutions();
     var style;
@@ -627,7 +632,7 @@ function applyStyle(layer, glStyle, source) {
  * @param {ol.Map} map OpenLayers Map. Must have a `target` configured.
  * @param {Object} glStyle Mapbox Style object.
  */
-function applyBackground(map, glStyle) {
+export function applyBackground(map, glStyle) {
 
   var layer;
 
@@ -659,9 +664,3 @@ function applyBackground(map, glStyle) {
     }
   });
 }
-
-module.exports = {
-  applyBackground: applyBackground,
-  applyStyle: applyStyle,
-  getStyleFunction: getStyleFunction
-};
