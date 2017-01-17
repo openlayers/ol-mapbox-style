@@ -7,7 +7,6 @@ License: https://raw.githubusercontent.com/boundlessgeo/ol-mapbox-gl-style/maste
 var ol = require('openlayers');
 var glfun = require('mapbox-gl-style-spec/lib/function');
 var mb2css = require('mapbox-to-css-font');
-var colorString = require('color-string');
 var FontFaceObserver = require('fontfaceobserver');
 
 var functions = {
@@ -226,15 +225,25 @@ function getZoomForResolution(resolution, resolutions) {
   return ii - 1;
 }
 
+var colorElement = document.createElement('div');
+var colorRegEx = /^rgba?\((.*)\)$/;
+var colorCache = {};
+
 function colorWithOpacity(color, opacity) {
   if (color && opacity !== undefined) {
-    var colorData = colorString.get(color);
-    color = colorData.value;
+    var colorData = colorCache[color];
+    if (!colorData) {
+      colorElement.style.color = color;
+      document.body.appendChild(colorElement);
+      var colorString = getComputedStyle(colorElement).getPropertyValue('color');
+      document.body.removeChild(colorElement);
+      colorData = colorString.match(colorRegEx)[1].split(',').map(Number);
+      colorCache[color] = colorData;
+    }
+    color = colorData.slice();
     color[3] = color.length > 3 ? color[3] * opacity : opacity;
     if (color[3] === 0) {
       color = undefined;
-    } else {
-      color = colorString.to[colorData.model](color);
     }
   }
   return color;

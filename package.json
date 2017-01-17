@@ -34,7 +34,6 @@
     "test": "mocha"
   },
   "dependencies": {
-    "color-string": "1.4.0",
     "fontfaceobserver": "2.0.7",
     "mapbox-gl-style-spec": "8.11.0",
     "mapbox-to-css-font": "1.0.2"
