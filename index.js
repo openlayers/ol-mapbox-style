@@ -9,6 +9,8 @@ var glfun = require('mapbox-gl-style-spec/lib/function');
 var mb2css = require('mapbox-to-css-font');
 var FontFaceObserver = require('fontfaceobserver');
 
+var spriteCache = {};
+
 var functions = {
   interpolated: [
     'line-miter-limit',
@@ -321,25 +323,36 @@ function getStyleFunction(glStyle, source, resolutions, onChange) {
   var spriteScale;
   if (glStyle.sprite) {
     spriteScale = ol.has.DEVICE_PIXEL_RATIO >= 1.5 ? 0.5 : 1;
-    var xhr = new window.XMLHttpRequest();
     var sizeFactor = spriteScale == 0.5 ? '@2x' : '';
     var spriteUrl = toSpriteUrl(glStyle.sprite, sizeFactor + '.json');
-    xhr.open('GET', spriteUrl);
-    xhr.onload = xhr.onerror = function() {
-      if (!xhr.responseText) {
-        throw new Error('Sprites cannot be loaded from ' + spriteUrl);
-      }
-      spriteData = JSON.parse(xhr.responseText);
-      onChange();
-    };
-    xhr.send();
-    var spriteImageUrl = toSpriteUrl(glStyle.sprite, sizeFactor + '.png');
-    spriteImage = document.createElement('IMG');
-    spriteImage.onload = function() {
+    if (!spriteCache[spriteUrl]) {
+      var xhr = new window.XMLHttpRequest();
+      xhr.open('GET', spriteUrl);
+      xhr.onload = xhr.onerror = function() {
+        if (!xhr.responseText) {
+          throw new Error('Sprites cannot be loaded from ' + spriteUrl);
+        }
+        spriteData = JSON.parse(xhr.responseText);
+        onChange();
+      };
+      xhr.send();
+      var spriteImageUrl = toSpriteUrl(glStyle.sprite, sizeFactor + '.png');
+      spriteImage = document.createElement('IMG');
+      spriteImage.onload = function() {
+        spriteImageSize = [spriteImage.width, spriteImage.height];
+        onChange();
+      };
+      spriteImage.src = spriteImageUrl;
+      spriteCache[spriteUrl] = {
+        spriteData: spriteData,
+        spriteImage: spriteImage
+      };
+    } else {
+      spriteData = spriteCache[spriteUrl].spriteData;
+      spriteImage = spriteCache[spriteUrl].spriteImage;
       spriteImageSize = [spriteImage.width, spriteImage.height];
       onChange();
-    };
-    spriteImage.src = spriteImageUrl;
+    }
   } else {
     window.setTimeout(onChange, 0);
   }
