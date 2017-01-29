@@ -47,9 +47,11 @@ function loadFont(fonts, onChange) {
   });
 }
 
+var defaultFont = ['Open Sans Regular', 'Arial Unicode MS Regular'];
+
 function preprocess(layer, onChange) {
   if ('layout' in layer && 'text-field' in layer.layout) {
-    loadFont(layer.layout['text-font'] || defaults['text-font'], onChange);
+    loadFont(layer.layout['text-font'] || defaultFont, onChange);
   }
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "ol-mapbox-style",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Use Mapbox style objects with OpenLayers",
   "main": "index.js",
   "repository": {
@@ -32,7 +32,7 @@
   ],
   "license": "BSD-2-Clause",
   "scripts": {
-    "prepublish": "mkdir -p dist && browserify -g [ babelify --plugins [ transform-es2015-modules-commonjs ] ] -p [ standalonify --name olms --deps [ null --ol/style/style ol.style.Style --ol/style/fill ol.style.Fill --ol/style/stroke ol.style.Stroke --ol/style/circle ol.style.Circle --ol/style/icon ol.style.Icon --ol/style/text ol.style.Text ] ] index.js > dist/olms.js",
+    "prepublish": "npm run doc && mkdir -p dist && browserify -g [ babelify --plugins [ transform-es2015-modules-commonjs ] ] -p [ standalonify --name olms --deps [ null --ol/style/style ol.style.Style --ol/style/fill ol.style.Fill --ol/style/stroke ol.style.Stroke --ol/style/circle ol.style.Circle --ol/style/icon ol.style.Icon --ol/style/text ol.style.Text ] ] index.js > dist/olms.js",
     "doc": "documentation readme -s API index.js",
     "pretest": "eslint src & npm run test-bundle",
     "test": "mocha test/test-bundle.js",
@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "mapbox-to-css-font": "2.0.3",
-    "mapbox-to-ol-style": "1.2.0",
+    "mapbox-to-ol-style": "2.0.1",
     "webfontloader": "^1.6.27"
   },
   "devDependencies": {

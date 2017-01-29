@@ -79,6 +79,5 @@ Applies properties of the Mapbox Style's `background` layer to the map.
 ## Building the library
 
     npm install
-    npm run prepublish
 
 The resulting binary (`olms.js`) will be in the `dist/` folder. To see the library in action, navigate to `example/index.html`.
