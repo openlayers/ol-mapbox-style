@@ -218,18 +218,33 @@ function processStyle(glStyle, map, baseUrl, path, accessToken) {
   if (glStyle.sprite && glStyle.sprite.indexOf('mapbox://') == 0) {
     glStyle.sprite = baseUrl + '/sprite' + accessToken;
   }
+
   var glLayers = glStyle.layers;
   var layerIds = [];
+
+  function finalizeLayer(layer) {
+    if (layerIds.length > 0) {
+      map.addLayer(layer);
+      applyStyle(layer, glStyle, layerIds).then(function() {
+        layer.setVisible(true);
+      }, function(e) {
+        throw e;
+      });
+    }
+  }
+
   var glLayer, glSource, glSourceId, id, layer, mapid, url;
   for (var i = 0, ii = glLayers.length; i < ii; ++i) {
     glLayer = glLayers[i];
     if (glLayer.type == 'background') {
       setBackground(map, glLayer);
     } else {
-      layerIds.push(glLayer.id);
       id = glLayer.source || getSourceIdByRef(glLayers, glLayer.ref);
       if (id != glSourceId) {
+        finalizeLayer(layer);
+        layerIds = [];
         glSource = glStyle.sources[id];
+
         if (glSource.type == 'vector') {
           url = glSource.url;
           if (url.indexOf('mapbox://') == 0) {
@@ -263,27 +278,12 @@ function processStyle(glStyle, map, baseUrl, path, accessToken) {
             visible: false
           });
         }
-        if (glSourceId) {
-          map.addLayer(layer);
-          applyStyle(layer, glStyle, layerIds).then(function() {
-            layer.setVisible(true);
-          }, function(e) {
-            throw e;
-          });
-          layerIds = [];
-        }
         glSourceId = id;
       }
+      layerIds.push(glLayer.id);
     }
   }
-  if (layerIds.length > 0) {
-    map.addLayer(layer);
-    applyStyle(layer, glStyle, layerIds).then(function() {
-      layer.setVisible(true);
-    }, function(e) {
-      throw e;
-    });
-  }
+  finalizeLayer(layer);
 }
 
 /**
