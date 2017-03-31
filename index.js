@@ -213,7 +213,10 @@ function processStyle(glStyle, map, baseUrl, path, accessToken) {
     view.setZoom(glStyle.zoom);
   }
   if (!('zoom' in glStyle || 'center' in glStyle)) {
-    view.fit(view.getProjection().getExtent(), map.getSize(), {nearest: true});
+    view.fit(view.getProjection().getExtent(), {
+      nearest: true,
+      size: map.gwtSize()
+    });
   }
   if (glStyle.sprite && glStyle.sprite.indexOf('mapbox://') == 0) {
     glStyle.sprite = baseUrl + '/sprite' + accessToken;

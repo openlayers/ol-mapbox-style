@@ -1,12 +1,12 @@
 # ol-mapbox-style
 
-Converts Mapbox Style objects for vector tile layers into OpenLayers style functions.
+Create OpenLayers maps from Mapbox Style objects.
 
 ## Getting started
 
 To use a standalone build of ol-mapbox-style, just include 'dist/olms.js' on your HTML page. Otherwise just import the ol-mapbox-style module, like in the snippet below.
 
-The code below creates a Mapbox Streets v7 layer with the bright v9 style:
+The code below creates an OpenLayers map from Mapbox's Bright v9 style:
 
 ```js
 import { apply } from 'ol-mapbox-style';
