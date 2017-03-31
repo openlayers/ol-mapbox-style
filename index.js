@@ -215,7 +215,7 @@ function processStyle(glStyle, map, baseUrl, path, accessToken) {
   if (!('zoom' in glStyle || 'center' in glStyle)) {
     view.fit(view.getProjection().getExtent(), {
       nearest: true,
-      size: map.gwtSize()
+      size: map.getSize()
     });
   }
   if (glStyle.sprite && glStyle.sprite.indexOf('mapbox://') == 0) {
