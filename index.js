@@ -65,7 +65,7 @@ function preprocess(layer, onChange) {
   }
 }
 
-var spriteRegEx = /^(.*)(\?access_token=.*)$/;
+var spriteRegEx = /^(.*)(\?.*)$/;
 
 function toSpriteUrl(url, extension) {
   var parts = url.match(spriteRegEx);
