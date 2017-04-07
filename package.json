@@ -28,6 +28,10 @@
     {
       "name": "Christian Mayer",
       "email": "chris@meggsimum.de"
+    },
+    {
+      "name": "Adrien Pompée",
+      "email": "adrien.pompee@atmosphere.aero"
     }
   ],
   "license": "BSD-2-Clause",
