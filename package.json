@@ -36,7 +36,7 @@
   ],
   "license": "BSD-2-Clause",
   "scripts": {
-    "prepublish": "npm run doc && mkdir -p dist && browserify -g [ babelify --plugins [ transform-es2015-modules-commonjs ] ] -p [ standalonify --name olms --deps [ null --ol/proj ol.proj --ol/tilegrid ol.tilegrid --ol/map ol.Map --ol/format/geojson ol.format.GeoJSON --ol/format/mvt ol.format.MVT --ol/layer/vector ol.layer.Vector --ol/layer/vectortile ol.layer.VectorTile --ol/source/vector ol.source.Vector --ol/source/vectortile ol.source.VectorTile --ol/style/style ol.style.Style --ol/style/fill ol.style.Fill --ol/style/stroke ol.style.Stroke --ol/style/circle ol.style.Circle --ol/style/icon ol.style.Icon --ol/style/text ol.style.Text ] ] -g [ bubleify ] index.js > dist/olms.js",
+    "prepublish": "npm run doc && mkdirp dist && browserify -g [ babelify --plugins [ transform-es2015-modules-commonjs ] ] -p [ standalonify --name olms --deps [ null --ol/proj ol.proj --ol/tilegrid ol.tilegrid --ol/map ol.Map --ol/format/geojson ol.format.GeoJSON --ol/format/mvt ol.format.MVT --ol/layer/vector ol.layer.Vector --ol/layer/vectortile ol.layer.VectorTile --ol/source/vector ol.source.Vector --ol/source/vectortile ol.source.VectorTile --ol/style/style ol.style.Style --ol/style/fill ol.style.Fill --ol/style/stroke ol.style.Stroke --ol/style/circle ol.style.Circle --ol/style/icon ol.style.Icon --ol/style/text ol.style.Text ] ] -g [ bubleify ] index.js > dist/olms.js",
     "doc": "documentation readme -s API index.js",
     "pretest": "eslint src & npm run test-bundle",
     "test": "mocha test/test-bundle.js",
@@ -60,6 +60,7 @@
     "jsdom": "^9.12.0",
     "jsdom-global": "^2.1.1",
     "mapbox-gl-styles": "^2.0.2",
+    "mkdirp": "^0.5.1",
     "mocha": "^3.2.0",
     "should": "^11.2.1",
     "standalonify": "^0.1.3"
