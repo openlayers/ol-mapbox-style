@@ -67,7 +67,15 @@ function preprocess(layer, onChange) {
 
 var spriteRegEx = /^(.*)(\?.*)$/;
 
-function toSpriteUrl(url, extension) {
+function withPath(url, path) {
+  if (path && url.indexOf('http') != 0) {
+    url = path + url;
+  }
+  return url;
+}
+
+function toSpriteUrl(url, path, extension) {
+  url = withPath(url, path);
   var parts = url.match(spriteRegEx);
   return parts ?
       parts[1] + extension + (parts.length > 2 ? parts[2] : '') :
@@ -87,10 +95,12 @@ function toSpriteUrl(url, extension) {
  * Mapbox Style object. When a `source` key is provided, all layers for the
  * specified source will be included in the style function. When layer `id`s
  * are provided, they must be from layers that use the same source.
+ * @param {string} [path=undefined] Path of the style file. Only required when
+ * a relative path is used with the `"sprite"` property of the style.
  * @return {Promise} Promise which will be resolved when the style can be used
  * for rendering.
  */
-export function applyStyle(layer, glStyle, source) {
+export function applyStyle(layer, glStyle, source, path) {
   return new Promise(function(resolve, reject) {
 
     if (typeof glStyle != 'object') {
@@ -106,7 +116,7 @@ export function applyStyle(layer, glStyle, source) {
       spriteScale = window.devicePixelRatio >= 1.5 ? 0.5 : 1;
       var xhr = new window.XMLHttpRequest();
       var sizeFactor = spriteScale == 0.5 ? '@2x' : '';
-      var spriteUrl = toSpriteUrl(glStyle.sprite, sizeFactor + '.json');
+      var spriteUrl = toSpriteUrl(glStyle.sprite, path, sizeFactor + '.json');
       xhr.open('GET', spriteUrl);
       xhr.onload = xhr.onerror = function() {
         if (!xhr.responseText) {
@@ -116,7 +126,7 @@ export function applyStyle(layer, glStyle, source) {
         onChange();
       };
       xhr.send();
-      spriteImageUrl = toSpriteUrl(glStyle.sprite, sizeFactor + '.png');
+      spriteImageUrl = toSpriteUrl(glStyle.sprite, path, sizeFactor + '.png');
       var spriteImage = document.createElement('IMG');
       spriteImage.onload = function() {
         onChange();
@@ -228,7 +238,7 @@ function processStyle(glStyle, map, baseUrl, path, accessToken) {
   function finalizeLayer(layer) {
     if (layerIds.length > 0) {
       map.addLayer(layer);
-      applyStyle(layer, glStyle, layerIds).then(function() {
+      applyStyle(layer, glStyle, layerIds, path).then(function() {
         layer.setVisible(true);
       }, function(e) {
         throw e;
@@ -269,10 +279,7 @@ function processStyle(glStyle, map, baseUrl, path, accessToken) {
             visible: false
           });
         } else if (glSource.type == 'geojson') {
-          url = glSource.data;
-          if (url.indexOf('http') != 0) {
-            url = path + url;
-          }
+          url = withPath(glSource.data, path);
           layer = new VectorLayer({
             source: new VectorSource({
               format: new GeoJSON(),
