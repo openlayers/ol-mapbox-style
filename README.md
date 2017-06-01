@@ -31,7 +31,7 @@ Applies a style function to an `ol.layer.VectorTile` or `ol.layer.Vector`
 with an `ol.source.VectorTile` or an `ol.source.Vector`. The style function
 will render all layers from the `glStyle` object that use the specified
 `source`, or a subset of layers from the same source. The source needs to be
-a `"type": "vector"` or `"type": "geojson"` source.
+a `"type": "vector"`, `"type": "geojson"` or `"type": "raster"` source.
 
 **Parameters**
 

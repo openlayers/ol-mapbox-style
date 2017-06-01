@@ -13,10 +13,14 @@ import tilegrid from 'ol/tilegrid';
 import Map from 'ol/map';
 import GeoJSON from 'ol/format/geojson';
 import MVT from 'ol/format/mvt';
+import Observable from 'ol/observable';
+import TileLayer from 'ol/layer/tile';
 import VectorLayer from 'ol/layer/vector';
 import VectorTileLayer from 'ol/layer/vectortile';
+import TileJSON from 'ol/source/tilejson';
 import VectorSource from 'ol/source/vector';
 import VectorTileSource from 'ol/source/vectortile';
+import XYZ from 'ol/source/xyz';
 
 var availableFonts;
 
@@ -87,7 +91,7 @@ function toSpriteUrl(url, path, extension) {
  * with an `ol.source.VectorTile` or an `ol.source.Vector`. The style function
  * will render all layers from the `glStyle` object that use the specified
  * `source`, or a subset of layers from the same source. The source needs to be
- * a `"type": "vector"` or `"type": "geojson"` source.
+ * a `"type": "vector"`, `"type": "geojson"` or `"type": "raster"` source.
  *
  * @param {ol.layer.VectorTile} layer OpenLayers layer.
  * @param {string|Object} glStyle Mapbox Style object.
@@ -148,18 +152,20 @@ export function applyStyle(layer, glStyle, source, path) {
         layer.setStyle(style);
       }
     }
-    try {
-      var layers = glStyle.layers;
-      for (var i = 0, ii = layers.length; i < ii; ++i) {
-        if (typeof source == 'string' && layers[i].source == source || source.indexOf(layers[i].id) >= 0) {
-          preprocess(layers[i], onChange);
+    if (layer instanceof VectorTileLayer || layer instanceof VectorLayer) {
+      try {
+        var layers = glStyle.layers;
+        for (var i = 0, ii = layers.length; i < ii; ++i) {
+          if (typeof source == 'string' && layers[i].source == source || source.indexOf(layers[i].id) >= 0) {
+            preprocess(layers[i], onChange);
+          }
         }
+        onChange();
+      } catch (e) {
+        window.setTimeout(function() {
+          reject(e);
+        }, 0);
       }
-      onChange();
-    } catch (e) {
-      window.setTimeout(function() {
-        reject(e);
-      }, 0);
     }
   });
 }
@@ -233,16 +239,25 @@ function processStyle(glStyle, map, baseUrl, path, accessToken) {
   }
 
   var glLayers = glStyle.layers;
+  var geoJsonFormat = new GeoJSON();
   var layerIds = [];
 
   function finalizeLayer(layer) {
     if (layerIds.length > 0) {
       map.addLayer(layer);
-      applyStyle(layer, glStyle, layerIds, path).then(function() {
-        layer.setVisible(true);
-      }, function(e) {
-        throw e;
-      });
+      var setStyle = function() {
+        applyStyle(layer, glStyle, layerIds, path).then(function() {
+          layer.setVisible(true);
+        }, function(e) {
+          /*eslint no-console: ["error", { allow: ["error"] }] */
+          console.error(e);
+        });
+      };
+      if (layer.getSource()) {
+        setStyle();
+      } else {
+        layer.once('change:source', setStyle);
+      }
     }
   }
 
@@ -257,16 +272,24 @@ function processStyle(glStyle, map, baseUrl, path, accessToken) {
         finalizeLayer(layer);
         layerIds = [];
         glSource = glStyle.sources[id];
-
-        if (glSource.type == 'vector') {
-          url = glSource.url;
+        url = glSource.url;
+        var tiles = glSource.tiles;
+        if (url) {
           if (url.indexOf('mapbox://') == 0) {
             mapid = url.replace('mapbox://', '');
-            url = 'https://{a-d}.tiles.mapbox.com/v4/' + mapid +
-                '/{z}/{x}/{y}.vector.pbf' + accessToken;
+            tiles = ['a', 'b', 'c', 'd'].map(function(host) {
+              return 'https://' + host + '.tiles.mapbox.com/v4/' + mapid +
+                  '/{z}/{x}/{y}.' +
+                  (glSource.type == 'vector' ? 'vector.pbf' : 'png') +
+                  accessToken;
+            });
           }
-          layer = new VectorTileLayer({
+        }
+
+        if (glSource.type == 'vector') {
+          layer = tiles ? new VectorTileLayer({
             source: new VectorTileSource({
+              attributions: glSource.attribution,
               format: new MVT(),
               tileGrid: tilegrid.createXYZ({
                 tileSize: 512,
@@ -274,18 +297,79 @@ function processStyle(glStyle, map, baseUrl, path, accessToken) {
                 minZoom: glSource.minzoom
               }),
               tilePixelRatio: 8,
-              url: url
+              urls: tiles
             }),
-            visible: false
+            visible: false,
+            zIndex: i
+          }) : (function() {
+            var layer = new VectorTileLayer({
+              visible: false,
+              zIndex: i
+            });
+            var tilejson = new TileJSON({
+              url: url
+            });
+            var key = tilejson.on('change', function() {
+              if (tilejson.getState() == 'ready') {
+                layer.setSource(new VectorTileSource({
+                  attributions: tilejson.getAttributions(),
+                  format: new MVT(),
+                  tileGrid: tilejson.getTileGrid(),
+                  tilePixelRatio: 16,
+                  tileUrlFunction: tilejson.getTileUrlFunction()
+                }));
+                Observable.unByKey(key);
+              }
+            });
+            return layer;
+          })();
+        } else if (glSource.type == 'raster') {
+          var source;
+          if (!glSource.tiles) {
+            source = (function() {
+              return new TileJSON({
+                url: url,
+                crossOrigin: 'anonymous'
+              });
+            })();
+          } else {
+            source = new XYZ({
+              attributions: glSource.attribution,
+              minZoom: glSource.minzoom,
+              maxZoom: 'maxzoom' in glSource ? glSource.maxzoom : 22,
+              tileSize: glSource.tileSize || 512,
+              url: url,
+              urls: glSource.tiles,
+              crossOrigin: 'anonymous'
+            });
+          }
+          source.setTileLoadFunction(function(tile, src) {
+            if (src.indexOf('{bbox-epsg-3857}') != -1) {
+              var bbox = source.getTileGrid().getTileCoordExtent(tile.getTileCoord());
+              src = src.replace('{bbox-epsg-3857}', bbox.toString());
+            }
+            tile.getImage().src = src;
+          });
+          layer = new TileLayer({
+            source: source
           });
         } else if (glSource.type == 'geojson') {
-          url = withPath(glSource.data, path);
+          var data = glSource.data;
+          var features, geoJsonUrl;
+          if (typeof data == 'string') {
+            geoJsonUrl = withPath(data, path);
+          } else {
+            features = geoJsonFormat.readFeatures(data, {featureProjection: 'EPSG:3857'});
+          }
           layer = new VectorLayer({
             source: new VectorSource({
-              format: new GeoJSON(),
-              url: url
+              attributions: glSource.attribution,
+              features: features,
+              format: geoJsonFormat,
+              url: geoJsonUrl
             }),
-            visible: false
+            visible: false,
+            zIndex: i
           });
         }
         glSourceId = id;
