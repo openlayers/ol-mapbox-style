@@ -178,11 +178,11 @@ function setBackground(map, layer) {
     var zoom = map.getView().getZoom();
     if ('background-color' in paint) {
       element.style.backgroundColor =
-          glfun(paint['background-color'], 'interval')(zoom);
+          glfun(paint['background-color'], {function: 'piecewise-constant'})(zoom);
     }
     if ('background-opacity' in paint) {
       element.style.backgroundOpacity =
-          glfun(paint['background-opacity'], 'exponential')(zoom);
+          glfun(paint['background-opacity'], {function: 'interpolated'})(zoom);
     }
     if (layout.visibility == 'none') {
       element.style.backgroundColor = '';
