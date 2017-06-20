@@ -41,7 +41,7 @@ a `"type": "vector"`, `"type": "geojson"` or `"type": "raster"` source.
     Mapbox Style object. When a `source` key is provided, all layers for the
     specified source will be included in the style function. When layer `id`s
     are provided, they must be from layers that use the same source.
--   `path` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)?** Path of the style file. Only required when
+-   `path` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** Path of the style file. Only required when
     a relative path is used with the `"sprite"` property of the style. (optional, default `undefined`)
 
 Returns **[Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)** Promise which will be resolved when the style can be used

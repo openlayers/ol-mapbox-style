@@ -1,3 +1,4 @@
+import 'babel-polyfill';
 import should from 'should/as-function';
 import 'should-approximately-deep';
 import {applyBackground, applyStyle, apply} from '../';
