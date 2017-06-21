@@ -351,7 +351,8 @@ function processStyle(glStyle, map, baseUrl, path, accessToken) {
             tile.getImage().src = src;
           });
           layer = new TileLayer({
-            source: source
+            source: source,
+            visible: glLayer.layout ? glLayer.layout.visibility !== 'none' : true
           });
         } else if (glSource.type == 'geojson') {
           var data = glSource.data;

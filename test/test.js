@@ -132,5 +132,31 @@ describe('ol-mapbox-style', function() {
       });
     });
 
+    it('handles visibility for raster layers', function() {
+      var context = {
+        "version": 8,
+        "name": "states-wms",
+        "sources": {
+          "states": {
+            "type": "raster",
+            "maxzoom": 12,
+            "tileSize": 256,
+            "tiles": ["https://ahocevar.com/geoserver/gwc/service/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image/png&SRS=EPSG:900913&LAYERS=topp:states&STYLES=&WIDTH=256&HEIGHT=256&BBOX={bbox-epsg-3857}"]
+          }
+        },
+        "layers": [
+          {
+            "id": "states-wms",
+            "source": "states",
+            "layout": {
+              "visibility": "none"
+            }
+          }
+        ]
+      };
+      var map = apply(target, context);
+      should(map.getLayers().item(0).get('visible')).be.false();
+    });
+
   });
 });
