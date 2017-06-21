@@ -382,11 +382,11 @@ function processStyle(glStyle, map, baseUrl, path, accessToken) {
 
 /**
  * Loads and applies a Mapbox Style object to an OpenLayers Map.
- * @param {ol.Map|HTMLElement|stribng} map Either an existing OpenLayers Map
+ * @param {ol.Map|HTMLElement|string} map Either an existing OpenLayers Map
  * instance, or a HTML element, or the id of a HTML element that will be the
  * target of a new OpenLayers Map.
- * @param {string} style Url pointing to a Mapbox Style object. When using
- * Mapbox APIs, the url must contain an access token and look like
+ * @param {string|Object} JSON style object or style url pointing to a Mapbox Style object.
+ * When using Mapbox APIs, the url must contain an access token and look like
  * `https://api.mapbox.com/styles/v1/mapbox/bright-v9?access_token=[your_access_token_here]`.
  * @return {ol.Map} The OpenLayers Map instance that will be populated with the
  * contents described in the Mapbox Style object.
@@ -401,24 +401,27 @@ export function apply(map, style) {
     });
   }
 
-  var parts = style.match(spriteRegEx);
-  if (parts) {
-    baseUrl = parts[1];
-    accessToken = parts.length > 2 ? parts[2] : '';
+  if (typeof style === 'string') {
+    var parts = style.match(spriteRegEx);
+    if (parts) {
+      baseUrl = parts[1];
+      accessToken = parts.length > 2 ? parts[2] : '';
+    }
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', style);
+    var a = document.createElement('A');
+    a.href = style;
+    path = a.pathname.split('/').slice(0, -1).join('/') + '/';
+    xhr.addEventListener('load', function() {
+      var glStyle = JSON.parse(xhr.responseText);
+      processStyle(glStyle, map, baseUrl, path, accessToken);
+    });
+    xhr.addEventListener('error', function() {
+      throw new Error('Could not load ' + style);
+    });
+    xhr.send();
+  } else {
+    processStyle(style, map);
   }
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', style);
-  var a = document.createElement('A');
-  a.href = style;
-  path = a.pathname.split('/').slice(0, -1).join('/') + '/';
-  xhr.addEventListener('load', function() {
-    var glStyle = JSON.parse(xhr.responseText);
-    processStyle(glStyle, map, baseUrl, path, accessToken);
-  });
-  xhr.addEventListener('error', function() {
-    throw new Error('Could not load ' + style);
-  });
-  xhr.send();
-
   return map;
 }
