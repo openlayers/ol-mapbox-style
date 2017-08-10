@@ -6,7 +6,7 @@ License: https://raw.githubusercontent.com/boundlessgeo/ol-mapbox-gl-style/maste
 
 import glfun from '@mapbox/mapbox-gl-style-spec/function';
 import mb2css from 'mapbox-to-css-font';
-import getStyleFunction from 'mapbox-to-ol-style';
+import applyStyleFunction from 'mapbox-to-ol-style';
 import WebFont from 'webfontloader';
 import proj from 'ol/proj';
 import tilegrid from 'ol/tilegrid';
@@ -138,15 +138,10 @@ export function applyStyle(layer, glStyle, source, path) {
       spriteImage.src = spriteImageUrl;
     }
 
-    var resolutions;
-    if (layer instanceof VectorTileLayer) {
-      resolutions = layer.getSource().getTileGrid().getResolutions();
-    }
     var style;
     function onChange() {
       if (!style && (!glStyle.sprite || spriteData) && (!availableFonts || availableFonts.length > 0)) {
-        style = getStyleFunction(glStyle, source, resolutions, spriteData, spriteImageUrl, availableFonts);
-        layer.setStyle(style);
+        style = applyStyleFunction(layer, glStyle, source, undefined, spriteData, spriteImageUrl, availableFonts);
         resolve();
       } else if (style) {
         layer.setStyle(style);
