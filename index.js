@@ -291,7 +291,6 @@ function processStyle(glStyle, map, baseUrl, path, accessToken) {
                 maxZoom: 'maxzoom' in glSource ? glSource.maxzoom : 22,
                 minZoom: glSource.minzoom
               }),
-              tilePixelRatio: 8,
               urls: tiles
             }),
             visible: false,
@@ -310,7 +309,6 @@ function processStyle(glStyle, map, baseUrl, path, accessToken) {
                   attributions: tilejson.getAttributions(),
                   format: new MVT(),
                   tileGrid: tilejson.getTileGrid(),
-                  tilePixelRatio: 16,
                   tileUrlFunction: tilejson.getTileUrlFunction()
                 }));
                 Observable.unByKey(key);
