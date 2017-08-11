@@ -305,10 +305,16 @@ function processStyle(glStyle, map, baseUrl, path, accessToken) {
             });
             var key = tilejson.on('change', function() {
               if (tilejson.getState() == 'ready') {
+                var tileJsonTileGrid = tilejson.getTileGrid();
                 layer.setSource(new VectorTileSource({
                   attributions: tilejson.getAttributions(),
                   format: new MVT(),
-                  tileGrid: tilejson.getTileGrid(),
+                  tileGrid: tilegrid.createXYZ({
+                    extent: tilejson.getProjection().getExtent(),
+                    minZoom: tileJsonTileGrid.getMinZoom(),
+                    maxZoom: tileJsonTileGrid.getMaxZoom(),
+                    tileSize: 512
+                  }),
                   tileUrlFunction: tilejson.getTileUrlFunction()
                 }));
                 Observable.unByKey(key);
