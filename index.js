@@ -379,8 +379,9 @@ function processStyle(glStyle, map, baseUrl, path, accessToken) {
  * @param {ol.Map|HTMLElement|string} map Either an existing OpenLayers Map
  * instance, or a HTML element, or the id of a HTML element that will be the
  * target of a new OpenLayers Map.
- * @param {string|Object} JSON style object or style url pointing to a Mapbox Style object.
- * When using Mapbox APIs, the url must contain an access token and look like
+ * @param {string|Object} style JSON style object or style url pointing to a
+ * Mapbox Style object. When using Mapbox APIs, the url must contain an access
+ * token and look like
  * `https://api.mapbox.com/styles/v1/mapbox/bright-v9?access_token=[your_access_token_here]`.
  * @return {ol.Map} The OpenLayers Map instance that will be populated with the
  * contents described in the Mapbox Style object.

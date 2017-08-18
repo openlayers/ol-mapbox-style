@@ -65,9 +65,9 @@ Loads and applies a Mapbox Style object to an OpenLayers Map.
 -   `map` **(ol.Map | [HTMLElement](https://developer.mozilla.org/en-US/docs/Web/HTML/Element) \| [string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String))** Either an existing OpenLayers Map
     instance, or a HTML element, or the id of a HTML element that will be the
     target of a new OpenLayers Map.
--   `style`  
--   `JSON` **([string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) \| [Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object))** style object or style url pointing to a Mapbox Style object.
-    When using Mapbox APIs, the url must contain an access token and look like
+-   `style` **([string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) \| [Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object))** JSON style object or style url pointing to a
+    Mapbox Style object. When using Mapbox APIs, the url must contain an access
+    token and look like
     `https://api.mapbox.com/styles/v1/mapbox/bright-v9?access_token=[your_access_token_here]`.
 
 Returns **ol.Map** The OpenLayers Map instance that will be populated with the
