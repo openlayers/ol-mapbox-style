@@ -215,7 +215,7 @@ function getSourceIdByRef(layers, ref) {
   return sourceId;
 }
 
-function processStyle(glStyle, map, baseUrl, path, accessToken) {
+function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
   var view = map.getView();
   if ('center' in glStyle && !view.getCenter()) {
     view.setCenter(proj.fromLonLat(glStyle.center));
@@ -229,8 +229,12 @@ function processStyle(glStyle, map, baseUrl, path, accessToken) {
       size: map.getSize()
     });
   }
-  if (glStyle.sprite && glStyle.sprite.indexOf('mapbox://') == 0) {
-    glStyle.sprite = baseUrl + '/sprite' + accessToken;
+  if (glStyle.sprite) {
+    if (glStyle.sprite.indexOf('mapbox://') == 0) {
+      glStyle.sprite = baseUrl + '/sprite' + accessToken;
+    } else if (glStyle.sprite.indexOf('http') != 0) {
+      glStyle.sprite = host + path + glStyle.sprite + accessToken;
+    }
   }
 
   var glLayers = glStyle.layers;
@@ -305,11 +309,19 @@ function processStyle(glStyle, map, baseUrl, path, accessToken) {
             });
             var key = tilejson.on('change', function() {
               if (tilejson.getState() == 'ready') {
+                var tileJSONDoc = tilejson.getTileJSON();
+                var tiles = Array.isArray(tileJSONDoc.tiles) ? tileJSONDoc.tiles : [tileJSONDoc.tiles];
+                for (var i = 0, ii = tiles.length; i < ii; ++i) {
+                  var tile = tiles[i];
+                  if (tile.indexOf('http' != 0)) {
+                    tiles[i] = glSource.url + tile;
+                  }
+                }
                 layer.setSource(new VectorTileSource({
                   attributions: tilejson.getAttributions(),
                   format: new MVT(),
                   tileGrid: tilejson.getTileGrid(),
-                  tileUrlFunction: tilejson.getTileUrlFunction()
+                  urls: tiles
                 }));
                 Observable.unByKey(key);
               }
@@ -388,7 +400,7 @@ function processStyle(glStyle, map, baseUrl, path, accessToken) {
  */
 export function apply(map, style) {
 
-  var accessToken, baseUrl, path;
+  var accessToken, baseUrl, host, path;
 
   if (!(map instanceof Map)) {
     map = new Map({
@@ -407,9 +419,10 @@ export function apply(map, style) {
     var a = document.createElement('A');
     a.href = style;
     path = a.pathname.split('/').slice(0, -1).join('/') + '/';
+    host = style.substr(0, style.indexOf(path));
     xhr.addEventListener('load', function() {
       var glStyle = JSON.parse(xhr.responseText);
-      processStyle(glStyle, map, baseUrl, path, accessToken);
+      processStyle(glStyle, map, baseUrl, host, path, accessToken);
     });
     xhr.addEventListener('error', function() {
       throw new Error('Could not load ' + style);
