@@ -122,20 +122,37 @@ export function applyStyle(layer, glStyle, source, path) {
       var sizeFactor = spriteScale == 0.5 ? '@2x' : '';
       var spriteUrl = toSpriteUrl(glStyle.sprite, path, sizeFactor + '.json');
       xhr.open('GET', spriteUrl);
-      xhr.onload = xhr.onerror = function() {
-        if (!xhr.responseText) {
-          reject(new Error('Sprites cannot be loaded from ' + spriteUrl));
+      xhr.onload = xhr.onerror = function () {
+        if (xhr.status != 200 && sizeFactor != '') {
+          //Fallback to default spritesheet
+          var xhr2 = new window.XMLHttpRequest();
+          sizeFactor = '';
+          spriteUrl = toSpriteUrl(glStyle.sprite, path, '.json');
+          xhr2.open('GET', spriteUrl);
+          xhr2.onload = xhr2.onerror = function () {
+            if (!xhr2.responseText) {
+              reject(new Error('Sprites cannot be loaded from ' + spriteUrl));
+            }
+            spriteData = JSON.parse(xhr2.responseText);
+            onChange();
+          };
+          xhr2.send();
+        } else {
+          if (!xhr.responseText) {
+            reject(new Error('Sprites cannot be loaded from ' + spriteUrl));
+          }
+          spriteData = JSON.parse(xhr.responseText);
+          onChange();
         }
-        spriteData = JSON.parse(xhr.responseText);
-        onChange();
+        //make sure we have a valid spritesheet before retrieving image
+        spriteImageUrl = toSpriteUrl(glStyle.sprite, path, sizeFactor + '.png');
+        var spriteImage = document.createElement('IMG');
+        spriteImage.onload = function () {
+          onChange();
+        };
+        spriteImage.src = spriteImageUrl;
       };
       xhr.send();
-      spriteImageUrl = toSpriteUrl(glStyle.sprite, path, sizeFactor + '.png');
-      var spriteImage = document.createElement('IMG');
-      spriteImage.onload = function() {
-        onChange();
-      };
-      spriteImage.src = spriteImageUrl;
     }
 
     var style;
