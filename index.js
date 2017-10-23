@@ -304,6 +304,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
 
         if (glSource.type == 'vector') {
           layer = tiles ? new VectorTileLayer({
+            declutter: true,
             source: new VectorTileSource({
               attributions: glSource.attribution,
               format: new MVT(),
@@ -318,6 +319,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
             zIndex: i
           }) : (function() {
             var layer = new VectorTileLayer({
+              declutter: true,
               visible: false,
               zIndex: i
             });
@@ -330,14 +332,20 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
                 var tiles = Array.isArray(tileJSONDoc.tiles) ? tileJSONDoc.tiles : [tileJSONDoc.tiles];
                 for (var i = 0, ii = tiles.length; i < ii; ++i) {
                   var tile = tiles[i];
-                  if (tile.indexOf('http' != 0)) {
+                  if (tile.indexOf('http') != 0) {
                     tiles[i] = glSource.url + tile;
                   }
                 }
+                var tileGrid = tilejson.getTileGrid();
                 layer.setSource(new VectorTileSource({
                   attributions: tilejson.getAttributions(),
                   format: new MVT(),
-                  tileGrid: tilejson.getTileGrid(),
+                  tileGrid: tilegrid.createXYZ({
+                    minZoom: tileGrid.getMinZoom(),
+                    maxZoom: tileGrid.getMaxZoom(),
+                    extent: tileGrid.getExtent(),
+                    tileSize: 512
+                  }),
                   urls: tiles
                 }));
                 Observable.unByKey(key);
