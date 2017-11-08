@@ -113,46 +113,35 @@ export function applyStyle(layer, glStyle, source, path) {
     if (glStyle.version != 8) {
       reject(new Error('glStyle version 8 required.'));
     }
-    var spriteData;
-    var spriteImageUrl;
-    var spriteScale;
+    var spriteScale, spriteData, spriteImageUrl;
     if (glStyle.sprite) {
       spriteScale = window.devicePixelRatio >= 1.5 ? 0.5 : 1;
-      var xhr = new window.XMLHttpRequest();
       var sizeFactor = spriteScale == 0.5 ? '@2x' : '';
-      var spriteUrl = toSpriteUrl(glStyle.sprite, path, sizeFactor + '.json');
-      xhr.open('GET', spriteUrl);
-      xhr.onload = xhr.onerror = function () {
-        if (xhr.status != 200 && sizeFactor != '') {
-          //Fallback to default spritesheet
-          var xhr2 = new window.XMLHttpRequest();
-          sizeFactor = '';
-          spriteUrl = toSpriteUrl(glStyle.sprite, path, '.json');
-          xhr2.open('GET', spriteUrl);
-          xhr2.onload = xhr2.onerror = function () {
-            if (!xhr2.responseText) {
+
+      var loadSprites = function() {
+        var spriteUrl = toSpriteUrl(glStyle.sprite, path, sizeFactor + '.json');
+        var xhr = new window.XMLHttpRequest();
+        xhr.open('GET', spriteUrl);
+        xhr.onload = xhr.onerror = function() {
+          if (xhr.status != 200 || !xhr.responseText) {
+            if (sizeFactor != '') {
+              // Fallback to low res spritesheet
+              sizeFactor = '';
+              loadSprites();
+            } else {
               reject(new Error('Sprites cannot be loaded from ' + spriteUrl));
             }
-            spriteData = JSON.parse(xhr2.responseText);
+          } else {
+            spriteData = JSON.parse(xhr.responseText);
             onChange();
-          };
-          xhr2.send();
-        } else {
-          if (!xhr.responseText) {
-            reject(new Error('Sprites cannot be loaded from ' + spriteUrl));
           }
-          spriteData = JSON.parse(xhr.responseText);
-          onChange();
-        }
-        //make sure we have a valid spritesheet before retrieving image
-        spriteImageUrl = toSpriteUrl(glStyle.sprite, path, sizeFactor + '.png');
-        var spriteImage = document.createElement('IMG');
-        spriteImage.onload = function () {
-          onChange();
         };
-        spriteImage.src = spriteImageUrl;
+        xhr.send();
+        spriteImageUrl = toSpriteUrl(glStyle.sprite, path, sizeFactor + '.png');
+        onChange();
       };
-      xhr.send();
+
+      loadSprites();
     }
 
     var style;
@@ -164,6 +153,7 @@ export function applyStyle(layer, glStyle, source, path) {
         layer.setStyle(style);
       }
     }
+
     if (layer instanceof VectorTileLayer || layer instanceof VectorLayer) {
       try {
         var layers = glStyle.layers;
