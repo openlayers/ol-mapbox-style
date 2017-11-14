@@ -415,6 +415,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
 export function apply(map, style) {
 
   var accessToken, baseUrl, host, path;
+  accessToken = baseUrl = host = path = '';
 
   if (!(map instanceof Map)) {
     map = new Map({
