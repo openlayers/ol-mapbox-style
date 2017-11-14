@@ -333,7 +333,6 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
                   tileGrid: tilegrid.createXYZ({
                     minZoom: tileGrid.getMinZoom(),
                     maxZoom: tileGrid.getMaxZoom(),
-                    extent: tileGrid.getExtent(),
                     tileSize: 512
                   }),
                   urls: tiles
