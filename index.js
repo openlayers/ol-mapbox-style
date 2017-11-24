@@ -240,7 +240,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
     if (glStyle.sprite.indexOf('mapbox://') == 0) {
       glStyle.sprite = baseUrl + '/sprite' + accessToken;
     } else if (glStyle.sprite.indexOf('http') != 0) {
-      glStyle.sprite = host + path + glStyle.sprite + accessToken;
+      glStyle.sprite = (host ? (host + path) : '') + glStyle.sprite + accessToken;
     }
   }
 
