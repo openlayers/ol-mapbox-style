@@ -7,7 +7,7 @@ License: https://raw.githubusercontent.com/boundlessgeo/ol-mapbox-gl-style/maste
 import glfun from '@mapbox/mapbox-gl-style-spec/function';
 import mb2css from 'mapbox-to-css-font';
 import applyStyleFunction from 'mapbox-to-ol-style';
-import WebFont from 'webfontloader';
+import googleFonts from 'webfont-matcher/lib/fonts/google';
 import proj from 'ol/proj';
 import tilegrid from 'ol/tilegrid';
 import Map from 'ol/map';
@@ -24,48 +24,48 @@ import XYZ from 'ol/source/xyz';
 
 var availableFonts;
 
-function loadFont(fonts, onChange) {
+function loadFont(fonts) {
+  var i, ii;
   if (!Array.isArray(fonts)) {
     var stops = fonts.stops;
     if (stops) {
-      for (var i = 0, ii = stops.length; i < ii; ++i) {
-        loadFont(stops[i][1], onChange);
+      for (i = 0, ii = stops.length; i < ii; ++i) {
+        loadFont(stops[i][1]);
       }
     }
     return;
   }
+  var googleFamilies = googleFonts.getNames();
   var families = fonts.map(function(font) {
-    return mb2css(font, 1).split(' 1px ')[1];
+    return mb2css(font, 1).split(' 1px ')[1].replace(/"/g, '');
   });
-  WebFont.load({
-    google: {
-      families: families
-    },
-    fontactive: function(family) {
-      var index = families.indexOf(family);
-      if (index > -1) {
-        var font = families[index];
-        if (!availableFonts) {
-          availableFonts = [];
-        }
-        if (availableFonts.indexOf(font) == -1) {
-          availableFonts.push(families[index]);
-          onChange();
+  for (i = 0, ii = families.length; i < ii; ++i) {
+    var family = families[i];
+    var font = fonts[i];
+    if (googleFamilies.indexOf(family) !== -1) {
+      if (!availableFonts) {
+        availableFonts = [];
+      }
+      if (availableFonts.indexOf(font) == -1) {
+        availableFonts.push(font);
+        var fontUrl = 'https://fonts.googleapis.com/css?family=' + family.replace(/ /g, '+');
+        if (!document.querySelector('link[href="' + fontUrl + '"]')) {
+          var markup = document.createElement('link');
+          markup.href = fontUrl;
+          markup.rel = 'stylesheet';
+          document.getElementsByTagName('head')[0].appendChild(markup);
         }
       }
-    },
-    inactive: function() {
-      onChange();
-    },
-    timeout: 1500
-  });
+      break;
+    }
+  }
 }
 
-var defaultFont = ['Open Sans Regular', 'Arial Unicode MS Regular'];
+var defaultFont = ['Open Sans Regular', 'Arial Regular'];
 
-function preprocess(layer, onChange) {
+function preprocess(layer) {
   if ('layout' in layer && 'text-field' in layer.layout) {
-    loadFont(layer.layout['text-font'] || defaultFont, onChange);
+    loadFont(layer.layout['text-font'] || defaultFont);
   }
 }
 
@@ -159,7 +159,7 @@ export function applyStyle(layer, glStyle, source, path) {
         var layers = glStyle.layers;
         for (var i = 0, ii = layers.length; i < ii; ++i) {
           if (typeof source == 'string' && layers[i].source == source || source.indexOf(layers[i].id) >= 0) {
-            preprocess(layers[i], onChange);
+            preprocess(layers[i]);
           }
         }
         onChange();
