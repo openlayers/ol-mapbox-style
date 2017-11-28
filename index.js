@@ -179,8 +179,11 @@ function setBackground(map, layer) {
     var element = map.getTargetElement();
     var zoom = map.getView().getZoom();
     if ('background-color' in paint) {
-      element.style.backgroundColor =
-          glfun(paint['background-color'], {function: 'piecewise-constant', type: 'color'})(zoom);
+      var bg = glfun(paint['background-color'], {function: 'interpolated', type: 'color'})(zoom);
+      if (Array.isArray(bg)) {
+        bg = 'rgba(' + bg[0] * 255 + ',' + bg[1] * 255 + ',' + bg[2] * 255 + ',' + (bg[3] ? bg[3] : 1) + ')';
+      }
+      element.style.backgroundColor = bg;
     }
     if ('background-opacity' in paint) {
       element.style.backgroundOpacity =
