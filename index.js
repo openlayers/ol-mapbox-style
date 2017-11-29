@@ -174,9 +174,12 @@ export function applyStyle(layer, glStyle, source, path) {
 
 function setBackground(map, layer) {
   function updateStyle() {
+    var element = map.getTargetElement();
+    if (!element) {
+      return;
+    }
     var layout = layer.layout || {};
     var paint = layer.paint || {};
-    var element = map.getTargetElement();
     var zoom = map.getView().getZoom();
     if ('background-color' in paint) {
       var bg = glfun(paint['background-color'], {function: 'interpolated', type: 'color'})(zoom);
