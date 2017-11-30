@@ -228,12 +228,13 @@ function getSourceIdByRef(layers, ref) {
   return sourceId;
 }
 
+var hasView = true;
 function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
   var view = map.getView();
-  if ('center' in glStyle && !view.getCenter()) {
+  if ('center' in glStyle && !hasView) {
     view.setCenter(proj.fromLonLat(glStyle.center));
   }
-  if ('zoom' in glStyle && view.getZoom() == undefined) {
+  if ('zoom' in glStyle && !hasView) {
     view.setZoom(glStyle.zoom);
   }
   if (!('zoom' in glStyle || 'center' in glStyle)) {
@@ -424,6 +425,7 @@ export function apply(map, style) {
   accessToken = baseUrl = host = path = '';
 
   if (!(map instanceof Map)) {
+    hasView = false;
     map = new Map({
       target: map
     });
