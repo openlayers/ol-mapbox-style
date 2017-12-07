@@ -58,7 +58,23 @@ Applies properties of the Mapbox Style's first `background` layer to the map.
 
 ### apply
 
-Loads and applies a Mapbox Style object to an OpenLayers Map.
+Loads and applies a Mapbox Style object to an OpenLayers Map. This includes
+the map background, the layers, the center and the zoom.
+
+The center and zoom will only be set if present in the Mapbox Style document,
+and if not already set on the OpenLayers map.
+
+Layers will be added to the OpenLayers map, without affecting any layers that
+might already be set on the map.
+
+Layers added by `apply()` will have two additional properties:
+
+-   `mapbox-source`: The `id` of the Mapbox Style document's source that the
+    OpenLayers layer was created from. Usually `apply()` creates one
+    OpenLayers layer per Mapbox Style source, unless the layer stack has
+    layers from different sources in between.
+-   `mapbox-layers`: The `id`s of the Mapbox Style document's layers that are
+    included in the OpenLayers layer.
 
 **Parameters**
 
@@ -69,6 +85,11 @@ Loads and applies a Mapbox Style object to an OpenLayers Map.
     Mapbox Style object. When using Mapbox APIs, the url must contain an access
     token and look like
     `https://api.mapbox.com/styles/v1/mapbox/bright-v9?access_token=[your_access_token_here]`.
+    When passed as JSON style object, all OpenLayers layers created by `apply()`
+    will be immediately available, but they may not have a source yet (i.e. when
+    they are defined by a TileJSON url in the Mapbox Style document). When passed
+    as style url, layers will be added to the map when the Mapbox Style docukment
+    is loaded and parsed.
 
 Returns **ol.Map** The OpenLayers Map instance that will be populated with the
 contents described in the Mapbox Style object.
