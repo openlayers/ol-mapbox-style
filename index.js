@@ -184,7 +184,11 @@ function setBackground(map, layer) {
     if ('background-color' in paint) {
       var bg = glfun(paint['background-color'], {function: 'interpolated', type: 'color'})(zoom);
       if (Array.isArray(bg)) {
-        bg = 'rgba(' + bg[0] * 255 + ',' + bg[1] * 255 + ',' + bg[2] * 255 + ',' + (bg[3] ? bg[3] : 1) + ')';
+        bg = 'rgba(' +
+            Math.round(bg[0] * 255) + ',' +
+            Math.round(bg[1] * 255) + ',' +
+            Math.round(bg[2] * 255) + ',' +
+            (bg[3] ? bg[3] : 1) + ')';
       }
       element.style.backgroundColor = bg;
     }
