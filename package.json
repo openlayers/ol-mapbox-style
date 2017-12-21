@@ -36,6 +36,10 @@
     {
       "name": "Torben Barsballe",
       "email": "tbarsballe@boundlessgeo.com"
+    },
+    {
+      "name": "Petr Sloup",
+      "email": "petr.sloup@klokantech.com"
     }
   ],
   "license": "BSD-2-Clause",
