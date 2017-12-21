@@ -304,21 +304,26 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
         }
 
         if (glSource.type == 'vector') {
-          layer = tiles ? new VectorTileLayer({
-            declutter: true,
-            source: new VectorTileSource({
-              attributions: glSource.attribution,
-              format: new MVT(),
-              tileGrid: tilegrid.createXYZ({
-                tileSize: 512,
-                maxZoom: 'maxzoom' in glSource ? glSource.maxzoom : 22,
-                minZoom: glSource.minzoom
+          layer = tiles ? (function() {
+            var tileGrid = tilegrid.createXYZ({
+              tileSize: 512,
+              maxZoom: 'maxzoom' in glSource ? glSource.maxzoom : 22,
+              minZoom: glSource.minzoom
+            });
+            return new VectorTileLayer({
+              declutter: true,
+              maxResolution: tileGrid.getMinZoom() > 0 ?
+                tileGrid.getResolution(tileGrid.getMinZoom()) : undefined,
+              source: new VectorTileSource({
+                attributions: glSource.attribution,
+                format: new MVT(),
+                tileGrid: tileGrid,
+                urls: tiles
               }),
-              urls: tiles
-            }),
-            visible: false,
-            zIndex: i
-          }) : (function() {
+              visible: false,
+              zIndex: i
+            });
+          })() : (function() {
             var layer = new VectorTileLayer({
               declutter: true,
               visible: false,
@@ -348,6 +353,10 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
                   }),
                   urls: tiles
                 }));
+                if (tileGrid.getMinZoom() > 0) {
+                  layer.setMaxResolution(
+                    tileGrid.getResolution(tileGrid.getMinZoom()));
+                }
                 Observable.unByKey(key);
               }
             });
