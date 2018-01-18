@@ -1,6 +1,6 @@
 {
   "name": "ol-mapbox-style",
-  "version": "2.9.1",
+  "version": "2.10.0",
   "description": "Create OpenLayers maps from Mapbox Style objects",
   "main": "index.js",
   "repository": {
@@ -54,8 +54,8 @@
   "dependencies": {
     "@mapbox/mapbox-gl-style-spec": "^9.0.1",
     "mapbox-to-css-font": "^2.1.0",
-    "mapbox-to-ol-style": "^3.3.0",
-    "ol": "^4.6.2",
+    "mapbox-to-ol-style": "^3.4.0",
+    "ol": "^4.6.4",
     "webfont-matcher": "^1.1.0"
   },
   "devDependencies": {
