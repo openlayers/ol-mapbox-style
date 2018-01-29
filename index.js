@@ -241,7 +241,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
   if ('zoom' in glStyle && !hasView) {
     view.setZoom(glStyle.zoom);
   }
-  if (!('zoom' in glStyle || 'center' in glStyle)) {
+  if (!('zoom' in glStyle || 'center' in glStyle) && !hasView) {
     view.fit(view.getProjection().getExtent(), {
       nearest: true,
       size: map.getSize()
