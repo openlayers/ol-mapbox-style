@@ -232,16 +232,15 @@ function getSourceIdByRef(layers, ref) {
   return sourceId;
 }
 
-var hasView = true;
 function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
   var view = map.getView();
-  if ('center' in glStyle && !hasView) {
+  if ('center' in glStyle && !view.getCenter()) {
     view.setCenter(proj.fromLonLat(glStyle.center));
   }
-  if ('zoom' in glStyle && !hasView) {
+  if ('zoom' in glStyle && view.getZoom() === undefined) {
     view.setZoom(glStyle.zoom);
   }
-  if (!('zoom' in glStyle || 'center' in glStyle) && !hasView) {
+  if (!view.getCenter() || view.getZoom() === undefined ) {
     view.fit(view.getProjection().getExtent(), {
       nearest: true,
       size: map.getSize()
@@ -460,7 +459,6 @@ export function apply(map, style) {
   accessToken = baseUrl = host = path = '';
 
   if (!(map instanceof Map)) {
-    hasView = false;
     map = new Map({
       target: map
     });
