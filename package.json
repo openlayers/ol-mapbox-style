@@ -47,7 +47,7 @@
     "prepublish": "npm run doc && npm run build",
     "build": "mkdirp dist && browserify -g [ babelify ] -p [ standalonify --name olms --deps [ null --ol/observable ol.Observable --ol/proj ol.proj --ol/tilegrid ol.tilegrid --ol/map ol.Map --ol/format/geojson ol.format.GeoJSON --ol/format/mvt ol.format.MVT --ol/layer/tile ol.layer.Tile --ol/layer/vector ol.layer.Vector --ol/layer/vectortile ol.layer.VectorTile --ol/source/tilejson ol.source.TileJSON --ol/source/vector ol.source.Vector --ol/source/xyz ol.source.XYZ --ol/source/vectortile ol.source.VectorTile --ol/style/style ol.style.Style --ol/style/fill ol.style.Fill --ol/style/stroke ol.style.Stroke --ol/style/circle ol.style.Circle --ol/style/icon ol.style.Icon --ol/style/text ol.style.Text ] ] index.js > dist/olms.js",
     "doc": "documentation readme -s API index.js",
-    "pretest": "eslint src & npm run test-bundle",
+    "pretest": "eslint index.js test example & npm run test-bundle",
     "test": "phantomjs --local-to-remote-url-access=true ./node_modules/mocha-phantomjs-core/mocha-phantomjs-core.js test/index.html spec '{\"useColors\":true, \"ignoreResourceErrors\": true}'",
     "test-bundle": "browserify -g [ babelify ] test/test.js > test/bundle.js"
   },
