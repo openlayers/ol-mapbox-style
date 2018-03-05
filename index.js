@@ -22,6 +22,8 @@ import VectorSource from 'ol/source/vector';
 import VectorTileSource from 'ol/source/vectortile';
 import XYZ from 'ol/source/xyz';
 
+import fetch from 'isomorphic-fetch';
+
 var availableFonts;
 
 function loadFont(fonts) {
@@ -117,31 +119,31 @@ export function applyStyle(layer, glStyle, source, path) {
     if (glStyle.sprite) {
       spriteScale = window.devicePixelRatio >= 1.5 ? 0.5 : 1;
       var sizeFactor = spriteScale == 0.5 ? '@2x' : '';
+      var spriteUrl = toSpriteUrl(glStyle.sprite, path, sizeFactor + '.json');
 
-      var loadSprites = function() {
-        var spriteUrl = toSpriteUrl(glStyle.sprite, path, sizeFactor + '.json');
-        var xhr = new window.XMLHttpRequest();
-        xhr.open('GET', spriteUrl);
-        xhr.onload = xhr.onerror = function() {
-          if (xhr.status != 200 || !xhr.responseText) {
-            if (sizeFactor != '') {
-              // Fallback to low res spritesheet
-              sizeFactor = '';
-              loadSprites();
-            } else {
-              reject(new Error('Sprites cannot be loaded from ' + spriteUrl));
-            }
-          } else {
-            spriteData = JSON.parse(xhr.responseText);
-            onChange();
+      fetch(spriteUrl)
+        .then(function(response) {
+          // if the response is ready return the JSON promise
+          if (response.status === 200) {
+            return response.json();
+          } else if (sizeFactor !== '') {
+            // return the JSON promise for the low-resolution sprites.
+            sizeFactor = '';
+            spriteUrl = toSpriteUrl(glStyle.sprite, path, '.json');
+            return fetch(spriteUrl).then(r => r.json());
           }
-        };
-        xhr.send();
-        spriteImageUrl = toSpriteUrl(glStyle.sprite, path, sizeFactor + '.png');
-        onChange();
-      };
-
-      loadSprites();
+        })
+        .then(function(spritesJson) {
+          if (spritesJson === undefined) {
+            throw 'No sprites found.';
+          }
+          spriteData = spritesJson;
+          spriteImageUrl = toSpriteUrl(glStyle.sprite, path, sizeFactor + '.png');
+          onChange();
+        })
+        .catch(function(err) {
+          reject(new Error('Sprites cannot be loaded from ' + spriteUrl));
+        });
     }
 
     var style;
