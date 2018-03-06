@@ -12,6 +12,7 @@ Commit the change to master.
 
     git add package.json
     git commit -m "Set version to 2.11.0"
+    git push origin master
 
 ### Create and checkout a release branch
 
