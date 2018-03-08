@@ -126,7 +126,6 @@ describe('ol-mapbox-style', function() {
           var source = layer.getSource();
           should(source).be.instanceof(VectorTileSource);
           should(layer.getStyle()).be.a.Function();
-          should(source.getAttributions()[0].getHTML()).equal('Tegola OSM');
           done();
         });
       });
