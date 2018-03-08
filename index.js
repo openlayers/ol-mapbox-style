@@ -450,7 +450,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
  * When passed as JSON style object, all OpenLayers layers created by `apply()`
  * will be immediately available, but they may not have a source yet (i.e. when
  * they are defined by a TileJSON url in the Mapbox Style document). When passed
- * as style url, layers will be added to the map when the Mapbox Style docukment
+ * as style url, layers will be added to the map when the Mapbox Style document
  * is loaded and parsed.
  * @return {ol.Map} The OpenLayers Map instance that will be populated with the
  * contents described in the Mapbox Style object.
