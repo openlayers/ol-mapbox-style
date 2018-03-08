@@ -121,7 +121,7 @@ export function applyStyle(layer, glStyle, source, path) {
       var sizeFactor = spriteScale == 0.5 ? '@2x' : '';
       var spriteUrl = toSpriteUrl(glStyle.sprite, path, sizeFactor + '.json');
 
-      fetch(spriteUrl)
+      fetch(spriteUrl, {credentials: 'same-origin'})
         .then(function(response) {
           // if the response is ready return the JSON promise
           if (response.status === 200) {
@@ -130,7 +130,7 @@ export function applyStyle(layer, glStyle, source, path) {
             // return the JSON promise for the low-resolution sprites.
             sizeFactor = '';
             spriteUrl = toSpriteUrl(glStyle.sprite, path, '.json');
-            return fetch(spriteUrl).then(r => r.json());
+            return fetch(spriteUrl, {credentials: 'same-origin'}).then(r => r.json());
           }
         })
         .then(function(spritesJson) {
