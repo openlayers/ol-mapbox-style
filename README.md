@@ -36,15 +36,15 @@ a `"type": "vector"`, `"type": "geojson"` or `"type": "raster"` source.
 **Parameters**
 
 -   `layer` **ol.layer.VectorTile** OpenLayers layer.
--   `glStyle` **([string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) \| [Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object))** Mapbox Style object.
--   `source` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** `source` key or an array of layer `id`s from the
+-   `glStyle` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) \| [Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object))** Mapbox Style object.
+-   `source` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** `source` key or an array of layer `id`s from the
     Mapbox Style object. When a `source` key is provided, all layers for the
     specified source will be included in the style function. When layer `id`s
     are provided, they must be from layers that use the same source.
--   `path` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** Path of the style file. Only required when
+-   `path` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Path of the style file. Only required when
     a relative path is used with the `"sprite"` property of the style. (optional, default `undefined`)
 
-Returns **[Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)** Promise which will be resolved when the style can be used
+Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** Promise which will be resolved when the style can be used
 for rendering.
 
 ### applyBackground
@@ -54,7 +54,7 @@ Applies properties of the Mapbox Style's first `background` layer to the map.
 **Parameters**
 
 -   `map` **ol.Map** OpenLayers Map.
--   `glStyle` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** Mapbox Style object.
+-   `glStyle` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Mapbox Style object.
 
 ### apply
 
@@ -78,10 +78,10 @@ Layers added by `apply()` will have two additional properties:
 
 **Parameters**
 
--   `map` **(ol.Map | [HTMLElement](https://developer.mozilla.org/en-US/docs/Web/HTML/Element) \| [string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String))** Either an existing OpenLayers Map
+-   `map` **(ol.Map | [HTMLElement](https://developer.mozilla.org/docs/Web/HTML/Element) \| [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String))** Either an existing OpenLayers Map
     instance, or a HTML element, or the id of a HTML element that will be the
     target of a new OpenLayers Map.
--   `style` **([string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) \| [Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object))** JSON style object or style url pointing to a
+-   `style` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) \| [Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object))** JSON style object or style url pointing to a
     Mapbox Style object. When using Mapbox APIs, the url must contain an access
     token and look like
     `https://api.mapbox.com/styles/v1/mapbox/bright-v9?access_token=[your_access_token_here]`.

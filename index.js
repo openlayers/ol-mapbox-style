@@ -22,8 +22,6 @@ import VectorSource from 'ol/source/vector';
 import VectorTileSource from 'ol/source/vectortile';
 import XYZ from 'ol/source/xyz';
 
-import fetch from 'isomorphic-fetch';
-
 var availableFonts;
 
 function loadFont(fonts) {

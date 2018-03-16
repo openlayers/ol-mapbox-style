@@ -1,6 +1,6 @@
 {
   "name": "ol-mapbox-style",
-  "version": "2.10.3",
+  "version": "2.10.4",
   "description": "Create OpenLayers maps from Mapbox Style objects",
   "main": "index.js",
   "repository": {
@@ -69,7 +69,6 @@
     "documentation": "^4.0.0-rc.1",
     "eslint": "^3.18.0",
     "eslint-config-openlayers": "^7.0.0",
-    "isomorphic-fetch": "^2.2.1",
     "json5": "^0.5.1",
     "mapbox-gl-styles": "^2.0.2",
     "mkdirp": "^0.5.1",
