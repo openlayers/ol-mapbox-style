@@ -279,6 +279,13 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
   }
 
   var glLayer, glSource, glSourceId, id, layer, mapid, url;
+  var tileLoadFunction = function(tile, src) {
+    if (src.indexOf('{bbox-epsg-3857}') != -1) {
+      var bbox = this.getTileGrid().getTileCoordExtent(tile.getTileCoord());
+      src = src.replace('{bbox-epsg-3857}', bbox.toString());
+    }
+    tile.getImage().src = src;
+  };
   for (var i = 0, ii = glLayers.length; i < ii; ++i) {
     glLayer = glLayers[i];
     if (glLayer.type == 'background') {
@@ -382,13 +389,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
               crossOrigin: 'anonymous'
             });
           }
-          source.setTileLoadFunction(function(tile, src) {
-            if (src.indexOf('{bbox-epsg-3857}') != -1) {
-              var bbox = source.getTileGrid().getTileCoordExtent(tile.getTileCoord());
-              src = src.replace('{bbox-epsg-3857}', bbox.toString());
-            }
-            tile.getImage().src = src;
-          });
+          source.setTileLoadFunction(tileLoadFunction);
           layer = new TileLayer({
             source: source,
             visible: glLayer.layout ? glLayer.layout.visibility !== 'none' : true
