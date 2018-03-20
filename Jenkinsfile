@@ -71,6 +71,7 @@ node {
                                               -Dsonar.dependencyCheck.reportPath=dependency-check-report.xml \
                                               -Dsonar.dependencyCheck.htmlReportPath=dependency-check-report.html \
                                               -Dsonar.sources=. \
+                                              -Dsonar.coverage.exclusions=coverage,env-setup.js,__tests__,webpack.config.js \
                                               -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info'
           """
         }
