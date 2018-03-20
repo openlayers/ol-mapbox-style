@@ -10,11 +10,17 @@ import VectorTileSource from 'ol/source/vectortile';
 import proj from 'ol/proj';
 import tilegrid from 'ol/tilegrid';
 import brightV9 from '../node_modules/mapbox-gl-styles/styles/bright-v9.json';
+import WmsJson from '../example/data/wms.json';
+import GeoJson from '../example/data/geojson.json';
+import GeoJsonInline from '../example/data/geojson-inline.json';
+import TileJson from '../example/data/tilejson.json';
+
+import 'isomorphic-fetch';
+import nock from 'nock';
 
 delete brightV9.sprite;
 
 describe('ol-mapbox-style', function() {
-
   describe('applyBackground', function() {
     it('applies a background to a map container', function() {
       var target = document.createElement('div');
@@ -40,7 +46,7 @@ describe('ol-mapbox-style', function() {
     });
   });
 
-  describe('apply', function(done) {
+  describe('apply', function() {
 
     var target;
     beforeEach(function() {
@@ -48,17 +54,22 @@ describe('ol-mapbox-style', function() {
     });
 
     it('returns a map instance and adds a layer with a style function', function(done) {
-      var style = 'data:application/json;base64,' + btoa(JSON.stringify(brightV9));
-      var map = apply(target, style);
+      var map = apply(document.createElement('div'), brightV9);
       should(map instanceof Map).be.ok();
-      map.getLayers().once('add', function() {
+
+      setTimeout(function() {
         should(map.getLayers().item(0).getStyle()).be.a.Function();
         done();
-      });
+      }, 200);
     });
 
     it('handles raster sources', function(done) {
-      var map = apply(target, '../example/data/wms.json');
+      nock('http://dummy')
+        .get('/wms.json')
+        .reply(200, WmsJson);
+
+      var map = apply(document.createElement('div'), 'http://dummy/wms.json');
+
       var count = 0;
       map.getLayers().on('add', function() {
         ++count;
@@ -76,11 +87,15 @@ describe('ol-mapbox-style', function() {
           should(wms.getSource().getTileGrid().getMaxZoom()).eql(12);
           done();
         }
-      });
+      }, 200);
     });
 
     it('handles geojson sources', function(done) {
-      var map = apply(target, '../example/data/geojson.json');
+      nock('http://dummy')
+        .get('/geojson.json')
+        .reply(200, GeoJson);
+
+      var map = apply(document.createElement('div'), 'http://dummy/geojson.json');
       map.getLayers().once('add', function(e) {
         var layer = e.element;
         var source = layer.getSource();
@@ -91,7 +106,7 @@ describe('ol-mapbox-style', function() {
     });
 
     it('handles geojson sources with inline GeoJSON', function(done) {
-      var map = new Map({target: target});
+      var map = new Map({target: document.createElement('div')});
       map.getLayers().once('add', function(e) {
         var layer = e.element;
         var source = layer.getSource();
@@ -100,11 +115,24 @@ describe('ol-mapbox-style', function() {
         should(layer.getStyle()).be.a.Function();
         done();
       });
-      apply(map, '../example/data/geojson-inline.json');
+
+      nock('http://dummy')
+        .get('/geojson-inline.json')
+        .reply(200, Object.assign({}, GeoJsonInline, {sprite: 'http://dummy/sprite'}))
+        .get('/sprite.png')
+        .reply(200, '')
+        .get('/sprite.json')
+        .reply(200, {});
+
+      apply(map, 'http://dummy/geojson-inline.json');
     });
 
     it('handles raster sources from TileJSON', function(done) {
-      var map = apply(target, '../example/data/tilejson.json');
+      nock('http://dummy')
+        .get('/tilejson.json')
+        .reply(200, TileJson);
+
+      var map = apply(document.createElement('div'), 'http://dummy/tilejson.json');
       map.getLayers().once('add', function(e) {
         var source = e.element.getSource();
         should(source).be.instanceof(TileSource);
@@ -117,18 +145,36 @@ describe('ol-mapbox-style', function() {
     });
 
     it('handles vector sources from TileJSON', function(done) {
-      var map = apply(target, 'https://rawgit.com/PetersonGIS/CamoStyle/b783aadd625bf0d874f77daa6c597b585f0b63fd/camo3d.json');
-      map.getLayers().once('add', function(e) {
-        should(proj.toLonLat(map.getView().getCenter())).be.approximatelyDeep([7.1434, 50.7338], 1e-4);
-        should(map.getView().getZoom()).equal(14.11);
-        var layer = e.element;
-        layer.once('change:source', function() {
-          var source = layer.getSource();
-          should(source).be.instanceof(VectorTileSource);
-          should(layer.getStyle()).be.a.Function();
-          done();
+      var style_url = 'https://rawgit.com/PetersonGIS/CamoStyle/b783aadd625bf0d874f77daa6c597b585f0b63fd/camo3d.json';
+      fetch(style_url)
+        .then(r => r.json())
+        .then((styleDoc) => {
+          // the sprite and glyph settings cause unnecessary fetches.
+          delete styleDoc.sprite;
+          delete styleDoc.glyphs;
+
+          // setup the style doc as a nock
+          nock('http://dummy')
+            .get('/camo3d.json')
+            .reply(200, styleDoc);
+
+          var map = apply(document.createElement('div'), 'http://dummy/camo3d.json');
+
+          map.getLayers().once('add', function(e) {
+            should(proj.toLonLat(map.getView().getCenter())).be.approximatelyDeep([7.1434, 50.7338], 1e-4);
+            should(map.getView().getZoom()).equal(14.11);
+            var layer = e.element;
+            layer.once('change:source', function() {
+              var source = layer.getSource();
+              should(source).be.instanceof(VectorTileSource);
+              should(layer.getStyle()).be.a.Function();
+            });
+            done();
+          });
+        })
+        .catch(err => {
+          console.error('Error', err);
         });
-      });
     });
 
     it('handles visibility for raster layers', function() {
