@@ -40,6 +40,7 @@ node {
                                               -Dsonar.github.pullRequest=${env.CHANGE_ID} \
                                               -Dsonar.projectKey=ol-mapbox-style \
                                               -Dsonar.sources=. \
+                                              -Dsonar.language=js \
                                               -Dsonar.projectName=ol-mapbox-style \
                                               -Dsonar.github.repository=boundlessgeo/ol-mapbox-style \
                                               -Dsonar.github.oauth=${SONAR_GITHUB_TOKEN} \
@@ -65,6 +66,7 @@ node {
                                               -Dsonar.login=$SONAR_TOKEN \
                                               -Dsonar.projectKey=ol-mapbox-style \
                                               -Dsonar.projectVersion=${projectVersion} \
+                                              -Dsonar.language=js \
                                               -Dsonar.projectName=ol-mapbox-style \
                                               -Dsonar.dependencyCheck.reportPath=dependency-check-report.xml \
                                               -Dsonar.dependencyCheck.htmlReportPath=dependency-check-report.html \
