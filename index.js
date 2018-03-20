@@ -82,8 +82,8 @@ function toSpriteUrl(url, path, extension) {
   url = withPath(url, path);
   var parts = url.match(spriteRegEx);
   return parts ?
-      parts[1] + extension + (parts.length > 2 ? parts[2] : '') :
-      url + extension;
+    parts[1] + extension + (parts.length > 2 ? parts[2] : '') :
+    url + extension;
 }
 
 /**
@@ -140,6 +140,7 @@ export function applyStyle(layer, glStyle, source, path) {
           onChange();
         })
         .catch(function(err) {
+          console.error(err);
           reject(new Error('Sprites cannot be loaded from ' + spriteUrl));
         });
     }
@@ -470,20 +471,25 @@ export function apply(map, style) {
       baseUrl = parts[1];
       accessToken = parts.length > 2 ? parts[2] : '';
     }
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', style);
-    var a = document.createElement('A');
-    a.href = style;
-    path = a.pathname.split('/').slice(0, -1).join('/') + '/';
-    host = style.substr(0, style.indexOf(path));
-    xhr.addEventListener('load', function() {
-      var glStyle = JSON.parse(xhr.responseText);
-      processStyle(glStyle, map, baseUrl, host, path, accessToken);
-    });
-    xhr.addEventListener('error', function() {
-      throw new Error('Could not load ' + style);
-    });
-    xhr.send();
+
+    fetch(style, {
+      credentials: 'same-origin'
+    })
+      .then(function(response) {
+        return response.json();
+      })
+      .then(function(glStyle) {
+        var a = document.createElement('A');
+        a.href = style;
+        path = a.pathname.split('/').slice(0, -1).join('/') + '/';
+        host = style.substr(0, style.indexOf(path));
+
+        processStyle(glStyle, map, baseUrl, host, path, accessToken);
+      })
+      .catch(function(err) {
+        console.error(err);
+        throw new Error('Could not load ' + style);
+      });
   } else {
     processStyle(style, map);
   }

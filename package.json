@@ -44,39 +44,60 @@
   ],
   "license": "BSD-2-Clause",
   "scripts": {
-    "prepublish": "npm run doc && npm run build",
-    "build": "mkdirp dist && browserify -g [ babelify ] -p [ standalonify --name olms --deps [ null --ol/observable ol.Observable --ol/proj ol.proj --ol/tilegrid ol.tilegrid --ol/map ol.Map --ol/format/geojson ol.format.GeoJSON --ol/format/mvt ol.format.MVT --ol/layer/tile ol.layer.Tile --ol/layer/vector ol.layer.Vector --ol/layer/vectortile ol.layer.VectorTile --ol/source/tilejson ol.source.TileJSON --ol/source/vector ol.source.Vector --ol/source/xyz ol.source.XYZ --ol/source/vectortile ol.source.VectorTile --ol/style/style ol.style.Style --ol/style/fill ol.style.Fill --ol/style/stroke ol.style.Stroke --ol/style/circle ol.style.Circle --ol/style/icon ol.style.Icon --ol/style/text ol.style.Text ] ] index.js > dist/olms.js",
+    "start": "webpack-dev-server --config ./webpack.config.js",
+    "prepublish": "npm run doc",
+    "build": "webpack-cli --config ./webpack.config.js",
     "doc": "documentation readme -s API index.js",
-    "pretest": "eslint index.js test example & npm run test-bundle",
-    "test": "phantomjs --local-to-remote-url-access=true ./node_modules/mocha-phantomjs-core/mocha-phantomjs-core.js test/index.html spec '{\"useColors\":true, \"ignoreResourceErrors\": true}'",
-    "test-bundle": "browserify -g [ babelify ] test/test.js > test/bundle.js"
+    "lint": "eslint __test__ index.js webpack.config.js",
+    "test": "jest",
+    "cover": "jest --coverage"
   },
   "dependencies": {
     "@mapbox/mapbox-gl-style-spec": "^9.0.1",
+    "jest": "^20.0.4",
+    "jest-cli": "^21.2.1",
     "mapbox-to-css-font": "^2.1.0",
     "mapbox-to-ol-style": "^3.4.0",
     "ol": "^4.6.4",
     "webfont-matcher": "^1.1.0"
   },
   "devDependencies": {
-    "babel-generator": "^6.26.0",
-    "babel-helpers": "^6.24.1",
-    "babel-plugin-transform-es2015-modules-commonjs": "^6.26.0",
-    "babel-polyfill": "^6.26.0",
-    "babel-preset-es2015": "^6.24.1",
-    "babelify": "^7.3.0",
-    "browserify": "^14.4.0",
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
+    "babel-jest": "^23.0.0-alpha.0",
+    "babel-loader": "^7.1.4",
+    "babel-preset-env": "^1.6.1",
+    "canvas": "^1.6.8",
     "documentation": "^4.0.0-rc.1",
-    "eslint": "^3.18.0",
+    "eslint": "^4.10.0",
     "eslint-config-openlayers": "^7.0.0",
+    "isomorphic-fetch": "^2.2.1",
     "json5": "^0.5.1",
     "mapbox-gl-styles": "^2.0.2",
     "mkdirp": "^0.5.1",
-    "mocha": "^3.4.2",
-    "mocha-phantomjs-core": "^2.1.1",
-    "phantomjs-prebuilt": "^2.1.15",
+    "nock": "^9.2.3",
+    "regenerator-runtime": "^0.11.1",
     "should": "^11.2.1",
     "should-approximately-deep": "^1.1.0",
-    "standalonify": "^0.1.3"
+    "webpack": "^4.1.1",
+    "webpack-cli": "^2.0.12",
+    "webpack-dev-server": "^3.1.1"
+  },
+  "jest": {
+    "setupFiles": [
+      "<rootDir>/env-setup.js"
+    ],
+    "transformIgnorePatterns": [
+      "/node_modules/(?!(ol|mapbox-to-ol-style|ol-mapbox-style)/).*/"
+    ],
+    "coveragePathIgnorePatterns": [
+      "env-setup.js",
+      "/node_modules/"
+    ]
+  },
+  "babel": {
+    "presets": [
+      "env"
+    ]
   }
 }
