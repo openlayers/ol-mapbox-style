@@ -40,6 +40,7 @@ node {
                                               -Dsonar.github.pullRequest=${env.CHANGE_ID} \
                                               -Dsonar.projectKey=ol-mapbox-style \
                                               -Dsonar.sources=. \
+                                              -Dsonar.exclusions=coverage \
                                               -Dsonar.language=js \
                                               -Dsonar.projectName=ol-mapbox-style \
                                               -Dsonar.github.repository=boundlessgeo/ol-mapbox-style \
@@ -71,6 +72,7 @@ node {
                                               -Dsonar.dependencyCheck.reportPath=dependency-check-report.xml \
                                               -Dsonar.dependencyCheck.htmlReportPath=dependency-check-report.html \
                                               -Dsonar.sources=. \
+                                              -Dsonar.exclusions=coverage \
                                               -Dsonar.coverage.exclusions=coverage,env-setup.js,__tests__,webpack.config.js \
                                               -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info'
           """
