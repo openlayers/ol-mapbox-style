@@ -49,6 +49,7 @@
     "build": "webpack-cli --config ./webpack.config.js",
     "doc": "documentation readme -s API index.js",
     "lint": "eslint __test__ index.js webpack.config.js",
+    "pretest": "npm run lint",
     "test": "jest",
     "cover": "jest --coverage"
   },
