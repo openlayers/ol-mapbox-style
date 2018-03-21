@@ -49,17 +49,18 @@
     "build": "webpack-cli --config ./webpack.config.js",
     "doc": "documentation readme -s API index.js",
     "lint": "eslint __test__ index.js webpack.config.js",
+    "pretest": "npm run lint",
     "test": "jest",
     "cover": "jest --coverage"
   },
   "dependencies": {
     "@mapbox/mapbox-gl-style-spec": "^9.0.1",
-    "jest": "^20.0.4",
-    "jest-cli": "^21.2.1",
     "mapbox-to-css-font": "^2.1.0",
     "mapbox-to-ol-style": "^3.4.0",
-    "ol": "^4.6.4",
     "webfont-matcher": "^1.1.0"
+  },
+  "peerDependencies": {
+    "ol": "^5.0.0-beta.9"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
@@ -72,10 +73,13 @@
     "eslint": "^4.10.0",
     "eslint-config-openlayers": "^7.0.0",
     "isomorphic-fetch": "^2.2.1",
+    "jest": "^20.0.4",
+    "jest-cli": "^21.2.1",
     "json5": "^0.5.1",
     "mapbox-gl-styles": "^2.0.2",
     "mkdirp": "^0.5.1",
     "nock": "^9.2.3",
+    "ol": "^5.0.0-beta.9",
     "regenerator-runtime": "^0.11.1",
     "should": "^11.2.1",
     "should-approximately-deep": "^1.1.0",
@@ -88,7 +92,7 @@
       "<rootDir>/env-setup.js"
     ],
     "transformIgnorePatterns": [
-      "/node_modules/(?!(ol|mapbox-to-ol-style|ol-mapbox-style)/).*/"
+      "node_modules/(?!(ol|mapbox-to-ol-style)/)"
     ],
     "coveragePathIgnorePatterns": [
       "env-setup.js",
