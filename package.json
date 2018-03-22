@@ -62,7 +62,7 @@
   "scripts": {
     "start": "webpack-dev-server --config ./webpack.config.js",
     "prepublish": "npm run doc",
-    "build": "webpack-cli --config ./webpack.config.js",
+    "build": "webpack-cli --config ./webpack.config.olms.js",
     "doc": "documentation readme -s API index.js",
     "lint": "eslint __test__ index.js webpack.config.js",
     "pretest": "npm run lint",
