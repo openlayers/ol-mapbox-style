@@ -1,7 +1,7 @@
 /*
 ol-mapbox-style - Use Mapbox Style objects with OpenLayers
 Copyright 2016-present Boundless Spatial, Inc.
-License: https://raw.githubusercontent.com/boundlessgeo/ol-mapbox-gl-style/master/LICENSE.md
+License: https://raw.githubusercontent.com/boundlessgeo/ol-mapbox-gl-style/master/LICENSE
 */
 
 import glfun from '@mapbox/mapbox-gl-style-spec/function';
