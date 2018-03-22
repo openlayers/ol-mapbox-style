@@ -6,7 +6,7 @@ License: https://raw.githubusercontent.com/boundlessgeo/ol-mapbox-gl-style/maste
 
 import glfun from '@mapbox/mapbox-gl-style-spec/function';
 import mb2css from 'mapbox-to-css-font';
-import applyStyleFunction from 'mapbox-to-ol-style';
+import applyStyleFunction from './stylefunction';
 import googleFonts from 'webfont-matcher/lib/fonts/google';
 import {fromLonLat} from 'ol/proj';
 import {createXYZ} from 'ol/tilegrid';
