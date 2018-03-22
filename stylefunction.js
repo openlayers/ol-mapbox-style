@@ -321,6 +321,9 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
       const layerData = layers[i];
       const layer = layerData.layer;
       const layerId = layer.id;
+      // TODO revisit when diffing gets added
+      delete functionCache[layerId];
+
       const layout = layer.layout || emptyObj;
       const paint = layer.paint || emptyObj;
       if (layout.visibility === 'none' || ('minzoom' in layer && zoom < layer.minzoom) ||
