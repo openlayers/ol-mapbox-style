@@ -114,10 +114,5 @@
       "env-setup.js",
       "/node_modules/"
     ]
-  },
-  "babel": {
-    "presets": [
-      "env"
-    ]
   }
 }
