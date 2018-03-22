@@ -344,7 +344,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
                 }
                 var tileGrid = tilejson.getTileGrid();
                 layer.setSource(new VectorTileSource({
-                  attributions: tilejson.getAttributions(),
+                  attributions: tilejson.getAttributions() || tileJSONDoc.attribution,
                   format: new MVT(),
                   tileGrid: createXYZ({
                     minZoom: tileGrid.getMinZoom(),
