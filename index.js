@@ -8,19 +8,19 @@ import glfun from '@mapbox/mapbox-gl-style-spec/function';
 import mb2css from 'mapbox-to-css-font';
 import applyStyleFunction from 'mapbox-to-ol-style';
 import googleFonts from 'webfont-matcher/lib/fonts/google';
-import proj from 'ol/proj';
-import tilegrid from 'ol/tilegrid';
-import Map from 'ol/map';
-import GeoJSON from 'ol/format/geojson';
-import MVT from 'ol/format/mvt';
-import Observable from 'ol/observable';
-import TileLayer from 'ol/layer/tile';
-import VectorLayer from 'ol/layer/vector';
-import VectorTileLayer from 'ol/layer/vectortile';
-import TileJSON from 'ol/source/tilejson';
-import VectorSource from 'ol/source/vector';
-import VectorTileSource from 'ol/source/vectortile';
-import XYZ from 'ol/source/xyz';
+import {fromLonLat} from 'ol/proj';
+import {createXYZ} from 'ol/tilegrid';
+import CanvasMap from 'ol/CanvasMap';
+import GeoJSON from 'ol/format/GeoJSON';
+import MVT from 'ol/format/MVT';
+import {unByKey} from 'ol/Observable';
+import TileLayer from 'ol/layer/Tile';
+import VectorLayer from 'ol/layer/Vector';
+import VectorTileLayer from 'ol/layer/VectorTile';
+import TileJSON from 'ol/source/TileJSON';
+import VectorSource from 'ol/source/Vector';
+import VectorTileSource from 'ol/source/VectorTile';
+import XYZ from 'ol/source/XYZ';
 
 var availableFonts;
 
@@ -236,7 +236,7 @@ function getSourceIdByRef(layers, ref) {
 function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
   var view = map.getView();
   if ('center' in glStyle && !view.getCenter()) {
-    view.setCenter(proj.fromLonLat(glStyle.center));
+    view.setCenter(fromLonLat(glStyle.center));
   }
   if ('zoom' in glStyle && view.getZoom() === undefined) {
     view.setZoom(glStyle.zoom);
@@ -305,7 +305,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
 
         if (glSource.type == 'vector') {
           layer = tiles ? (function() {
-            var tileGrid = tilegrid.createXYZ({
+            var tileGrid = createXYZ({
               tileSize: 512,
               maxZoom: 'maxzoom' in glSource ? glSource.maxzoom : 22,
               minZoom: glSource.minzoom
@@ -346,7 +346,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
                 layer.setSource(new VectorTileSource({
                   attributions: tilejson.getAttributions(),
                   format: new MVT(),
-                  tileGrid: tilegrid.createXYZ({
+                  tileGrid: createXYZ({
                     minZoom: tileGrid.getMinZoom(),
                     maxZoom: tileGrid.getMaxZoom(),
                     tileSize: 512
@@ -357,7 +357,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
                   layer.setMaxResolution(
                     tileGrid.getResolution(tileGrid.getMinZoom()));
                 }
-                Observable.unByKey(key);
+                unByKey(key);
               }
             });
             return layer;
@@ -459,8 +459,8 @@ export function apply(map, style) {
   var accessToken, baseUrl, host, path;
   accessToken = baseUrl = host = path = '';
 
-  if (!(map instanceof Map)) {
-    map = new Map({
+  if (!(map instanceof CanvasMap)) {
+    map = new CanvasMap({
       target: map
     });
   }
