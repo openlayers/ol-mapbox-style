@@ -5,7 +5,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=Edge">
   <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
   <title>TileJSON vector tiles</title>
-  <link rel="stylesheet" href="https://openlayers.org/en/v4.6.4/css/ol.css">
+  <link rel="stylesheet" href="../node_modules/ol/ol.css">
   <style>
     html, body {
       height: 100%;
@@ -20,7 +20,6 @@
 <body>
   <div id="map"></div>
   <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=Promise"></script>
-  <script src="https://openlayers.org/en/v4.6.4/build/ol.js"></script>
   <script src="../dist/olms.js"></script>
   <script>
     var map = olms.apply('map', 'https://rawgit.com/PetersonGIS/CamoStyle/8643c1510077f268f01a5d9a1ca12c6ce080d976/camo.json');
