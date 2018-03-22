@@ -323,6 +323,7 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
       const layerId = layer.id;
       // TODO revisit when diffing gets added
       delete functionCache[layerId];
+      delete filterCache[layerId];
 
       const layout = layer.layout || emptyObj;
       const paint = layer.paint || emptyObj;
