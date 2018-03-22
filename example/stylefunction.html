@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+  <title>mapbox-to-ol-style example</title>
+  <link rel="stylesheet" href="https://openlayers.org/en/v4.6.5/css/ol.css">
+  <script src="https://openlayers.org/en/v4.6.5/build/ol-debug.js"></script>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script src="../dist/olms.js"></script>
+  <script>
+  const layer = new ol.layer.Vector({
+    declutter: true,
+    source: new ol.source.Vector({
+      format: new ol.format.GeoJSON(),
+      url: 'data/states.geojson'
+    })
+  });
+  const map = new ol.Map({
+    target: 'map',
+    view: new ol.View({
+      center: [-13603186.115192635, 6785744.563386],
+      zoom: 2
+    })
+  });
+
+  const client = new XMLHttpRequest();
+  client.open('GET', 'data/states.json');
+  client.onload = function() {
+    const glStyle = JSON.parse(client.responseText);
+    olms.stylefunction(layer, glStyle, 'states');
+    map.addLayer(layer);
+  };
+  client.send();
+  </script>
+</body>
