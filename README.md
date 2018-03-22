@@ -94,6 +94,43 @@ Layers added by `apply()` will have two additional properties:
 Returns **ol.Map** The OpenLayers Map instance that will be populated with the
 contents described in the Mapbox Style object.
 
+### stylefunction
+
+Creates a style function from the `glStyle` object for all layers that use
+the specified `source`, which needs to be a `"type": "vector"` or
+`"type": "geojson"` source and applies it to the specified OpenLayers layer.
+
+**Parameters**
+
+-   `olLayer` **(ol.layer.Vector | ol.layer.VectorTile)** OpenLayers layer to
+    apply the style to. In addition to the style, the layer will get two
+    properties: `mapbox-source` will be the `id` of the `glStyle`'s source used
+    for the layer, and `mapbox-layers` will be an array of the `id`s of the
+    `glStyle`'s layers.
+-   `glStyle` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) \| [Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object))** Mapbox Style object.
+-   `source` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) \| [Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>)** `source` key or an array of layer `id`s
+    from the Mapbox Style object. When a `source` key is provided, all layers for
+    the specified source will be included in the style function. When layer `id`s
+    are provided, they must be from layers that use the same source.
+-   `resolutions` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)>** Resolutions for mapping resolution to zoom level. (optional, default `[78271.51696402048,39135.75848201024,
+    19567.87924100512,9783.93962050256,4891.96981025128,2445.98490512564,
+    1222.99245256282,611.49622628141,305.748113140705,152.8740565703525,
+    76.43702828517625,38.21851414258813,19.109257071294063,9.554628535647032,
+    4.777314267823516,2.388657133911758,1.194328566955879,0.5971642834779395,
+    0.29858214173896974,0.14929107086948487,0.07464553543474244]`)
+-   `spriteData` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Sprite data from the url specified in
+    the Mapbox Style object's `sprite` property. Only required if a `sprite`
+    property is specified in the Mapbox Style object. (optional, default `undefined`)
+-   `spriteImageUrl` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Sprite image url for the sprite
+    specified in the Mapbox Style object's `sprite` property. Only required if a
+    `sprite` property is specified in the Mapbox Style object. (optional, default `undefined`)
+-   `fonts` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>** Array of available fonts, using the
+    same font names as the Mapbox Style object. If not provided, the style
+    function will always use the first font from the font array. (optional, default `undefined`)
+
+Returns **ol.style.StyleFunction** Style function for use in
+`ol.layer.Vector` or `ol.layer.VectorTile`.
+
 ## Building the library
 
     npm install

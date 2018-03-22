@@ -22,12 +22,24 @@
       "email": "aberenyi@gislab.hu"
     },
     {
+      "name": "Bart van den Eijnden",
+      "email": "bartvde@boundlessgeo.com"
+    },
+    {
       "name": "Dan 'Ducky' Little",
       "email": "danlittle@yahoo.com"
     },
     {
+      "name": "Yancy Matherne",
+      "email": "ymatherne@boundlessgeo.com"
+    },
+    {
       "name": "Christian Mayer",
       "email": "chris@meggsimum.de"
+    },
+    {
+      "name": "James Milner",
+      "email": "jamesmilner22@hotmail.com"
     },
     {
       "name": "Adrien Pompée",
@@ -40,6 +52,10 @@
     {
       "name": "Petr Sloup",
       "email": "petr.sloup@klokantech.com"
+    },
+    {
+      "name": "Antti Risteli",
+      "email": "antti@kiinnost.us"
     }
   ],
   "license": "BSD-2-Clause",
@@ -56,7 +72,6 @@
   "dependencies": {
     "@mapbox/mapbox-gl-style-spec": "^9.0.1",
     "mapbox-to-css-font": "^2.1.0",
-    "mapbox-to-ol-style": "^3.4.0",
     "webfont-matcher": "^1.1.0"
   },
   "peerDependencies": {
@@ -69,6 +84,7 @@
     "babel-loader": "^7.1.4",
     "babel-preset-env": "^1.6.1",
     "canvas": "^1.6.8",
+    "deep-freeze": "0.0.1",
     "documentation": "^4.0.0-rc.1",
     "eslint": "^4.10.0",
     "eslint-config-openlayers": "^7.0.0",
