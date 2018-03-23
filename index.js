@@ -13,7 +13,7 @@ import tilegrid from 'ol/tilegrid';
 import CanvasMap from 'ol/canvasmap';
 import GeoJSON from 'ol/format/geojson';
 import MVT from 'ol/format/mvt';
-import {unByKey} from 'ol/observable';
+import observable from 'ol/observable';
 import TileLayer from 'ol/layer/tile';
 import VectorLayer from 'ol/layer/vector';
 import VectorTileLayer from 'ol/layer/vectortile';
@@ -357,7 +357,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
                   layer.setMaxResolution(
                     tileGrid.getResolution(tileGrid.getMinZoom()));
                 }
-                unByKey(key);
+                observable.unByKey(key);
               }
             });
             return layer;
