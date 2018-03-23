@@ -495,3 +495,12 @@ export function apply(map, style) {
   }
   return map;
 }
+
+export function getLayer(map, layerId) {
+  const layers = map.getLayers().getArray();
+  for (let i = 0, ii = layers.length; i < ii; ++i) {
+    if (layers[i].get('mapbox-layers').indexOf(layerId) !== -1) {
+      return layers[i];
+    }
+  }
+}
