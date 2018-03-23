@@ -4,13 +4,13 @@ Copyright 2016-present Boundless Spatial, Inc.
 License: https://raw.githubusercontent.com/boundlessgeo/ol-mapbox-gl-style/master/LICENSE
 */
 
-import Style from 'ol/style/Style';
-import Fill from 'ol/style/Fill';
-import Stroke from 'ol/style/Stroke';
-import Icon from 'ol/style/Icon';
-import Text from 'ol/style/Text';
-import Circle from 'ol/style/Circle';
-import Point from 'ol/geom/Point';
+import Style from 'ol/style/style';
+import Fill from 'ol/style/fill';
+import Stroke from 'ol/style/stroke';
+import Icon from 'ol/style/icon';
+import Text from 'ol/style/text';
+import Circle from 'ol/style/circle';
+import Point from 'ol/geom/point';
 import derefLayers from '@mapbox/mapbox-gl-style-spec/deref';
 import glfun from '@mapbox/mapbox-gl-style-spec/function';
 import createFilter from '@mapbox/mapbox-gl-style-spec/feature_filter';

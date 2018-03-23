@@ -2,9 +2,9 @@ import should from 'should/as-function';
 import deepFreeze from 'deep-freeze';
 import applyStyleFunction from '../stylefunction';
 import states from './data/states.json';
-import Feature from 'ol/Feature';
-import VectorLayer from 'ol/layer/Vector';
-import Polygon from 'ol/geom/Polygon';
+import Feature from 'ol/feature';
+import VectorLayer from 'ol/layer/vector';
+import Polygon from 'ol/geom/polygon';
 
 describe('mapbox-to-ol-style', function() {
 

@@ -2,13 +2,13 @@ import 'babel-polyfill';
 import should from 'should/as-function';
 import 'should-approximately-deep';
 import {applyBackground, applyStyle, apply} from '../';
-import Map from 'ol/CanvasMap';
-import TileSource from 'ol/source/Tile';
-import VectorSource from 'ol/source/Vector';
-import VectorTileLayer from 'ol/layer/VectorTile';
-import VectorTileSource from 'ol/source/VectorTile';
-import {toLonLat} from 'ol/proj';
-import {createXYZ} from 'ol/tilegrid';
+import Map from 'ol/canvasmap';
+import TileSource from 'ol/source/tile';
+import VectorSource from 'ol/source/vector';
+import VectorTileLayer from 'ol/layer/vectortile';
+import VectorTileSource from 'ol/source/vectortile';
+import proj from 'ol/proj';
+import tilegrid from 'ol/tilegrid';
 import brightV9 from '../node_modules/mapbox-gl-styles/styles/bright-v9.json';
 import WmsJson from '../example/data/wms.json';
 import GeoJson from '../example/data/geojson.json';
@@ -35,7 +35,7 @@ describe('ol-mapbox-style', function() {
   describe('applyStyle', function() {
     var layer = new VectorTileLayer({
       source: new VectorTileSource({
-        tileGrid: createXYZ({tileSize: 512, maxZoom: 22})
+        tileGrid: tilegrid.createXYZ({tileSize: 512, maxZoom: 22})
       })
     });
     it('applies a style function to a layer and resolves promise', function(done) {
@@ -87,8 +87,8 @@ describe('ol-mapbox-style', function() {
             'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
             'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png'
           ]);
-          should(osm.getSource().getAttributions()()[0]).equal(
-              '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors.');
+          should(osm.getSource().getAttributions2()()[0]).equal(
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors.');
           should(wms.getSource().getTileGrid().getTileSize()).eql(256);
           should(wms.getSource().getTileGrid().getMaxZoom()).eql(12);
           done();
@@ -167,7 +167,7 @@ describe('ol-mapbox-style', function() {
           var map = apply(target, 'http://dummy/camo3d.json');
 
           map.getLayers().once('add', function(e) {
-            should(toLonLat(map.getView().getCenter())).be.approximatelyDeep([7.1434, 50.7338], 1e-4);
+            should(proj.toLonLat(map.getView().getCenter())).be.approximatelyDeep([7.1434, 50.7338], 1e-4);
             should(map.getView().getZoom()).equal(14.11);
             var layer = e.element;
             layer.once('change:source', function() {
@@ -179,7 +179,7 @@ describe('ol-mapbox-style', function() {
           });
         })
         .catch(err => {
-          console.error('Error', err);
+          console.error('Error', err); // eslint-disable-line
         });
     });
 
