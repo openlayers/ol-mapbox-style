@@ -88,7 +88,7 @@ describe('ol-mapbox-style', function() {
             'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png'
           ]);
           should(osm.getSource().getAttributions()()[0]).equal(
-              '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors.');
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors.');
           should(wms.getSource().getTileGrid().getTileSize()).eql(256);
           should(wms.getSource().getTileGrid().getMaxZoom()).eql(12);
           done();
