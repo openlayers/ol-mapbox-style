@@ -133,6 +133,17 @@ OpenLayers layer instance when they use the same Mapbox Style `source`.
 
 Returns **ol.layer.Layer** layer OpenLayers layer instance.
 
+### getSource
+
+Get the OpenLayers source instance for the provided Mapbox Style `source`.
+
+**Parameters**
+
+-   `map` **ol.Map** OpenLayers Map.
+-   `sourceId` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Mapbox Style source id.
+
+Returns **ol.layer.Layer** layer OpenLayers layer instance.
+
 ### stylefunction
 
 Creates a style function from the `glStyle` object for all layers that use

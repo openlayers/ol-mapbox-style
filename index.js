@@ -516,3 +516,19 @@ export function getLayer(map, layerId) {
     }
   }
 }
+
+/**
+ * Get the OpenLayers source instance for the provided Mapbox Style `source`.
+ * @param {ol.Map} map OpenLayers Map.
+ * @param {string} sourceId Mapbox Style source id.
+ * @return {ol.layer.Layer} layer OpenLayers layer instance.
+ */
+export function getSource(map, sourceId) {
+  const layers = map.getLayers().getArray();
+  for (let i = 0, ii = layers.length; i < ii; ++i) {
+    const source = layers[i].getSource();
+    if (source.get('mapbox-source').indexOf(sourceId) !== -1) {
+      return source;
+    }
+  }
+}
