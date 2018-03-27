@@ -99,6 +99,9 @@ Layers added by `apply()` will have two additional properties:
 -   `mapbox-layers`: The `id`s of the Mapbox Style document's layers that are
     included in the OpenLayers layer.
 
+The map returned by this function will have an additional `mapbox-style`
+property which holds the Mapbox Style object.
+
 **Parameters**
 
 -   `map` **(ol.Map | [HTMLElement](https://developer.mozilla.org/docs/Web/HTML/Element) \| [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String))** Either an existing OpenLayers Map
