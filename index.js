@@ -165,7 +165,7 @@ export function applyStyle(layer, glStyle, source, path) {
         }
         onChange();
       } catch (e) {
-        window.setTimeout(function() {
+        setTimeout(function() {
           reject(e);
         }, 0);
       }
@@ -418,6 +418,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
     }
   }
   finalizeLayer(layer);
+  map.set('mapbox-style', glStyle);
 }
 
 /**
@@ -438,6 +439,9 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
  *    layers from different sources in between.
  *  * `mapbox-layers`: The `id`s of the Mapbox Style document's layers that are
  *    included in the OpenLayers layer.
+ *
+ * The map returned by this function will have an additional `mapbox-style`
+ * property which holds the Mapbox Style object.
  *
  * @param {ol.Map|HTMLElement|string} map Either an existing OpenLayers Map
  * instance, or a HTML element, or the id of a HTML element that will be the
@@ -491,16 +495,42 @@ export function apply(map, style) {
         throw new Error('Could not load ' + style);
       });
   } else {
-    processStyle(style, map);
+    setTimeout(function() {
+      processStyle(style, map);
+    }, 0);
   }
   return map;
 }
 
+/**
+ * Get the OpenLayers layer instance that contains the provided Mapbox Style
+ * `layer`. Note that multiple Mapbox Style layers are combined in a single
+ * OpenLayers layer instance when they use the same Mapbox Style `source`.
+ * @param {ol.Map} map OpenLayers Map.
+ * @param {string} layerId Mapbox Style layer id.
+ * @return {ol.layer.Layer} layer OpenLayers layer instance.
+ */
 export function getLayer(map, layerId) {
   const layers = map.getLayers().getArray();
   for (let i = 0, ii = layers.length; i < ii; ++i) {
     if (layers[i].get('mapbox-layers').indexOf(layerId) !== -1) {
       return layers[i];
+    }
+  }
+}
+
+/**
+ * Get the OpenLayers source instance for the provided Mapbox Style `source`.
+ * @param {ol.Map} map OpenLayers Map.
+ * @param {string} sourceId Mapbox Style source id.
+ * @return {ol.layer.Layer} layer OpenLayers layer instance.
+ */
+export function getSource(map, sourceId) {
+  const layers = map.getLayers().getArray();
+  for (let i = 0, ii = layers.length; i < ii; ++i) {
+    const source = layers[i].getSource();
+    if (source.get('mapbox-source').indexOf(sourceId) !== -1) {
+      return source;
     }
   }
 }

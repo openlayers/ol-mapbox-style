@@ -99,6 +99,9 @@ Layers added by `apply()` will have two additional properties:
 -   `mapbox-layers`: The `id`s of the Mapbox Style document's layers that are
     included in the OpenLayers layer.
 
+The map returned by this function will have an additional `mapbox-style`
+property which holds the Mapbox Style object.
+
 **Parameters**
 
 -   `map` **(ol.Map | [HTMLElement](https://developer.mozilla.org/docs/Web/HTML/Element) \| [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String))** Either an existing OpenLayers Map
@@ -116,6 +119,30 @@ Layers added by `apply()` will have two additional properties:
 
 Returns **ol.Map** The OpenLayers Map instance that will be populated with the
 contents described in the Mapbox Style object.
+
+### getLayer
+
+Get the OpenLayers layer instance that contains the provided Mapbox Style
+`layer`. Note that multiple Mapbox Style layers are combined in a single
+OpenLayers layer instance when they use the same Mapbox Style `source`.
+
+**Parameters**
+
+-   `map` **ol.Map** OpenLayers Map.
+-   `layerId` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Mapbox Style layer id.
+
+Returns **ol.layer.Layer** layer OpenLayers layer instance.
+
+### getSource
+
+Get the OpenLayers source instance for the provided Mapbox Style `source`.
+
+**Parameters**
+
+-   `map` **ol.Map** OpenLayers Map.
+-   `sourceId` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Mapbox Style source id.
+
+Returns **ol.layer.Layer** layer OpenLayers layer instance.
 
 ### stylefunction
 
