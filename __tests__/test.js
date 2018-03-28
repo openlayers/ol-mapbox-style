@@ -1,7 +1,7 @@
 import 'babel-polyfill';
 import should from 'should/as-function';
 import 'should-approximately-deep';
-import {applyBackground, applyStyle, apply} from '../';
+import {applyBackground, applyStyle, apply, getLayer} from '../';
 import Map from 'ol/CanvasMap';
 import TileSource from 'ol/source/Tile';
 import VectorSource from 'ol/source/Vector';
@@ -62,10 +62,10 @@ describe('ol-mapbox-style', function() {
       var map = apply(target, brightV9);
       should(map instanceof Map).be.ok();
 
-      setTimeout(function() {
+      map.getLayers().once('add', function() {
         should(map.getLayers().item(0).getStyle()).be.a.Function();
         done();
-      }, 200);
+      });
     });
 
     it('handles raster sources', function(done) {
@@ -183,7 +183,7 @@ describe('ol-mapbox-style', function() {
         });
     });
 
-    it('handles visibility for raster layers', function() {
+    it('handles visibility for raster layers', function(done) {
       var context = {
         'version': 8,
         'name': 'states-wms',
@@ -206,8 +206,27 @@ describe('ol-mapbox-style', function() {
         ]
       };
       var map = apply(target, context);
-      should(map.getLayers().item(0).get('visible')).be.false();
+      map.getLayers().once('add', function() {
+        should(map.getLayers().item(0).get('visible')).be.false();
+        done();
+      });
     });
 
+  });
+
+  describe('getLayer', function() {
+    var target;
+    beforeEach(function() {
+      target = document.createElement('div');
+    });
+
+    it('returns a layer', function(done) {
+      var map = apply(target, brightV9);
+
+      map.once('change:mapbox-style', function() {
+        should(getLayer(map, 'landuse_park')).be.an.instanceOf(VectorTileLayer);
+        done();
+      });
+    });
   });
 });

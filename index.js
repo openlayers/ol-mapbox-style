@@ -165,7 +165,7 @@ export function applyStyle(layer, glStyle, source, path) {
         }
         onChange();
       } catch (e) {
-        window.setTimeout(function() {
+        setTimeout(function() {
           reject(e);
         }, 0);
       }
@@ -234,7 +234,6 @@ function getSourceIdByRef(layers, ref) {
 }
 
 function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
-  map.set('mapbox-style', glStyle);
   var view = map.getView();
   if ('center' in glStyle && !view.getCenter()) {
     view.setCenter(fromLonLat(glStyle.center));
@@ -419,6 +418,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
     }
   }
   finalizeLayer(layer);
+  map.set('mapbox-style', glStyle);
 }
 
 /**
@@ -495,7 +495,9 @@ export function apply(map, style) {
         throw new Error('Could not load ' + style);
       });
   } else {
-    processStyle(style, map);
+    setTimeout(function() {
+      processStyle(style, map);
+    }, 0);
   }
   return map;
 }
