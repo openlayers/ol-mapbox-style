@@ -1,7 +1,7 @@
 import 'babel-polyfill';
 import should from 'should/as-function';
 import 'should-approximately-deep';
-import {applyBackground, applyStyle, apply, getLayer} from '../';
+import {applyBackground, applyStyle, apply, getLayer, getSource} from '../';
 import Map from 'ol/CanvasMap';
 import TileSource from 'ol/source/Tile';
 import VectorSource from 'ol/source/Vector';
@@ -225,6 +225,22 @@ describe('ol-mapbox-style', function() {
 
       map.once('change:mapbox-style', function() {
         should(getLayer(map, 'landuse_park')).be.an.instanceOf(VectorTileLayer);
+        done();
+      });
+    });
+  });
+
+  describe('getSource', function() {
+    var target;
+    beforeEach(function() {
+      target = document.createElement('div');
+    });
+
+    it('returns a source', function(done) {
+      var map = apply(target, brightV9);
+
+      map.once('change:mapbox-style', function() {
+        should(getSource(map, 'mapbox')).be.an.instanceOf(VectorTileSource);
         done();
       });
     });

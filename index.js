@@ -529,7 +529,7 @@ export function getSource(map, sourceId) {
   const layers = map.getLayers().getArray();
   for (let i = 0, ii = layers.length; i < ii; ++i) {
     const source = layers[i].getSource();
-    if (source.get('mapbox-source').indexOf(sourceId) !== -1) {
+    if (layers[i].get('mapbox-source').indexOf(sourceId) !== -1) {
       return source;
     }
   }
