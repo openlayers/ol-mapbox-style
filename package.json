@@ -61,10 +61,10 @@
   "license": "BSD-2-Clause",
   "scripts": {
     "start": "webpack-dev-server --config ./webpack.config.js",
-    "prepublish": "npm run doc",
+    "prepare": "npm run doc && npm run build",
     "build": "webpack-cli --config ./webpack.config.js",
     "doc": "documentation readme -s API index.js",
-    "lint": "eslint __test__ *.js",
+    "lint": "eslint __test__ example *.js",
     "pretest": "npm run lint",
     "test": "jest",
     "cover": "jest --coverage"
@@ -85,6 +85,7 @@
     "babel-preset-env": "^1.6.1",
     "canvas": "^1.6.8",
     "copy-webpack-plugin": "^4.5.1",
+    "css-loader": "^0.28.11",
     "deep-freeze": "0.0.1",
     "documentation": "^4.0.0-rc.1",
     "eslint": "^4.10.0",
@@ -101,6 +102,7 @@
     "regenerator-runtime": "^0.11.1",
     "should": "^11.2.1",
     "should-approximately-deep": "^1.1.0",
+    "style-loader": "^0.20.3",
     "webpack": "^4.1.1",
     "webpack-cli": "^2.0.12",
     "webpack-dev-server": "^3.1.1"
