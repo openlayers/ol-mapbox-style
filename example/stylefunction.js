@@ -1,4 +1,4 @@
-
+import 'ol/ol.css';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import GeoJsonFormat from 'ol/format/GeoJSON';

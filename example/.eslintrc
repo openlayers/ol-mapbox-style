@@ -1,7 +1,0 @@
-{
-  "globals": {
-    "ol": true,
-    "olms": true,
-    "WebFont": true
-  }
-}

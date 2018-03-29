@@ -92,6 +92,10 @@ module.exports = {
         query: {
           cacheDirectory: true
         }
+      },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader']
       }
     ]
   },

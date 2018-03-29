@@ -1,4 +1,5 @@
-import { apply } from 'ol-mapbox-style';
+import 'ol/ol.css';
+import {apply} from 'ol-mapbox-style';
 
 const baseUrl = 'https://api.mapbox.com/styles/v1/mapbox/bright-v9';
 
