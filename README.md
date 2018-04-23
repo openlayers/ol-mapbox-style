@@ -66,6 +66,7 @@ a `"type": "vector"`, `"type": "geojson"` or `"type": "raster"` source.
     are provided, they must be from layers that use the same source.
 -   `path` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Path of the style file. Only required when
     a relative path is used with the `"sprite"` property of the style. (optional, default `undefined`)
+-   `resolutions` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)>** Resolutions for mapping resolution to zoom level. (optional, default `undefined`)
 
 Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** Promise which will be resolved when the style can be used
 for rendering.
