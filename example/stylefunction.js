@@ -2,7 +2,7 @@ import 'ol/ol.css';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import GeoJsonFormat from 'ol/format/GeoJSON';
-import CanvasMap from 'ol/CanvasMap';
+import Map from 'ol/Map';
 import View from 'ol/View';
 
 import stylefunction from 'ol-mapbox-style/stylefunction';
@@ -15,7 +15,7 @@ const layer = new VectorLayer({
   })
 });
 
-const map = new CanvasMap({
+const map = new Map({
   target: 'map',
   view: new View({
     center: [-13603186.115192635, 6785744.563386],

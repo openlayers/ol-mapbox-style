@@ -10,7 +10,7 @@ import applyStyleFunction from './stylefunction';
 import googleFonts from 'webfont-matcher/lib/fonts/google';
 import {fromLonLat} from 'ol/proj';
 import {createXYZ} from 'ol/tilegrid';
-import CanvasMap from 'ol/CanvasMap';
+import Map from 'ol/Map';
 import GeoJSON from 'ol/format/GeoJSON';
 import MVT from 'ol/format/MVT';
 import {unByKey} from 'ol/Observable';
@@ -464,8 +464,8 @@ export function apply(map, style) {
   var accessToken, baseUrl, host, path;
   accessToken = baseUrl = host = path = '';
 
-  if (!(map instanceof CanvasMap)) {
-    map = new CanvasMap({
+  if (!(map instanceof Map)) {
+    map = new Map({
       target: map
     });
   }

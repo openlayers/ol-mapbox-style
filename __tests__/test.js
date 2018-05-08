@@ -2,7 +2,7 @@ import 'babel-polyfill';
 import should from 'should/as-function';
 import 'should-approximately-deep';
 import {applyBackground, applyStyle, apply, getLayer, getSource} from '../';
-import Map from 'ol/CanvasMap';
+import Map from 'ol/Map';
 import TileSource from 'ol/source/Tile';
 import VectorSource from 'ol/source/Vector';
 import VectorTileLayer from 'ol/layer/VectorTile';
