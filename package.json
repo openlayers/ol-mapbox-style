@@ -1,6 +1,6 @@
 {
   "name": "ol-mapbox-style",
-  "version": "3.0.0-beta.5",
+  "version": "3.0.0-beta.6",
   "description": "Create OpenLayers maps from Mapbox Style objects",
   "main": "index.js",
   "repository": {
@@ -75,7 +75,7 @@
     "webfont-matcher": "^1.1.0"
   },
   "peerDependencies": {
-    "ol": "^5.0.0-beta.9"
+    "ol": ">=5.0.0-beta.11 <5.0.0-c"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
@@ -98,7 +98,7 @@
     "mapbox-gl-styles": "^2.0.2",
     "mkdirp": "^0.5.1",
     "nock": "^9.2.3",
-    "ol": "^5.0.0-beta.11",
+    "ol": ">=5.0.0-beta.11 <5.0.0-c",
     "regenerator-runtime": "^0.11.1",
     "should": "^11.2.1",
     "should-approximately-deep": "^1.1.0",
