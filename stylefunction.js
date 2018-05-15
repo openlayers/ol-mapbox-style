@@ -276,8 +276,9 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
   let mapboxSource;
   for (let i = 0, ii = allLayers.length; i < ii; ++i) {
     const layer = allLayers[i];
+    const layerId = layer.id;
     if (typeof source == 'string' && layer.source == source ||
-        source.indexOf(layer.id) !== -1) {
+        source.indexOf(layerId) !== -1) {
       const sourceLayer = layer['source-layer'];
       if (!mapboxSource) {
         mapboxSource = layer.source;
@@ -290,8 +291,11 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
         layer: layer,
         index: i
       });
-      mapboxLayers.push(layer.id);
+      mapboxLayers.push(layerId);
     }
+    // TODO revisit when diffing gets added
+    delete functionCache[layerId];
+    delete filterCache[layerId];
   }
 
   const textHalo = new Stroke();
@@ -321,9 +325,6 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
       const layerData = layers[i];
       const layer = layerData.layer;
       const layerId = layer.id;
-      // TODO revisit when diffing gets added
-      delete functionCache[layerId];
-      delete filterCache[layerId];
 
       const layout = layer.layout || emptyObj;
       const paint = layer.paint || emptyObj;
