@@ -10,17 +10,17 @@ import applyStyleFunction from './stylefunction';
 import googleFonts from 'webfont-matcher/lib/fonts/google';
 import {fromLonLat} from 'ol/proj';
 import {createXYZ} from 'ol/tilegrid';
-import Map from 'ol/Map';
-import GeoJSON from 'ol/format/GeoJSON';
-import MVT from 'ol/format/MVT';
-import {unByKey} from 'ol/Observable';
-import TileLayer from 'ol/layer/Tile';
-import VectorLayer from 'ol/layer/Vector';
-import VectorTileLayer from 'ol/layer/VectorTile';
-import TileJSON from 'ol/source/TileJSON';
-import VectorSource from 'ol/source/Vector';
-import VectorTileSource from 'ol/source/VectorTile';
-import XYZ from 'ol/source/XYZ';
+import Map from 'ol/map';
+import GeoJSON from 'ol/format/geojson';
+import MVT from 'ol/format/mvt';
+import {unByKey} from 'ol/observable';
+import TileLayer from 'ol/layer/tile';
+import VectorLayer from 'ol/layer/vector';
+import VectorTileLayer from 'ol/layer/vectortile';
+import TileJSON from 'ol/source/tilejson';
+import VectorSource from 'ol/source/vector';
+import VectorTileSource from 'ol/source/vectortile';
+import XYZ from 'ol/source/xyz';
 
 var availableFonts;
 
