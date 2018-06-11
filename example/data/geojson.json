@@ -58,7 +58,7 @@
     },
     {
       "id": "state_abbreviations",
-      "type": "fill",
+      "type": "symbol",
       "source": "states",
       "minzoom": 4,
       "maxzoom": 5,
@@ -70,7 +70,7 @@
     },
     {
       "id": "state_names",
-      "type": "fill",
+      "type": "symbol",
       "source": "states",
       "minzoom": 5,
       "layout": {
