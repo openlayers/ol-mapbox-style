@@ -4,9 +4,8 @@ Copyright 2016-present Boundless Spatial, Inc.
 License: https://raw.githubusercontent.com/boundlessgeo/ol-mapbox-gl-style/master/LICENSE
 */
 
-import glfun from '@mapbox/mapbox-gl-style-spec/function';
 import mb2css from 'mapbox-to-css-font';
-import applyStyleFunction from './stylefunction';
+import applyStyleFunction, {getValue} from './stylefunction';
 import googleFonts from 'webfont-matcher/lib/fonts/google';
 import {fromLonLat} from 'ol/proj';
 import {createXYZ} from 'ol/tilegrid';
@@ -21,6 +20,7 @@ import TileJSON from 'ol/source/TileJSON';
 import VectorSource from 'ol/source/Vector';
 import VectorTileSource from 'ol/source/VectorTile';
 import XYZ from 'ol/source/XYZ';
+import Color from '@mapbox/mapbox-gl-style-spec/util/color';
 
 var availableFonts;
 
@@ -174,6 +174,8 @@ export function applyStyle(layer, glStyle, source, path, resolutions) {
   });
 }
 
+const emptyObj = {};
+
 function setBackground(map, layer) {
   function updateStyle() {
     var element = map.getTargetElement();
@@ -184,19 +186,12 @@ function setBackground(map, layer) {
     var paint = layer.paint || {};
     var zoom = map.getView().getZoom();
     if ('background-color' in paint) {
-      var bg = glfun(paint['background-color'], {function: 'interpolated', type: 'color'})(zoom);
-      if (Array.isArray(bg)) {
-        bg = 'rgba(' +
-            Math.round(bg[0] * 255) + ',' +
-            Math.round(bg[1] * 255) + ',' +
-            Math.round(bg[2] * 255) + ',' +
-            (bg[3] ? bg[3] : 1) + ')';
-      }
-      element.style.backgroundColor = bg;
+      var bg = getValue(layer, 'paint', 'background-color', zoom, emptyObj);
+      element.style.backgroundColor = Color.parse(bg).toString();
     }
     if ('background-opacity' in paint) {
       element.style.backgroundOpacity =
-          glfun(paint['background-opacity'], {function: 'interpolated', type: 'number'})(zoom);
+        getValue(layer, 'paint', 'background-opacity', zoom, emptyObj);
     }
     if (layout.visibility == 'none') {
       element.style.backgroundColor = '';
