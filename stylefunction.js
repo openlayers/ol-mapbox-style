@@ -14,6 +14,7 @@ import Point from 'ol/geom/Point';
 import derefLayers from '@mapbox/mapbox-gl-style-spec/deref';
 import spec from '@mapbox/mapbox-gl-style-spec/reference/latest';
 import {isFunction} from '@mapbox/mapbox-gl-style-spec/function';
+import {isExpression} from '@mapbox/mapbox-gl-style-spec/expression';
 import convertFunction from '@mapbox/mapbox-gl-style-spec/function/convert';
 import Color from '@mapbox/mapbox-gl-style-spec/util/color';
 import {createPropertyExpression} from '@mapbox/mapbox-gl-style-spec/expression';
@@ -31,8 +32,7 @@ const types = {
   'MultiPolygon': 3
 };
 
-const expressionData = function(rawValue, propertySpec) {
-  const rawExpression = convertFunction(rawValue, propertySpec);
+const expressionData = function(rawExpression, propertySpec) {
   const compiledExpression = createPropertyExpression(rawExpression, propertySpec);
   if (compiledExpression.result === 'error') {
     throw new Error(compiledExpression.value.map(err => `${err.key}: ${err.message}`).join(', '));
@@ -65,9 +65,14 @@ export function getValue(layer, layoutOrPaint, property, zoom, feature) {
     if (value === undefined) {
       value = propertySpec.default;
     }
-    if (isFunction(value)) {
-      const compiledFunction = expressionData(value, propertySpec);
-      functions[property] = compiledFunction.evaluate.bind(compiledFunction);
+    let isExpr = isExpression((value));
+    if (!isExpr && isFunction(value)) {
+      value = convertFunction(value, propertySpec);
+      isExpr = true;
+    }
+    if (isExpr) {
+      const compiledExpression = expressionData(value, propertySpec);
+      functions[property] = compiledExpression.evaluate.bind(compiledExpression);
     } else {
       if (propertySpec.type == 'color') {
         value = Color.parse(value);

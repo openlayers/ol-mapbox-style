@@ -72,7 +72,7 @@
       "source": "states",
       "minzoom": 5,
       "layout": {
-        "text-field": "{STATE_NAME}",
+        "text-field": ["concat", ["get", "STATE_ABBR"], "\n", ["get", "STATE_NAME"]],
         "text-size": 12,
         "text-font": ["Arial Normal", "sans-serif Normal"]
       }
