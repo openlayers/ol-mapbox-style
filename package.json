@@ -85,7 +85,6 @@
     "babel-jest": "^23.6.0",
     "babel-loader": "^8.0.4",
     "babel-plugin-rewire": "^1.2.0",
-    "canvas": "^1.6.13",
     "copy-webpack-plugin": "^4.6.0",
     "css-loader": "^1.0.1",
     "deep-freeze": "0.0.1",
@@ -95,13 +94,14 @@
     "html-webpack-plugin": "^3.2.0",
     "isomorphic-fetch": "^2.2.1",
     "jest": "^23.6.0",
-    "jest-cli": "^23.6.0",
+    "jest-puppeteer": "^3.0.1",
     "json5": "^2.1.0",
     "mapbox-gl-styles": "^2.0.2",
     "mini-css-extract-plugin": "^0.4.4",
     "mkdirp": "^0.5.1",
     "nock": "^10.0.1",
     "ol": "^5.2.0",
+    "puppeteer": "^1.5.0",
     "regenerator-runtime": "^0.12.1",
     "should": "^13.2.3",
     "should-approximately-deep": "^1.1.0",
@@ -112,15 +112,12 @@
     "webpack-sources": "^1.0.1"
   },
   "jest": {
-    "verbose": true,
-    "setupFiles": [
-      "<rootDir>/env-setup.js"
-    ],
+    "preset": "jest-puppeteer",
+    "testEnvironment": "jsdom",
     "transformIgnorePatterns": [
       "node_modules/(?!(ol|@mapbox/mapbox-gl-style-spec)/)"
     ],
     "coveragePathIgnorePatterns": [
-      "env-setup.js",
       "/node_modules/"
     ]
   }
