@@ -21,64 +21,46 @@
     "prepare": "npm run doc && npm run build",
     "build": "webpack-cli --mode=production --config ./webpack.config.olms.js && webpack-cli --mode=production",
     "doc": "documentation readme -s API index.js",
-    "lint": "eslint __tests__ example *.js",
+    "karma": "karma start test/karma.conf.js",
+    "lint": "eslint test example *.js",
     "pretest": "npm run lint",
-    "test": "jest",
-    "cover": "jest --coverage"
+    "test": "npm run karma -- --single-run --log-level error"
   },
   "dependencies": {
-    "@mapbox/mapbox-gl-style-spec": "^13.3.0",
+    "@mapbox/mapbox-gl-style-spec": "^13.6.0",
     "mapbox-to-css-font": "^2.2.0",
     "webfont-matcher": "^1.1.0"
   },
   "peerDependencies": {
-    "ol": "^5.2.0"
+    "ol": "^5.3.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.1.2",
-    "@babel/core": "^7.1.2",
-    "@babel/preset-env": "^7.1.0",
-    "babel-core": "^7.0.0-bridge.0",
-    "babel-jest": "^23.6.0",
-    "babel-loader": "^8.0.4",
-    "babel-plugin-rewire": "^1.2.0",
-    "canvas": "^1.6.13",
+    "babel-loader": "^8.0.5",
+    "buble": "^0.19.6",
+    "buble-loader": "^0.5.1",
     "copy-webpack-plugin": "^4.6.0",
     "css-loader": "^1.0.1",
     "deep-freeze": "0.0.1",
-    "documentation": "^9.0.0-alpha.1",
-    "eslint": "^5.8.0",
+    "documentation": "^9.1.1",
+    "eslint": "^5.13.0",
     "eslint-config-openlayers": "^11.0.0",
     "html-webpack-plugin": "^3.2.0",
-    "isomorphic-fetch": "^2.2.1",
-    "jest": "^23.6.0",
-    "jest-cli": "^23.6.0",
-    "json5": "^2.1.0",
+    "karma": "^4.0.0",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-coverage": "^1.1.2",
+    "karma-mocha": "^1.3.0",
+    "karma-sourcemap-loader": "^0.3.7",
+    "karma-webpack": "^3.0.5",
     "mapbox-gl-styles": "^2.0.2",
-    "mini-css-extract-plugin": "^0.4.4",
-    "mkdirp": "^0.5.1",
-    "nock": "^10.0.1",
-    "ol": "^5.2.0",
-    "regenerator-runtime": "^0.12.1",
+    "mini-css-extract-plugin": "^0.4.5",
+    "mocha": "^5.2.0",
+    "ol": "^5.3.0",
+    "puppeteer": "^1.12.2",
     "should": "^13.2.3",
-    "should-approximately-deep": "^1.1.0",
+    "sinon": "^7.2.3",
     "style-loader": "^0.23.1",
-    "webpack": "^4.23.1",
-    "webpack-cli": "^3.1.2",
-    "webpack-dev-server": "^3.1.10",
-    "webpack-sources": "^1.0.1"
-  },
-  "jest": {
-    "verbose": true,
-    "setupFiles": [
-      "<rootDir>/env-setup.js"
-    ],
-    "transformIgnorePatterns": [
-      "node_modules/(?!(ol|@mapbox/mapbox-gl-style-spec)/)"
-    ],
-    "coveragePathIgnorePatterns": [
-      "env-setup.js",
-      "/node_modules/"
-    ]
+    "webpack": "^4.29.3",
+    "webpack-cli": "^3.2.3",
+    "webpack-dev-server": "^3.1.14"
   }
 }

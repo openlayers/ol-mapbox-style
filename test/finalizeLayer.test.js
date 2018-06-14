@@ -1,6 +1,4 @@
 import should from 'should';
-import 'isomorphic-fetch';
-import nock from 'nock';
 
 import Map from 'ol/Map';
 import VectorLayer from 'ol/layer/Vector';
@@ -11,24 +9,9 @@ import TileSource from 'ol/source/Tile';
 import glStyle from './fixtures/osm-liberty/style.json';
 import invalidStyle from './fixtures/style-invalid-version.json';
 
-const finalizeLayer = require('../index').__get__('finalizeLayer');
+import {_finalizeLayer as finalizeLayer} from '../index';
 
 describe('finalizeLayer promise', function() {
-
-  beforeEach(function() {
-    nock('https://rawgit.com')
-      .defaultReplyHeaders({'access-control-allow-origin': '*'})
-      .get('/maputnik/osm-liberty/gh-pages/sprites/osm-liberty.json')
-      .replyWithFile(200, __dirname + '/fixtures/osm-liberty/osm-liberty.json')
-      .get('/maputnik/osm-liberty/gh-pages/sprites/osm-liberty.png')
-      .replyWithFile(200, __dirname + '/fixtures/osm-liberty/osm-liberty.png')
-      .get('/maputnik/osm-liberty/gh-pages/sprites/osm-liberty@2x.json')
-      .replyWithFile(200, __dirname + '/fixtures/osm-liberty/osm-liberty@2x.json')
-      .get('/maputnik/osm-liberty/gh-pages/sprites/osm-liberty@2x.png')
-      .replyWithFile(200, __dirname + '/fixtures/osm-liberty/osm-liberty@2x.png');
-  });
-
-  afterEach(nock.cleanAll);
 
   it('should resolve with valid input and vector layer source', function(done) {
     const layer = new VectorLayer({
@@ -36,7 +19,7 @@ describe('finalizeLayer promise', function() {
     });
     const map = new Map();
 
-    finalizeLayer(layer, ['park'], glStyle, null, map)
+    finalizeLayer(layer, ['park'], glStyle, 'fixtures/osm-liberty/', map)
       .then(done).catch(function(err) {
         done(err);
       });
@@ -48,7 +31,7 @@ describe('finalizeLayer promise', function() {
     });
     const map = new Map({layers: [layer]});
 
-    finalizeLayer(layer, ['natural_earth'], glStyle, null, map)
+    finalizeLayer(layer, ['natural_earth'], glStyle, 'fixtures/osm-liberty/', map)
       .then(done).catch(function(err) {
         done(err);
       });
@@ -57,7 +40,7 @@ describe('finalizeLayer promise', function() {
   it('should not resolve at all if layer source does not exist', function(done) {
     const layer = new VectorLayer();
     let resolved = false;
-    finalizeLayer(layer, ['eh'], glStyle, null, new Map())
+    finalizeLayer(layer, ['eh'], glStyle, 'fixtures/osm-liberty/', new Map())
       .then(function() {
         resolved = true;
       }).catch(function(err) {
@@ -75,7 +58,7 @@ describe('finalizeLayer promise', function() {
     const layer = new VectorLayer();
     let resolved = false;
     let waitForSource = true;
-    finalizeLayer(layer, ['park'], glStyle, null, map)
+    finalizeLayer(layer, ['park'], glStyle, 'fixtures/osm-liberty/', map)
       .then(function() {
         resolved = true;
         should(waitForSource).be.false;

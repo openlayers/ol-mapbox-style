@@ -1,6 +1,5 @@
 import should from 'should';
-import 'should-approximately-deep';
-import olms, {applyBackground, apply, getLayer, getSource} from '../';
+import olms, {applyBackground, apply, getLayer, getSource} from '..';
 import Map from 'ol/Map';
 import TileSource from 'ol/source/Tile';
 import VectorSource from 'ol/source/Vector';
@@ -8,53 +7,11 @@ import VectorTileLayer from 'ol/layer/VectorTile';
 import VectorTileSource from 'ol/source/VectorTile';
 import {toLonLat} from 'ol/proj';
 
-import 'isomorphic-fetch';
-import nock from 'nock';
-
-import WmsJson from '../example/data/wms.json';
-import GeoJson from '../example/data/geojson.json';
-import GeoJsonInline from '../example/data/geojson-inline.json';
-import TileJson from '../example/data/tilejson.json';
+import HotOsm from './fixtures/hot-osm/hot-osm.json';
 import brightV9 from 'mapbox-gl-styles/styles/bright-v9.json';
 delete brightV9.sprite;
 
 describe('ol-mapbox-style', function() {
-
-  beforeEach(function() {
-    // setup the style doc as a nock
-    nock('http://dummy')
-      .defaultReplyHeaders({'access-control-allow-origin': '*'})
-      .get('/hot-osm.json')
-      .replyWithFile(200, __dirname + '/fixtures/hot-osm/hot-osm.json')
-      .get('/wms.json')
-      .reply(200, WmsJson)
-      .get('/geojson.json')
-      .reply(200, GeoJson)
-      .get('/geojson-inline.json')
-      .reply(200, Object.assign({}, GeoJsonInline, {sprite: 'http://dummy/sprite'}))
-      .get('/sprite.png')
-      .reply(200, '')
-      .get('/sprite.json')
-      .reply(200, {'not-empty': {}})
-      .get('/tilejson.json')
-      .reply(200, TileJson);
-    nock('https://osm-lambda.tegola.io/')
-      .defaultReplyHeaders({'access-control-allow-origin': '*'})
-      .get('/v1/capabilities/osm.json')
-      .replyWithFile(200, __dirname + '/fixtures/hot-osm/osm.json');
-    nock('https://go-spatial.github.io/')
-      .defaultReplyHeaders({'access-control-allow-origin': '*'})
-      .get('/carto-assets/spritesets/osm_tegola_spritesheet.json')
-      .replyWithFile(200, __dirname + '/fixtures/hot-osm/osm_tegola_spritesheet.json')
-      .get('/carto-assets/spritesets/osm_tegola_spritesheet')
-      .replyWithFile(200, __dirname + '/fixtures/hot-osm/osm_tegola_spritesheet.png')
-      .get('/carto-assets/spritesets/osm_tegola_spritesheet@2x.json')
-      .replyWithFile(200, __dirname + '/fixtures/hot-osm/osm_tegola_spritesheet@2x.json')
-      .get('/carto-assets/spritesets/osm_tegola_spritesheet@2x.png')
-      .replyWithFile(200, __dirname + '/fixtures/hot-osm/osm_tegola_spritesheet@2x.png');
-  });
-
-  afterEach(nock.cleanAll);
 
   describe('olms', function() {
 
@@ -64,8 +21,8 @@ describe('ol-mapbox-style', function() {
       target = document.createElement('div');
     });
 
-    it('returns a promise which resolves with an ol.Map as argument', function(done) {
-      olms(target, 'http://dummy/hot-osm.json')
+    it('called with a url, returns a promise which resolves with an ol.Map as argument', function(done) {
+      olms(target, './fixtures/hot-osm/hot-osm.json')
         .then(function(map) {
           should(map).be.instanceof(Map);
           map.setTarget(undefined);
@@ -76,26 +33,23 @@ describe('ol-mapbox-style', function() {
         });
     });
 
-    it('rejects when a TileJSON url is invalid', function(done) {
-      nock.cleanAll();
-      nock('http://dummy')
-        .defaultReplyHeaders({'access-control-allow-origin': '*'})
-        .get('/hot-osm.json')
-        .replyWithFile(200, __dirname + '/fixtures/hot-osm/hot-osm.json');
-      nock('https://osm-lambda.tegola.io/')
-        .defaultReplyHeaders({'access-control-allow-origin': '*'})
-        .get('/v1/capabilities/osm.json')
-        .reply(500, {});
+    it('called with a json, rejects when a TileJSON url is invalid', function(done) {
+      fetch('./fixtures/hot-osm/hot-osm.json').then(function(response) {
+        response.json().then(function(json) {
+          json.sources.osm.url = 'invalid';
 
-      olms(target, 'http://dummy/hot-osm.json')
-        .then(function(map) {
-          should(map).be.instanceof(Map);
-          done(new Error('Should not resolve'));
-        })
-        .catch(function(err) {
-          should(err.message).be.exactly('Error accessing data for source osm');
-          done();
+          olms(target, json)
+            .then(function(map) {
+              should(map).be.instanceof(Map);
+              done(new Error('Should not resolve'));
+            })
+            .catch(function(err) {
+              should(err.message).be.exactly('Error accessing data for source osm');
+              done();
+            });
+
         });
+      });
     });
 
 
@@ -118,10 +72,6 @@ describe('ol-mapbox-style', function() {
       target = document.createElement('div');
     });
 
-    afterEach(() => {
-      nock.cleanAll();
-    });
-
     it('returns a map instance and adds a layer with a style function', function(done) {
       const map = apply(target, brightV9);
       should(map).be.instanceof(Map);
@@ -133,7 +83,7 @@ describe('ol-mapbox-style', function() {
     });
 
     it('handles raster sources', function(done) {
-      const map = apply(target, 'http://dummy/wms.json');
+      const map = apply(target, './fixtures/wms.json');
 
       let count = 0;
       map.getLayers().on('add', function() {
@@ -166,7 +116,7 @@ describe('ol-mapbox-style', function() {
     });
 
     it('handles geojson sources', function(done) {
-      const map = apply(target, 'http://dummy/geojson.json');
+      const map = apply(target, './fixtures/geojson.json');
       map.getLayers().once('add', function(e) {
         const layer = e.element;
         const source = layer.getSource();
@@ -187,11 +137,11 @@ describe('ol-mapbox-style', function() {
         done();
       });
 
-      apply(map, 'http://dummy/geojson-inline.json');
+      apply(map, './fixtures/geojson-inline.json');
     });
 
     it('handles raster sources from TileJSON', function(done) {
-      olms(target, 'http://dummy/tilejson.json')
+      olms(target, './fixtures/tilejson.json')
         .then(function(map) {
           const source = map.getLayers().item(0).getSource();
           should(source).be.instanceof(TileSource);
@@ -206,9 +156,11 @@ describe('ol-mapbox-style', function() {
 
     it('handles vector sources from TileJSON', function(done) {
 
-      olms(target, 'http://dummy/hot-osm.json')
+      olms(target, HotOsm)
         .then(function(map) {
-          should(toLonLat(map.getView().getCenter())).be.approximatelyDeep([8.54806714892635, 47.37180823552663], 1e-8);
+          const center = toLonLat(map.getView().getCenter());
+          should(center[0]).be.approximately(8.54806714892635, 1e-8);
+          should(center[1]).be.approximately(47.37180823552663, 1e-8);
           should(map.getView().getZoom()).equal(12.241790506353492);
           const layer = map.getLayers().item(0);
           const source = layer.getSource();
@@ -236,6 +188,7 @@ describe('ol-mapbox-style', function() {
           {
             'id': 'states-wms',
             'source': 'states',
+            'type': 'raster',
             'layout': {
               'visibility': 'none'
             }
