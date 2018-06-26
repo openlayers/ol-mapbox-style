@@ -351,7 +351,7 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
                 fill.setColor(pattern);
               }
             }
-          } else if ('fill-color' in paint) {
+          } else {
             opacity = getValue(layer, 'paint', 'fill-opacity', zoom, f);
             color = colorWithOpacity(getValue(layer, 'paint', 'fill-color', zoom, f), opacity);
             if (color) {
