@@ -22,51 +22,37 @@ import VectorTileSource from 'ol/source/VectorTile';
 import XYZ from 'ol/source/XYZ';
 import Color from '@mapbox/mapbox-gl-style-spec/util/color';
 
-var availableFonts;
+var loadedFonts = {};
 
-function loadFont(fonts) {
+function useFont(fonts) {
+  if (fonts in loadedFonts) {
+    return loadedFonts[fonts];
+  }
   var i, ii;
   if (!Array.isArray(fonts)) {
-    var stops = fonts.stops;
-    if (stops) {
-      for (i = 0, ii = stops.length; i < ii; ++i) {
-        loadFont(stops[i][1]);
-      }
-    }
-    return;
+    fonts = [fonts];
   }
   var googleFamilies = googleFonts.getNames();
   var families = fonts.map(function(font) {
     return mb2css(font, 1).split(' 1px ')[1].replace(/"/g, '');
   });
+  var font;
   for (i = 0, ii = families.length; i < ii; ++i) {
     var family = families[i];
-    var font = fonts[i];
+    font = fonts[i];
     if (googleFamilies.indexOf(family) !== -1) {
-      if (!availableFonts) {
-        availableFonts = [];
-      }
-      if (availableFonts.indexOf(font) == -1) {
-        availableFonts.push(font);
-        var fontUrl = 'https://fonts.googleapis.com/css?family=' + family.replace(/ /g, '+');
-        if (!document.querySelector('link[href="' + fontUrl + '"]')) {
-          var markup = document.createElement('link');
-          markup.href = fontUrl;
-          markup.rel = 'stylesheet';
-          document.getElementsByTagName('head')[0].appendChild(markup);
-        }
+      var fontUrl = 'https://fonts.googleapis.com/css?family=' + family.replace(/ /g, '+');
+      if (!document.querySelector('link[href="' + fontUrl + '"]')) {
+        var markup = document.createElement('link');
+        markup.href = fontUrl;
+        markup.rel = 'stylesheet';
+        document.getElementsByTagName('head')[0].appendChild(markup);
       }
       break;
     }
   }
-}
-
-var defaultFont = ['Open Sans Regular', 'Arial Regular'];
-
-function preprocess(layer) {
-  if ('layout' in layer && 'text-field' in layer.layout) {
-    loadFont(layer.layout['text-font'] || defaultFont);
-  }
+  loadedFonts[fonts] = font;
+  return font;
 }
 
 var spriteRegEx = /^(.*)(\?.*)$/;
@@ -114,7 +100,17 @@ export function applyStyle(layer, glStyle, source, path, resolutions) {
     if (glStyle.version != 8) {
       reject(new Error('glStyle version 8 required.'));
     }
-    var spriteScale, spriteData, spriteImageUrl;
+
+    var spriteScale, spriteData, spriteImageUrl, style;
+    function onChange() {
+      if (!style && (!glStyle.sprite || spriteData)) {
+        style = applyStyleFunction(layer, glStyle, source, resolutions, spriteData, spriteImageUrl, useFont);
+        resolve();
+      } else if (style) {
+        layer.setStyle(style);
+      }
+    }
+
     if (glStyle.sprite) {
       spriteScale = window.devicePixelRatio >= 1.5 ? 0.5 : 1;
       var sizeFactor = spriteScale == 0.5 ? '@2x' : '';
@@ -144,33 +140,10 @@ export function applyStyle(layer, glStyle, source, path, resolutions) {
           console.error(err);
           reject(new Error('Sprites cannot be loaded from ' + spriteUrl));
         });
+    } else {
+      onChange();
     }
 
-    var style;
-    function onChange() {
-      if (!style && (!glStyle.sprite || spriteData) && (!availableFonts || availableFonts.length > 0)) {
-        style = applyStyleFunction(layer, glStyle, source, resolutions, spriteData, spriteImageUrl, availableFonts);
-        resolve();
-      } else if (style) {
-        layer.setStyle(style);
-      }
-    }
-
-    if (layer instanceof VectorTileLayer || layer instanceof VectorLayer) {
-      try {
-        var layers = glStyle.layers;
-        for (var i = 0, ii = layers.length; i < ii; ++i) {
-          if (typeof source == 'string' && layers[i].source == source || source.indexOf(layers[i].id) >= 0) {
-            preprocess(layers[i]);
-          }
-        }
-        onChange();
-      } catch (e) {
-        setTimeout(function() {
-          reject(e);
-        }, 0);
-      }
-    }
   });
 }
 

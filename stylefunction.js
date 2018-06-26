@@ -86,29 +86,6 @@ export function getValue(layer, layoutOrPaint, property, zoom, feature) {
   return functions[property](zoomObj, feature);
 }
 
-const fontMap = {};
-function chooseFont(fonts, availableFonts) {
-  if (fontMap[fonts]) {
-    return fontMap[fonts];
-  }
-  if (availableFonts) {
-    for (let i = 0, ii = fonts.length; i < ii; ++i) {
-      const font = fonts[i];
-      if (availableFonts.indexOf(font) != -1) {
-        fontMap[fonts] = font;
-        break;
-      }
-    }
-    if (!fontMap[fonts]) {
-      // fallback font
-      fontMap[fonts] = fonts[fonts.length - 1];
-    }
-  } else {
-    fontMap[fonts] = fonts[0];
-  }
-  return fontMap[fonts];
-}
-
 const filterCache = {};
 function evaluateFilter(layerId, filter, feature, zoom) {
   if (!(layerId in filterCache)) {
@@ -178,13 +155,15 @@ function fromTemplate(text, properties) {
  * @param {Object} [spriteImageUrl=undefined] Sprite image url for the sprite
  * specified in the Mapbox Style object's `sprite` property. Only required if a
  * `sprite` property is specified in the Mapbox Style object.
- * @param {Array<string>} [fonts=undefined] Array of available fonts, using the
- * same font names as the Mapbox Style object. If not provided, the style
- * function will always use the first font from the font array.
+ * @param {function(Array<string>):string} [useFont=undefined] Function that
+ * receives an array of available fonts as arguments, and returns the font that
+ * can be used. Font names are the names used in the Mapbox Style object. If not
+ * provided, the style function will always use the first font from the array in
+ * the `text-font` property.
  * @return {ol.style.StyleFunction} Style function for use in
  * `ol.layer.Vector` or `ol.layer.VectorTile`.
  */
-export default function(olLayer, glStyle, source, resolutions, spriteData, spriteImageUrl, fonts) {
+export default function(olLayer, glStyle, source, resolutions, spriteData, spriteImageUrl, useFont) {
   if (!resolutions) {
     resolutions = [];
     for (let res = 78271.51696402048; resolutions.length < 21; res /= 2) {
@@ -564,7 +543,8 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
           }
           text = style.getText();
           const textSize = getValue(layer, 'layout', 'text-size', zoom, f);
-          const font = mb2css(chooseFont(getValue(layer, 'layout', 'text-font', zoom, f)), textSize);
+          const fontArray = getValue(layer, 'layout', 'text-font', zoom, f);
+          const font = mb2css(useFont ? useFont(fontArray) : fontArray[0], textSize);
           const textTransform = layout['text-transform'];
           if (textTransform == 'uppercase') {
             label = label.toUpperCase();

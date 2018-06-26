@@ -175,9 +175,11 @@ the specified `source`, which needs to be a `"type": "vector"` or
 -   `spriteImageUrl` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Sprite image url for the sprite
     specified in the Mapbox Style object's `sprite` property. Only required if a
     `sprite` property is specified in the Mapbox Style object. (optional, default `undefined`)
--   `fonts` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>** Array of available fonts, using the
-    same font names as the Mapbox Style object. If not provided, the style
-    function will always use the first font from the font array. (optional, default `undefined`)
+-   `useFont` **function ([Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>): [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Function that
+    receives an array of available fonts as arguments, and returns the font that
+    can be used. Font names are the names used in the Mapbox Style object. If not
+    provided, the style function will always use the first font from the array in
+    the `text-font` property. (optional, default `undefined`)
 
 Returns **ol.style.StyleFunction** Style function for use in
 `ol.layer.Vector` or `ol.layer.VectorTile`.
