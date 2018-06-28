@@ -259,7 +259,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
     }
   }
 
-  var glLayer, glSource, glSourceId, id, layer, mapid, url;
+  var glLayer, glSource, glSourceId, id, layer, mapid, transition, url;
   for (var i = 0, ii = glLayers.length; i < ii; ++i) {
     glLayer = glLayers[i];
     if (glLayer.type == 'background') {
@@ -348,12 +348,14 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
           if (!glSource.tiles) {
             source = (function() {
               return new TileJSON({
+                transition: transition,
                 url: url,
                 crossOrigin: 'anonymous'
               });
             })();
           } else {
             source = new XYZ({
+              transition: transition,
               attributions: glSource.attribution,
               minZoom: glSource.minzoom,
               maxZoom: 'maxzoom' in glSource ? glSource.maxzoom : 22,
@@ -362,6 +364,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
               urls: glSource.tiles,
               crossOrigin: 'anonymous'
             });
+            transition = 0;
           }
           source.setTileLoadFunction(function(tile, src) {
             if (src.indexOf('{bbox-epsg-3857}') != -1) {
