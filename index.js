@@ -22,37 +22,47 @@ import VectorTileSource from 'ol/source/VectorTile';
 import XYZ from 'ol/source/XYZ';
 import Color from '@mapbox/mapbox-gl-style-spec/util/color';
 
-var loadedFonts = {};
+var fontFamilyRegEx = /font-family: ?([^;]*);/;
+var stripQuotesRegEx = /("|')/g;
+function hasFontFamily(family) {
+  var styleSheets = document.styleSheets;
+  for (var i = 0, ii = styleSheets.length; i < ii; ++i) {
+    const cssRules = styleSheets[i].cssRules;
+    if (cssRules) {
+      for (var j = 0, jj = cssRules.length; j < jj; ++j) {
+        const cssRule = cssRules[j];
+        if (cssRule.type == 5) {
+          var match = cssRule.cssText.match(fontFamilyRegEx);
+          if (match[1].replace(stripQuotesRegEx, '') == family) {
+            return true;
+          }
+        }
+      }
+    }
+  }
+  return false;
+}
 
-function useFont(fonts) {
-  if (fonts in loadedFonts) {
-    return loadedFonts[fonts];
+var fontFamilies = {};
+var googleFamilies = googleFonts.getNames();
+function getFonts(fonts) {
+  if (fonts in fontFamilies) {
+    return fontFamilies[fonts];
   }
-  var i, ii;
-  if (!Array.isArray(fonts)) {
-    fonts = [fonts];
-  }
-  var googleFamilies = googleFonts.getNames();
   var families = fonts.map(function(font) {
     return mb2css(font, 1).split(' 1px ')[1].replace(/"/g, '');
   });
-  var font;
-  for (i = 0, ii = families.length; i < ii; ++i) {
-    var family = families[i];
-    font = fonts[i];
-    if (googleFamilies.indexOf(family) !== -1) {
-      var fontUrl = 'https://fonts.googleapis.com/css?family=' + family.replace(/ /g, '+');
-      if (!document.querySelector('link[href="' + fontUrl + '"]')) {
-        var markup = document.createElement('link');
-        markup.href = fontUrl;
-        markup.rel = 'stylesheet';
-        document.getElementsByTagName('head')[0].appendChild(markup);
-      }
-      break;
+  var family = families[0];
+  if (!hasFontFamily(family) && googleFamilies.indexOf(family) !== -1) {
+    var fontUrl = 'https://fonts.googleapis.com/css?family=' + family.replace(/ /g, '+');
+    if (!document.querySelector('link[href="' + fontUrl + '"]')) {
+      var markup = document.createElement('link');
+      markup.href = fontUrl;
+      markup.rel = 'stylesheet';
+      document.getElementsByTagName('head')[0].appendChild(markup);
     }
   }
-  loadedFonts[fonts] = font;
-  return font;
+  return fonts;
 }
 
 var spriteRegEx = /^(.*)(\?.*)$/;
@@ -104,7 +114,9 @@ export function applyStyle(layer, glStyle, source, path, resolutions) {
     var spriteScale, spriteData, spriteImageUrl, style;
     function onChange() {
       if (!style && (!glStyle.sprite || spriteData)) {
-        style = applyStyleFunction(layer, glStyle, source, resolutions, spriteData, spriteImageUrl, useFont);
+        if (layer instanceof VectorLayer || layer instanceof VectorTileLayer) {
+          style = applyStyleFunction(layer, glStyle, source, resolutions, spriteData, spriteImageUrl, getFonts);
+        }
         resolve();
       } else if (style) {
         layer.setStyle(style);

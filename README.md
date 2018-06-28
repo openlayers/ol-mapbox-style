@@ -15,7 +15,7 @@ var key = 'Your Mapbox Access Token here';
 apply('map', 'https://api.mapbox.com/styles/v1/mapbox/bright-v9?access_token=' + key);
 ```
 
-Only commonly available system fonts and [Google Fonts](https://developers.google.com/fonts/) will automatically be available for text defined in the Mapbox Style object. It is the responsibility of the application to load other fonts.
+Only commonly available system fonts and [Google Fonts](https://developers.google.com/fonts/) will automatically be available for any `text-font` defined in the Mapbox Style object. It is the responsibility of the application to load other fonts. Because `ol-mapbox-style` uses system and web fonts instead of PBF/SDF glyphs, the [font stack](https://www.mapbox.com/help/manage-fontstacks/) is treated a little different: style and weight are taken from the primary font (i.e. the first one in the font stack). Subsequent fonts in the font stack are only used if the primary font is not available/loaded, and they will be used with the style and weight of the primary font.
 
 To apply a subset of the layers defined in the Mapbox Style layer to a custom OpenLayers layer, use the `applyStyle()` function.
 
@@ -175,11 +175,11 @@ the specified `source`, which needs to be a `"type": "vector"` or
 -   `spriteImageUrl` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Sprite image url for the sprite
     specified in the Mapbox Style object's `sprite` property. Only required if a
     `sprite` property is specified in the Mapbox Style object. (optional, default `undefined`)
--   `useFont` **function ([Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>): [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Function that
-    receives an array of available fonts as arguments, and returns the font that
-    can be used. Font names are the names used in the Mapbox Style object. If not
-    provided, the style function will always use the first font from the array in
-    the `text-font` property. (optional, default `undefined`)
+-   `getFonts` **function ([Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>): [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Function that
+    receives a font stack as arguments, and returns a (modified) font stack that
+    is available. Font names are the names used in the Mapbox Style object. If
+    not provided, the font stack will be used as-is. This function can also be
+    used for loading web fonts. (optional, default `undefined`)
 
 Returns **ol.style.StyleFunction** Style function for use in
 `ol.layer.Vector` or `ol.layer.VectorTile`.

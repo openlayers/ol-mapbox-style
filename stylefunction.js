@@ -155,15 +155,15 @@ function fromTemplate(text, properties) {
  * @param {Object} [spriteImageUrl=undefined] Sprite image url for the sprite
  * specified in the Mapbox Style object's `sprite` property. Only required if a
  * `sprite` property is specified in the Mapbox Style object.
- * @param {function(Array<string>):string} [useFont=undefined] Function that
- * receives an array of available fonts as arguments, and returns the font that
- * can be used. Font names are the names used in the Mapbox Style object. If not
- * provided, the style function will always use the first font from the array in
- * the `text-font` property.
+ * @param {function(Array<string>):string} [getFonts=undefined] Function that
+ * receives a font stack as arguments, and returns a (modified) font stack that
+ * is available. Font names are the names used in the Mapbox Style object. If
+ * not provided, the font stack will be used as-is. This function can also be
+ * used for loading web fonts.
  * @return {ol.style.StyleFunction} Style function for use in
  * `ol.layer.Vector` or `ol.layer.VectorTile`.
  */
-export default function(olLayer, glStyle, source, resolutions, spriteData, spriteImageUrl, useFont) {
+export default function(olLayer, glStyle, source, resolutions, spriteData, spriteImageUrl, getFonts) {
   if (!resolutions) {
     resolutions = [];
     for (let res = 78271.51696402048; resolutions.length < 21; res /= 2) {
@@ -544,7 +544,7 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
           text = style.getText();
           const textSize = getValue(layer, 'layout', 'text-size', zoom, f);
           const fontArray = getValue(layer, 'layout', 'text-font', zoom, f);
-          const font = mb2css(useFont ? useFont(fontArray) : fontArray[0], textSize);
+          const font = mb2css(getFonts ? getFonts(fontArray) : fontArray, textSize);
           const textTransform = layout['text-transform'];
           if (textTransform == 'uppercase') {
             label = label.toUpperCase();
