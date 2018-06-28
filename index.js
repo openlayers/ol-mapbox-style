@@ -24,23 +24,30 @@ import Color from '@mapbox/mapbox-gl-style-spec/util/color';
 
 var fontFamilyRegEx = /font-family: ?([^;]*);/;
 var stripQuotesRegEx = /("|')/g;
+var loadedFontFamilies;
 function hasFontFamily(family) {
-  var styleSheets = document.styleSheets;
-  for (var i = 0, ii = styleSheets.length; i < ii; ++i) {
-    const cssRules = styleSheets[i].cssRules;
-    if (cssRules) {
-      for (var j = 0, jj = cssRules.length; j < jj; ++j) {
-        const cssRule = cssRules[j];
-        if (cssRule.type == 5) {
-          var match = cssRule.cssText.match(fontFamilyRegEx);
-          if (match[1].replace(stripQuotesRegEx, '') == family) {
-            return true;
+  if (!loadedFontFamilies) {
+    loadedFontFamilies = {};
+    var styleSheets = document.styleSheets;
+    for (var i = 0, ii = styleSheets.length; i < ii; ++i) {
+      const styleSheet = styleSheets[i];
+      try {
+        const cssRules = styleSheet.rules || styleSheet.cssRules;
+        if (cssRules) {
+          for (var j = 0, jj = cssRules.length; j < jj; ++j) {
+            const cssRule = cssRules[j];
+            if (cssRule.type == 5) {
+              var match = cssRule.cssText.match(fontFamilyRegEx);
+              loadedFontFamilies[match[1].replace(stripQuotesRegEx, '')] = true;
+            }
           }
         }
+      } catch (e) {
+        // empty catch block
       }
     }
   }
-  return false;
+  return family in loadedFontFamilies;
 }
 
 var fontFamilies = {};
