@@ -24,7 +24,7 @@ To apply the properties of the Mapbox Style's `background` layer to the map, use
 To create a style function for individual OpenLayers vector or vector tile layers, use the `stylefunction` module:
 
 ```js
-import stylefuction from 'ol-mapbox-style/stylefunction';
+import stylefunction from 'ol-mapbox-style/stylefunction';
 // OpenLayers imports from https://npmjs.com/package/ol
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
