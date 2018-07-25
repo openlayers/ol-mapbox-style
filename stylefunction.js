@@ -12,14 +12,12 @@ import Text from 'ol/style/Text';
 import Circle from 'ol/style/Circle';
 import Point from 'ol/geom/Point';
 import derefLayers from '@mapbox/mapbox-gl-style-spec/deref';
-import spec from '@mapbox/mapbox-gl-style-spec/reference/latest';
-import {isFunction} from '@mapbox/mapbox-gl-style-spec/function';
-import {isExpression} from '@mapbox/mapbox-gl-style-spec/expression';
-import convertFunction from '@mapbox/mapbox-gl-style-spec/function/convert';
-import Color from '@mapbox/mapbox-gl-style-spec/util/color';
-import {createPropertyExpression} from '@mapbox/mapbox-gl-style-spec/expression';
+import {latest as spec} from '@mapbox/mapbox-gl-style-spec';
+import {function as mbfunction} from '@mapbox/mapbox-gl-style-spec';
+import {expression as mbexpression} from '@mapbox/mapbox-gl-style-spec';
+import {Color} from '@mapbox/mapbox-gl-style-spec';
 
-import createFilter from '@mapbox/mapbox-gl-style-spec/feature_filter';
+import {featureFilter as createFilter} from '@mapbox/mapbox-gl-style-spec';
 import mb2css from 'mapbox-to-css-font';
 import {deg2rad, getZoomForResolution} from './util';
 
@@ -33,7 +31,7 @@ const types = {
 };
 
 const expressionData = function(rawExpression, propertySpec) {
-  const compiledExpression = createPropertyExpression(rawExpression, propertySpec);
+  const compiledExpression = mbexpression.createPropertyExpression(rawExpression, propertySpec);
   if (compiledExpression.result === 'error') {
     throw new Error(compiledExpression.value.map(err => `${err.key}: ${err.message}`).join(', '));
   }
@@ -65,9 +63,9 @@ export function getValue(layer, layoutOrPaint, property, zoom, feature) {
     if (value === undefined) {
       value = propertySpec.default;
     }
-    let isExpr = isExpression((value));
-    if (!isExpr && isFunction(value)) {
-      value = convertFunction(value, propertySpec);
+    let isExpr = mbexpression.isExpression((value));
+    if (!isExpr && mbfunction.isFunction(value)) {
+      value = mbfunction.convertFunction(value, propertySpec);
       isExpr = true;
     }
     if (isExpr) {
