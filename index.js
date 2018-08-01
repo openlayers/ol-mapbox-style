@@ -20,7 +20,7 @@ import TileJSON from 'ol/source/TileJSON';
 import VectorSource from 'ol/source/Vector';
 import VectorTileSource from 'ol/source/VectorTile';
 import XYZ from 'ol/source/XYZ';
-import Color from '@mapbox/mapbox-gl-style-spec/util/color';
+import {Color} from '@mapbox/mapbox-gl-style-spec';
 
 var fontFamilyRegEx = /font-family: ?([^;]*);/;
 var stripQuotesRegEx = /("|')/g;
