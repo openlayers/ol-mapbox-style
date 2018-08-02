@@ -86,13 +86,6 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.js$/,
-        loader: 'babel-loader',
-        query: {
-          cacheDirectory: true
-        }
-      },
-      {
         test: /\.css$/,
         use: ['style-loader', 'css-loader']
       }

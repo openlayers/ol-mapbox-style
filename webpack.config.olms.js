@@ -32,16 +32,5 @@ module.exports = {
     'ol/source/Vector': 'ol.source.Vector',
     'ol/source/VectorTile': 'ol.source.VectorTile',
     'ol/source/XYZ': 'ol.source.XYZ'
-  },
-  module: {
-    rules: [
-      {
-        test: /\.js$/,
-        loader: 'babel-loader',
-        query: {
-          cacheDirectory: true
-        }
-      }
-    ]
   }
 };
