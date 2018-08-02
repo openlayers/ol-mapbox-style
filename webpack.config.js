@@ -83,7 +83,6 @@ module.exports = {
   },
   devtool: 'source-map',
   node: {fs: 'empty'},
-  mode: 'development',
   module: {
     rules: [
       {
