@@ -13,15 +13,18 @@ import Circle from 'ol/style/Circle';
 import Point from 'ol/geom/Point';
 import derefLayers from '@mapbox/mapbox-gl-style-spec/deref';
 import spec from '@mapbox/mapbox-gl-style-spec/reference/latest';
-import {isFunction} from '@mapbox/mapbox-gl-style-spec/function';
-import {isExpression} from '@mapbox/mapbox-gl-style-spec/expression';
-import convertFunction from '@mapbox/mapbox-gl-style-spec/function/convert';
-import Color from '@mapbox/mapbox-gl-style-spec/util/color';
-import {createPropertyExpression} from '@mapbox/mapbox-gl-style-spec/expression';
-
-import createFilter from '@mapbox/mapbox-gl-style-spec/feature_filter';
+import {
+  expression, Color,
+  function as fn,
+  featureFilter as createFilter
+} from '@mapbox/mapbox-gl-style-spec';
 import mb2css from 'mapbox-to-css-font';
 import {deg2rad, getZoomForResolution} from './util';
+
+const isFunction = fn.isFunction;
+const convertFunction = fn.convertFunction;
+const isExpression = expression.isExpression;
+const createPropertyExpression = expression.createPropertyExpression;
 
 const types = {
   'Point': 1,
