@@ -109,6 +109,7 @@
     "webpack-dev-server": "^3.1.1"
   },
   "jest": {
+    "verbose": true,
     "setupFiles": [
       "<rootDir>/env-setup.js"
     ],

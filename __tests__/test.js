@@ -18,6 +18,8 @@ import TileJson from '../example/data/tilejson.json';
 import 'isomorphic-fetch';
 import nock from 'nock';
 
+import camo3dJSON from './fixtures/camo3d.json';
+
 delete brightV9.sprite;
 
 describe('ol-mapbox-style', function() {
@@ -29,21 +31,6 @@ describe('ol-mapbox-style', function() {
       var map = new Map({target: target});
       applyBackground(map, brightV9);
       should(target.style.backgroundColor).be.exactly('rgb(248, 244, 240)');
-    });
-  });
-
-  describe('applyStyle', function() {
-    var layer = new VectorTileLayer({
-      source: new VectorTileSource({
-        tileGrid: createXYZ({tileSize: 512, maxZoom: 22})
-      })
-    });
-    it('applies a style function to a layer and resolves promise', function(done) {
-      should(layer.getStyle()).be.null;
-      applyStyle(layer, brightV9, 'mapbox').then(function() {
-        should(layer.getStyle()).be.a.Function();
-        done();
-      });
     });
   });
 
@@ -151,36 +138,29 @@ describe('ol-mapbox-style', function() {
     });
 
     it('handles vector sources from TileJSON', function(done) {
-      var style_url = 'https://rawgit.com/PetersonGIS/CamoStyle/b783aadd625bf0d874f77daa6c597b585f0b63fd/camo3d.json';
-      fetch(style_url)
-        .then(r => r.json())
-        .then((styleDoc) => {
-          // the sprite and glyph settings cause unnecessary fetches.
-          delete styleDoc.sprite;
-          delete styleDoc.glyphs;
 
-          // setup the style doc as a nock
-          nock('http://dummy')
-            .get('/camo3d.json')
-            .reply(200, styleDoc);
+      // the sprite and glyph settings cause unnecessary fetches.
+      delete camo3dJSON.sprite;
+      delete camo3dJSON.glyphs;
 
-          var map = apply(target, 'http://dummy/camo3d.json');
+      // setup the style doc as a nock
+      nock('http://dummy')
+        .get('/camo3d.json')
+        .reply(200, camo3dJSON);
 
-          map.getLayers().once('add', function(e) {
-            should(toLonLat(map.getView().getCenter())).be.approximatelyDeep([7.1434, 50.7338], 1e-4);
-            should(map.getView().getZoom()).equal(14.11);
-            var layer = e.element;
-            layer.once('change:source', function() {
-              var source = layer.getSource();
-              should(source).be.instanceof(VectorTileSource);
-              should(layer.getStyle()).be.a.Function();
-            });
-            done();
-          });
-        })
-        .catch(err => {
-          console.error('Error', err);
+      var map = apply(target, 'http://dummy/camo3d.json');
+
+      map.getLayers().once('add', function(e) {
+        should(toLonLat(map.getView().getCenter())).be.approximatelyDeep([7.1434, 50.7338], 1e-4);
+        should(map.getView().getZoom()).equal(14.11);
+        var layer = e.element;
+        layer.once('change:source', function() {
+          var source = layer.getSource();
+          should(source).be.instanceof(VectorTileSource);
+          should(layer.getStyle()).be.a.Function();
         });
+        done();
+      });
     });
 
     it('handles visibility for raster layers', function(done) {

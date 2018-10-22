@@ -111,11 +111,21 @@ function toSpriteUrl(url, path, extension) {
 export function applyStyle(layer, glStyle, source, path, resolutions) {
   return new Promise(function(resolve, reject) {
 
+    // TODO: figure out where best place to check source type is
+    // Note that the source arg is an array of gl layer ids and each must be
+    // dereferenced to get source type to validate
     if (typeof glStyle != 'object') {
       glStyle = JSON.parse(glStyle);
     }
     if (glStyle.version != 8) {
-      reject(new Error('glStyle version 8 required.'));
+      return reject(new Error('glStyle version 8 required.'));
+    }
+    if (!(layer instanceof VectorLayer) && !(layer instanceof VectorTileLayer)) {
+      return reject(new Error('Can only apply to VectorLayer or VectorTileLayer'));
+    }
+    const layerSource = layer.getSource();
+    if (!(layerSource instanceof VectorTileSource) && (!layerSource instanceof VectorSource)) {
+      return reject(new Error('Can only apply to VectorTileSource or VectorSource'));
     }
 
     var spriteScale, spriteData, spriteImageUrl, style;
@@ -123,10 +133,15 @@ export function applyStyle(layer, glStyle, source, path, resolutions) {
       if (!style && (!glStyle.sprite || spriteData)) {
         if (layer instanceof VectorLayer || layer instanceof VectorTileLayer) {
           style = applyStyleFunction(layer, glStyle, source, resolutions, spriteData, spriteImageUrl, getFonts);
+          resolve();
+        } else {
+          reject(new Error('Can only apply to VectorLayer or VectorTileLayer}'));
         }
-        resolve();
       } else if (style) {
         layer.setStyle(style);
+        resolve();
+      } else {
+        reject(new Error('Something went wrong trying to apply style.'));
       }
     }
 
@@ -137,27 +152,30 @@ export function applyStyle(layer, glStyle, source, path, resolutions) {
 
       fetch(spriteUrl, {credentials: 'same-origin'})
         .then(function(response) {
-          // if the response is ready return the JSON promise
-          if (response.status === 200) {
-            return response.json();
-          } else if (sizeFactor !== '') {
-            // return the JSON promise for the low-resolution sprites.
-            sizeFactor = '';
+          if (!response.ok && (sizeFactor !== '')) {
             spriteUrl = toSpriteUrl(glStyle.sprite, path, '.json');
-            return fetch(spriteUrl, {credentials: 'same-origin'}).then(r => r.json());
+            return fetch(spriteUrl, {credentials: 'same-origin'});
+          } else {
+            return response;
+          }
+        })
+        .then(function(response) {
+          if (response.ok) {
+            return response.json();
+          } else {
+            throw new Error(`Problem fetching sprite from ${spriteUrl}: ${response.statusText}`);
           }
         })
         .then(function(spritesJson) {
           if (spritesJson === undefined) {
-            throw 'No sprites found.';
+            throw new Error('No sprites found.');
           }
           spriteData = spritesJson;
           spriteImageUrl = toSpriteUrl(glStyle.sprite, path, sizeFactor + '.png');
           onChange();
         })
         .catch(function(err) {
-          console.error(err);
-          reject(new Error('Sprites cannot be loaded from ' + spriteUrl));
+          reject(new Error(`Sprites cannot be loaded: ${spriteUrl}: ${err.message}`));
         });
     } else {
       onChange();
@@ -251,12 +269,17 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
     if (layerIds.length > 0) {
       map.addLayer(layer);
       var setStyle = function() {
-        applyStyle(layer, glStyle, layerIds, path).then(function() {
-          layer.setVisible(true);
-        }, function(e) {
-          /*eslint no-console: ["error", { allow: ["error"] }] */
-          console.error(e);
-        });
+        // only call if source is a type that takes styles
+        // has to be here because layer might not have a source yet
+        const source = layer.getSource();
+        if ((source instanceof VectorSource) || (source instanceof VectorTileSource)) {
+          applyStyle(layer, glStyle, layerIds, path).then(function() {
+            layer.setVisible(true);
+          }, function(e) {
+            /*eslint no-console: ["error", { allow: ["error"] }] */
+            console.error(e);
+          });
+        }
       };
       if (layer.getSource()) {
         setStyle();
@@ -273,6 +296,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
       setBackground(map, glLayer);
     } else {
       id = glLayer.source || getSourceIdByRef(glLayers, glLayer.ref);
+      // TODO: this technique assumes gl layers will be in particular order; fix
       if (id != glSourceId) {
         finalizeLayer(layer);
         layerIds = [];
