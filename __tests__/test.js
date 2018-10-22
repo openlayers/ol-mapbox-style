@@ -1,14 +1,13 @@
 import 'babel-polyfill';
 import should from 'should';
 import 'should-approximately-deep';
-import {applyBackground, applyStyle, apply, getLayer, getSource} from '../';
+import {applyBackground, apply, getLayer, getSource} from '../';
 import Map from 'ol/Map';
 import TileSource from 'ol/source/Tile';
 import VectorSource from 'ol/source/Vector';
 import VectorTileLayer from 'ol/layer/VectorTile';
 import VectorTileSource from 'ol/source/VectorTile';
 import {toLonLat} from 'ol/proj';
-import {createXYZ} from 'ol/tilegrid';
 import brightV9 from '../node_modules/mapbox-gl-styles/styles/bright-v9.json';
 import WmsJson from '../example/data/wms.json';
 import GeoJson from '../example/data/geojson.json';
