@@ -1,5 +1,5 @@
 import 'babel-polyfill';
-import should from 'should/as-function';
+import should from 'should';
 import 'should-approximately-deep';
 import {applyBackground, applyStyle, apply, getLayer, getSource} from '../';
 import Map from 'ol/Map';
