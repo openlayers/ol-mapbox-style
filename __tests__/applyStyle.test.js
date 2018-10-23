@@ -1,7 +1,6 @@
 /*eslint no-console: "off"*/
 import 'isomorphic-fetch';
 import nock from 'nock';
-nock.disableNetConnect();
 import should from 'should/as-function';
 
 import VectorLayer from 'ol/layer/Vector';
@@ -19,6 +18,11 @@ import styleMissingSprite from './fixtures/style-missing-sprite.json';
 import styleInvalidSpriteURL from './fixtures/style-invalid-sprite-url.json';
 
 import {applyStyle} from '../index.js';
+
+
+// to verify that no external http calls are mistakenly made
+// protects against inadvertent typos in nock creation as well
+nock.disableNetConnect();
 
 
 describe('applyStyle style argument validation', function() {

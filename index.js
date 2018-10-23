@@ -123,10 +123,6 @@ export function applyStyle(layer, glStyle, source, path, resolutions) {
     if (!(layer instanceof VectorLayer) && !(layer instanceof VectorTileLayer)) {
       return reject(new Error('Can only apply to VectorLayer or VectorTileLayer'));
     }
-    const layerSource = layer.getSource();
-    if (!(layerSource instanceof VectorTileSource) && (!layerSource instanceof VectorSource)) {
-      return reject(new Error('Can only apply to VectorTileSource or VectorSource'));
-    }
 
     var spriteScale, spriteData, spriteImageUrl, style;
     function onChange() {
