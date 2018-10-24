@@ -236,7 +236,6 @@ function getSourceIdByRef(layers, ref) {
 }
 
 function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
-  // console.log("processStyle");
   var view = map.getView();
   if ('center' in glStyle && !view.getCenter()) {
     view.setCenter(fromLonLat(glStyle.center));
@@ -266,7 +265,6 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
   var glLayer, glSource, glSourceId, id, layer, mapid, transition, url;
   for (var i = 0, ii = glLayers.length; i < ii; ++i) {
     glLayer = glLayers[i];
-    // console.log("processStyle: layer id:", glLayer.id);
     if (glLayer.type == 'background') {
       setBackground(map, glLayer);
     } else {
