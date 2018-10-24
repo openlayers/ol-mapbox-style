@@ -114,7 +114,7 @@ describe('ol-mapbox-style', function() {
         .get('/sprite.png')
         .reply(200, '')
         .get('/sprite.json')
-        .reply(200, {});
+        .reply(200, {'not-empty': {}});
 
       apply(map, 'http://dummy/geojson-inline.json');
     });

@@ -20,11 +20,6 @@ import styleInvalidSpriteURL from './fixtures/style-invalid-sprite-url.json';
 import {applyStyle} from '../index.js';
 
 
-// to verify that no external http calls are mistakenly made
-// protects against inadvertent typos in nock creation as well
-nock.disableNetConnect();
-
-
 describe('applyStyle style argument validation', function() {
   const source = 'vector';
   const layer = new VectorLayer();
@@ -194,7 +189,17 @@ describe('applyStyle sprite retrieval', function() {
   });
 
   test('should reject on empty sprite JSON', function(done) {
-    applyStyle(layer, glStyle, source, path, resolutions).then(function() {
+
+    // make a copy so we can safely modify
+    const style = JSON.parse(JSON.stringify(styleEmptySprite));
+
+    // give style a dummy sprite url
+    style.sprite = 'http://dummy/sprite';
+
+    // make that dummy sprite return json
+    nock('http://dummy/').get(/\/sprite.*/).reply(200, {});
+
+    applyStyle(layer, style, source, path, resolutions).then(function() {
       done(new Error('empty sprite JSON promise should reject'));
     }).catch(function(err) {
       done();

@@ -159,12 +159,12 @@ export function applyStyle(layer, glStyle, source, path, resolutions) {
           if (response.ok) {
             return response.json();
           } else {
-            throw new Error(`Problem fetching sprite from ${spriteUrl}: ${response.statusText}`);
+            reject(new Error(`Problem fetching sprite from ${spriteUrl}: ${response.statusText}`));
           }
         })
         .then(function(spritesJson) {
-          if (spritesJson === undefined) {
-            throw new Error('No sprites found.');
+          if ((spritesJson === undefined) || (Object.keys(spritesJson).length === 0)) {
+            return reject(new Error('No sprites found.'));
           }
           spriteData = spritesJson;
           spriteImageUrl = toSpriteUrl(glStyle.sprite, path, sizeFactor + '.png');
@@ -236,6 +236,7 @@ function getSourceIdByRef(layers, ref) {
 }
 
 function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
+  // console.log("processStyle");
   var view = map.getView();
   if ('center' in glStyle && !view.getCenter()) {
     view.setCenter(fromLonLat(glStyle.center));
@@ -261,40 +262,18 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
   var geoJsonFormat = new GeoJSON();
   var layerIds = [];
 
-  function finalizeLayer(layer) {
-    if (layerIds.length > 0) {
-      map.addLayer(layer);
-      var setStyle = function() {
-        // only call if source is a type that takes styles
-        // has to be here because layer might not have a source yet
-        const source = layer.getSource();
-        if ((source instanceof VectorSource) || (source instanceof VectorTileSource)) {
-          applyStyle(layer, glStyle, layerIds, path).then(function() {
-            layer.setVisible(true);
-          }, function(e) {
-            /*eslint no-console: ["error", { allow: ["error"] }] */
-            console.error(e);
-          });
-        }
-      };
-      if (layer.getSource()) {
-        setStyle();
-      } else {
-        layer.once('change:source', setStyle);
-      }
-    }
-  }
 
   var glLayer, glSource, glSourceId, id, layer, mapid, transition, url;
   for (var i = 0, ii = glLayers.length; i < ii; ++i) {
     glLayer = glLayers[i];
+    // console.log("processStyle: layer id:", glLayer.id);
     if (glLayer.type == 'background') {
       setBackground(map, glLayer);
     } else {
       id = glLayer.source || getSourceIdByRef(glLayers, glLayer.ref);
-      // TODO: this technique assumes gl layers will be in particular order; fix
+      // this technique assumes gl layers will be in a particular order
       if (id != glSourceId) {
-        finalizeLayer(layer);
+        finalizeLayer(layer, layerIds, glStyle, path, map);
         layerIds = [];
         glSource = glStyle.sources[id];
         url = glSource.url;
@@ -428,7 +407,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
       layerIds.push(glLayer.id);
     }
   }
-  finalizeLayer(layer);
+  finalizeLayer(layer, layerIds, glStyle, path, map);
   map.set('mapbox-style', glStyle);
 }
 
@@ -502,8 +481,7 @@ export function apply(map, style) {
         processStyle(glStyle, map, baseUrl, host, path, accessToken);
       })
       .catch(function(err) {
-        console.error(err);
-        throw new Error('Could not load ' + style);
+        throw new Error(`Could not load ${style}: ${err.message}`);
       });
   } else {
     setTimeout(function() {
@@ -512,6 +490,66 @@ export function apply(map, style) {
   }
   return map;
 }
+
+
+/**
+ * @private
+ *
+ * If layerIds is not empty, applies the style specified in glStyle to the layer,
+ * and adds the layer to the map.
+ *
+ * The layer may not yet have a source when the function is called.  If so, the style
+ * is applied to the layer via a once listener on the 'change:source' event.
+ *
+ * @param {ol.Map|HTMLElement|string} layer Either an existing OpenLayers Map
+ * instance, or a HTML element, or the id of a HTML element that will be the
+ * target of a new OpenLayers Map.
+ *
+ * @param {array} layerIds Array containing ids of already-processed layers.
+ *
+ * @param {ol.Map|HTMLElement|string} glStyle Style as a JSON object.
+ *
+ * @param {ol.Map|HTMLElement|string} path The path part of the URL to the style,
+ * if the style was defined as a string.  (Why this if glStyle already being passed?)
+ *
+ * @param {ol.Map|HTMLElement|string} map Either an existing OpenLayers Map
+ * instance, or a HTML element, or the id of a HTML element that will be the
+ * target of a new OpenLayers Map.
+ *
+ * @return {Promise} Returns a promise that resolves after the source has
+ * been set on the specified layer, and the style has been applied.
+ */
+function finalizeLayer(layer, layerIds, glStyle, path, map) {
+  return new Promise(function(resolve, reject) {
+    if (layerIds.length > 0) {
+
+      const setStyle = function() {
+        const source = layer.getSource();
+        if ((source instanceof VectorSource) || (source instanceof VectorTileSource)) {
+          applyStyle(layer, glStyle, layerIds, path).then(function() {
+            layer.setVisible(true);
+            resolve();
+          }, function(e) {
+            reject(e);
+          });
+        } else {
+          layer.setVisible(true);
+          resolve();
+        }
+      };
+
+      map.addLayer(layer);
+      if (layer.getSource()) {
+        setStyle();
+      } else {
+        layer.once('change:source', setStyle);
+      }
+    } else {
+      resolve();
+    }
+  });
+}
+
 
 /**
  * Get the OpenLayers layer instance that contains the provided Mapbox Style
