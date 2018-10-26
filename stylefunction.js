@@ -502,6 +502,7 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
           const circleStrokeColor = getValue(layer, 'paint', 'circle-stroke-color', zoom, f);
           const circleColor = getValue(layer, 'paint', 'circle-color', zoom, f);
           const circleOpacity = getValue(layer, 'paint', 'circle-opacity', zoom, f);
+          const circleStrokeOpacity = getValue(layer, 'paint', 'circle-stroke-opacity', zoom, f);
           const circleStrokeWidth = getValue(layer, 'paint', 'circle-stroke-width', zoom, f);
           const cache_key = circleRadius + '.' + circleStrokeColor + '.' +
             circleColor + '.' + circleOpacity + '.' + circleStrokeWidth;
@@ -511,7 +512,7 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
               radius: circleRadius,
               stroke: circleStrokeWidth === 0 ? undefined : new Stroke({
                 width: circleStrokeWidth,
-                color: colorWithOpacity(circleStrokeColor, circleOpacity)
+                color: colorWithOpacity(circleStrokeColor, circleStrokeOpacity)
               }),
               fill: new Fill({
                 color: colorWithOpacity(circleColor, circleOpacity)
