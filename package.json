@@ -99,6 +99,7 @@
     "mapbox-gl-styles": "^2.0.2",
     "mkdirp": "^0.5.1",
     "nock": "^10.0.1",
+    "nodemon": "^1.18.5",
     "ol": "^5.0.0",
     "regenerator-runtime": "^0.12.1",
     "should": "^13.2.3",
