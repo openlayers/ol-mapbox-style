@@ -127,12 +127,8 @@ export function applyStyle(layer, glStyle, source, path, resolutions) {
     var spriteScale, spriteData, spriteImageUrl, style;
     function onChange() {
       if (!style && (!glStyle.sprite || spriteData)) {
-        if (layer instanceof VectorLayer || layer instanceof VectorTileLayer) {
-          style = applyStyleFunction(layer, glStyle, source, resolutions, spriteData, spriteImageUrl, getFonts);
-          resolve();
-        } else {
-          reject(new Error('Can only apply to VectorLayer or VectorTileLayer}'));
-        }
+        style = applyStyleFunction(layer, glStyle, source, resolutions, spriteData, spriteImageUrl, getFonts);
+        resolve();
       } else if (style) {
         layer.setStyle(style);
         resolve();
