@@ -1,0 +1,42 @@
+{
+  "version": 8,
+  "name": "Toner",
+  "metadata": {
+    "mapbox:autocomposite": false,
+    "mapbox:type": "template",
+    "openmaptiles:version": "3.x",
+    "openmaptiles:mapbox:owner": "openmaptiles",
+    "openmaptiles:mapbox:source:url": "mapbox://openmaptiles.4qljc88t"
+  },
+  "center": [
+    20.838971352362933,
+    47.241654485577584
+  ],
+  "zoom": 2.8784041883593225,
+  "bearing": 0,
+  "pitch": 0,
+  "sources": {
+    "openmaptiles": {
+      "type": "vector",
+      "url": "https://free.tilehosting.com/data/v3.json?key={key}"
+    }
+  },
+  "glyphs": "https://free.tilehosting.com/fonts/{fontstack}/{range}.pbf?key={key}",
+  "layers": [
+    {
+      "id": "background-1",
+      "type": "background",
+      "paint": {
+        "background-color": "blue"
+      }
+    },
+    {
+      "id": "background-2",
+      "type": "background",
+      "paint": {
+        "background-color": "yellow"
+      }
+    },
+  ],
+  "id": "ciwigmbgt00fw2ps58s6klalp"
+}

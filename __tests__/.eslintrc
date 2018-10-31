@@ -1,6 +1,7 @@
 {
   "env": {
-    "mocha": true
+    "mocha": true,
+    "jest": true;
   },
   "rules": {
     "no-console": [

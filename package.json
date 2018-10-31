@@ -71,6 +71,7 @@
   },
   "dependencies": {
     "@mapbox/mapbox-gl-style-spec": "^12.0.0",
+    "babel-plugin-rewire": "^1.2.0",
     "mapbox-to-css-font": "^2.2.0",
     "webfont-matcher": "^1.1.0"
   },
@@ -80,7 +81,7 @@
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",
-    "babel-jest": "^23.0.1",
+    "babel-jest": "^23.6.0",
     "babel-loader": "^7.1.5",
     "babel-plugin-transform-flow-strip-types": "^6.22.0",
     "babel-preset-env": "^1.7.0",
@@ -109,6 +110,7 @@
     "webpack-dev-server": "^3.1.1"
   },
   "jest": {
+    "verbose": true,
     "setupFiles": [
       "<rootDir>/env-setup.js"
     ],
