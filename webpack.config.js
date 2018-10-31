@@ -81,7 +81,7 @@ module.exports = {
       'ol-mapbox-style': path.resolve(__dirname, '.')
     }
   },
-  devtool: 'source-map',
+  devtool: 'eval-source-map',
   node: {fs: 'empty'},
   module: {
     rules: [

@@ -14,7 +14,8 @@ import Point from 'ol/geom/Point';
 import derefLayers from '@mapbox/mapbox-gl-style-spec/deref';
 import spec from '@mapbox/mapbox-gl-style-spec/reference/latest';
 import {
-  expression, Color,
+  expression,
+  Color,
   function as fn,
   featureFilter as createFilter
 } from '@mapbox/mapbox-gl-style-spec';
@@ -66,7 +67,9 @@ export function getValue(layer, layoutOrPaint, property, zoom, feature) {
     let value = (layer[layoutOrPaint] || emptyObj)[property];
     const propertySpec = spec[`${layoutOrPaint}_${layer.type}`][property];
     if (value === undefined) {
-      value = propertySpec.default;
+      value = (propertySpec.default !== undefined) ? propertySpec.default : 'none';
+    } else if ((typeof value == 'object') && !('default' in value)) {
+      value.default = (propertySpec.default !== undefined) ? propertySpec.default : '';
     }
     let isExpr = isExpression((value));
     if (!isExpr && isFunction(value)) {

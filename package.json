@@ -60,7 +60,7 @@
   ],
   "license": "BSD-2-Clause",
   "scripts": {
-    "start": "webpack-dev-server --config ./webpack.config.js",
+    "start": "nodemon --watch webpack.config.js --exec \"webpack-dev-server --config ./webpack.config.js --inline --mode=development\"",
     "prepare": "npm run doc && npm run build",
     "build": "webpack-cli --config ./webpack.config.olms.js && webpack-cli",
     "doc": "documentation readme -s API index.js",
@@ -70,7 +70,7 @@
     "cover": "jest --coverage"
   },
   "dependencies": {
-    "@mapbox/mapbox-gl-style-spec": "^12.0.0",
+    "@mapbox/mapbox-gl-style-spec": "^13.3.0",
     "mapbox-to-css-font": "^2.2.0",
     "webfont-matcher": "^1.1.0"
   },
