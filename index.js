@@ -488,7 +488,6 @@ export function apply(map, style) {
 
 /**
  * @private
- *
  * If layerIds is not empty, applies the style specified in glStyle to the layer,
  * and adds the layer to the map.
  *
@@ -498,22 +497,17 @@ export function apply(map, style) {
  * @param {ol.Map|HTMLElement|string} layer Either an existing OpenLayers Map
  * instance, or a HTML element, or the id of a HTML element that will be the
  * target of a new OpenLayers Map.
- *
  * @param {array} layerIds Array containing ids of already-processed layers.
- *
  * @param {ol.Map|HTMLElement|string} glStyle Style as a JSON object.
- *
  * @param {ol.Map|HTMLElement|string} path The path part of the URL to the style,
  * if the style was defined as a string.  (Why this if glStyle already being passed?)
- *
  * @param {ol.Map|HTMLElement|string} map Either an existing OpenLayers Map
  * instance, or a HTML element, or the id of a HTML element that will be the
  * target of a new OpenLayers Map.
- *
  * @return {Promise} Returns a promise that resolves after the source has
  * been set on the specified layer, and the style has been applied.
  */
-function finalizeLayer(layer, layerIds, glStyle, path, map) {
+export function finalizeLayer(layer, layerIds, glStyle, path, map) {
   return new Promise(function(resolve, reject) {
     if (layerIds.length > 0) {
 

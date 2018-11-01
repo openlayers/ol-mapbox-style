@@ -10,7 +10,7 @@ import ImageLayer from 'ol/layer/Image';
 import glStyle from './fixtures/osm-liberty/style.json';
 import invalidStyle from './fixtures/style-invalid-version.json';
 
-const finalizeLayer = require('../index').__get__('finalizeLayer');
+import {finalizeLayer} from '../index';
 
 
 describe('finalizeLayer promise', function() {
