@@ -25,9 +25,9 @@ describe('ol-mapbox-style', function() {
 
   describe('applyBackground', function() {
     it('applies a background to a map container', function() {
-      var target = document.createElement('div');
+      const target = document.createElement('div');
       target.style.width = target.style.height = '100px';
-      var map = new Map({target: target});
+      const map = new Map({target: target});
       applyBackground(map, brightV9);
       should(target.style.backgroundColor).be.exactly('rgb(248, 244, 240)');
     });
@@ -35,7 +35,7 @@ describe('ol-mapbox-style', function() {
 
   describe('apply', function() {
 
-    var target;
+    let target;
     beforeEach(function() {
       target = document.createElement('div');
     });
@@ -45,7 +45,7 @@ describe('ol-mapbox-style', function() {
     });
 
     it('returns a map instance and adds a layer with a style function', function(done) {
-      var map = apply(target, brightV9);
+      const map = apply(target, brightV9);
       should(map instanceof Map).be.ok();
 
       map.getLayers().once('add', function() {
@@ -60,14 +60,14 @@ describe('ol-mapbox-style', function() {
         .get('/wms.json')
         .reply(200, WmsJson);
 
-      var map = apply(target, 'http://dummy/wms.json');
+      const map = apply(target, 'http://dummy/wms.json');
 
-      var count = 0;
+      let count = 0;
       map.getLayers().on('add', function() {
         ++count;
         if (count == 2) {
-          var osm = map.getLayers().item(0);
-          var wms = map.getLayers().item(1);
+          const osm = map.getLayers().item(0);
+          const wms = map.getLayers().item(1);
           should(osm.getSource().getUrls()).eql([
             'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
             'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -87,10 +87,10 @@ describe('ol-mapbox-style', function() {
         .get('/geojson.json')
         .reply(200, GeoJson);
 
-      var map = apply(target, 'http://dummy/geojson.json');
+      const map = apply(target, 'http://dummy/geojson.json');
       map.getLayers().once('add', function(e) {
-        var layer = e.element;
-        var source = layer.getSource();
+        const layer = e.element;
+        const source = layer.getSource();
         should(source).be.instanceof(VectorSource);
         should(layer.getStyle()).be.a.Function();
         done();
@@ -98,10 +98,10 @@ describe('ol-mapbox-style', function() {
     });
 
     it('handles geojson sources with inline GeoJSON', function(done) {
-      var map = new Map({target: target});
+      const map = new Map({target: target});
       map.getLayers().once('add', function(e) {
-        var layer = e.element;
-        var source = layer.getSource();
+        const layer = e.element;
+        const source = layer.getSource();
         should(source).be.instanceof(VectorSource);
         should(source.getFeatures()).have.length(100);
         should(layer.getStyle()).be.a.Function();
@@ -124,12 +124,12 @@ describe('ol-mapbox-style', function() {
         .get('/tilejson.json')
         .reply(200, TileJson);
 
-      var map = apply(target, 'http://dummy/tilejson.json');
+      const map = apply(target, 'http://dummy/tilejson.json');
       map.getLayers().once('add', function(e) {
-        var source = e.element.getSource();
+        const source = e.element.getSource();
         should(source).be.instanceof(TileSource);
         source.once('change', function() {
-          var tileGrid = source.getTileGrid();
+          const tileGrid = source.getTileGrid();
           should(tileGrid.getMaxZoom()).equal(8);
           done();
         });
@@ -147,14 +147,14 @@ describe('ol-mapbox-style', function() {
         .get('/camo3d.json')
         .reply(200, camo3dJSON);
 
-      var map = apply(target, 'http://dummy/camo3d.json');
+      const map = apply(target, 'http://dummy/camo3d.json');
 
       map.getLayers().once('add', function(e) {
         should(toLonLat(map.getView().getCenter())).be.approximatelyDeep([7.1434, 50.7338], 1e-4);
         should(map.getView().getZoom()).equal(14.11);
-        var layer = e.element;
+        const layer = e.element;
         layer.once('change:source', function() {
-          var source = layer.getSource();
+          const source = layer.getSource();
           should(source).be.instanceof(VectorTileSource);
           should(layer.getStyle()).be.a.Function();
         });
@@ -163,7 +163,7 @@ describe('ol-mapbox-style', function() {
     });
 
     it('handles visibility for raster layers', function(done) {
-      var context = {
+      const context = {
         'version': 8,
         'name': 'states-wms',
         'sources': {
@@ -184,7 +184,7 @@ describe('ol-mapbox-style', function() {
           }
         ]
       };
-      var map = apply(target, context);
+      const map = apply(target, context);
       map.getLayers().once('add', function() {
         should(map.getLayers().item(0).get('visible')).be.false();
         done();
@@ -194,13 +194,13 @@ describe('ol-mapbox-style', function() {
   });
 
   describe('getLayer', function() {
-    var target;
+    let target;
     beforeEach(function() {
       target = document.createElement('div');
     });
 
     it('returns a layer', function(done) {
-      var map = apply(target, brightV9);
+      const map = apply(target, brightV9);
 
       map.once('change:mapbox-style', function() {
         should(getLayer(map, 'landuse_park')).be.an.instanceOf(VectorTileLayer);
@@ -210,13 +210,13 @@ describe('ol-mapbox-style', function() {
   });
 
   describe('getSource', function() {
-    var target;
+    let target;
     beforeEach(function() {
       target = document.createElement('div');
     });
 
     it('returns a source', function(done) {
-      var map = apply(target, brightV9);
+      const map = apply(target, brightV9);
 
       map.once('change:mapbox-style', function() {
         should(getSource(map, 'mapbox')).be.an.instanceOf(VectorTileSource);

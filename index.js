@@ -22,22 +22,22 @@ import VectorTileSource from 'ol/source/VectorTile';
 import XYZ from 'ol/source/XYZ';
 import {Color} from '@mapbox/mapbox-gl-style-spec';
 
-var fontFamilyRegEx = /font-family: ?([^;]*);/;
-var stripQuotesRegEx = /("|')/g;
-var loadedFontFamilies;
+const fontFamilyRegEx = /font-family: ?([^;]*);/;
+const stripQuotesRegEx = /("|')/g;
+let loadedFontFamilies;
 function hasFontFamily(family) {
   if (!loadedFontFamilies) {
     loadedFontFamilies = {};
-    var styleSheets = document.styleSheets;
-    for (var i = 0, ii = styleSheets.length; i < ii; ++i) {
+    const styleSheets = document.styleSheets;
+    for (let i = 0, ii = styleSheets.length; i < ii; ++i) {
       const styleSheet = styleSheets[i];
       try {
         const cssRules = styleSheet.rules || styleSheet.cssRules;
         if (cssRules) {
-          for (var j = 0, jj = cssRules.length; j < jj; ++j) {
+          for (let j = 0, jj = cssRules.length; j < jj; ++j) {
             const cssRule = cssRules[j];
             if (cssRule.type == 5) {
-              var match = cssRule.cssText.match(fontFamilyRegEx);
+              const match = cssRule.cssText.match(fontFamilyRegEx);
               loadedFontFamilies[match[1].replace(stripQuotesRegEx, '')] = true;
             }
           }
@@ -50,20 +50,20 @@ function hasFontFamily(family) {
   return family in loadedFontFamilies;
 }
 
-var fontFamilies = {};
-var googleFamilies = googleFonts.getNames();
+const fontFamilies = {};
+const googleFamilies = googleFonts.getNames();
 function getFonts(fonts) {
   if (fonts in fontFamilies) {
     return fontFamilies[fonts];
   }
-  var families = fonts.map(function(font) {
+  const families = fonts.map(function(font) {
     return mb2css(font, 1).split(' 1px ')[1].replace(/"/g, '');
   });
-  var family = families[0];
+  const family = families[0];
   if (!hasFontFamily(family) && googleFamilies.indexOf(family) !== -1) {
-    var fontUrl = 'https://fonts.googleapis.com/css?family=' + family.replace(/ /g, '+');
+    const fontUrl = 'https://fonts.googleapis.com/css?family=' + family.replace(/ /g, '+');
     if (!document.querySelector('link[href="' + fontUrl + '"]')) {
-      var markup = document.createElement('link');
+      const markup = document.createElement('link');
       markup.href = fontUrl;
       markup.rel = 'stylesheet';
       document.getElementsByTagName('head')[0].appendChild(markup);
@@ -72,7 +72,7 @@ function getFonts(fonts) {
   return fonts;
 }
 
-var spriteRegEx = /^(.*)(\?.*)$/;
+const spriteRegEx = /^(.*)(\?.*)$/;
 
 function withPath(url, path) {
   if (path && url.indexOf('http') != 0) {
@@ -83,7 +83,7 @@ function withPath(url, path) {
 
 function toSpriteUrl(url, path, extension) {
   url = withPath(url, path);
-  var parts = url.match(spriteRegEx);
+  const parts = url.match(spriteRegEx);
   return parts ?
     parts[1] + extension + (parts.length > 2 ? parts[2] : '') :
     url + extension;
@@ -124,7 +124,7 @@ export function applyStyle(layer, glStyle, source, path, resolutions) {
       return reject(new Error('Can only apply to VectorLayer or VectorTileLayer'));
     }
 
-    var spriteScale, spriteData, spriteImageUrl, style;
+    let spriteScale, spriteData, spriteImageUrl, style;
     function onChange() {
       if (!style && (!glStyle.sprite || spriteData)) {
         style = applyStyleFunction(layer, glStyle, source, resolutions, spriteData, spriteImageUrl, getFonts);
@@ -139,8 +139,8 @@ export function applyStyle(layer, glStyle, source, path, resolutions) {
 
     if (glStyle.sprite) {
       spriteScale = window.devicePixelRatio >= 1.5 ? 0.5 : 1;
-      var sizeFactor = spriteScale == 0.5 ? '@2x' : '';
-      var spriteUrl = toSpriteUrl(glStyle.sprite, path, sizeFactor + '.json');
+      const sizeFactor = spriteScale == 0.5 ? '@2x' : '';
+      let spriteUrl = toSpriteUrl(glStyle.sprite, path, sizeFactor + '.json');
 
       fetch(spriteUrl, {credentials: 'same-origin'})
         .then(function(response) {
@@ -180,15 +180,15 @@ const emptyObj = {};
 
 function setBackground(map, layer) {
   function updateStyle() {
-    var element = map.getTargetElement();
+    const element = map.getTargetElement();
     if (!element) {
       return;
     }
-    var layout = layer.layout || {};
-    var paint = layer.paint || {};
-    var zoom = map.getView().getZoom();
+    const layout = layer.layout || {};
+    const paint = layer.paint || {};
+    const zoom = map.getView().getZoom();
     if ('background-color' in paint) {
-      var bg = getValue(layer, 'paint', 'background-color', zoom, emptyObj);
+      const bg = getValue(layer, 'paint', 'background-color', zoom, emptyObj);
       element.style.backgroundColor = Color.parse(bg).toString();
     }
     if ('background-opacity' in paint) {
@@ -221,7 +221,7 @@ export function applyBackground(map, glStyle) {
 }
 
 function getSourceIdByRef(layers, ref) {
-  var sourceId;
+  let sourceId;
   layers.some(function(layer) {
     if (layer.id == ref) {
       sourceId = layer.source;
@@ -232,7 +232,7 @@ function getSourceIdByRef(layers, ref) {
 }
 
 function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
-  var view = map.getView();
+  const view = map.getView();
   if ('center' in glStyle && !view.getCenter()) {
     view.setCenter(fromLonLat(glStyle.center));
   }
@@ -253,13 +253,13 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
     }
   }
 
-  var glLayers = glStyle.layers;
-  var geoJsonFormat = new GeoJSON();
-  var layerIds = [];
+  const glLayers = glStyle.layers;
+  const geoJsonFormat = new GeoJSON();
+  let layerIds = [];
 
 
-  var glLayer, glSource, glSourceId, id, layer, mapid, transition, url;
-  for (var i = 0, ii = glLayers.length; i < ii; ++i) {
+  let glLayer, glSource, glSourceId, id, layer, mapid, transition, url;
+  for (let i = 0, ii = glLayers.length; i < ii; ++i) {
     glLayer = glLayers[i];
     if (glLayer.type == 'background') {
       setBackground(map, glLayer);
@@ -271,7 +271,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
         layerIds = [];
         glSource = glStyle.sources[id];
         url = glSource.url;
-        var tiles = glSource.tiles;
+        let tiles = glSource.tiles;
         if (url) {
           if (url.indexOf('mapbox://') == 0) {
             mapid = url.replace('mapbox://', '');
@@ -286,7 +286,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
 
         if (glSource.type == 'vector') {
           layer = tiles ? (function() {
-            var tileGrid = createXYZ({
+            const tileGrid = createXYZ({
               tileSize: 512,
               maxZoom: 'maxzoom' in glSource ? glSource.maxzoom : 22,
               minZoom: glSource.minzoom
@@ -305,25 +305,25 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
               zIndex: i
             });
           })() : (function() {
-            var layer = new VectorTileLayer({
+            const layer = new VectorTileLayer({
               declutter: true,
               visible: false,
               zIndex: i
             });
-            var tilejson = new TileJSON({
+            const tilejson = new TileJSON({
               url: url
             });
-            var key = tilejson.on('change', function() {
+            const key = tilejson.on('change', function() {
               if (tilejson.getState() == 'ready') {
-                var tileJSONDoc = tilejson.getTileJSON();
-                var tiles = Array.isArray(tileJSONDoc.tiles) ? tileJSONDoc.tiles : [tileJSONDoc.tiles];
-                for (var i = 0, ii = tiles.length; i < ii; ++i) {
-                  var tile = tiles[i];
+                const tileJSONDoc = tilejson.getTileJSON();
+                const tiles = Array.isArray(tileJSONDoc.tiles) ? tileJSONDoc.tiles : [tileJSONDoc.tiles];
+                for (let i = 0, ii = tiles.length; i < ii; ++i) {
+                  const tile = tiles[i];
                   if (tile.indexOf('http') != 0) {
                     tiles[i] = glSource.url + tile;
                   }
                 }
-                var tileGrid = tilejson.getTileGrid();
+                const tileGrid = tilejson.getTileGrid();
                 layer.setSource(new VectorTileSource({
                   attributions: tilejson.getAttributions() || tileJSONDoc.attribution,
                   format: new MVT(),
@@ -344,7 +344,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
             return layer;
           })();
         } else if (glSource.type == 'raster') {
-          var source;
+          let source;
           if (!glSource.tiles) {
             source = (function() {
               return new TileJSON({
@@ -368,7 +368,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
           }
           source.setTileLoadFunction(function(tile, src) {
             if (src.indexOf('{bbox-epsg-3857}') != -1) {
-              var bbox = source.getTileGrid().getTileCoordExtent(tile.getTileCoord());
+              const bbox = source.getTileGrid().getTileCoordExtent(tile.getTileCoord());
               src = src.replace('{bbox-epsg-3857}', bbox.toString());
             }
             tile.getImage().src = src;
@@ -378,8 +378,8 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
             visible: glLayer.layout ? glLayer.layout.visibility !== 'none' : true
           });
         } else if (glSource.type == 'geojson') {
-          var data = glSource.data;
-          var features, geoJsonUrl;
+          const data = glSource.data;
+          let features, geoJsonUrl;
           if (typeof data == 'string') {
             geoJsonUrl = withPath(data, path);
           } else {
@@ -444,7 +444,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
  */
 export function apply(map, style) {
 
-  var accessToken, baseUrl, host, path;
+  let accessToken, baseUrl, host, path;
   accessToken = baseUrl = host = path = '';
 
   if (!(map instanceof Map)) {
@@ -454,7 +454,7 @@ export function apply(map, style) {
   }
 
   if (typeof style === 'string') {
-    var parts = style.match(spriteRegEx);
+    const parts = style.match(spriteRegEx);
     if (parts) {
       baseUrl = parts[1];
       accessToken = parts.length > 2 ? parts[2] : '';
@@ -467,7 +467,7 @@ export function apply(map, style) {
         return response.json();
       })
       .then(function(glStyle) {
-        var a = document.createElement('A');
+        const a = document.createElement('A');
         a.href = style;
         path = a.pathname.split('/').slice(0, -1).join('/') + '/';
         host = style.substr(0, style.indexOf(path));

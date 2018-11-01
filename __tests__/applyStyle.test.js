@@ -228,7 +228,7 @@ describe('applyStyle functionality', function() {
   });
 
   it('applies a style function to a layer and resolves promise', function(done) {
-    var layer = new VectorTileLayer({
+    const layer = new VectorTileLayer({
       source: new VectorTileSource({
         tileGrid: createXYZ({tileSize: 512, maxZoom: 22})
       })
