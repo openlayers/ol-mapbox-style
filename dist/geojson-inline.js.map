@@ -1,0 +1,1 @@
+{"version":3,"sources":["webpack:///./example/geojson-inline.js"],"names":["_get__"],"mappings":"ksBAGAA,EAAA,QAAAA,CAAM,MAAO","file":"geojson-inline.js","sourcesContent":["import 'ol/ol.css';\nimport {apply} from 'ol-mapbox-style';\n\napply('map', 'data/geojson-inline.json');\n"],"sourceRoot":""}
