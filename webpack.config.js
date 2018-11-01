@@ -1,8 +1,8 @@
-
 const path = require('path');
 const fs = require('fs');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 /** Get the list of examples from the example directory.
  *
@@ -63,7 +63,7 @@ function getHtmlTemplates(dirName) {
         template,
         // without specifying chunks, all chunks are
         //  included with the file.
-        chunks: [entryName]
+        chunks: ['common', entryName]
       })
     );
   });
@@ -71,38 +71,78 @@ function getHtmlTemplates(dirName) {
 }
 
 
-module.exports = {
-  entry: getEntries(path.resolve(__dirname, './example')),
-  output: {
-    filename: '[name].js'
-  },
-  resolve: {
-    alias: {
-      'ol-mapbox-style': path.resolve(__dirname, '.')
-    }
-  },
-  devtool: 'source-map',
-  node: {fs: 'empty'},
-  module: {
-    rules: [
-      {
-        test: /\.css$/,
-        use: ['style-loader', 'css-loader']
-      }
-    ]
-  },
-  plugins: [
-    // ensure the data is copied over.
-    // currently the index.html is manually created.
-    new CopyWebpackPlugin([
-      {
-        from: path.resolve(__dirname, './example/data'),
-        to: 'data'
+module.exports = (env, argv) => {
+  const prod = argv.mode === 'production';
+  return {
+    context: __dirname,
+    target: 'web',
+    mode: prod ? 'production' : 'development',
+    entry: getEntries(path.resolve(__dirname, './example')),
+    optimization: {
+      runtimeChunk: {
+        name: 'common'
       },
-      {
-        from: path.resolve(__dirname, './example/index.html'),
-        to: 'index.html'
+      splitChunks: {
+        name: 'common',
+        chunks: 'initial',
+        minChunks: 2
       }
-    ])
-  ].concat(getHtmlTemplates('./example'))
+    },
+    output: {
+      filename: '[name].js',
+      path: path.join(__dirname, 'dist')
+    },
+    resolve: {
+      alias: {
+        'ol-mapbox-style': path.join(__dirname, '.')
+      }
+    },
+    devtool: 'source-map',
+    node: {fs: 'empty'},
+    module: {
+      rules: [
+        {
+          test: /\.css$/,
+          use: [
+            prod ? MiniCssExtractPlugin.loader : 'style-loader',
+            'css-loader'
+          ]
+        },
+        {
+          test: /\.js$/,
+          include: [
+            __dirname,
+            path.resolve(__dirname, 'exmaple'),
+            /node_modules\/(?!(ol|@mapbox\/mapbox-gl-style-spec)\/)/
+          ],
+          use: {
+            loader: 'babel-loader',
+            options: {
+              presets: ['@babel/preset-env']
+            }
+          }
+        }
+      ]
+    },
+    plugins: [
+      new MiniCssExtractPlugin({
+        // Options similar to the same options in webpackOptions.output
+        // both options are optional
+        filename: '[name].css',
+        chunkFilename: '[id].css'
+      }),
+      // ensure the data is copied over.
+      // currently the index.html is manually created.
+      new CopyWebpackPlugin([
+        {
+          from: path.resolve(__dirname, './example/data'),
+          to: 'data'
+        },
+        {
+          from: path.resolve(__dirname, './example/index.html'),
+          to: 'index.html'
+        }
+      ])
+    ].concat(getHtmlTemplates('./example'))
+  };
 };

@@ -5,6 +5,24 @@ module.exports = {
   devtool: 'source-map',
   node: {fs: 'empty'},
   mode: 'production',
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        include: [
+          __dirname,
+          path.resolve(__dirname, 'exmaple'),
+          /node_modules\/(?!(ol|@mapbox\/mapbox-gl-style-spec)\/)/
+        ],
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-env']
+          }
+        }
+      }
+    ]
+  },
   output: {
     path: path.resolve('./dist'), // Path of output file
     filename: 'olms.js',
