@@ -21,10 +21,8 @@ import {applyStyle} from '../index.js';
 
 
 describe('applyStyle style argument validation', function() {
-  const source = 'vector';
+  const source = 'openmaptiles';
   const layer = new VectorLayer();
-  const path = null;
-  const resolutions = null;
 
   beforeEach(function() {
     nock('https://rawgit.com')
@@ -43,15 +41,15 @@ describe('applyStyle style argument validation', function() {
   });
 
   test('should handle valid style as JSON', function(done) {
-    applyStyle(layer, glStyle, source, path, resolutions).then(done).catch(done);
+    applyStyle(layer, glStyle, source).then(done).catch(done);
   });
 
   test('should handle valid style as JSON string', function(done) {
-    applyStyle(layer, JSON.stringify(glStyle), source, path, resolutions).then(done).catch(done);
+    applyStyle(layer, JSON.stringify(glStyle), source).then(done).catch(done);
   });
 
   test('should reject invalid style version', function(done) {
-    applyStyle(layer, styleInvalidVersion, source, path, resolutions).then(function() {
+    applyStyle(layer, styleInvalidVersion, source).then(function() {
       done(new Error('invalid style version promise should reject'));
     }).catch(function(err) {
       done();
@@ -60,44 +58,41 @@ describe('applyStyle style argument validation', function() {
 
   test('should reject invalid ol layer type', function(done) {
     const layer = new ImageLayer();
-    applyStyle(layer, glStyle, source, path, resolutions).then(function() {
+    applyStyle(layer, glStyle, source).then(function() {
       done(new Error('invalid ol layer type promise should reject'));
     }).catch(function(err) {
       done();
     });
   });
 
-  // TODO: still need to figure out best way to validate sources
-  // test('should reject invalid ol layer source type', function(done) {
-  //   const source = 'natural_earth_shaded_relief';
-  //   const layer = new VectorLayer();
-  //
-  //   applyStyle(layer, glStyle, source, path, resolutions).then(function() {
-  //     done(new Error('invalid ol layer source promise should reject'));
-  //   }).catch(function(err) {
-  //     done();
-  //   });
-  // });
+  test('should reject invalid ol layer source type', function(done) {
+    const source = 'natural_earth_shaded_relief';
+    const layer = new VectorLayer();
+
+    applyStyle(layer, glStyle, source).then(function() {
+      done(new Error('invalid ol layer source promise should reject'));
+    }).catch(function(err) {
+      done();
+    });
+  });
 
 });
 
 
 describe('applyStyle style validation', function() {
-  const source = 'vector';
+  const source = 'openmaptiles';
   const layer = new VectorLayer();
-  const path = null;
-  const resolutions = null;
 
   test('should handle missing sprite', function(done) {
-    applyStyle(layer, styleMissingSprite, source, path, resolutions).then(done).catch(done);
+    applyStyle(layer, styleMissingSprite, source).then(done).catch(done);
   });
 
   test('should handle empty sprite', function(done) {
-    applyStyle(layer, styleEmptySprite, source, path, resolutions).then(done).catch(done);
+    applyStyle(layer, styleEmptySprite, source).then(done).catch(done);
   });
 
   test('should reject invalid sprite URL', function(done) {
-    applyStyle(layer, styleInvalidSpriteURL, source, path, resolutions).then(function() {
+    applyStyle(layer, styleInvalidSpriteURL, source).then(function() {
       done(new Error('invalid sprite URL promise should reject'));
     }).catch(function(err) {
       done();
@@ -108,10 +103,8 @@ describe('applyStyle style validation', function() {
 
 
 describe('applyStyle sprite retrieval', function() {
-  const source = 'vector';
+  const source = 'openmaptiles';
   const layer = new VectorLayer();
-  const path = null;
-  const resolutions = null;
 
 
   afterEach(nock.cleanAll);
@@ -126,7 +119,7 @@ describe('applyStyle sprite retrieval', function() {
       .get('/maputnik/osm-liberty/gh-pages/sprites/osm-liberty@2x.png')
       .reply(200, {});
 
-    applyStyle(layer, glStyle, source, path, resolutions).then(done).catch(done);
+    applyStyle(layer, glStyle, source).then(done).catch(done);
 
     global.devicePixelRatio = orig;
   });
@@ -141,7 +134,7 @@ describe('applyStyle sprite retrieval', function() {
       .get('/maputnik/osm-liberty/gh-pages/sprites/osm-liberty.png')
       .reply(200, '');
 
-    applyStyle(layer, glStyle, source, path, resolutions).then(done).catch(done);
+    applyStyle(layer, glStyle, source).then(done).catch(done);
 
     global.devicePixelRatio = orig;
   });
@@ -160,7 +153,7 @@ describe('applyStyle sprite retrieval', function() {
       .get('/maputnik/osm-liberty/gh-pages/sprites/osm-liberty@2x.png')
       .reply(500, '');
 
-    applyStyle(layer, glStyle, source, path, resolutions).then(done).catch(done);
+    applyStyle(layer, glStyle, source).then(done).catch(done);
 
     global.devicePixelRatio = orig;
   });
@@ -179,7 +172,7 @@ describe('applyStyle sprite retrieval', function() {
       .get('/maputnik/osm-liberty/gh-pages/sprites/osm-liberty@2x.png')
       .reply(500, '');
 
-    applyStyle(layer, glStyle, source, path, resolutions).then(function() {
+    applyStyle(layer, glStyle, source).then(function() {
       done(new Error('failed lowres fallthrough promise should reject'));
     }).catch(function(err) {
       done();
@@ -199,7 +192,7 @@ describe('applyStyle sprite retrieval', function() {
     // make that dummy sprite return json
     nock('http://dummy/').get(/\/sprite.*/).reply(200, {});
 
-    applyStyle(layer, style, source, path, resolutions).then(function() {
+    applyStyle(layer, style, source).then(function() {
       done(new Error('empty sprite JSON promise should reject'));
     }).catch(function(err) {
       done();
@@ -234,7 +227,7 @@ describe('applyStyle functionality', function() {
       })
     });
     should(layer.getStyle()).be.null;
-    applyStyle(layer, glStyle, 'mapbox').then(function() {
+    applyStyle(layer, glStyle, 'openmaptiles').then(function() {
       should(layer.getStyle()).be.a.Function();
       done();
     });
