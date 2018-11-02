@@ -237,6 +237,14 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
       const sourceLayer = layer['source-layer'];
       if (!mapboxSource) {
         mapboxSource = layer.source;
+        const source = glStyle.sources[mapboxSource];
+        if (!source) {
+          throw new Error(`Source "${mapboxSource}" is not defined`);
+        }
+        const type = source.type;
+        if (type !== 'vector' && type !== 'geojson') {
+          throw new Error(`Source "${mapboxSource}" is not of type "vector" or "geojson", but "${type}"`);
+        }
       }
       let layers = layersBySourceLayer[sourceLayer];
       if (!layers) {

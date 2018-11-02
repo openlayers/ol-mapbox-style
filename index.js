@@ -94,11 +94,11 @@ function toSpriteUrl(url, path, extension) {
  * with an `ol.source.VectorTile` or an `ol.source.Vector`. The style function
  * will render all layers from the `glStyle` object that use the specified
  * `source`, or a subset of layers from the same source. The source needs to be
- * a `"type": "vector"`, `"type": "geojson"` or `"type": "raster"` source.
+ * a `"type": "vector"` or `"type": "geojson"` source.
  *
- * @param {ol.layer.VectorTile} layer OpenLayers layer.
+ * @param {ol.layer.VectorTile|ol.layer.Vector} layer OpenLayers layer.
  * @param {string|Object} glStyle Mapbox Style object.
- * @param {string} source `source` key or an array of layer `id`s from the
+ * @param {string|Array<string>} source `source` key or an array of layer `id`s from the
  * Mapbox Style object. When a `source` key is provided, all layers for the
  * specified source will be included in the style function. When layer `id`s
  * are provided, they must be from layers that use the same source.
@@ -120,7 +120,7 @@ export function applyStyle(layer, glStyle, source, path, resolutions) {
     if (glStyle.version != 8) {
       return reject(new Error('glStyle version 8 required.'));
     }
-    if (!(layer instanceof VectorLayer) && !(layer instanceof VectorTileLayer)) {
+    if (!(layer instanceof VectorLayer || layer instanceof VectorTileLayer)) {
       return reject(new Error('Can only apply to VectorLayer or VectorTileLayer'));
     }
 
@@ -128,7 +128,11 @@ export function applyStyle(layer, glStyle, source, path, resolutions) {
     function onChange() {
       if (!style && (!glStyle.sprite || spriteData)) {
         style = applyStyleFunction(layer, glStyle, source, resolutions, spriteData, spriteImageUrl, getFonts);
-        resolve();
+        if (layer.get('mapbox-layers').length === 0) {
+          reject(new Error(`Nothing to show for source [${source}]`));
+        } else {
+          resolve();
+        }
       } else if (style) {
         layer.setStyle(style);
         resolve();
@@ -346,13 +350,11 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
         } else if (glSource.type == 'raster') {
           let source;
           if (!glSource.tiles) {
-            source = (function() {
-              return new TileJSON({
-                transition: transition,
-                url: url,
-                crossOrigin: 'anonymous'
-              });
-            })();
+            source = new TileJSON({
+              transition: transition,
+              url: url,
+              crossOrigin: 'anonymous'
+            });
           } else {
             source = new XYZ({
               transition: transition,
@@ -494,26 +496,22 @@ export function apply(map, style) {
  * The layer may not yet have a source when the function is called.  If so, the style
  * is applied to the layer via a once listener on the 'change:source' event.
  *
- * @param {ol.Map|HTMLElement|string} layer Either an existing OpenLayers Map
- * instance, or a HTML element, or the id of a HTML element that will be the
- * target of a new OpenLayers Map.
- * @param {array} layerIds Array containing ids of already-processed layers.
- * @param {ol.Map|HTMLElement|string} glStyle Style as a JSON object.
- * @param {ol.Map|HTMLElement|string} path The path part of the URL to the style,
- * if the style was defined as a string.  (Why this if glStyle already being passed?)
- * @param {ol.Map|HTMLElement|string} map Either an existing OpenLayers Map
- * instance, or a HTML element, or the id of a HTML element that will be the
- * target of a new OpenLayers Map.
+ * @param {ol.layer.Layer} layer An OpenLayers layer instance.
+ * @param {Array<string>} layerIds Array containing layer ids of already-processed layers.
+ * @param {Object} glStyle Style as a JSON object.
+ * @param {string|undefined} path The path part of the style URL. Only required
+ * when a relative path is used with the `"sprite"` property of the style.
+ * @param {ol.Map} map OpenLayers Map.
  * @return {Promise} Returns a promise that resolves after the source has
  * been set on the specified layer, and the style has been applied.
  */
-export function finalizeLayer(layer, layerIds, glStyle, path, map) {
+function finalizeLayer(layer, layerIds, glStyle, path, map) {
   return new Promise(function(resolve, reject) {
     if (layerIds.length > 0) {
 
       const setStyle = function() {
         const source = layer.getSource();
-        if ((source instanceof VectorSource) || (source instanceof VectorTileSource)) {
+        if (source instanceof VectorSource || source instanceof VectorTileSource) {
           applyStyle(layer, glStyle, layerIds, path).then(function() {
             layer.setVisible(true);
             resolve();
@@ -526,7 +524,10 @@ export function finalizeLayer(layer, layerIds, glStyle, path, map) {
         }
       };
 
-      map.addLayer(layer);
+      if (map.getLayers().getArray().indexOf(layer) === -1) {
+        map.addLayer(layer);
+      }
+
       if (layer.getSource()) {
         setStyle();
       } else {

@@ -69,13 +69,13 @@ Applies a style function to an `ol.layer.VectorTile` or `ol.layer.Vector`
 with an `ol.source.VectorTile` or an `ol.source.Vector`. The style function
 will render all layers from the `glStyle` object that use the specified
 `source`, or a subset of layers from the same source. The source needs to be
-a `"type": "vector"`, `"type": "geojson"` or `"type": "raster"` source.
+a `"type": "vector"` or `"type": "geojson"` source.
 
 #### Parameters
 
--   `layer` **ol.layer.VectorTile** OpenLayers layer.
+-   `layer` **(ol.layer.VectorTile | ol.layer.Vector)** OpenLayers layer.
 -   `glStyle` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) \| [Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object))** Mapbox Style object.
--   `source` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** `source` key or an array of layer `id`s from the
+-   `source` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) \| [Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>)** `source` key or an array of layer `id`s from the
     Mapbox Style object. When a `source` key is provided, all layers for the
     specified source will be included in the style function. When layer `id`s
     are provided, they must be from layers that use the same source.

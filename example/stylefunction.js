@@ -27,5 +27,7 @@ fetch('data/states.json')
   .then(r => r.json())
   .then((glStyle) => {
     stylefunction(layer, glStyle, 'states');
-    map.addLayer(layer);
+    if (map.getLayers().getArray().indexOf(layer) === -1) {
+      map.addLayer(layer);
+    }
   });
