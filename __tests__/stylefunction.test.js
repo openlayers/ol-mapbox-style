@@ -1,4 +1,4 @@
-import should from 'should/as-function';
+import should from 'should';
 import deepFreeze from 'deep-freeze';
 import applyStyleFunction from '../stylefunction';
 import states from './data/states.json';

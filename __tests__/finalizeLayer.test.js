@@ -1,4 +1,4 @@
-import should from 'should/as-function';
+import should from 'should';
 import 'isomorphic-fetch';
 import nock from 'nock';
 
