@@ -1,7 +1,6 @@
-/*eslint no-console: "off"*/
 import 'isomorphic-fetch';
 import nock from 'nock';
-import should from 'should/as-function';
+import should from 'should';
 
 import VectorLayer from 'ol/layer/Vector';
 import VectorTileLayer from 'ol/layer/VectorTile';
