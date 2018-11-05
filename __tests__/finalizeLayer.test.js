@@ -42,15 +42,6 @@ describe('finalizeLayer promise', function() {
       });
   });
 
-  it('should resolve successfully if no layer ids, regardless of layer source', function(done) {
-    const layer = new VectorLayer();
-    const map = new Map({layers: [layer]});
-
-    finalizeLayer(layer, [], glStyle, null, map).then(done).catch(function(err) {
-      done(err);
-    });
-  });
-
   it('should not resolve at all if layer source does not exist', function(done) {
     const layer = new VectorLayer();
     let resolved = false;

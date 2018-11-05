@@ -271,8 +271,10 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
       id = glLayer.source || getSourceIdByRef(glLayers, glLayer.ref);
       // this technique assumes gl layers will be in a particular order
       if (id != glSourceId) {
-        finalizeLayer(layer, layerIds, glStyle, path, map);
-        layerIds = [];
+        if (layerIds.length) {
+          promises.push(finalizeLayer(layer, layerIds, glStyle, path, map));
+          layerIds = [];
+        }
         glSource = glStyle.sources[id];
         url = glSource.url;
         let tiles = glSource.tiles;
