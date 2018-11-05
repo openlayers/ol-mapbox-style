@@ -211,6 +211,9 @@ function setBackground(map, layer) {
 }
 
 /**
+ * ```js
+ * import {applyBackground} from 'ol-mapbox-style';
+ * ```
  * Applies properties of the Mapbox Style's first `background` layer to the map.
  * @param {ol.Map} map OpenLayers Map.
  * @param {Object} glStyle Mapbox Style object.
@@ -236,6 +239,7 @@ function getSourceIdByRef(layers, ref) {
 }
 
 function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
+  const promises = [];
   const view = map.getView();
   if ('center' in glStyle && !view.getCenter()) {
     view.setCenter(fromLonLat(glStyle.center));
@@ -260,7 +264,6 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
   const glLayers = glStyle.layers;
   const geoJsonFormat = new GeoJSON();
   let layerIds = [];
-
 
   let glLayer, glSource, glSourceId, id, layer, mapid, transition, url;
   for (let i = 0, ii = glLayers.length; i < ii; ++i) {
@@ -405,11 +408,16 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
       layerIds.push(glLayer.id);
     }
   }
-  finalizeLayer(layer, layerIds, glStyle, path, map);
+  promises.push(finalizeLayer(layer, layerIds, glStyle, path, map));
   map.set('mapbox-style', glStyle);
+  return Promise.all(promises);
 }
 
 /**
+ * ```js
+ * import olms from 'ol-mapbox-style';
+ * ```
+ *
  * Loads and applies a Mapbox Style object to an OpenLayers Map. This includes
  * the map background, the layers, the center and the zoom.
  *
@@ -428,8 +436,82 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
  *  * `mapbox-layers`: The `id`s of the Mapbox Style document's layers that are
  *    included in the OpenLayers layer.
  *
- * The map returned by this function will have an additional `mapbox-style`
- * property which holds the Mapbox Style object.
+ * This function sets an additional `mapbox-style` property on the OpenLayers
+ * map instance, which holds the Mapbox Style object.
+ *
+ * @param {ol.Map|HTMLElement|string} map Either an existing OpenLayers Map
+ * instance, or a HTML element, or the id of a HTML element that will be the
+ * target of a new OpenLayers Map.
+ * @param {string|Object} style JSON style object or style url pointing to a
+ * Mapbox Style object. When using Mapbox APIs, the url must contain an access
+ * token and look like
+ * `https://api.mapbox.com/styles/v1/mapbox/bright-v9?access_token=[your_access_token_here]`.
+ * When passed as JSON style object, all OpenLayers layers created by `apply()`
+ * will be immediately available, but they may not have a source yet (i.e. when
+ * they are defined by a TileJSON url in the Mapbox Style document). When passed
+ * as style url, layers will be added to the map when the Mapbox Style document
+ * is loaded and parsed.
+ * @return {Promise} A promise that resolves after all layers have been added to
+ * the OpenLayers Map instance, their sources set, and their styles applied.
+ */
+export default function olms(map, style) {
+
+  let accessToken, baseUrl, host, path, promise;
+  accessToken = baseUrl = host = path = '';
+
+  if (!(map instanceof Map)) {
+    map = new Map({
+      target: map
+    });
+  }
+
+  if (typeof style === 'string') {
+    const parts = style.match(spriteRegEx);
+    if (parts) {
+      baseUrl = parts[1];
+      accessToken = parts.length > 2 ? parts[2] : '';
+    }
+    promise = new Promise(function(resolve, reject) {
+      fetch(style, {
+        credentials: 'same-origin'
+      })
+        .then(function(response) {
+          return response.json();
+        })
+        .then(function(glStyle) {
+          const a = document.createElement('A');
+          a.href = style;
+          path = a.pathname.split('/').slice(0, -1).join('/') + '/';
+          host = style.substr(0, style.indexOf(path));
+
+          processStyle(glStyle, map, baseUrl, host, path, accessToken)
+            .then(function() {
+              resolve(map);
+            })
+            .catch(reject);
+        })
+        .catch(function(err) {
+          reject(new Error(`Could not load ${style}: ${err.message}`));
+        });
+    });
+  } else {
+    promise = new Promise(function(resolve, reject) {
+      processStyle(style, map)
+        .then(function() {
+          resolve(map);
+        })
+        .catch(reject);
+    });
+  }
+
+  return promise;
+}
+
+/**
+ * ```js
+ * import {apply} from 'ol-mapbox-style';
+ * ```
+ * Like `olms`, but returns an `ol.Map` instance instead of a `Promise`.
  *
  * @param {ol.Map|HTMLElement|string} map Either an existing OpenLayers Map
  * instance, or a HTML element, or the id of a HTML element that will be the
@@ -447,45 +529,14 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
  * contents described in the Mapbox Style object.
  */
 export function apply(map, style) {
-
-  let accessToken, baseUrl, host, path;
-  accessToken = baseUrl = host = path = '';
-
   if (!(map instanceof Map)) {
     map = new Map({
       target: map
     });
   }
-
-  if (typeof style === 'string') {
-    const parts = style.match(spriteRegEx);
-    if (parts) {
-      baseUrl = parts[1];
-      accessToken = parts.length > 2 ? parts[2] : '';
-    }
-
-    fetch(style, {
-      credentials: 'same-origin'
-    })
-      .then(function(response) {
-        return response.json();
-      })
-      .then(function(glStyle) {
-        const a = document.createElement('A');
-        a.href = style;
-        path = a.pathname.split('/').slice(0, -1).join('/') + '/';
-        host = style.substr(0, style.indexOf(path));
-
-        processStyle(glStyle, map, baseUrl, host, path, accessToken);
-      })
-      .catch(function(err) {
-        throw new Error(`Could not load ${style}: ${err.message}`);
-      });
-  } else {
-    setTimeout(function() {
-      processStyle(style, map);
-    }, 0);
-  }
+  setTimeout(function() {
+    olms(map, style);
+  }, 0);
   return map;
 }
 
@@ -509,40 +560,38 @@ export function apply(map, style) {
  */
 function finalizeLayer(layer, layerIds, glStyle, path, map) {
   return new Promise(function(resolve, reject) {
-    if (layerIds.length > 0) {
-
-      const setStyle = function() {
-        const source = layer.getSource();
-        if (source instanceof VectorSource || source instanceof VectorTileSource) {
-          applyStyle(layer, glStyle, layerIds, path).then(function() {
-            layer.setVisible(true);
-            resolve();
-          }, function(e) {
-            reject(e);
-          });
-        } else {
+    const setStyle = function() {
+      const source = layer.getSource();
+      if (source instanceof VectorSource || source instanceof VectorTileSource) {
+        applyStyle(layer, glStyle, layerIds, path).then(function() {
           layer.setVisible(true);
           resolve();
-        }
-      };
-
-      if (map.getLayers().getArray().indexOf(layer) === -1) {
-        map.addLayer(layer);
-      }
-
-      if (layer.getSource()) {
-        setStyle();
+        }, function(e) {
+          reject(e);
+        });
       } else {
-        layer.once('change:source', setStyle);
+        layer.setVisible(true);
+        resolve();
       }
+    };
+
+    if (map.getLayers().getArray().indexOf(layer) === -1) {
+      map.addLayer(layer);
+    }
+
+    if (layer.getSource()) {
+      setStyle();
     } else {
-      resolve();
+      layer.once('change:source', setStyle);
     }
   });
 }
 
 
 /**
+ * ```js
+ * import {getLayer} from 'ol-mapbox-style';
+ * ```
  * Get the OpenLayers layer instance that contains the provided Mapbox Style
  * `layer`. Note that multiple Mapbox Style layers are combined in a single
  * OpenLayers layer instance when they use the same Mapbox Style `source`.
@@ -560,6 +609,9 @@ export function getLayer(map, layerId) {
 }
 
 /**
+ * ```js
+ * import {getSource} from 'ol-mapbox-style';
+ * ```
  * Get the OpenLayers source instance for the provided Mapbox Style `source`.
  * @param {ol.Map} map OpenLayers Map.
  * @param {string} sourceId Mapbox Style source id.
