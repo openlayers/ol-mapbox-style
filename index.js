@@ -96,6 +96,15 @@ function toSpriteUrl(url, path, extension) {
  * `source`, or a subset of layers from the same source. The source needs to be
  * a `"type": "vector"` or `"type": "geojson"` source.
  *
+ * Two additional properties will be set on the provided layer:
+ *
+ *  * `mapbox-source`: The `id` of the Mapbox Style document's source that the
+ *    OpenLayers layer was created from. Usually `apply()` creates one
+ *    OpenLayers layer per Mapbox Style source, unless the layer stack has
+ *    layers from different sources in between.
+ *  * `mapbox-layers`: The `id`s of the Mapbox Style document's layers that are
+ *    included in the OpenLayers layer.
+ *
  * @param {ol.layer.VectorTile|ol.layer.Vector} layer OpenLayers layer.
  * @param {string|Object} glStyle Mapbox Style object.
  * @param {string|Array<string>} source `source` key or an array of layer `id`s from the
@@ -361,44 +370,47 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
             return layer;
           })();
         } else if (glSource.type == 'raster') {
-          layer = new TileLayer({
-            visible: glLayer.layout ? glLayer.layout.visibility !== 'none' : true
-          });
-          let source = undefined;
-          if (!glSource.tiles) {
-            source = new TileJSON({
-              transition: transition,
-              url: url,
-              crossOrigin: 'anonymous'
+          layer = (function() {
+            const layer = new TileLayer({
+              visible: glLayer.layout ? glLayer.layout.visibility !== 'none' : true
             });
-            const key = source.on('change', function() {
-              const state = source.getState();
-              if (state === 'ready' || state === 'error') {
-                unByKey(key);
-                layer.setSource(source);
-              }
-            });
-          } else {
-            source = new XYZ({
-              transition: transition,
-              attributions: glSource.attribution,
-              minZoom: glSource.minzoom,
-              maxZoom: 'maxzoom' in glSource ? glSource.maxzoom : 22,
-              tileSize: glSource.tileSize || 512,
-              url: url,
-              urls: glSource.tiles,
-              crossOrigin: 'anonymous'
-            });
-            transition = 0;
-          }
-          source.setTileLoadFunction(function(tile, src) {
-            if (src.indexOf('{bbox-epsg-3857}') != -1) {
-              const bbox = source.getTileGrid().getTileCoordExtent(tile.getTileCoord());
-              src = src.replace('{bbox-epsg-3857}', bbox.toString());
+            let source = undefined;
+            if (!glSource.tiles) {
+              source = new TileJSON({
+                transition: transition,
+                url: url,
+                crossOrigin: 'anonymous'
+              });
+              const key = source.on('change', function() {
+                const state = source.getState();
+                if (state === 'ready' || state === 'error') {
+                  unByKey(key);
+                  layer.setSource(source);
+                }
+              });
+            } else {
+              source = new XYZ({
+                transition: transition,
+                attributions: glSource.attribution,
+                minZoom: glSource.minzoom,
+                maxZoom: 'maxzoom' in glSource ? glSource.maxzoom : 22,
+                tileSize: glSource.tileSize || 512,
+                url: url,
+                urls: glSource.tiles,
+                crossOrigin: 'anonymous'
+              });
+              transition = 0;
             }
-            tile.getImage().src = src;
-          });
-          layer.setSource(source);
+            source.setTileLoadFunction(function(tile, src) {
+              if (src.indexOf('{bbox-epsg-3857}') != -1) {
+                const bbox = source.getTileGrid().getTileCoordExtent(tile.getTileCoord());
+                src = src.replace('{bbox-epsg-3857}', bbox.toString());
+              }
+              tile.getImage().src = src;
+            });
+            layer.setSource(source);
+            return layer;
+          })();
         } else if (glSource.type == 'geojson') {
           const data = glSource.data;
           let features, geoJsonUrl;
@@ -421,8 +433,10 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
         glSourceId = id;
       }
       layerIds.push(glLayer.id);
-      layer.set('mapbox-source', glSourceId);
-      layer.set('mapbox-layers', layerIds);
+      if (layer) {
+        layer.set('mapbox-source', glSourceId);
+        layer.set('mapbox-layers', layerIds);
+      }
     }
   }
   promises.push(finalizeLayer(layer, layerIds, glStyle, path, map));

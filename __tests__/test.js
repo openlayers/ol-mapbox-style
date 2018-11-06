@@ -141,6 +141,8 @@ describe('ol-mapbox-style', function() {
         if (count == 2) {
           const osm = map.getLayers().item(0);
           const wms = map.getLayers().item(1);
+          should(osm.get('mapbox-layers')).eql(['osm']);
+          should(wms.get('mapbox-layers')).eql(['states-wms']);
           should(osm.getSource().getUrls()).eql([
             'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
             'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -200,11 +202,9 @@ describe('ol-mapbox-style', function() {
           should(toLonLat(map.getView().getCenter())).be.approximatelyDeep([8.54806714892635, 47.37180823552663], 1e-8);
           should(map.getView().getZoom()).equal(12.241790506353492);
           const layer = map.getLayers().item(0);
-          layer.once('change:source', function() {
-            const source = layer.getSource();
-            should(source).be.instanceof(VectorTileSource);
-            should(layer.getStyle()).be.a.Function();
-          });
+          const source = layer.getSource();
+          should(source).be.instanceof(VectorTileSource);
+          should(layer.getStyle()).be.a.Function();
           done();
         }).catch(function(err) {
           done(err);

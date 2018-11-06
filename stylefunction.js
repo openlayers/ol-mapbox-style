@@ -138,6 +138,15 @@ function fromTemplate(text, properties) {
  * the specified `source`, which needs to be a `"type": "vector"` or
  * `"type": "geojson"` source and applies it to the specified OpenLayers layer.
  *
+ * Two additional properties will be set on the provided layer:
+ *
+ *  * `mapbox-source`: The `id` of the Mapbox Style document's source that the
+ *    OpenLayers layer was created from. Usually `apply()` creates one
+ *    OpenLayers layer per Mapbox Style source, unless the layer stack has
+ *    layers from different sources in between.
+ *  * `mapbox-layers`: The `id`s of the Mapbox Style document's layers that are
+ *    included in the OpenLayers layer.
+ *
  * @param {ol.layer.Vector|ol.layer.VectorTile} olLayer OpenLayers layer to
  * apply the style to. In addition to the style, the layer will get two
  * properties: `mapbox-source` will be the `id` of the `glStyle`'s source used
@@ -617,5 +626,7 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
   };
 
   olLayer.setStyle(styleFunction);
+  olLayer.set('mapbox-source', mapboxSource);
+  olLayer.set('mapbox-layers', mapboxLayers);
   return styleFunction;
 }
