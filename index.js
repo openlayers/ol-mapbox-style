@@ -469,7 +469,9 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
  * as style url, layers will be added to the map when the Mapbox Style document
  * is loaded and parsed.
  * @return {Promise} A promise that resolves after all layers have been added to
- * the OpenLayers Map instance, their sources set, and their styles applied.
+ * the OpenLayers Map instance, their sources set, and their styles applied. the
+ * `resolve` callback will be called with the OpenLayers Map instance as
+ * argument.
  */
 export default function olms(map, style) {
 

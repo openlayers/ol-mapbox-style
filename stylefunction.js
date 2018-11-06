@@ -131,6 +131,9 @@ function fromTemplate(text, properties) {
 }
 
 /**
+ * ```js
+ * import stylefunction from 'ol-mapbox-style/stylefunction';
+ * ```
  * Creates a style function from the `glStyle` object for all layers that use
  * the specified `source`, which needs to be a `"type": "vector"` or
  * `"type": "geojson"` source and applies it to the specified OpenLayers layer.
@@ -614,7 +617,5 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
   };
 
   olLayer.setStyle(styleFunction);
-  olLayer.set('mapbox-source', mapboxSource);
-  olLayer.set('mapbox-layers', mapboxLayers);
   return styleFunction;
 }
