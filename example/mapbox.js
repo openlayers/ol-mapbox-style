@@ -1,5 +1,5 @@
 import 'ol/ol.css';
-import {apply} from 'ol-mapbox-style';
+import olms from 'ol-mapbox-style';
 
 const baseUrl = 'https://api.mapbox.com/styles/v1/mapbox/bright-v9';
 
@@ -9,4 +9,4 @@ if (!key) {
   document.cookie = 'mapbox_access_token=' + key + '; expires=Fri, 31 Dec 9999 23:59:59 GMT';
 }
 
-apply('map', baseUrl + '?access_token=' + key);
+olms('map', baseUrl + '?access_token=' + key);

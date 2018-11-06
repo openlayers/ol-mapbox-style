@@ -13,8 +13,20 @@ import invalidStyle from './fixtures/style-invalid-version.json';
 
 const finalizeLayer = require('../index').__get__('finalizeLayer');
 
-
 describe('finalizeLayer promise', function() {
+
+  beforeEach(function() {
+    nock('https://rawgit.com')
+      .defaultReplyHeaders({'access-control-allow-origin': '*'})
+      .get('/maputnik/osm-liberty/gh-pages/sprites/osm-liberty.json')
+      .replyWithFile(200, __dirname + '/fixtures/osm-liberty/osm-liberty.json')
+      .get('/maputnik/osm-liberty/gh-pages/sprites/osm-liberty.png')
+      .replyWithFile(200, __dirname + '/fixtures/osm-liberty/osm-liberty.png')
+      .get('/maputnik/osm-liberty/gh-pages/sprites/osm-liberty@2x.json')
+      .replyWithFile(200, __dirname + '/fixtures/osm-liberty/osm-liberty@2x.json')
+      .get('/maputnik/osm-liberty/gh-pages/sprites/osm-liberty@2x.png')
+      .replyWithFile(200, __dirname + '/fixtures/osm-liberty/osm-liberty@2x.png');
+  });
 
   afterEach(nock.cleanAll);
 
@@ -40,15 +52,6 @@ describe('finalizeLayer promise', function() {
       .then(done).catch(function(err) {
         done(err);
       });
-  });
-
-  it('should resolve successfully if no layer ids, regardless of layer source', function(done) {
-    const layer = new VectorLayer();
-    const map = new Map({layers: [layer]});
-
-    finalizeLayer(layer, [], glStyle, null, map).then(done).catch(function(err) {
-      done(err);
-    });
   });
 
   it('should not resolve at all if layer source does not exist', function(done) {

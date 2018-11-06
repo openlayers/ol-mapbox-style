@@ -9,10 +9,10 @@ To use a standalone build of ol-mapbox-style, just include 'dist/olms.js' on you
 The code below creates an OpenLayers map from Mapbox's Bright v9 style:
 
 ```js
-import { apply } from 'ol-mapbox-style';
+import olms from 'ol-mapbox-style';
 
 var key = 'Your Mapbox Access Token here';
-apply('map', 'https://api.mapbox.com/styles/v1/mapbox/bright-v9?access_token=' + key);
+olms('map', 'https://api.mapbox.com/styles/v1/mapbox/bright-v9?access_token=' + key);
 ```
 
 Only commonly available system fonts and [Google Fonts](https://developers.google.com/fonts/) will automatically be available for any `text-font` defined in the Mapbox Style object. It is the responsibility of the application to load other fonts. Because `ol-mapbox-style` uses system and web fonts instead of PBF/SDF glyphs, the [font stack](https://www.mapbox.com/help/manage-fontstacks/) is treated a little different: style and weight are taken from the primary font (i.e. the first one in the font stack). Subsequent fonts in the font stack are only used if the primary font is not available/loaded, and they will be used with the style and weight of the primary font.
@@ -54,14 +54,16 @@ fetch('data/states.json').then(function(response) {
     -   [Parameters](#parameters)
 -   [applyBackground](#applybackground)
     -   [Parameters](#parameters-1)
--   [apply](#apply)
+-   [olms](#olms)
     -   [Parameters](#parameters-2)
--   [getLayer](#getlayer)
+-   [apply](#apply)
     -   [Parameters](#parameters-3)
--   [getSource](#getsource)
+-   [getLayer](#getlayer)
     -   [Parameters](#parameters-4)
--   [stylefunction](#stylefunction)
+-   [getSource](#getsource)
     -   [Parameters](#parameters-5)
+-   [stylefunction](#stylefunction)
+    -   [Parameters](#parameters-6)
 
 ### applyStyle
 
@@ -88,6 +90,10 @@ for rendering.
 
 ### applyBackground
 
+```js
+import {applyBackground} from 'ol-mapbox-style';
+```
+
 Applies properties of the Mapbox Style's first `background` layer to the map.
 
 #### Parameters
@@ -95,7 +101,11 @@ Applies properties of the Mapbox Style's first `background` layer to the map.
 -   `map` **ol.Map** OpenLayers Map.
 -   `glStyle` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Mapbox Style object.
 
-### apply
+### olms
+
+```js
+import olms from 'ol-mapbox-style';
+```
 
 Loads and applies a Mapbox Style object to an OpenLayers Map. This includes
 the map background, the layers, the center and the zoom.
@@ -115,8 +125,36 @@ Layers added by `apply()` will have two additional properties:
 -   `mapbox-layers`: The `id`s of the Mapbox Style document's layers that are
     included in the OpenLayers layer.
 
-The map returned by this function will have an additional `mapbox-style`
-property which holds the Mapbox Style object.
+This function sets an additional `mapbox-style` property on the OpenLayers
+map instance, which holds the Mapbox Style object.
+
+#### Parameters
+
+-   `map` **(ol.Map | [HTMLElement](https://developer.mozilla.org/docs/Web/HTML/Element) \| [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String))** Either an existing OpenLayers Map
+    instance, or a HTML element, or the id of a HTML element that will be the
+    target of a new OpenLayers Map.
+-   `style` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) \| [Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object))** JSON style object or style url pointing to a
+    Mapbox Style object. When using Mapbox APIs, the url must contain an access
+    token and look like
+    `https://api.mapbox.com/styles/v1/mapbox/bright-v9?access_token=[your_access_token_here]`.
+    When passed as JSON style object, all OpenLayers layers created by `apply()`
+    will be immediately available, but they may not have a source yet (i.e. when
+    they are defined by a TileJSON url in the Mapbox Style document). When passed
+    as style url, layers will be added to the map when the Mapbox Style document
+    is loaded and parsed.
+
+Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** A promise that resolves after all layers have been added to
+the OpenLayers Map instance, their sources set, and their styles applied. the
+`resolve` callback will be called with the OpenLayers Map instance as
+argument.
+
+### apply
+
+```js
+import {apply} from 'ol-mapbox-style';
+```
+
+Like `olms`, but returns an `ol.Map` instance instead of a `Promise`.
 
 #### Parameters
 
@@ -138,6 +176,10 @@ contents described in the Mapbox Style object.
 
 ### getLayer
 
+```js
+import {getLayer} from 'ol-mapbox-style';
+```
+
 Get the OpenLayers layer instance that contains the provided Mapbox Style
 `layer`. Note that multiple Mapbox Style layers are combined in a single
 OpenLayers layer instance when they use the same Mapbox Style `source`.
@@ -151,6 +193,10 @@ Returns **ol.layer.Layer** layer OpenLayers layer instance.
 
 ### getSource
 
+```js
+import {getSource} from 'ol-mapbox-style';
+```
+
 Get the OpenLayers source instance for the provided Mapbox Style `source`.
 
 #### Parameters
@@ -161,6 +207,10 @@ Get the OpenLayers source instance for the provided Mapbox Style `source`.
 Returns **ol.layer.Layer** layer OpenLayers layer instance.
 
 ### stylefunction
+
+```js
+import stylefunction from 'ol-mapbox-style/stylefunction';
+```
 
 Creates a style function from the `glStyle` object for all layers that use
 the specified `source`, which needs to be a `"type": "vector"` or

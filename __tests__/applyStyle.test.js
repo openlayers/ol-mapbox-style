@@ -25,14 +25,15 @@ describe('applyStyle style argument validation', function() {
 
   beforeEach(function() {
     nock('https://rawgit.com')
+      .defaultReplyHeaders({'access-control-allow-origin': '*'})
       .get('/maputnik/osm-liberty/gh-pages/sprites/osm-liberty.json')
       .reply(200, glStyleLoresSprite)
       .get('/maputnik/osm-liberty/gh-pages/sprites/osm-liberty.png')
-      .reply(200, '')
+      .replyWithFile(200, __dirname + '/fixtures/osm-liberty/osm-liberty.png')
       .get('/maputnik/osm-liberty/gh-pages/sprites/osm-liberty@2x.json')
       .reply(200, glStyleHiresSprite)
       .get('/maputnik/osm-liberty/gh-pages/sprites/osm-liberty@2x.png')
-      .reply(200, {});
+      .replyWithFile(200, __dirname + '/fixtures/osm-liberty/osm-liberty@2x.png');
   });
 
   afterEach(function() {
@@ -113,10 +114,11 @@ describe('applyStyle sprite retrieval', function() {
     global.devicePixelRatio = 2;
 
     nock('https://rawgit.com')
+      .defaultReplyHeaders({'access-control-allow-origin': '*'})
       .get('/maputnik/osm-liberty/gh-pages/sprites/osm-liberty@2x.json')
       .reply(200, glStyleHiresSprite)
       .get('/maputnik/osm-liberty/gh-pages/sprites/osm-liberty@2x.png')
-      .reply(200, {});
+      .replyWithFile(200, __dirname + '/fixtures/osm-liberty/osm-liberty@2x.png');
 
     applyStyle(layer, glStyle, source).then(done).catch(done);
 
@@ -128,10 +130,11 @@ describe('applyStyle sprite retrieval', function() {
     global.devicePixelRatio = 1;
 
     nock('https://rawgit.com')
+      .defaultReplyHeaders({'access-control-allow-origin': '*'})
       .get('/maputnik/osm-liberty/gh-pages/sprites/osm-liberty.json')
       .reply(200, glStyleLoresSprite)
       .get('/maputnik/osm-liberty/gh-pages/sprites/osm-liberty.png')
-      .reply(200, '');
+      .replyWithFile(200, __dirname + '/fixtures/osm-liberty/osm-liberty.png');
 
     applyStyle(layer, glStyle, source).then(done).catch(done);
 
@@ -205,14 +208,15 @@ describe('applyStyle functionality', function() {
 
   beforeEach(function() {
     nock('https://rawgit.com')
+      .defaultReplyHeaders({'access-control-allow-origin': '*'})
       .get('/maputnik/osm-liberty/gh-pages/sprites/osm-liberty.json')
       .reply(200, glStyleLoresSprite)
       .get('/maputnik/osm-liberty/gh-pages/sprites/osm-liberty.png')
-      .reply(200, '')
+      .replyWithFile(200, __dirname + '/fixtures/osm-liberty/osm-liberty.png')
       .get('/maputnik/osm-liberty/gh-pages/sprites/osm-liberty@2x.json')
       .reply(200, glStyleHiresSprite)
       .get('/maputnik/osm-liberty/gh-pages/sprites/osm-liberty@2x.png')
-      .reply(200, {});
+      .replyWithFile(200, __dirname + '/fixtures/osm-liberty/osm-liberty@2x.png');
   });
 
   afterEach(function() {
