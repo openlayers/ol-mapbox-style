@@ -128,7 +128,7 @@ export function applyStyle(layer, glStyle, source, path, resolutions) {
     function onChange() {
       if (!style && (!glStyle.sprite || spriteData)) {
         style = applyStyleFunction(layer, glStyle, source, resolutions, spriteData, spriteImageUrl, getFonts);
-        if (layer.get('mapbox-layers').length === 0) {
+        if (!layer.getStyle()) {
           reject(new Error(`Nothing to show for source [${source}]`));
         } else {
           resolve();
@@ -353,17 +353,30 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
                     tileGrid.getResolution(tileGrid.getMinZoom()));
                 }
                 unByKey(key);
+              } else if (tilejson.getState() == 'error') {
+                layer.setSource(undefined);
+                unByKey(key);
               }
             });
             return layer;
           })();
         } else if (glSource.type == 'raster') {
-          let source;
+          layer = new TileLayer({
+            visible: glLayer.layout ? glLayer.layout.visibility !== 'none' : true
+          });
+          let source = undefined;
           if (!glSource.tiles) {
             source = new TileJSON({
               transition: transition,
               url: url,
               crossOrigin: 'anonymous'
+            });
+            const key = source.on('change', function() {
+              const state = source.getState();
+              if (state === 'ready' || state === 'error') {
+                unByKey(key);
+                layer.setSource(source);
+              }
             });
           } else {
             source = new XYZ({
@@ -385,10 +398,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
             }
             tile.getImage().src = src;
           });
-          layer = new TileLayer({
-            source: source,
-            visible: glLayer.layout ? glLayer.layout.visibility !== 'none' : true
-          });
+          layer.setSource(source);
         } else if (glSource.type == 'geojson') {
           const data = glSource.data;
           let features, geoJsonUrl;
@@ -411,6 +421,8 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
         glSourceId = id;
       }
       layerIds.push(glLayer.id);
+      layer.set('mapbox-source', glSourceId);
+      layer.set('mapbox-layers', layerIds);
     }
   }
   promises.push(finalizeLayer(layer, layerIds, glStyle, path, map));
@@ -575,8 +587,11 @@ function finalizeLayer(layer, layerIds, glStyle, path, map) {
           reject(e);
         });
       } else {
-        layer.setVisible(true);
-        resolve();
+        if (!source || source.getState() === 'error') {
+          reject(new Error('Error accessing data for source ' + layer.get('mapbox-source')));
+        } else {
+          resolve();
+        }
       }
     };
 
