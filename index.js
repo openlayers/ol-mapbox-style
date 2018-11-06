@@ -183,6 +183,9 @@ export function applyStyle(layer, glStyle, source, path, resolutions) {
 const emptyObj = {};
 
 function setBackground(map, layer) {
+  const background = {
+    type: layer.type
+  };
   function updateStyle() {
     const element = map.getTargetElement();
     if (!element) {
@@ -190,14 +193,16 @@ function setBackground(map, layer) {
     }
     const layout = layer.layout || {};
     const paint = layer.paint || {};
+    background['paint'] = paint;
+    background.id = 'olms-bg-' + paint['background-opacity'] + paint['background-color'];
     const zoom = map.getView().getZoom();
-    if ('background-color' in paint) {
-      const bg = getValue(layer, 'paint', 'background-color', zoom, emptyObj);
+    if (paint['background-color'] !== undefined) {
+      const bg = getValue(background, 'paint', 'background-color', zoom, emptyObj);
       element.style.backgroundColor = Color.parse(bg).toString();
     }
-    if ('background-opacity' in paint) {
+    if (paint['background-opacity'] !== undefined) {
       element.style.backgroundOpacity =
-        getValue(layer, 'paint', 'background-opacity', zoom, emptyObj);
+        getValue(background, 'paint', 'background-opacity', zoom, emptyObj);
     }
     if (layout.visibility == 'none') {
       element.style.backgroundColor = '';
