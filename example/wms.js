@@ -1,4 +1,4 @@
 import 'ol/ol.css';
-import {apply} from 'ol-mapbox-style';
+import olms from 'ol-mapbox-style';
 
-apply('map', 'data/wms.json');
+olms('map', 'data/wms.json');
