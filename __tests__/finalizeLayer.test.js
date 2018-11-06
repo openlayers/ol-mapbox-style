@@ -13,8 +13,20 @@ import invalidStyle from './fixtures/style-invalid-version.json';
 
 const finalizeLayer = require('../index').__get__('finalizeLayer');
 
-
 describe('finalizeLayer promise', function() {
+
+  beforeEach(function() {
+    nock('https://rawgit.com')
+      .defaultReplyHeaders({'access-control-allow-origin': '*'})
+      .get('/maputnik/osm-liberty/gh-pages/sprites/osm-liberty.json')
+      .replyWithFile(200, __dirname + '/fixtures/osm-liberty/osm-liberty.json')
+      .get('/maputnik/osm-liberty/gh-pages/sprites/osm-liberty.png')
+      .replyWithFile(200, __dirname + '/fixtures/osm-liberty/osm-liberty.png')
+      .get('/maputnik/osm-liberty/gh-pages/sprites/osm-liberty@2x.json')
+      .replyWithFile(200, __dirname + '/fixtures/osm-liberty/osm-liberty@2x.json')
+      .get('/maputnik/osm-liberty/gh-pages/sprites/osm-liberty@2x.png')
+      .replyWithFile(200, __dirname + '/fixtures/osm-liberty/osm-liberty@2x.png');
+  });
 
   afterEach(nock.cleanAll);
 
