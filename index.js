@@ -252,6 +252,139 @@ function getSourceIdByRef(layers, ref) {
   return sourceId;
 }
 
+function setupVectorLayer(glSource, accessToken, url) {
+  let tiles = glSource.tiles;
+  if (url) {
+    if (url.indexOf('mapbox://') == 0) {
+      const mapid = url.replace('mapbox://', '');
+      tiles = ['a', 'b', 'c', 'd'].map(function(host) {
+        return 'https://' + host + '.tiles.mapbox.com/v4/' + mapid +
+            '/{z}/{x}/{y}.' +
+            (glSource.type == 'vector' ? 'vector.pbf' : 'png') +
+            accessToken;
+      });
+    }
+  }
+  return tiles ? (function() {
+    const tileGrid = createXYZ({
+      tileSize: 512,
+      maxZoom: 'maxzoom' in glSource ? glSource.maxzoom : 22,
+      minZoom: glSource.minzoom
+    });
+    return new VectorTileLayer({
+      declutter: true,
+      maxResolution: tileGrid.getMinZoom() > 0 ?
+        tileGrid.getResolution(tileGrid.getMinZoom()) : undefined,
+      source: new VectorTileSource({
+        attributions: glSource.attribution,
+        format: new MVT(),
+        tileGrid: tileGrid,
+        urls: tiles
+      }),
+      visible: false
+    });
+  })() : (function() {
+    const layer = new VectorTileLayer({
+      declutter: true,
+      visible: false
+    });
+    const tilejson = new TileJSON({
+      url: url
+    });
+    const key = tilejson.on('change', function() {
+      if (tilejson.getState() == 'ready') {
+        const tileJSONDoc = tilejson.getTileJSON();
+        const tiles = Array.isArray(tileJSONDoc.tiles) ? tileJSONDoc.tiles : [tileJSONDoc.tiles];
+        for (let i = 0, ii = tiles.length; i < ii; ++i) {
+          const tile = tiles[i];
+          if (tile.indexOf('http') != 0) {
+            tiles[i] = glSource.url + tile;
+          }
+        }
+        const tileGrid = tilejson.getTileGrid();
+        layer.setSource(new VectorTileSource({
+          attributions: tilejson.getAttributions() || tileJSONDoc.attribution,
+          format: new MVT(),
+          tileGrid: createXYZ({
+            minZoom: tileGrid.getMinZoom(),
+            maxZoom: tileGrid.getMaxZoom(),
+            tileSize: 512
+          }),
+          urls: tiles
+        }));
+        if (tileGrid.getMinZoom() > 0) {
+          layer.setMaxResolution(
+            tileGrid.getResolution(tileGrid.getMinZoom()));
+        }
+        unByKey(key);
+      } else if (tilejson.getState() == 'error') {
+        layer.setSource(undefined);
+        unByKey(key);
+      }
+    });
+    return layer;
+  })();
+}
+
+function setupRasterLayer(glSource, transition, url) {
+  const layer = new TileLayer();
+  let source;
+  if (!glSource.tiles) {
+    source = new TileJSON({
+      transition: transition,
+      url: url,
+      crossOrigin: 'anonymous'
+    });
+    const key = source.on('change', function() {
+      const state = source.getState();
+      if (state === 'ready' || state === 'error') {
+        unByKey(key);
+        layer.setSource(source);
+      }
+    });
+  } else {
+    source = new XYZ({
+      transition: transition,
+      attributions: glSource.attribution,
+      minZoom: glSource.minzoom,
+      maxZoom: 'maxzoom' in glSource ? glSource.maxzoom : 22,
+      tileSize: glSource.tileSize || 512,
+      url: url,
+      urls: glSource.tiles,
+      crossOrigin: 'anonymous'
+    });
+  }
+  source.setTileLoadFunction(function(tile, src) {
+    if (src.indexOf('{bbox-epsg-3857}') != -1) {
+      const bbox = source.getTileGrid().getTileCoordExtent(tile.getTileCoord());
+      src = src.replace('{bbox-epsg-3857}', bbox.toString());
+    }
+    tile.getImage().src = src;
+  });
+  layer.setSource(source);
+  return layer;
+}
+
+const geoJsonFormat = new GeoJSON();
+function setupGeoJSONLayer(glSource, path) {
+  const data = glSource.data;
+  let features, geoJsonUrl;
+  if (typeof data == 'string') {
+    geoJsonUrl = withPath(data, path);
+  } else {
+    features = geoJsonFormat.readFeatures(data, {featureProjection: 'EPSG:3857'});
+  }
+  return new VectorLayer({
+    source: new VectorSource({
+      attributions: glSource.attribution,
+      features: features,
+      format: geoJsonFormat,
+      url: geoJsonUrl
+    }),
+    visible: false
+  });
+}
+
 function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
   const promises = [];
   const view = map.getView();
@@ -276,10 +409,9 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
   }
 
   const glLayers = glStyle.layers;
-  const geoJsonFormat = new GeoJSON();
   let layerIds = [];
 
-  let glLayer, glSource, glSourceId, id, layer, mapid, transition, url;
+  let glLayer, glSource, glSourceId, id, layer, transition, url;
   for (let i = 0, ii = glLayers.length; i < ii; ++i) {
     glLayer = glLayers[i];
     if (glLayer.type == 'background') {
@@ -294,146 +426,21 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
         }
         glSource = glStyle.sources[id];
         url = glSource.url;
-        let tiles = glSource.tiles;
-        if (url) {
-          if (url.indexOf('mapbox://') == 0) {
-            mapid = url.replace('mapbox://', '');
-            tiles = ['a', 'b', 'c', 'd'].map(function(host) {
-              return 'https://' + host + '.tiles.mapbox.com/v4/' + mapid +
-                  '/{z}/{x}/{y}.' +
-                  (glSource.type == 'vector' ? 'vector.pbf' : 'png') +
-                  accessToken;
-            });
-          }
-        }
 
         if (glSource.type == 'vector') {
-          layer = tiles ? (function() {
-            const tileGrid = createXYZ({
-              tileSize: 512,
-              maxZoom: 'maxzoom' in glSource ? glSource.maxzoom : 22,
-              minZoom: glSource.minzoom
-            });
-            return new VectorTileLayer({
-              declutter: true,
-              maxResolution: tileGrid.getMinZoom() > 0 ?
-                tileGrid.getResolution(tileGrid.getMinZoom()) : undefined,
-              source: new VectorTileSource({
-                attributions: glSource.attribution,
-                format: new MVT(),
-                tileGrid: tileGrid,
-                urls: tiles
-              }),
-              visible: false,
-              zIndex: i
-            });
-          })() : (function() {
-            const layer = new VectorTileLayer({
-              declutter: true,
-              visible: false,
-              zIndex: i
-            });
-            const tilejson = new TileJSON({
-              url: url
-            });
-            const key = tilejson.on('change', function() {
-              if (tilejson.getState() == 'ready') {
-                const tileJSONDoc = tilejson.getTileJSON();
-                const tiles = Array.isArray(tileJSONDoc.tiles) ? tileJSONDoc.tiles : [tileJSONDoc.tiles];
-                for (let i = 0, ii = tiles.length; i < ii; ++i) {
-                  const tile = tiles[i];
-                  if (tile.indexOf('http') != 0) {
-                    tiles[i] = glSource.url + tile;
-                  }
-                }
-                const tileGrid = tilejson.getTileGrid();
-                layer.setSource(new VectorTileSource({
-                  attributions: tilejson.getAttributions() || tileJSONDoc.attribution,
-                  format: new MVT(),
-                  tileGrid: createXYZ({
-                    minZoom: tileGrid.getMinZoom(),
-                    maxZoom: tileGrid.getMaxZoom(),
-                    tileSize: 512
-                  }),
-                  urls: tiles
-                }));
-                if (tileGrid.getMinZoom() > 0) {
-                  layer.setMaxResolution(
-                    tileGrid.getResolution(tileGrid.getMinZoom()));
-                }
-                unByKey(key);
-              } else if (tilejson.getState() == 'error') {
-                layer.setSource(undefined);
-                unByKey(key);
-              }
-            });
-            return layer;
-          })();
+          layer = setupVectorLayer(glSource, accessToken, url);
         } else if (glSource.type == 'raster') {
-          layer = (function() {
-            const layer = new TileLayer({
-              visible: glLayer.layout ? glLayer.layout.visibility !== 'none' : true
-            });
-            let source = undefined;
-            if (!glSource.tiles) {
-              source = new TileJSON({
-                transition: transition,
-                url: url,
-                crossOrigin: 'anonymous'
-              });
-              const key = source.on('change', function() {
-                const state = source.getState();
-                if (state === 'ready' || state === 'error') {
-                  unByKey(key);
-                  layer.setSource(source);
-                }
-              });
-            } else {
-              source = new XYZ({
-                transition: transition,
-                attributions: glSource.attribution,
-                minZoom: glSource.minzoom,
-                maxZoom: 'maxzoom' in glSource ? glSource.maxzoom : 22,
-                tileSize: glSource.tileSize || 512,
-                url: url,
-                urls: glSource.tiles,
-                crossOrigin: 'anonymous'
-              });
-              transition = 0;
-            }
-            source.setTileLoadFunction(function(tile, src) {
-              if (src.indexOf('{bbox-epsg-3857}') != -1) {
-                const bbox = source.getTileGrid().getTileCoordExtent(tile.getTileCoord());
-                src = src.replace('{bbox-epsg-3857}', bbox.toString());
-              }
-              tile.getImage().src = src;
-            });
-            layer.setSource(source);
-            return layer;
-          })();
+          layer = setupRasterLayer(glSource, transition, url);
+          layer.setVisible(glLayer.layout ? glLayer.layout.visibility !== 'none' : true);
+          transition = 0;
         } else if (glSource.type == 'geojson') {
-          const data = glSource.data;
-          let features, geoJsonUrl;
-          if (typeof data == 'string') {
-            geoJsonUrl = withPath(data, path);
-          } else {
-            features = geoJsonFormat.readFeatures(data, {featureProjection: 'EPSG:3857'});
-          }
-          layer = new VectorLayer({
-            source: new VectorSource({
-              attributions: glSource.attribution,
-              features: features,
-              format: geoJsonFormat,
-              url: geoJsonUrl
-            }),
-            visible: false,
-            zIndex: i
-          });
+          layer = setupGeoJSONLayer(glSource, path);
         }
         glSourceId = id;
       }
       layerIds.push(glLayer.id);
       if (layer) {
+        layer.setZIndex(i);
         layer.set('mapbox-source', glSourceId);
         layer.set('mapbox-layers', layerIds);
       }
