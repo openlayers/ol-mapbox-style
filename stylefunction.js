@@ -65,7 +65,7 @@ export function getValue(layer, layoutOrPaint, property, zoom, feature) {
   if (!functions[property]) {
     let value = (layer[layoutOrPaint] || emptyObj)[property];
     const propertySpec = spec[`${layoutOrPaint}_${layer.type}`][property];
-    if (value === undefined) {
+    if ((value === undefined) && propertySpec) {
       value = propertySpec.default;
     }
     let isExpr = isExpression((value));
@@ -77,7 +77,7 @@ export function getValue(layer, layoutOrPaint, property, zoom, feature) {
       const compiledExpression = expressionData(value, propertySpec);
       functions[property] = compiledExpression.evaluate.bind(compiledExpression);
     } else {
-      if (propertySpec.type == 'color') {
+      if (propertySpec && (propertySpec.type == 'color')) {
         value = Color.parse(value);
       }
       functions[property] = function() {
