@@ -334,7 +334,6 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
               }
             }
           } else {
-            opacity = getValue(layer, 'paint', 'fill-opacity', zoom, f);
             color = colorWithOpacity(getValue(layer, 'paint', 'fill-color', zoom, f), opacity);
             if (color) {
               ++stylesLength;
