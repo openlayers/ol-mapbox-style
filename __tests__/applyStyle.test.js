@@ -57,8 +57,7 @@ describe('applyStyle style argument validation', function() {
   });
 
   test('should reject invalid ol layer type', function(done) {
-    const layer = new ImageLayer();
-    applyStyle(layer, glStyle, source).then(function() {
+    applyStyle(new ImageLayer(), glStyle, source).then(function() {
       done(new Error('invalid ol layer type promise should reject'));
     }).catch(function(err) {
       done();
@@ -66,10 +65,7 @@ describe('applyStyle style argument validation', function() {
   });
 
   test('should reject invalid ol layer source type', function(done) {
-    const source = 'natural_earth_shaded_relief';
-    const layer = new VectorLayer();
-
-    applyStyle(layer, glStyle, source).then(function() {
+    applyStyle(new VectorLayer(), glStyle, 'natural_earth_shaded_relief').then(function() {
       done(new Error('invalid ol layer source promise should reject'));
     }).catch(function(err) {
       done();
