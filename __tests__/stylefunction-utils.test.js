@@ -1,5 +1,5 @@
 /*eslint no-console: "off"*/
-import should from 'should/as-function';
+import should from 'should';
 import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
 import {Color} from '@mapbox/mapbox-gl-style-spec';
@@ -112,10 +112,6 @@ describe('utility functions currently in stylefunction.js', function() {
       },
       'type': 'line'
     };
-
-    test('should handle invalid property', function() {
-      should(getValue(glLayer2, 'layout', 'symbol', zoom, feature)).be.undefined;
-    });
 
     test('should get correct default property', function() {
       const d = spec['layout_line']['line-cap']['default'];
