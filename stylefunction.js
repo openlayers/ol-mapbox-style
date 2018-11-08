@@ -369,11 +369,11 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
             }
           }
         }
-        if (type != 1) {
+        if (type != 1 && layer.type == 'line') {
           color = !('line-pattern' in paint) && 'line-color' in paint ?
             colorWithOpacity(getValue(layer, 'paint', 'line-color', zoom, f), getValue(layer, 'paint', 'line-opacity', zoom, f)) :
             undefined;
-          const width = layer.type == 'line' ? getValue(layer, 'paint', 'line-width', zoom, f) : 1;
+          const width = getValue(layer, 'paint', 'line-width', zoom, f);
           if (color && width > 0) {
             ++stylesLength;
             style = styles[stylesLength];
