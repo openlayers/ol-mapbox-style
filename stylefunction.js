@@ -100,18 +100,22 @@ function evaluateFilter(layerId, filter, feature, zoom) {
 
 const colorCache = {};
 function colorWithOpacity(color, opacity) {
-  if (color && opacity !== undefined) {
-    let colorData = colorCache[color];
-    if (!colorData) {
-      colorCache[color] = colorData = {
-        color: color.toArray(),
-        opacity: color.a
-      };
-    }
-    color = colorData.color;
-    color[3] = colorData.opacity * opacity;
-    if (color[3] === 0) {
-      color = undefined;
+  if (color) {
+    if (opacity !== undefined) {
+      let colorData = colorCache[color];
+      if (!colorData) {
+        colorCache[color] = colorData = {
+          color: color.toArray(),
+          opacity: color.a
+        };
+      }
+      color = colorData.color;
+      color[3] = colorData.opacity * opacity;
+      if (color[3] === 0) {
+        color = undefined;
+      }
+    } else {
+      color = color.toArray();
     }
   }
   return color;

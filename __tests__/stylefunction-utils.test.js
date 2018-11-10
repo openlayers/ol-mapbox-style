@@ -11,6 +11,42 @@ const stylefunction = require('../stylefunction');
 
 describe('utility functions currently in stylefunction.js', function() {
 
+  describe('colorWithOpacity()', function() {
+    const colorWithOpacity = stylefunction.__get__('colorWithOpacity');
+    const colorCache = stylefunction.__get__('colorCache');
+
+    test('should not be identity with undefined opacity', function() {
+      const glcolor = Color.parse('hsl(47, 13%, 86%)');
+      const color = colorWithOpacity(glcolor);
+
+      should.notStrictEqual(color, colorWithOpacity(glcolor));
+      should(color).deepEqual(colorWithOpacity(glcolor));
+    });
+
+    test('should cache strictly by color', function() {
+
+      const glcolor1 = Color.parse('hsl(47, 13%, 86%)');
+      should.deepEqual([224, 222, 215, 1], colorWithOpacity(glcolor1, 1));
+      should(colorCache).containDeep({
+        [glcolor1.toString()]: {color: [224, 222, 215, 1], opacity: 1}
+      });
+
+      should.deepEqual([224, 222, 215, 0.5], colorWithOpacity(glcolor1, 0.5));
+      should(colorCache).containDeep(colorCache, {
+        [glcolor1.toString()]: {color: [224, 222, 215, 0.5], opacity: 1}
+      });
+    });
+
+    test('should multiply alpha correctly', function() {
+
+      const glcolor = Color.parse('rgba(255, 0, 0, 0.4)');
+      should.deepEqual([255, 0, 0, 0.2], colorWithOpacity(glcolor, 0.5));
+      should(colorCache).containDeep({
+        [glcolor.toString()]: {color: [255, 0, 0, 0.2], opacity: 0.4}
+      });
+    });
+  });
+
   describe('evaluateFilter()', function() {
     const filterCache = stylefunction.__get__('filterCache');
     const evaluateFilter = stylefunction.__get__('evaluateFilter');
