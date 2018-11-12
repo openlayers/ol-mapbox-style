@@ -326,12 +326,12 @@ function setupVectorLayer(glSource, accessToken, url) {
   })();
 }
 
-function setupRasterLayer(glSource, transition, url) {
+function setupRasterLayer(glSource, url) {
   const layer = new TileLayer();
   let source;
   if (!glSource.tiles) {
     source = new TileJSON({
-      transition: transition,
+      transition: 0,
       url: url,
       crossOrigin: 'anonymous'
     });
@@ -344,7 +344,7 @@ function setupRasterLayer(glSource, transition, url) {
     });
   } else {
     source = new XYZ({
-      transition: transition,
+      transition: 0,
       attributions: glSource.attribution,
       minZoom: glSource.minzoom,
       maxZoom: 'maxzoom' in glSource ? glSource.maxzoom : 22,
@@ -411,7 +411,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
   const glLayers = glStyle.layers;
   let layerIds = [];
 
-  let glLayer, glSource, glSourceId, id, layer, transition, url;
+  let glLayer, glSource, glSourceId, id, layer, url;
   for (let i = 0, ii = glLayers.length; i < ii; ++i) {
     glLayer = glLayers[i];
     if (glLayer.type == 'background') {
@@ -430,9 +430,8 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
         if (glSource.type == 'vector') {
           layer = setupVectorLayer(glSource, accessToken, url);
         } else if (glSource.type == 'raster') {
-          layer = setupRasterLayer(glSource, transition, url);
+          layer = setupRasterLayer(glSource, url);
           layer.setVisible(glLayer.layout ? glLayer.layout.visibility !== 'none' : true);
-          transition = 0;
         } else if (glSource.type == 'geojson') {
           layer = setupGeoJSONLayer(glSource, path);
         }
