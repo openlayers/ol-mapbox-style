@@ -9,6 +9,7 @@
       "icon-image": {
         "property": "cat",
         "type": "categorical",
+        "default": "",
         "stops": [
           [1, "accommodation_camping"],
           [2, "amenity_firestation"]
