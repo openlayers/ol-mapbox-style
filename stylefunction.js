@@ -537,7 +537,7 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
 
         let label;
         if ('text-field' in layout) {
-          const textField = getValue(layer, 'layout', 'text-field', zoom, f);
+          const textField = getValue(layer, 'layout', 'text-field', zoom, f).toString();
           label = fromTemplate(textField, properties);
         }
         if (label && !skipLabel) {
