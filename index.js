@@ -436,13 +436,13 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
           layer = setupGeoJSONLayer(glSource, path);
         }
         glSourceId = id;
+        if (layer) {
+          layer.setZIndex(i);
+          layer.set('mapbox-source', glSourceId);
+          layer.set('mapbox-layers', layerIds);
+        }
       }
       layerIds.push(glLayer.id);
-      if (layer) {
-        layer.setZIndex(i);
-        layer.set('mapbox-source', glSourceId);
-        layer.set('mapbox-layers', layerIds);
-      }
     }
   }
   promises.push(finalizeLayer(layer, layerIds, glStyle, path, map));
