@@ -437,9 +437,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
         }
         glSourceId = id;
         if (layer) {
-          layer.setZIndex(i);
           layer.set('mapbox-source', glSourceId);
-          layer.set('mapbox-layers', layerIds);
         }
       }
       layerIds.push(glLayer.id);
@@ -617,6 +615,7 @@ function finalizeLayer(layer, layerIds, glStyle, path, map) {
       }
     };
 
+    layer.set('mapbox-layers', layerIds);
     if (map.getLayers().getArray().indexOf(layer) === -1) {
       map.addLayer(layer);
     }
