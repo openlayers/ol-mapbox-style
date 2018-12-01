@@ -418,6 +418,7 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
 
         let hasImage = false;
         let text = null;
+        let placementAngle = 0;
         let icon, iconImg, skipLabel;
         if ((type == 1 || type == 2) && 'icon-image' in layout) {
           const iconImage = getValue(layer, 'layout', 'icon-image', zoom, f);
@@ -436,7 +437,28 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
                   );
                   if (size > 150) {
                     //FIXME Do not hard-code a size of 150
-                    styleGeom = new Point(geom.getFlatMidpoint());
+                    const midpoint = geom.getFlatMidpoint();
+                    styleGeom = new Point(midpoint);
+                    const placement = getValue(layer, 'layout', 'symbol-placement');
+                    if (placement === 'line') {
+                      const stride = geom.getStride();
+                      const coordinates = geom.getFlatCoordinates();
+                      for (let i = 0, ii = coordinates.length - stride; i < ii; i += stride) {
+                        const x1 = coordinates[i];
+                        const y1 = coordinates[i + 1];
+                        const x2 = coordinates[i + stride];
+                        const y2 = coordinates[i + stride + 1];
+                        const minX = Math.min(x1, x2);
+                        const minY = Math.min(y1, y2);
+                        const maxX = Math.max(x1, x2);
+                        const maxY = Math.max(y1, y2);
+                        if (midpoint[0] >= minX && midpoint[0] <= maxX &&
+                            midpoint[1] >= minY && midpoint[1] <= maxY) {
+                          placementAngle = Math.atan2(y1 - y2, x2 - x1);
+                          break;
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -492,11 +514,12 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
                       imgSize: spriteImgSize,
                       size: [spriteImageData.width, spriteImageData.height],
                       offset: [spriteImageData.x, spriteImageData.y],
+                      rotateWithView: getValue(layer, 'layout', 'icon-rotation-alignment') === 'map',
                       scale: iconSize / spriteImageData.pixelRatio
                     });
                   }
                 }
-                iconImg.setRotation(deg2rad(getValue(layer, 'layout', 'icon-rotate', zoom, f)));
+                iconImg.setRotation(placementAngle + deg2rad(getValue(layer, 'layout', 'icon-rotate', zoom, f)));
                 iconImg.setOpacity(getValue(layer, 'paint', 'icon-opacity', zoom, f));
                 style.setImage(iconImg);
                 text = style.getText();
