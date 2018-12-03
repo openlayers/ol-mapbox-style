@@ -251,6 +251,14 @@ function getSourceIdByRef(layers, ref) {
   return sourceId;
 }
 
+function applyBounds(layer, bounds) {
+  if (bounds) {
+    const ll = fromLonLat([bounds[0], bounds[1]]);
+    const tr = fromLonLat([bounds[2], bounds[3]]);
+    layer.setExtent([ll[0], ll[1], tr[0], tr[1]]);
+  }
+}
+
 function setupVectorLayer(glSource, accessToken, url) {
   glSource = Object.assign({}, glSource);
   if (url) {
@@ -294,7 +302,7 @@ function setupVectorLayer(glSource, accessToken, url) {
         }),
         urls: tiles
       });
-        }));
+      applyBounds(layer, tileJSONDoc.bounds);
       if (tileGrid.getMinZoom() > 0) {
         layer.setMaxResolution(
           tileGrid.getResolution(tileGrid.getMinZoom()));
@@ -324,6 +332,7 @@ function setupRasterLayer(glSource, url) {
     const state = source.getState();
     if (state === 'ready') {
       unByKey(key);
+      applyBounds(layer, source.getTileJSON().bounds);
       layer.setSource(source);
     } else if (state === 'error') {
       unByKey(key);
