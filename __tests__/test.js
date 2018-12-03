@@ -143,12 +143,20 @@ describe('ol-mapbox-style', function() {
           const wms = map.getLayers().item(1);
           should(osm.get('mapbox-layers')).eql(['osm']);
           should(wms.get('mapbox-layers')).eql(['states-wms']);
-          should(osm.getSource().getUrls()).eql([
-            'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png'
+          const tileGrid = osm.getSource().getTileGrid();
+          const tileUrlFunction = osm.getSource().getTileUrlFunction();
+          const extent = [-1e7, -1e7, 1e7, 1e7];
+          const urls = [];
+          tileGrid.forEachTileCoord(extent, 1, function(tileCoord) {
+            urls.push(tileUrlFunction(tileCoord));
+          });
+          should(urls).eql([
+            'https://b.tile.openstreetmap.org/1/0/1.png',
+            'https://c.tile.openstreetmap.org/1/0/0.png',
+            'https://a.tile.openstreetmap.org/1/1/1.png',
+            'https://b.tile.openstreetmap.org/1/1/0.png'
           ]);
-          should(osm.getSource().getAttributions()()[0]).equal(
+          should(osm.getSource().getAttributions()({extent: extent})[0]).equal(
             '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors.');
           should(wms.getSource().getTileGrid().getTileSize()).eql(256);
           should(wms.getSource().getTileGrid().getMaxZoom()).eql(12);
@@ -183,16 +191,17 @@ describe('ol-mapbox-style', function() {
     });
 
     it('handles raster sources from TileJSON', function(done) {
-      const map = apply(target, 'http://dummy/tilejson.json');
-      map.getLayers().once('add', function(e) {
-        const source = e.element.getSource();
-        should(source).be.instanceof(TileSource);
-        source.once('change', function() {
+      olms(target, 'http://dummy/tilejson.json')
+        .then(function(map) {
+          const source = map.getLayers().item(0).getSource();
+          should(source).be.instanceof(TileSource);
           const tileGrid = source.getTileGrid();
           should(tileGrid.getMaxZoom()).equal(8);
           done();
+        })
+        .catch(function(err) {
+          done(err);
         });
-      });
     });
 
     it('handles vector sources from TileJSON', function(done) {

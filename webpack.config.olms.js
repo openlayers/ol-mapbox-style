@@ -48,7 +48,6 @@ module.exports = {
     'ol/layer/VectorTile': 'ol.layer.VectorTile',
     'ol/source/TileJSON': 'ol.source.TileJSON',
     'ol/source/Vector': 'ol.source.Vector',
-    'ol/source/VectorTile': 'ol.source.VectorTile',
-    'ol/source/XYZ': 'ol.source.XYZ'
+    'ol/source/VectorTile': 'ol.source.VectorTile'
   }
 };

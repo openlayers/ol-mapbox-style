@@ -19,7 +19,6 @@ import VectorTileLayer from 'ol/layer/VectorTile';
 import TileJSON from 'ol/source/TileJSON';
 import VectorSource from 'ol/source/Vector';
 import VectorTileSource from 'ol/source/VectorTile';
-import XYZ from 'ol/source/XYZ';
 import {Color} from '@mapbox/mapbox-gl-style-spec';
 
 const fontFamilyRegEx = /font-family: ?([^;]*);/;
@@ -253,11 +252,11 @@ function getSourceIdByRef(layers, ref) {
 }
 
 function setupVectorLayer(glSource, accessToken, url) {
-  let tiles = glSource.tiles;
+  glSource = Object.assign({}, glSource);
   if (url) {
     if (url.indexOf('mapbox://') == 0) {
       const mapid = url.replace('mapbox://', '');
-      tiles = ['a', 'b', 'c', 'd'].map(function(host) {
+      glSource.tiles = ['a', 'b', 'c', 'd'].map(function(host) {
         return 'https://' + host + '.tiles.mapbox.com/v4/' + mapid +
             '/{z}/{x}/{y}.' +
             (glSource.type == 'vector' ? 'vector.pbf' : 'png') +
@@ -265,95 +264,72 @@ function setupVectorLayer(glSource, accessToken, url) {
       });
     }
   }
-  return tiles ? (function() {
-    const tileGrid = createXYZ({
-      tileSize: 512,
-      maxZoom: 'maxzoom' in glSource ? glSource.maxzoom : 22,
-      minZoom: glSource.minzoom
-    });
-    return new VectorTileLayer({
-      declutter: true,
-      maxResolution: tileGrid.getMinZoom() > 0 ?
-        tileGrid.getResolution(tileGrid.getMinZoom()) : undefined,
-      source: new VectorTileSource({
-        attributions: glSource.attribution,
-        format: new MVT(),
-        tileGrid: tileGrid,
-        urls: tiles
-      }),
-      visible: false
-    });
-  })() : (function() {
-    const layer = new VectorTileLayer({
-      declutter: true,
-      visible: false
-    });
-    const tilejson = new TileJSON({
-      url: url
-    });
-    const key = tilejson.on('change', function() {
-      if (tilejson.getState() == 'ready') {
-        const tileJSONDoc = tilejson.getTileJSON();
-        const tiles = Array.isArray(tileJSONDoc.tiles) ? tileJSONDoc.tiles : [tileJSONDoc.tiles];
-        for (let i = 0, ii = tiles.length; i < ii; ++i) {
-          const tile = tiles[i];
-          if (tile.indexOf('http') != 0) {
-            tiles[i] = glSource.url + tile;
-          }
+  const layer = new VectorTileLayer({
+    declutter: true,
+    visible: false
+  });
+  const tilejson = new TileJSON({
+    url: glSource.tiles ? undefined : url,
+    tileJSON: glSource.tiles ? glSource : undefined
+  });
+  const key = tilejson.on('change', function() {
+    const state = tilejson.getState();
+    if (state === 'ready') {
+      const tileJSONDoc = tilejson.getTileJSON();
+      const tiles = Array.isArray(tileJSONDoc.tiles) ? tileJSONDoc.tiles : [tileJSONDoc.tiles];
+      for (let i = 0, ii = tiles.length; i < ii; ++i) {
+        const tile = tiles[i];
+        if (tile.indexOf('http') != 0) {
+          tiles[i] = glSource.url + tile;
         }
-        const tileGrid = tilejson.getTileGrid();
-        layer.setSource(new VectorTileSource({
-          attributions: tilejson.getAttributions() || tileJSONDoc.attribution,
-          format: new MVT(),
-          tileGrid: createXYZ({
-            minZoom: tileGrid.getMinZoom(),
-            maxZoom: tileGrid.getMaxZoom(),
-            tileSize: 512
-          }),
-          urls: tiles
-        }));
-        if (tileGrid.getMinZoom() > 0) {
-          layer.setMaxResolution(
-            tileGrid.getResolution(tileGrid.getMinZoom()));
-        }
-        unByKey(key);
-      } else if (tilejson.getState() == 'error') {
-        layer.setSource(undefined);
-        unByKey(key);
       }
-    });
-    return layer;
-  })();
+      const tileGrid = tilejson.getTileGrid();
+      const source = new VectorTileSource({
+        attributions: tilejson.getAttributions(),
+        format: new MVT(),
+        tileGrid: createXYZ({
+          minZoom: tileGrid.getMinZoom(),
+          maxZoom: tileGrid.getMaxZoom(),
+          tileSize: 512
+        }),
+        urls: tiles
+      });
+        }));
+      if (tileGrid.getMinZoom() > 0) {
+        layer.setMaxResolution(
+          tileGrid.getResolution(tileGrid.getMinZoom()));
+      }
+      unByKey(key);
+      layer.setSource(source);
+    } else if (state === 'error') {
+      unByKey(key);
+      layer.setSource(undefined);
+    }
+  });
+  if (glSource.tiles) {
+    tilejson.changed();
+  }
+  return layer;
 }
 
 function setupRasterLayer(glSource, url) {
   const layer = new TileLayer();
-  let source;
-  if (!glSource.tiles) {
-    source = new TileJSON({
-      transition: 0,
-      url: url,
-      crossOrigin: 'anonymous'
-    });
-    const key = source.on('change', function() {
-      const state = source.getState();
-      if (state === 'ready' || state === 'error') {
-        unByKey(key);
-        layer.setSource(source);
-      }
-    });
-  } else {
-    source = new XYZ({
-      transition: 0,
-      attributions: glSource.attribution,
-      minZoom: glSource.minzoom,
-      maxZoom: 'maxzoom' in glSource ? glSource.maxzoom : 22,
-      tileSize: glSource.tileSize || 512,
-      url: url,
-      urls: glSource.tiles,
-      crossOrigin: 'anonymous'
-    });
-  }
+  const source = new TileJSON({
+    transition: 0,
+    url: glSource.tiles ? undefined : url,
+    tileJSON: glSource.tiles ? glSource : undefined,
+    crossOrigin: 'anonymous'
+  });
+  const key = source.on('change', function() {
+    const state = source.getState();
+    if (state === 'ready') {
+      unByKey(key);
+      layer.setSource(source);
+    } else if (state === 'error') {
+      unByKey(key);
+      layer.setSource(undefined);
+    }
+  });
   source.setTileLoadFunction(function(tile, src) {
     if (src.indexOf('{bbox-epsg-3857}') != -1) {
       const bbox = source.getTileGrid().getTileCoordExtent(tile.getTileCoord());
@@ -361,7 +337,6 @@ function setupRasterLayer(glSource, url) {
     }
     tile.getImage().src = src;
   });
-  layer.setSource(source);
   return layer;
 }
 
