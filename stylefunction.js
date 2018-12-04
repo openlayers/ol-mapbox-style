@@ -439,7 +439,7 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
                     //FIXME Do not hard-code a size of 150
                     const midpoint = geom.getFlatMidpoint();
                     styleGeom = new Point(midpoint);
-                    const placement = getValue(layer, 'layout', 'symbol-placement');
+                    const placement = getValue(layer, 'layout', 'symbol-placement', zoom, f);
                     if (placement === 'line') {
                       const stride = geom.getStride();
                       const coordinates = geom.getFlatCoordinates();
