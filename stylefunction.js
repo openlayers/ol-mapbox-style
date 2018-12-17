@@ -1,6 +1,6 @@
 /*
 ol-mapbox-style - Use Mapbox Style objects with OpenLayers
-Copyright 2016-present Boundless Spatial, Inc.
+Copyright 2016-present ol-mapbox-style contributors
 License: https://raw.githubusercontent.com/boundlessgeo/ol-mapbox-gl-style/master/LICENSE
 */
 
