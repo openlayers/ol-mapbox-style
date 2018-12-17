@@ -15,49 +15,6 @@
     "mapbox",
     "vector tiles"
   ],
-  "author": "Andreas Hocevar <andreas.hocevar@gmail.com>",
-  "contributors": [
-    {
-      "name": "Attila Berényi",
-      "email": "aberenyi@gislab.hu"
-    },
-    {
-      "name": "Bart van den Eijnden",
-      "email": "bartvde@boundlessgeo.com"
-    },
-    {
-      "name": "Dan 'Ducky' Little",
-      "email": "danlittle@yahoo.com"
-    },
-    {
-      "name": "Yancy Matherne",
-      "email": "ymatherne@boundlessgeo.com"
-    },
-    {
-      "name": "Christian Mayer",
-      "email": "chris@meggsimum.de"
-    },
-    {
-      "name": "James Milner",
-      "email": "jamesmilner22@hotmail.com"
-    },
-    {
-      "name": "Adrien Pompée",
-      "email": "adrien.pompee@atmosphere.aero"
-    },
-    {
-      "name": "Torben Barsballe",
-      "email": "tbarsballe@boundlessgeo.com"
-    },
-    {
-      "name": "Petr Sloup",
-      "email": "petr.sloup@klokantech.com"
-    },
-    {
-      "name": "Antti Risteli",
-      "email": "antti@kiinnost.us"
-    }
-  ],
   "license": "BSD-2-Clause",
   "scripts": {
     "start": "webpack-dev-server --config ./webpack.config.js",
