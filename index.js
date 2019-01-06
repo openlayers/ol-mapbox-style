@@ -9,6 +9,7 @@ import applyStyleFunction, {getValue} from './stylefunction';
 import googleFonts from 'webfont-matcher/lib/fonts/google';
 import {fromLonLat} from 'ol/proj';
 import {createXYZ} from 'ol/tilegrid';
+import TileGrid from 'ol/tilegrid/TileGrid';
 import Map from 'ol/Map';
 import GeoJSON from 'ol/format/GeoJSON';
 import MVT from 'ol/format/MVT';
@@ -259,6 +260,15 @@ function applyBounds(layer, bounds) {
   }
 }
 
+function extentFromTileJSON(tileJSON) {
+  const bounds = tileJSON.bounds;
+  if (bounds) {
+    const ll = fromLonLat([bounds[0], bounds[1]]);
+    const tr = fromLonLat([bounds[2], bounds[3]]);
+    return [ll[0], ll[1], tr[0], tr[1]];
+  }
+}
+
 function setupVectorLayer(glSource, accessToken, url) {
   glSource = Object.assign({}, glSource);
   if (url) {
@@ -292,17 +302,23 @@ function setupVectorLayer(glSource, accessToken, url) {
         }
       }
       const tileGrid = tilejson.getTileGrid();
+      const extent = extentFromTileJSON(tileJSONDoc);
+      const tileSize = tileJSONDoc.tileSize || 512;
       const source = new VectorTileSource({
         attributions: tilejson.getAttributions(),
         format: new MVT(),
-        tileGrid: createXYZ({
-          minZoom: tileGrid.getMinZoom(),
-          maxZoom: tileGrid.getMaxZoom(),
-          tileSize: 512
+        tileGrid: new TileGrid({
+          origin: tileGrid.getOrigin(),
+          extent: extent,
+          resolutions: createXYZ({
+            minZoom: tileGrid.getMinZoom(),
+            maxZoom: tileGrid.getMaxZoom(),
+            tileSize: tileSize
+          }).getResolutions(),
+          tileSize: tileSize
         }),
         urls: tiles
       });
-      applyBounds(layer, tileJSONDoc.bounds);
       if (tileGrid.getMinZoom() > 0) {
         layer.setMaxResolution(
           tileGrid.getResolution(tileGrid.getMinZoom()));
@@ -332,7 +348,21 @@ function setupRasterLayer(glSource, url) {
     const state = source.getState();
     if (state === 'ready') {
       unByKey(key);
-      applyBounds(layer, source.getTileJSON().bounds);
+      const tileJSONDoc = source.getTileJSON();
+      const extent = extentFromTileJSON(tileJSONDoc);
+      const tileGrid = source.getTileGrid();
+      const tileSize = tileJSONDoc.tileSize || 256;
+      // Only works when using ES modules
+      source.tileGrid = new TileGrid({
+        origin: tileGrid.getOrigin(),
+        extent: extent,
+        resolutions: createXYZ({
+          minZoom: tileGrid.getMinZoom(),
+          maxZoom: tileGrid.getMaxZoom(),
+          tileSize: tileSize
+        }).getResolutions(),
+        tileSize: tileSize
+      });
       layer.setSource(source);
     } else if (state === 'error') {
       unByKey(key);
