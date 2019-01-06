@@ -399,6 +399,12 @@ function setupGeoJSONLayer(glSource, path) {
   });
 }
 
+function updateRasterOpacity(glLayer, layer, view) {
+  const zoom = view.getZoom();
+  const opacity = getValue(glLayer, 'paint', 'raster-opacity', zoom, emptyObj);
+  layer.setOpacity(opacity);
+}
+
 function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
   const promises = [];
   const view = map.getView();
@@ -445,6 +451,8 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
           layer = setupVectorLayer(glSource, accessToken, url);
         } else if (glSource.type == 'raster') {
           layer = setupRasterLayer(glSource, url);
+          view.on('change:resolution', updateRasterOpacity.bind(this, glLayer, layer, view));
+          updateRasterOpacity(glLayer, layer, view);
           layer.setVisible(glLayer.layout ? glLayer.layout.visibility !== 'none' : true);
         } else if (glSource.type == 'geojson') {
           layer = setupGeoJSONLayer(glSource, path);
