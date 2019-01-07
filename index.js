@@ -252,14 +252,6 @@ function getSourceIdByRef(layers, ref) {
   return sourceId;
 }
 
-function applyBounds(layer, bounds) {
-  if (bounds) {
-    const ll = fromLonLat([bounds[0], bounds[1]]);
-    const tr = fromLonLat([bounds[2], bounds[3]]);
-    layer.setExtent([ll[0], ll[1], tr[0], tr[1]]);
-  }
-}
-
 function extentFromTileJSON(tileJSON) {
   const bounds = tileJSON.bounds;
   if (bounds) {
