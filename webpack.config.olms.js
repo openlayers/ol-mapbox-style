@@ -39,7 +39,7 @@ module.exports = {
     'ol/geom/Point': 'ol.geom.Point',
     'ol/proj': 'ol.proj',
     'ol/tilegrid': 'ol.tilegrid',
-    'ol/tilegrid/TileGrid': 'ol.tilegrid/TileGrid',
+    'ol/tilegrid/TileGrid': 'ol.tilegrid.TileGrid',
     'ol/format/GeoJSON': 'ol.format.GeoJSON',
     'ol/format/MVT': 'ol.format.MVT',
     'ol/Map': 'ol.Map',
