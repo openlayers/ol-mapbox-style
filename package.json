@@ -5,10 +5,10 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git://github.com/boundlessgeo/ol-mapbox-style.git"
+    "url": "git://github.com/openlayers/ol-mapbox-style.git"
   },
   "bugs": {
-    "url": "https://github.com/boundlessgeo/ol-mapbox-style/issues"
+    "url": "https://github.com/openlayers/ol-mapbox-style/issues"
   },
   "keywords": [
     "openlayers",
