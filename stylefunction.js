@@ -426,6 +426,7 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
             icon = fromTemplate(iconImage, properties);
             let styleGeom = undefined;
             if (spriteImage && spriteData && spriteData[icon]) {
+              const iconRotationAlignment = getValue(layer, 'layout', 'icon-rotation-alignment', zoom, f);
               if (type == 2) {
                 const geom = feature.getGeometry();
                 // ol package and ol-debug.js only
@@ -440,7 +441,7 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
                     const midpoint = geom.getFlatMidpoint();
                     styleGeom = new Point(midpoint);
                     const placement = getValue(layer, 'layout', 'symbol-placement', zoom, f);
-                    if (placement === 'line') {
+                    if (placement === 'line' && iconRotationAlignment === 'map') {
                       const stride = geom.getStride();
                       const coordinates = geom.getFlatCoordinates();
                       for (let i = 0, ii = coordinates.length - stride; i < ii; i += stride) {
@@ -514,7 +515,7 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
                       imgSize: spriteImgSize,
                       size: [spriteImageData.width, spriteImageData.height],
                       offset: [spriteImageData.x, spriteImageData.y],
-                      rotateWithView: getValue(layer, 'layout', 'icon-rotation-alignment') === 'map',
+                      rotateWithView: iconRotationAlignment === 'map',
                       scale: iconSize / spriteImageData.pixelRatio
                     });
                   }
