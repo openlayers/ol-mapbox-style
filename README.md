@@ -1,6 +1,6 @@
 # ol-mapbox-style
 
-Create OpenLayers maps from Mapbox Style objects.
+Create [OpenLayers](https://openlayers.org/) maps from [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/) objects.
 
 ## Getting started
 
