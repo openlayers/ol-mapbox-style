@@ -290,7 +290,7 @@ function setupVectorLayer(glSource, accessToken, url) {
       for (let i = 0, ii = tiles.length; i < ii; ++i) {
         const tile = tiles[i];
         if (tile.indexOf('http') != 0) {
-          tiles[i] = glSource.url + tile;
+          tiles[i] = (glSource.url || '') + tile;
         }
       }
       const tileGrid = tilejson.getTileGrid();
