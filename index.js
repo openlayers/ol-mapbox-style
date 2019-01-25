@@ -287,10 +287,12 @@ function setupVectorLayer(glSource, accessToken, url) {
     if (state === 'ready') {
       const tileJSONDoc = tilejson.getTileJSON();
       const tiles = Array.isArray(tileJSONDoc.tiles) ? tileJSONDoc.tiles : [tileJSONDoc.tiles];
-      for (let i = 0, ii = tiles.length; i < ii; ++i) {
-        const tile = tiles[i];
-        if (tile.indexOf('http') != 0) {
-          tiles[i] = (glSource.url || '') + tile;
+      if (glSource.url) {
+        for (let i = 0, ii = tiles.length; i < ii; ++i) {
+          const tile = tiles[i];
+          if (tile.indexOf('http') != 0) {
+            tiles[i] = glSource.url + tile;
+          }
         }
       }
       const tileGrid = tilejson.getTileGrid();
