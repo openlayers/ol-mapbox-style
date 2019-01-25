@@ -1,6 +1,7 @@
 {
   "version": 8,
   "name": "states",
+  "glyphs": "{fontstack}/{range}",
   "sources": {
     "states": {
       "type": "geojson",

@@ -31,10 +31,12 @@
     },
     {
       "id": "osm",
+      "type": "raster",
       "source": "osm"
     },
     {
       "id": "states-wms",
+      "type": "raster",
       "source": "states"
     }
   ]

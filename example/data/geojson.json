@@ -3,6 +3,7 @@
   "name": "states",
   "center": [-122.19952899999998, 51.920367528011525],
   "zoom": 3,
+  "glyphs": "{fontstack}/{range}",
   "sources": {
     "states": {
       "type": "geojson",
