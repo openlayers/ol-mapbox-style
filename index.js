@@ -75,7 +75,7 @@ function getFonts(fonts) {
 const spriteRegEx = /^(.*)(\?.*)$/;
 
 function withPath(url, path) {
-  if (path && url.indexOf('http') != 0) {
+  if (path && url.startsWith('.')) {
     url = path + url;
   }
   return url;
@@ -535,8 +535,9 @@ export default function olms(map, style) {
         .then(function(glStyle) {
           const a = document.createElement('A');
           a.href = style;
+          const href = a.href;
           path = a.pathname.split('/').slice(0, -1).join('/') + '/';
-          host = style.substr(0, style.indexOf(path));
+          host = href.substr(0, href.indexOf(path));
 
           processStyle(glStyle, map, baseUrl, host, path, accessToken)
             .then(function() {
