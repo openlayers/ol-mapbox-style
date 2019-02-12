@@ -40,6 +40,7 @@ module.exports = function(karma) {
     }
   });
 
+  process.env.CHROME_BIN = require('puppeteer').executablePath();
   if (process.env.CIRCLECI) {
     karma.set({
       browsers: ['Chrome'],
@@ -60,7 +61,6 @@ module.exports = function(karma) {
       }
     });
   } else {
-    process.env.CHROME_BIN = require('puppeteer').executablePath();
     karma.set({
       browsers: ['ChromeHeadless']
     });
