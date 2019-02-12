@@ -1,7 +1,7 @@
 {
   "version": 8,
   "id": "osm-liberty",
-  "name": "Invalid Sprite URL",
+  "name": "OSM Liberty",
   "metadata": {
     "mapbox:type": "template"
   },
@@ -19,7 +19,7 @@
       "type": "raster"
     }
   },
-  "sprite": "maputnik/osm-liberty/gh-pages/sprites/osm-liberty",
+  "sprite": "./osm-liberty",
   "glyphs": "https://maps.tilehosting.com/fonts/{fontstack}/{range}.pbf?key={key}",
   "layers": [
     {

@@ -653,3 +653,11 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
   olLayer.set('mapbox-layers', mapboxLayers);
   return styleFunction;
 }
+
+export {
+  filterCache as _filterCache,
+  evaluateFilter as _evaluateFilter,
+  fromTemplate as _fromTemplate,
+  getValue as _getValue,
+  functionCache as _functionCache
+};

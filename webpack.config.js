@@ -116,10 +116,7 @@ module.exports = (env, argv) => {
             /node_modules\/(?!(ol|@mapbox\/mapbox-gl-style-spec)\/)/
           ],
           use: {
-            loader: 'babel-loader',
-            options: {
-              presets: ['@babel/preset-env']
-            }
+            loader: 'buble-loader'
           }
         }
       ]

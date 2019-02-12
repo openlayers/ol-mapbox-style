@@ -4,7 +4,21 @@ Create [OpenLayers](https://openlayers.org/) maps from [Mapbox Style Specificati
 
 ## Getting started
 
-To use a standalone build of ol-mapbox-style, just include 'dist/olms.js' on your HTML page. Otherwise just import the ol-mapbox-style module, like in the snippet below.
+### Installation
+
+To use the library in an application with an npm based dev environment, install it with
+
+    npm install ol-mapbox-style
+
+When using webpack as bundler, make sure to include the following in your webpack configuration:
+
+```js
+  node: {fs: 'empty'}
+```
+
+When installed this way, just import the ol-mapbox-style module, like in the usage example below. To use a standalone build of ol-mapbox-style, just include 'dist/olms.js' on your HTML page, and access the global `olms` object.
+
+### Usage example
 
 The code below creates an OpenLayers map from Mapbox's Bright v9 style:
 
@@ -271,4 +285,14 @@ Returns **ol.style.StyleFunction** Style function for use in
 
     npm install
 
-The resulting binary (`olms.js`) will be in the `dist/` folder. To see the library in action, navigate to `example/index.html`.
+The resulting binary (`olms.js`) will be in the `dist/` folder. To see the library in action, navigate to `dist/index.html`.
+
+To run test locally, run
+
+    npm test
+
+For debugging tests in the browser, run
+
+    npm run karma
+
+and open a browser on the host and port indicated in the console output (usually http://localhost:9876/) and click the 'DEBUG' button to go to the debug environment.
