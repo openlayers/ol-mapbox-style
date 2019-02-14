@@ -20,6 +20,7 @@
     "start": "webpack-dev-server --config ./webpack.config.js",
     "prepare": "npm run doc && npm run build",
     "build": "webpack-cli --mode=production --config ./webpack.config.olms.js && webpack-cli --mode=production",
+    "build-debug": "webpack-cli --mode=development --config ./webpack.config.olms-debug.js && webpack-cli --mode=development",
     "doc": "documentation readme -s API index.js",
     "karma": "karma start test/karma.conf.js",
     "lint": "eslint test example *.js",
