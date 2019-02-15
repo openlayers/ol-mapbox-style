@@ -403,6 +403,9 @@ function updateRasterLayerProperties(glLayer, layer, view) {
 function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
   const promises = [];
   const view = map.getView();
+  if (view.getMaxZoom() > 25) {
+    view.setMaxZoom(25);
+  }
   if ('center' in glStyle && !view.getCenter()) {
     view.setCenter(fromLonLat(glStyle.center));
   }
