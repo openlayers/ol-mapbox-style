@@ -295,6 +295,6 @@ For debugging tests in the browser, run
 
     npm run karma
 
-and open a browser on the host and port indicated in the console output (usually http://localhost:9876/) and click the 'DEBUG' button to go to the debug environment.
+and open a browser on the host and port indicated in the console output (usually <http://localhost:9876/>) and click the 'DEBUG' button to go to the debug environment.
 
 [![CircleCI](https://circleci.com/gh/openlayers/ol-mapbox-style.svg?style=svg)](https://circleci.com/gh/openlayers/ol-mapbox-style)
