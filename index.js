@@ -397,7 +397,7 @@ function updateRasterLayerProperties(glLayer, layer, view) {
   const zoom = view.getZoom();
   const opacity = getValue(glLayer, 'paint', 'raster-opacity', zoom, emptyObj);
   layer.setOpacity(opacity);
-  layer.setVisible(zoom >= (glLayer.minzoom || 0) && zoom < (glLayer.maxzoom || 24));
+  layer.setVisible(zoom >= (glLayer.minzoom || 0) && zoom < (glLayer.maxzoom || Infinity));
 }
 
 function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
