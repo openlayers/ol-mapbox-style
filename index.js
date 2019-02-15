@@ -397,12 +397,16 @@ function updateRasterLayerProperties(glLayer, layer, view) {
   const zoom = view.getZoom();
   const opacity = getValue(glLayer, 'paint', 'raster-opacity', zoom, emptyObj);
   layer.setOpacity(opacity);
-  layer.setVisible(zoom >= (glLayer.minzoom || 0) && zoom < (glLayer.maxzoom || 24));
+  const visible = (glLayer.layout ? glLayer.layout.visibility !== 'none' : true);
+  layer.setVisible(visible && zoom >= (glLayer.minzoom || 0) && zoom < (glLayer.maxzoom || Infinity));
 }
 
 function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
   const promises = [];
   const view = map.getView();
+  if (view.getMaxZoom() > 25) {
+    view.setMaxZoom(25);
+  }
   if ('center' in glStyle && !view.getCenter()) {
     view.setCenter(fromLonLat(glStyle.center));
   }
@@ -446,7 +450,6 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
           layer = setupVectorLayer(glSource, accessToken, url);
         } else if (glSource.type == 'raster') {
           layer = setupRasterLayer(glSource, url);
-          layer.setVisible(glLayer.layout ? glLayer.layout.visibility !== 'none' : true);
           view.on('change:resolution', updateRasterLayerProperties.bind(this, glLayer, layer, view));
           updateRasterLayerProperties(glLayer, layer, view);
         } else if (glSource.type == 'geojson') {

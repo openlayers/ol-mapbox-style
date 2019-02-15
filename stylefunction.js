@@ -181,7 +181,7 @@ function fromTemplate(text, properties) {
 export default function(olLayer, glStyle, source, resolutions, spriteData, spriteImageUrl, getFonts) {
   if (!resolutions) {
     resolutions = [];
-    for (let res = 78271.51696402048; resolutions.length < 21; res /= 2) {
+    for (let res = 78271.51696402048; resolutions.length <= 24; res /= 2) {
       resolutions.push(res);
     }
   }
