@@ -74,10 +74,12 @@ fetch('data/states.json').then(function(response) {
     -   [Parameters](#parameters-3)
 -   [getLayer](#getlayer)
     -   [Parameters](#parameters-4)
--   [getSource](#getsource)
+-   [getLayers](#getlayers)
     -   [Parameters](#parameters-5)
--   [stylefunction](#stylefunction)
+-   [getSource](#getsource)
     -   [Parameters](#parameters-6)
+-   [stylefunction](#stylefunction)
+    -   [Parameters](#parameters-7)
 
 ### applyStyle
 
@@ -212,7 +214,22 @@ OpenLayers layer instance when they use the same Mapbox Style `source`.
 -   `map` **ol.Map** OpenLayers Map.
 -   `layerId` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Mapbox Style layer id.
 
-Returns **ol.layer.Layer** layer OpenLayers layer instance.
+Returns **ol.layer.Layer** OpenLayers layer instance.
+
+### getLayers
+
+```js
+import {getLayers} from 'ol-mapbox-style';
+```
+
+Get the OpenLayers layer instances for the provided Mapbox Style `source`.
+
+#### Parameters
+
+-   `map` **ol.Map** OpenLayers Map.
+-   `sourceId` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Mapbox Style source id.
+
+Returns **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;ol.layer.Layer>** OpenLayers layer instances.
 
 ### getSource
 
@@ -227,7 +244,7 @@ Get the OpenLayers source instance for the provided Mapbox Style `source`.
 -   `map` **ol.Map** OpenLayers Map.
 -   `sourceId` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Mapbox Style source id.
 
-Returns **ol.layer.Layer** layer OpenLayers layer instance.
+Returns **ol.source.Source** OpenLayers source instance.
 
 ### stylefunction
 

@@ -1,5 +1,5 @@
 import should from 'should';
-import olms, {applyBackground, apply, getLayer, getSource} from '..';
+import olms, {applyBackground, apply, getLayer, getLayers, getSource} from '..';
 import Map from 'ol/Map';
 import TileSource from 'ol/source/Tile';
 import VectorSource from 'ol/source/Vector';
@@ -222,6 +222,25 @@ describe('ol-mapbox-style', function() {
       });
     });
   });
+
+  describe('getLayers', function() {
+    let target;
+    beforeEach(function() {
+      target = document.createElement('div');
+    });
+
+    it('returns an array of layers', function(done) {
+      const map = apply(target, brightV9);
+
+      map.once('change:mapbox-style', function() {
+        const layers = getLayers(map, 'mapbox');
+        should(layers).be.an.instanceOf(Array);
+        should(layers[0]).be.an.instanceOf(VectorTileLayer);
+        done();
+      });
+    });
+  });
+
 
   describe('getSource', function() {
     let target;
