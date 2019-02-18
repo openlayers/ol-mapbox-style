@@ -659,7 +659,7 @@ function finalizeLayer(layer, layerIds, glStyle, path, map) {
  * OpenLayers layer instance when they use the same Mapbox Style `source`.
  * @param {ol.Map} map OpenLayers Map.
  * @param {string} layerId Mapbox Style layer id.
- * @return {ol.layer.Layer} layer OpenLayers layer instance.
+ * @return {ol.layer.Layer} OpenLayers layer instance.
  */
 export function getLayer(map, layerId) {
   const layers = map.getLayers().getArray();
@@ -672,12 +672,32 @@ export function getLayer(map, layerId) {
 
 /**
  * ```js
+ * import {getLayers} from 'ol-mapbox-style';
+ * ```
+ * Get the OpenLayers layer instances for the provided Mapbox Style `source`.
+ * @param {ol.Map} map OpenLayers Map.
+ * @param {string} sourceId Mapbox Style source id.
+ * @return {Array<ol.layer.Layer>} OpenLayers layer instances.
+ */
+export function getLayers(map, sourceId) {
+  const result = [];
+  const layers = map.getLayers().getArray();
+  for (let i = 0, ii = layers.length; i < ii; ++i) {
+    if (layers[i].get('mapbox-source').indexOf(sourceId) !== -1) {
+      result.push(layers[i]);
+    }
+  }
+  return result;
+}
+
+/**
+ * ```js
  * import {getSource} from 'ol-mapbox-style';
  * ```
  * Get the OpenLayers source instance for the provided Mapbox Style `source`.
  * @param {ol.Map} map OpenLayers Map.
  * @param {string} sourceId Mapbox Style source id.
- * @return {ol.layer.Layer} layer OpenLayers layer instance.
+ * @return {ol.source.Source} OpenLayers source instance.
  */
 export function getSource(map, sourceId) {
   const layers = map.getLayers().getArray();
