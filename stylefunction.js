@@ -637,6 +637,10 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
           } else {
             text.setStroke(undefined);
           }
+          const textPadding = getValue(layer, 'layout', 'text-padding', zoom, f);
+          if (textPadding) {
+            text.setPadding([textPadding, textPadding, textPadding, textPadding])
+          }
           style.setZIndex(99999 - index);
         }
       }
