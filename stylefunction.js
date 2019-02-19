@@ -601,6 +601,19 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
             label = label.toLowerCase();
           }
           const wrappedLabel = type == 2 ? label : wrapText(label, font, getValue(layer, 'layout', 'text-max-width', zoom, f));
+          const letterSpacing = getValue(layer, 'layout', 'text-letter-spacing', zoom, f);
+          if (letterSpacing && letterSpacing > 0.01 /* default is 0.01 */ ) {
+            let wrappedLabelWithLetterSpacing = '';
+            wrappedLabel.split('\n').forEach((line) => {
+              let joinSpaceString = "",
+                  spacingCount;
+              for (spacingCount = 0; spacingCount < letterSpacing; spacingCount += 0.1) {
+                joinSpaceString += String.fromCharCode(8202); // Hair space, about 0.1em per character
+              }
+              wrappedLabelWithLetterSpacing += line.split("").join(joinSpaceString);
+            });
+            wrappedLabel = wrappedLabelWithLetterSpacing;
+          }
           text.setText(wrappedLabel);
           text.setFont(font);
           text.setRotation(deg2rad(getValue(layer, 'layout', 'text-rotate', zoom, f)));
