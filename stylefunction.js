@@ -586,7 +586,9 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
             style.setGeometry(undefined);
           }
           if (!style.getText()) {
-            style.setText(text || new Text());
+            style.setText(text || new Text({
+              padding: [2, 2, 2, 2]
+            }));
           }
           text = style.getText();
           const textSize = getValue(layer, 'layout', 'text-size', zoom, f);
@@ -638,8 +640,9 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
             text.setStroke(undefined);
           }
           const textPadding = getValue(layer, 'layout', 'text-padding', zoom, f);
-          if (textPadding) {
-            text.setPadding([textPadding, textPadding, textPadding, textPadding])
+          const padding = text.getPadding();
+          if (textPadding !== padding[0]) {
+            padding[0] = padding[1] = padding[2] = padding[3] = textPadding;
           }
           style.setZIndex(99999 - index);
         }
