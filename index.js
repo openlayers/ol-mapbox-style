@@ -683,7 +683,8 @@ export function getLayers(map, sourceId) {
   const result = [];
   const layers = map.getLayers().getArray();
   for (let i = 0, ii = layers.length; i < ii; ++i) {
-    if (layers[i].get('mapbox-source').indexOf(sourceId) !== -1) {
+    const mapboxLayer = layers[i].get('mapbox-source');
+    if (mapboxLayer && mapboxLayer.indexOf(sourceId) !== -1) {
       result.push(layers[i]);
     }
   }
