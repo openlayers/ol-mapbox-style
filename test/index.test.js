@@ -231,6 +231,7 @@ describe('ol-mapbox-style', function() {
 
     it('returns an array of layers', function(done) {
       const map = apply(target, brightV9);
+      map.addLayer(new VectorTileLayer());
 
       map.once('change:mapbox-style', function() {
         const layers = getLayers(map, 'mapbox');
