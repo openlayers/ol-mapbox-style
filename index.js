@@ -664,7 +664,8 @@ function finalizeLayer(layer, layerIds, glStyle, path, map) {
 export function getLayer(map, layerId) {
   const layers = map.getLayers().getArray();
   for (let i = 0, ii = layers.length; i < ii; ++i) {
-    if (layers[i].get('mapbox-layers').indexOf(layerId) !== -1) {
+    const mapboxLayers = layers[i].get('mapbox-layers');
+    if (mapboxLayers && mapboxLayers.indexOf(layerId) !== -1) {
       return layers[i];
     }
   }
@@ -683,7 +684,7 @@ export function getLayers(map, sourceId) {
   const result = [];
   const layers = map.getLayers().getArray();
   for (let i = 0, ii = layers.length; i < ii; ++i) {
-    if (layers[i].get('mapbox-source').indexOf(sourceId) !== -1) {
+    if (layers[i].get('mapbox-source') === sourceId) {
       result.push(layers[i]);
     }
   }
@@ -703,7 +704,7 @@ export function getSource(map, sourceId) {
   const layers = map.getLayers().getArray();
   for (let i = 0, ii = layers.length; i < ii; ++i) {
     const source = layers[i].getSource();
-    if (layers[i].get('mapbox-source').indexOf(sourceId) !== -1) {
+    if (layers[i].get('mapbox-source') === sourceId) {
       return source;
     }
   }

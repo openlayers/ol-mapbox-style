@@ -214,11 +214,13 @@ describe('ol-mapbox-style', function() {
     });
 
     it('returns a layer', function(done) {
-      const map = apply(target, brightV9);
-
-      map.once('change:mapbox-style', function() {
+      olms(target, brightV9).then(function(map) {
+        // add another layer that has no 'mapbox-layers' set
+        map.addLayer(new VectorTileLayer());
         should(getLayer(map, 'landuse_park')).be.an.instanceOf(VectorTileLayer);
         done();
+      }).catch(function(error) {
+        done(error);
       });
     });
   });
@@ -230,13 +232,16 @@ describe('ol-mapbox-style', function() {
     });
 
     it('returns an array of layers', function(done) {
-      const map = apply(target, brightV9);
-
-      map.once('change:mapbox-style', function() {
+      olms(target, brightV9).then(function(map) {
+        // add another layer that has no 'mapbox-layers' set
+        map.addLayer(new VectorTileLayer());
         const layers = getLayers(map, 'mapbox');
         should(layers).be.an.instanceOf(Array);
         should(layers[0]).be.an.instanceOf(VectorTileLayer);
+        should(getLayers(map, 'mapbo').length).eql(0);
         done();
+      }).catch(function(error) {
+        done(error);
       });
     });
   });
@@ -249,11 +254,14 @@ describe('ol-mapbox-style', function() {
     });
 
     it('returns a source', function(done) {
-      const map = apply(target, brightV9);
-
-      map.once('change:mapbox-style', function() {
+      olms(target, brightV9).then(function(map) {
+        // add another layer that has no 'mapbox-source' set
+        map.addLayer(new VectorTileLayer());
         should(getSource(map, 'mapbox')).be.an.instanceOf(VectorTileSource);
+        should(getSource(map, 'mapbo')).be.undefined();
         done();
+      }).catch(function(error) {
+        done(error);
       });
     });
   });
