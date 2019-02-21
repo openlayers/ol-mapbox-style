@@ -607,12 +607,11 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
             let wrappedLabelWithLetterSpacing = '';
             const wrappedLabelLines = wrappedLabel.split('\n');
             const joinSpaceString = hairSpacePool.slice(0, Math.round(letterSpacing / 0.1));
-            const ll = wrappedLabelLines.length;
-            for (let l = 0; l < ll; ++l) {
+            for (let l = 0, ll = wrappedLabelLines.length; l < ll; ++l) {
+              if (l > 0) {
+                wrappedLabelWithLetterSpacing += '\n';
+              }
               wrappedLabelWithLetterSpacing += wrappedLabelLines[l].split('').join(joinSpaceString);
-              if (l + 1 < ll) {
-                wrappedLabelWithLetterSpacing += '\n'
-              };
             }
             text.setText(wrappedLabelWithLetterSpacing);
           } else {
