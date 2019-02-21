@@ -175,10 +175,11 @@ function fromTemplate(text, properties) {
  * is available. Font names are the names used in the Mapbox Style object. If
  * not provided, the font stack will be used as-is. This function can also be
  * used for loading web fonts.
+ * @param {ol.View} [view=undefined] View of the map
  * @return {ol.style.StyleFunction} Style function for use in
  * `ol.layer.Vector` or `ol.layer.VectorTile`.
  */
-export default function(olLayer, glStyle, source, resolutions, spriteData, spriteImageUrl, getFonts) {
+export default function(olLayer, glStyle, source, resolutions, spriteData, spriteImageUrl, getFonts, view) {
   if (!resolutions) {
     resolutions = [];
     for (let res = 78271.51696402048; resolutions.length <= 24; res /= 2) {
@@ -520,7 +521,13 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
                     });
                   }
                 }
-                iconImg.setRotation(placementAngle + deg2rad(getValue(layer, 'layout', 'icon-rotate', zoom, f)));
+                let rotate = placementAngle + deg2rad(getValue(layer, 'layout', 'icon-rotate', zoom, f));
+                if (iconRotationAlignment == 'map') {
+                  const keepUpright = getValue(layer, 'layout', 'icon-keep-upright', zoom, f);
+                  if (keepUpright && view) {
+                    rotate = flipRotation(view.getRotation(), rotate);
+                  }
+                }
                 iconImg.setOpacity(getValue(layer, 'paint', 'icon-opacity', zoom, f));
                 style.setImage(iconImg);
                 text = style.getText();
@@ -604,6 +611,13 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
           text.setText(wrappedLabel);
           text.setFont(font);
           text.setRotation(deg2rad(getValue(layer, 'layout', 'text-rotate', zoom, f)));
+          const textRotationAlignment = getValue(layer, 'layout', 'text-rotation-alignment', zoom, f);
+          if (textRotationAlignment == 'map') {
+            const keepUpright = getValue(layer, 'layout', 'text-keep-upright', zoom, f);
+            if (keepUpright && view) {
+              rotate = flipRotation(view.getRotation(), rotate);
+            }
+          }
           const textAnchor = getValue(layer, 'layout', 'text-anchor', zoom, f);
           const placement = (hasImage || type == 1) ? 'point' : getValue(layer, 'layout', 'symbol-placement', zoom, f);
           text.setPlacement(placement);
