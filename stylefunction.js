@@ -25,6 +25,7 @@ const isFunction = fn.isFunction;
 const convertFunction = fn.convertFunction;
 const isExpression = expression.isExpression;
 const createPropertyExpression = expression.createPropertyExpression;
+const hairSpacePool = Array(256).join('\u200A');
 
 const types = {
   'Point': 1,
@@ -602,19 +603,17 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
           }
           const wrappedLabel = type == 2 ? label : wrapText(label, font, getValue(layer, 'layout', 'text-max-width', zoom, f));
           const letterSpacing = getValue(layer, 'layout', 'text-letter-spacing', zoom, f);
-          if (letterSpacing && letterSpacing > 0.01 /* default is 0.01 */ ) {
+          if (letterSpacing >= 0.05) {
             let wrappedLabelWithLetterSpacing = '';
-            wrappedLabel.split('\n').forEach((line) => {
-              let joinSpaceString = "",
-                  spacingCount;
-              for (spacingCount = 0; spacingCount < letterSpacing; spacingCount += 0.1) {
-                joinSpaceString += String.fromCharCode(8202); // Hair space, about 0.1em per character
-              }
-              wrappedLabelWithLetterSpacing += line.split("").join(joinSpaceString);
-            });
-            wrappedLabel = wrappedLabelWithLetterSpacing;
+            const wrappedLabelLines = wrappedLabel.split('\n');
+            const joinSpaceString = hairSpacePool.slice(0, Math.round(letterSpacing / 0.1));
+            for (let lineIndex = 0; lineIndex < wrappedLabelLines.length; lineIndex += 1) {
+              wrappedLabelWithLetterSpacing += wrappedLabelLines[lineIndex].split('').join(joinSpaceString);
+            }
+            text.setText(wrappedLabelWithLetterSpacing);
+          } else {
+            text.setText(wrappedLabel);
           }
-          text.setText(wrappedLabel);
           text.setFont(font);
           text.setRotation(deg2rad(getValue(layer, 'layout', 'text-rotate', zoom, f)));
           const textAnchor = getValue(layer, 'layout', 'text-anchor', zoom, f);
