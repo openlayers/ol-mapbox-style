@@ -25,6 +25,7 @@ const isFunction = fn.isFunction;
 const convertFunction = fn.convertFunction;
 const isExpression = expression.isExpression;
 const createPropertyExpression = expression.createPropertyExpression;
+const hairSpacePool = Array(256).join('\u200A');
 
 const types = {
   'Point': 1,
@@ -601,7 +602,21 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
             label = label.toLowerCase();
           }
           const wrappedLabel = type == 2 ? label : wrapText(label, font, getValue(layer, 'layout', 'text-max-width', zoom, f));
-          text.setText(wrappedLabel);
+          const letterSpacing = getValue(layer, 'layout', 'text-letter-spacing', zoom, f);
+          if (letterSpacing >= 0.05) {
+            let wrappedLabelWithLetterSpacing = '';
+            const wrappedLabelLines = wrappedLabel.split('\n');
+            const joinSpaceString = hairSpacePool.slice(0, Math.round(letterSpacing / 0.1));
+            for (let l = 0, ll = wrappedLabelLines.length; l < ll; ++l) {
+              if (l > 0) {
+                wrappedLabelWithLetterSpacing += '\n';
+              }
+              wrappedLabelWithLetterSpacing += wrappedLabelLines[l].split('').join(joinSpaceString);
+            }
+            text.setText(wrappedLabelWithLetterSpacing);
+          } else {
+            text.setText(wrappedLabel);
+          }
           text.setFont(font);
           text.setRotation(deg2rad(getValue(layer, 'layout', 'text-rotate', zoom, f)));
           const textAnchor = getValue(layer, 'layout', 'text-anchor', zoom, f);
