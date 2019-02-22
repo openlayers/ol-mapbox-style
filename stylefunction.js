@@ -212,27 +212,32 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
     const key = em + ',' + font + ',' + text;
     let wrappedText = measureCache[key];
     if (!wrappedText) {
-      ctx.font = font;
-      const oneEm = ctx.measureText('M').width;
-      const width = oneEm * em;
       const words = text.split(' ');
-      let line = '';
-      const lines = [];
-      for (let i = 0, ii = words.length; i < ii; ++i) {
-        const word = words[i];
-        if ((ctx.measureText(line + word).width <= width)) {
-          line += (line ? ' ' : '') + word;
-        } else {
-          if (line) {
-            lines.push(line);
+      if (words.length > 1) {
+        ctx.font = font;
+        const oneEm = ctx.measureText('M').width;
+        const width = oneEm * em;
+        let line = '';
+        const lines = [];
+        for (let i = 0, ii = words.length; i < ii; ++i) {
+          const word = words[i];
+          if ((ctx.measureText(line + word).width <= width)) {
+            line += (line ? ' ' : '') + word;
+          } else {
+            if (line) {
+              lines.push(line);
+            }
+            line = word;
           }
-          line = word;
         }
+        if (line) {
+          lines.push(line);
+        }
+        wrappedText = lines.join('\n');
+      } else {
+        wrappedText = text;
       }
-      if (line) {
-        lines.push(line);
-      }
-      measureCache[key] = wrappedText = lines.join('\n');
+      measureCache[key] = wrappedText;
     }
     return wrappedText;
   }
