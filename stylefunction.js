@@ -548,24 +548,22 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
             style = styles[stylesLength] = new Style();
           }
           const circleRadius = getValue(layer, 'paint', 'circle-radius', zoom, f);
-          const circleStrokeColor = getValue(layer, 'paint', 'circle-stroke-color', zoom, f);
-          const circleColor = getValue(layer, 'paint', 'circle-color', zoom, f);
-          const circleOpacity = getValue(layer, 'paint', 'circle-opacity', zoom, f);
-          const circleStrokeOpacity = getValue(layer, 'paint', 'circle-stroke-opacity', zoom, f);
+          const circleStrokeColor = colorWithOpacity(getValue(layer, 'paint', 'circle-stroke-color', zoom, f), getValue(layer, 'paint', 'circle-stroke-opacity', zoom, f));
+          const circleColor = colorWithOpacity(getValue(layer, 'paint', 'circle-color', zoom, f), getValue(layer, 'paint', 'circle-opacity', zoom, f));
           const circleStrokeWidth = getValue(layer, 'paint', 'circle-stroke-width', zoom, f);
           const cache_key = circleRadius + '.' + circleStrokeColor + '.' +
-            circleColor + '.' + circleOpacity + '.' + circleStrokeWidth;
+            circleColor + '.' + circleStrokeWidth;
           iconImg = iconImageCache[cache_key];
           if (!iconImg) {
             iconImg = new Circle({
               radius: circleRadius,
-              stroke: circleStrokeWidth === 0 ? undefined : new Stroke({
+              stroke: circleStrokeColor && circleStrokeWidth > 0 ? new Stroke({
                 width: circleStrokeWidth,
-                color: colorWithOpacity(circleStrokeColor, circleStrokeOpacity)
-              }),
-              fill: new Fill({
-                color: colorWithOpacity(circleColor, circleOpacity)
-              })
+                color: circleStrokeColor
+              }) : undefined,
+              fill: circleColor ? new Fill({
+                color: circleColor
+              }) : undefined
             });
           }
           style.setImage(iconImg);
@@ -580,8 +578,9 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
         if ('text-field' in layout) {
           const textField = getValue(layer, 'layout', 'text-field', zoom, f).toString();
           label = fromTemplate(textField, properties);
+          opacity = getValue(layer, 'paint', 'text-opacity', zoom, f);
         }
-        if (label && !skipLabel) {
+        if (label && opacity && !skipLabel) {
           if (!hasImage) {
             ++stylesLength;
             style = styles[stylesLength];
@@ -648,7 +647,6 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
           const textOffset = getValue(layer, 'layout', 'text-offset', zoom, f);
           text.setOffsetX(textOffset[0] * textSize);
           text.setOffsetY(textOffset[1] * textSize);
-          opacity = getValue(layer, 'paint', 'text-opacity', zoom, f);
           textColor.setColor(colorWithOpacity(getValue(layer, 'paint', 'text-color', zoom, f), opacity));
           text.setFill(textColor);
           const haloColor = colorWithOpacity(getValue(layer, 'paint', 'text-halo-color', zoom, f), opacity);
