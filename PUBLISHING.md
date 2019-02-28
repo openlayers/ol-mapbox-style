@@ -8,11 +8,11 @@ To create and publish a release, perform the following steps:
 
 We use [semantic versioning](https://semver.org). Set the correct `"version"` (2.11.0 in the following examples) in package.json.
 
-Edit `CHANGELOG.md`: Add the version you are about to release just below the `## Next version` heading.
+Edit `CHANGELOG.md`: Add the version you are about to release just below the `## Next version` heading. Review the changes since the last release and document changes as appropriate.
 
 Commit the change to master.
 
-    git add package.json
+    git add package.json CHANGELOG.md
     git commit -m "Set version to 2.11.0"
     git push origin master
 
@@ -34,3 +34,7 @@ Commit the change to master.
 
     git tag -a v2.11.0 -m "2.11.0"
     git push --tags origin
+
+### Edit the release notes
+
+The previous step creates a release on GitHub. Copy the changelog for the relese from `CHANGELOG.md` to the "Describe this release" field for the release notes on https://github.com/openlayers/ol-mapbox-style/releases.
