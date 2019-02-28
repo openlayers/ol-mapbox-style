@@ -55,8 +55,9 @@ function hasFontFamily(family) {
 const fontFamilies = {};
 const googleFamilies = googleFonts.getNames();
 function getFonts(fonts) {
-  if (fonts in fontFamilies) {
-    return fontFamilies[fonts];
+  const fontsKey = fonts.toString();
+  if (fontsKey in fontFamilies) {
+    return fonts;
   }
   const families = fonts.map(function(font) {
     return mb2css(font, 1).split(' 1px ')[1].replace(/"/g, '');
@@ -71,6 +72,7 @@ function getFonts(fonts) {
       document.getElementsByTagName('head')[0].appendChild(markup);
     }
   }
+  fontFamilies[fontsKey] = true;
   return fonts;
 }
 
