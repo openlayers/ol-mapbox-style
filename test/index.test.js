@@ -7,7 +7,6 @@ import VectorTileLayer from 'ol/layer/VectorTile';
 import VectorTileSource from 'ol/source/VectorTile';
 import {toLonLat} from 'ol/proj';
 
-import HotOsm from './fixtures/hot-osm/hot-osm.json';
 import brightV9 from 'mapbox-gl-styles/styles/bright-v9.json';
 import {defaultResolutions} from '../util';
 delete brightV9.sprite;
@@ -157,7 +156,7 @@ describe('ol-mapbox-style', function() {
 
     it('handles vector sources from TileJSON', function(done) {
 
-      olms(target, HotOsm)
+      olms(target, './fixtures/hot-osm/hot-osm.json')
         .then(function(map) {
           const center = toLonLat(map.getView().getCenter());
           should(center[0]).be.approximately(8.54806714892635, 1e-8);
@@ -174,7 +173,7 @@ describe('ol-mapbox-style', function() {
     });
 
     it('creates a view with default resolutions', function(done) {
-      olms(target, HotOsm)
+      olms(target, './fixtures/hot-osm/hot-osm.json')
         .then(function(map) {
           should(map.getView().getResolutions()).eql(defaultResolutions);
           done();

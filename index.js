@@ -440,6 +440,9 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
         maxZoom = 0;
         glSource = glStyle.sources[id];
         url = glSource.url;
+        if (url && path && url.startsWith('.')) {
+          url = path + url;
+        }
 
         if (glSource.type == 'vector') {
           layer = setupVectorLayer(glSource, accessToken, url);
