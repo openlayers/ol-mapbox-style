@@ -9,6 +9,7 @@ import {toLonLat} from 'ol/proj';
 
 import HotOsm from './fixtures/hot-osm/hot-osm.json';
 import brightV9 from 'mapbox-gl-styles/styles/bright-v9.json';
+import {defaultResolutions} from '../util';
 delete brightV9.sprite;
 
 describe('ol-mapbox-style', function() {
@@ -172,37 +173,89 @@ describe('ol-mapbox-style', function() {
         });
     });
 
-    it('handles visibility for raster layers', function(done) {
-      const context = {
-        'version': 8,
-        'name': 'states-wms',
-        'sources': {
-          'states': {
-            'type': 'raster',
-            'maxzoom': 12,
-            'tileSize': 256,
-            'tiles': ['https://ahocevar.com/geoserver/gwc/service/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image/png&SRS=EPSG:900913&LAYERS=topp:states&STYLES=&WIDTH=256&HEIGHT=256&BBOX={bbox-epsg-3857}']
-          }
-        },
-        'layers': [
-          {
-            'id': 'states-wms',
-            'source': 'states',
-            'type': 'raster',
-            'layout': {
-              'visibility': 'none'
+    describe('raster sources and layers', function() {
+
+      let context;
+
+      beforeEach(function() {
+        context = {
+          'version': 8,
+          'name': 'states-wms',
+          'sources': {
+            'states': {
+              'type': 'raster',
+              'maxzoom': 12,
+              'tileSize': 256,
+              'tiles': ['https://ahocevar.com/geoserver/gwc/service/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image/png&SRS=EPSG:900913&LAYERS=topp:states&STYLES=&WIDTH=256&HEIGHT=256&BBOX={bbox-epsg-3857}']
             }
-          }
-        ]
-      };
-      olms(target, context)
-        .then(function(map) {
-          should(map.getLayers().item(0).get('visible')).be.false();
-          done();
-        })
-        .catch(function(err) {
-          done(err);
-        });
+          },
+          'layers': [
+            {
+              'id': 'states-wms',
+              'source': 'states',
+              'type': 'raster',
+              'layout': {
+                'visibility': 'none'
+              }
+            }
+          ]
+        };
+      });
+
+      it('creates the correct tile grid for raster sources', function(done) {
+        olms(target, context)
+          .then(function(map) {
+            const source = map.getLayers().item(0).getSource();
+            const tileGrid = source.getTileGrid();
+            should(tileGrid.getTileSize()).eql(256);
+            should(tileGrid.getExtent()).eql([-20037508.342789244, -20037508.342789244, 20037508.342789244, 20037508.342789244]);
+            should(tileGrid.getOrigin()).eql([-20037508.342789244, 20037508.342789244]);
+            should(tileGrid.getMinZoom()).eql(0);
+            should(tileGrid.getMaxZoom()).eql(12);
+            done();
+          })
+          .catch(function(err) {
+            done(err);
+          });
+      });
+
+      it('limits layer minzoom to source minzoom', function(done) {
+        context.sources.states.minzoom = 10;
+        olms(target, context)
+          .then(function(map) {
+            should(map.getLayers().item(0).getMaxResolution()).eql(defaultResolutions[9] + 1e-9);
+            done();
+          })
+          .catch(function(err) {
+            done(err);
+          });
+      });
+
+      it('respects layer minzoom and maxzoom', function(done) {
+        context.layers[0].minzoom = 10;
+        context.layers[0].maxzoom = 12;
+        olms(target, context)
+          .then(function(map) {
+            should(map.getLayers().item(0).getMaxResolution()).eql(defaultResolutions[10] + 1e-9);
+            should(map.getLayers().item(0).getMinResolution()).eql(defaultResolutions[12] + 1e-9);
+            done();
+          })
+          .catch(function(err) {
+            done(err);
+          });
+      });
+
+      it('handles visibility for raster layers', function(done) {
+        olms(target, context)
+          .then(function(map) {
+            should(map.getLayers().item(0).get('visible')).be.false();
+            done();
+          })
+          .catch(function(err) {
+            done(err);
+          });
+      });
+
     });
 
   });
