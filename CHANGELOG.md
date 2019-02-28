@@ -2,6 +2,8 @@
 
 ## Next version
 
+## 4.0.0
+
 ### Breaking changes
 
 #### Zoom handling
