@@ -11,6 +11,7 @@ import {fromLonLat} from 'ol/proj';
 import {createXYZ} from 'ol/tilegrid';
 import TileGrid from 'ol/tilegrid/TileGrid';
 import Map from 'ol/Map';
+import View from 'ol/View';
 import GeoJSON from 'ol/format/GeoJSON';
 import MVT from 'ol/format/MVT';
 import {unByKey} from 'ol/Observable';
@@ -399,14 +400,11 @@ function updateRasterLayerProperties(glLayer, layer, view) {
 function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
   const promises = [];
   const view = map.getView();
-  if (view.getMaxZoom() > 25) {
-    view.setMaxZoom(25);
-  }
   if ('center' in glStyle && !view.getCenter()) {
     view.setCenter(fromLonLat(glStyle.center));
   }
   if ('zoom' in glStyle && view.getZoom() === undefined) {
-    view.setZoom(glStyle.zoom);
+    view.setResolution(defaultResolutions[0] / Math.pow(2, glStyle.zoom));
   }
   if (!view.getCenter() || view.getZoom() === undefined) {
     view.fit(view.getProjection().getExtent(), {
@@ -523,7 +521,10 @@ export default function olms(map, style) {
 
   if (!(map instanceof Map)) {
     map = new Map({
-      target: map
+      target: map,
+      view: new View({
+        resolutions: defaultResolutions
+      })
     });
   }
 

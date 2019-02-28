@@ -173,6 +173,17 @@ describe('ol-mapbox-style', function() {
         });
     });
 
+    it('creates a view with default resolutions', function(done) {
+      olms(target, HotOsm)
+        .then(function(map) {
+          should(map.getView().getResolutions()).eql(defaultResolutions);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+
     describe('raster sources and layers', function() {
 
       let context;
