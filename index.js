@@ -308,7 +308,7 @@ function setupVectorLayer(glSource, accessToken, url) {
           origin: tileGrid.getOrigin(),
           extent: extent || tileGrid.getExtent(),
           minZoom: minZoom,
-          resolutions: defaultResolutions.slice(0, maxZoom),
+          resolutions: defaultResolutions.slice(0, maxZoom + 1),
           tileSize: 512
         }),
         urls: tiles
