@@ -8,6 +8,8 @@ To create and publish a release, perform the following steps:
 
 We use [semantic versioning](https://semver.org). Set the correct `"version"` (2.11.0 in the following examples) in package.json.
 
+Edit `CHANGELOG.md`: Add the version you are about to release just below the `## Next version` heading.
+
 Commit the change to master.
 
     git add package.json

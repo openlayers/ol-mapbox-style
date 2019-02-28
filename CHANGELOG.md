@@ -1,0 +1,244 @@
+# Changelog
+
+## Next version
+
+## 3.9.0
+
+* Reduce garbage by reusing padding array
+* Fix `getSource()`, `getLayer()` and `getLayers()` utility functions
+
+## 3.8.0
+
+* Add `getLayers()` utility function
+
+## 3.7.2
+
+* Use karma for tests
+* Fix handling of relative paths
+* Use CircleCI for continuous integration
+* Do not limit raster layers to a `maxzoom` of 24
+* Fix visibility handling
+
+## 3.7.1
+
+* Fix raster layer `minzoom` and `maxzoom`
+
+## 3.7.0
+
+* Support `minzoom` and `maxzoom` for raster layers
+
+## 3.6.4
+
+* Use TileJSON relative urls only when a TileJSON `url` was used
+
+## 3.6.3
+
+* Fix `icon-rotation`
+
+## 3.6.2
+
+* Fix standalone build
+
+## 3.6.1
+
+* Use TileJSON for all raster and vector sources
+* Add support for TileJSON bounds
+* Transfer copyright to the contributors
+* Fix source/layer extent handling
+* Add support for `raster-opacity`
+
+## 3.5.0
+
+* Do not set `zIndex` on layers
+* Add support for `icon-rotation-alignment`: `'map'`
+
+## 3.4.0
+
+* Set layer properties only once and use first index as `zIndex`
+
+## 3.3.0
+
+* Improve docs, error handling and tests
+* Stop using empty layer ids for `finalizeLayer()`
+* Add default export that returns a `Promise` instead of an `ol/Map` instance
+* Make layer ids for background unique
+* Handle errors for unavailable TileJSON sources
+* Factor out functions from `processStyle`'s monster loop
+* Remove tile load transition for raster layers entirely
+
+## 3.2.0
+
+* Update dev dependencies
+* Cleaned up `applyStyle()` and added tests
+* Add support for `circle-stroke-opacity`
+* Use block scope variables
+
+## 3.1.0
+
+* Use transpiled imports for mapbox-gl-style-spec
+
+## 3.0.1
+
+* Fix local font detection
+
+## 3.0.0
+
+* Add `mapbox-style` property to the `ol/Map` instance
+* Add `getSource()` and `getLayer()` helper functions
+* Move examples to ES6
+* Allow users to specify custom resolutions
+* Add support for `fill-pattern`
+* Add support for filter expressions
+* Smarter font stack handling
+* Opacity transition only for the bottom layer
+
+## 2.11.2
+
+* README updates
+* Fix imports
+
+## 2.11.0
+
+* Use webpack and babel instead of browserify
+* Add continuous integration, coverage reports and use sonarqube for language quality
+* Use jest for testing
+* Add attribution to sources created by `apply`
+* Depend on ol@5
+* Move mapbox-to-ol-style package into this library
+* Clear caches when `applyStyle` is called again
+* Provide a standalone build
+
+## 2.10.4
+
+* Do not use isomorphic-fetch
+* Fix typos in API docs
+
+## 2.10.3
+
+* Respect existing map view when setting `center` and `zoom`
+* Run eslint on the code
+
+## 2.10.2
+
+* Set `maxResolution` on the layer, respecting `minzoom` of the source
+
+## 2.10.0
+
+* Update mapbox-to-ol-style and openlayers versions
+
+## 2.9.1
+
+* Fix background
+
+## 2.9.0
+
+* Do not fail when `setTarget(null)` is called on the map
+* Set center and zoom when no view was created
+
+## 2.8.4
+
+* Fix background color
+
+## 2.8.3
+
+* Revert to older `mapbox-gl-style-spec` version
+
+## 2.8.1
+
+* Fix numeric interpolation
+
+## 2.8.0
+
+* Simplify web font handling
+* Fix sprite urls
+
+## 2.7.2
+
+* Properly initialize path parts
+
+## 2.7.1
+
+* Only set extent when it has not been set before
+* Update examples
+
+## 2.7.0
+
+* Fallback to low-res sprites when `@2x` spritesheet is not available
+* Use native OpenLayers decluttering
+
+## 2.6.6
+
+* Make ESRI relative paths work with `apply()`
+
+## 2.6.5
+
+* Make examples mobile and cross-browser ready
+
+## 2.6.2
+
+* Cleanup and documentation improvements
+
+## 2.6.1
+
+* Performance improvements
+
+## 2.6.0
+
+* Decluttering of labels and symbols
+* Added support for horizontal `text-anchor`
+
+## 2.5.1
+
+* Fixed a bug with function properties
+
+## 2.5.0
+
+* Respect `visibility` from all layers's `layout`
+
+## 2.4.0
+
+* Add support for raster and tilejson sources
+
+## 2.3.0
+
+* Fix a minor point styling issue
+* Fix polygon outline leaks when using line styles on polygons
+* Add optional `path` argument to `applyStyle()`
+
+## 2.2.5
+
+* Fix build on Windows
+
+## 2.2.4
+
+* Performance improvmeents from the `mapbox-to-ol-style` package
+
+## 2.2.0
+
+* Add support for `has` and `!has` filters
+
+## 2.1.0
+
+* Added new `apply()  function, which drastically simplifies the API.
+
+## 2.0.0
+
+### Switch to the ol package
+
+With version 2.x, ol-mapbox-style switched to the [`ol`](https://npmjs.com/package/ol) npm package for the OpenLayers dependency. Users of `dist/olms.js` will not notice this change. Applications that have been using the [`openlayers`](https://npmjs.com/package/openlayers) npm package should be migrated to the `ol` package too.
+
+If switching to `ol` is not yet desired, it is still possible to use ol-mapbox-style with the `openlayers` package, with the help of [`standalonify`](https://www.npmjs.com/package/standalonify). You have to require OpenLayers as `global.ol = require('openlayers');`. To build the bundle, use a command like the following:
+
+``` sh
+$ node_modules/.bin/browserify -g [ babelify --plugins [ transform-es2015-modules-commonjs ] ]  -p [ standalonify --name null --deps [ null --ol/style/style ol.style.Style --ol/style/fill ol.style.Fill --ol/style/stroke ol.style.Stroke --ol/style/circle ol.style.Circle --ol/style/icon ol.style.Icon --ol/style/text ol.style.Text ] ] example/index.js > example/bundle.js
+```
+
+### `getStyleFunction` moved to separate mapbox-to-ol-style package
+
+For applications that do not need sprites and web fonts for their styles, a separate [`mapbox-to-ol-style`](https://npmjs.com/package/mapbox-to-ol-style) package with focus on small build size and minimal dependencies has been created. ol-mapbox-style depends on that package.
+
+If you have previously been using the `getStyleFunction` function, you now have to import it from `mapbox-to-ol-style`. If you have not used anything else from ol-mapbox-style, you can uninstall it.
+
+### Google fonts no longer need to be included in the html
+
+ol-mapbox-style now automatically loads web fonts from Google. So in most cases, it is no longer necessary to scan the Mapbox Style for fonts and include them manually in the html of the application.
