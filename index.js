@@ -11,6 +11,7 @@ import {fromLonLat} from 'ol/proj';
 import {createXYZ} from 'ol/tilegrid';
 import TileGrid from 'ol/tilegrid/TileGrid';
 import Map from 'ol/Map';
+import View from 'ol/View';
 import GeoJSON from 'ol/format/GeoJSON';
 import MVT from 'ol/format/MVT';
 import {unByKey} from 'ol/Observable';
@@ -21,6 +22,7 @@ import TileJSON from 'ol/source/TileJSON';
 import VectorSource from 'ol/source/Vector';
 import VectorTileSource from 'ol/source/VectorTile';
 import {Color} from '@mapbox/mapbox-gl-style-spec';
+import {defaultResolutions, getZoomForResolution} from './util';
 
 const fontFamilyRegEx = /font-family: ?([^;]*);/;
 const stripQuotesRegEx = /("|')/g;
@@ -297,26 +299,20 @@ function setupVectorLayer(glSource, accessToken, url) {
       }
       const tileGrid = tilejson.getTileGrid();
       const extent = extentFromTileJSON(tileJSONDoc);
-      const tileSize = tileJSONDoc.tileSize || 512;
+      const minZoom = tileJSONDoc.minzoom || 0;
+      const maxZoom = tileJSONDoc.maxzoom || 22;
       const source = new VectorTileSource({
         attributions: tilejson.getAttributions(),
         format: new MVT(),
         tileGrid: new TileGrid({
           origin: tileGrid.getOrigin(),
-          extent: extent,
-          resolutions: createXYZ({
-            minZoom: tileGrid.getMinZoom(),
-            maxZoom: tileGrid.getMaxZoom(),
-            tileSize: tileSize
-          }).getResolutions(),
-          tileSize: tileSize
+          extent: extent || tileGrid.getExtent(),
+          minZoom: minZoom,
+          resolutions: defaultResolutions.slice(0, maxZoom + 1),
+          tileSize: 512
         }),
         urls: tiles
       });
-      if (tileGrid.getMinZoom() > 0) {
-        layer.setMaxResolution(
-          tileGrid.getResolution(tileGrid.getMinZoom()));
-      }
       unByKey(key);
       layer.setSource(source);
     } else if (state === 'error') {
@@ -345,14 +341,16 @@ function setupRasterLayer(glSource, url) {
       const tileJSONDoc = source.getTileJSON();
       const extent = extentFromTileJSON(tileJSONDoc);
       const tileGrid = source.getTileGrid();
-      const tileSize = tileJSONDoc.tileSize || 256;
+      const tileSize = tileJSONDoc.tileSize || 512;
+      const minZoom = tileJSONDoc.minzoom || 0;
+      const maxZoom = tileJSONDoc.maxzoom || 22;
       // Only works when using ES modules
       source.tileGrid = new TileGrid({
         origin: tileGrid.getOrigin(),
-        extent: extent,
+        extent: extent || tileGrid.getExtent(),
+        minZoom: minZoom,
         resolutions: createXYZ({
-          minZoom: tileGrid.getMinZoom(),
-          maxZoom: tileGrid.getMaxZoom(),
+          maxZoom: maxZoom,
           tileSize: tileSize
         }).getResolutions(),
         tileSize: tileSize
@@ -397,21 +395,16 @@ function updateRasterLayerProperties(glLayer, layer, view) {
   const zoom = view.getZoom();
   const opacity = getValue(glLayer, 'paint', 'raster-opacity', zoom, emptyObj);
   layer.setOpacity(opacity);
-  const visible = (glLayer.layout ? glLayer.layout.visibility !== 'none' : true);
-  layer.setVisible(visible && zoom >= (glLayer.minzoom || 0) && zoom < (glLayer.maxzoom || Infinity));
 }
 
 function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
   const promises = [];
   const view = map.getView();
-  if (view.getMaxZoom() > 25) {
-    view.setMaxZoom(25);
-  }
   if ('center' in glStyle && !view.getCenter()) {
     view.setCenter(fromLonLat(glStyle.center));
   }
   if ('zoom' in glStyle && view.getZoom() === undefined) {
-    view.setZoom(glStyle.zoom);
+    view.setResolution(defaultResolutions[0] / Math.pow(2, glStyle.zoom));
   }
   if (!view.getCenter() || view.getZoom() === undefined) {
     view.fit(view.getProjection().getExtent(), {
@@ -430,7 +423,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
   const glLayers = glStyle.layers;
   let layerIds = [];
 
-  let glLayer, glSource, glSourceId, id, layer, url;
+  let glLayer, glSource, glSourceId, id, layer, minZoom, maxZoom, url;
   for (let i = 0, ii = glLayers.length; i < ii; ++i) {
     glLayer = glLayers[i];
     if (glLayer.type == 'background') {
@@ -440,16 +433,22 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
       // this technique assumes gl layers will be in a particular order
       if (id != glSourceId) {
         if (layerIds.length) {
-          promises.push(finalizeLayer(layer, layerIds, glStyle, path, map));
+          promises.push(finalizeLayer(layer, layerIds, glStyle, path, map, minZoom, maxZoom));
           layerIds = [];
         }
+        minZoom = 24;
+        maxZoom = 0;
         glSource = glStyle.sources[id];
         url = glSource.url;
+        if (url && path && url.startsWith('.')) {
+          url = path + url;
+        }
 
         if (glSource.type == 'vector') {
           layer = setupVectorLayer(glSource, accessToken, url);
         } else if (glSource.type == 'raster') {
           layer = setupRasterLayer(glSource, url);
+          layer.setVisible(glLayer.layout ? glLayer.layout.visibility !== 'none' : true);
           view.on('change:resolution', updateRasterLayerProperties.bind(this, glLayer, layer, view));
           updateRasterLayerProperties(glLayer, layer, view);
         } else if (glSource.type == 'geojson') {
@@ -461,9 +460,16 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
         }
       }
       layerIds.push(glLayer.id);
+      minZoom = Math.min(
+        'minzoom' in glSource ?
+          // Limit layer minzoom to source minzoom. No underzooming, see https://github.com/mapbox/mapbox-gl-js/issues/7388
+          Math.max(getZoomForResolution(layer.getSource().getTileGrid().getResolutions()[glSource.minzoom], defaultResolutions), glLayer.minzoom || 0) :
+          glLayer.minzoom || 0,
+        minZoom);
+      maxZoom = Math.max(glLayer.maxzoom || 24, maxZoom);
     }
   }
-  promises.push(finalizeLayer(layer, layerIds, glStyle, path, map));
+  promises.push(finalizeLayer(layer, layerIds, glStyle, path, map, minZoom, maxZoom));
   map.set('mapbox-style', glStyle);
   return Promise.all(promises);
 }
@@ -518,7 +524,10 @@ export default function olms(map, style) {
 
   if (!(map instanceof Map)) {
     map = new Map({
-      target: map
+      target: map,
+      view: new View({
+        resolutions: defaultResolutions
+      })
     });
   }
 
@@ -613,10 +622,18 @@ export function apply(map, style) {
  * @param {string|undefined} path The path part of the style URL. Only required
  * when a relative path is used with the `"sprite"` property of the style.
  * @param {ol.Map} map OpenLayers Map.
+ * @param {number} minZoom Minimum zoom.
+ * @param {number} maxZoom Maximum zoom.
  * @return {Promise} Returns a promise that resolves after the source has
  * been set on the specified layer, and the style has been applied.
  */
-function finalizeLayer(layer, layerIds, glStyle, path, map) {
+function finalizeLayer(layer, layerIds, glStyle, path, map, minZoom, maxZoom) {
+  if (minZoom > 0) {
+    layer.setMaxResolution(defaultResolutions[minZoom] + 1e-9);
+  }
+  if (maxZoom < 24) {
+    layer.setMinResolution(defaultResolutions[maxZoom] + 1e-9);
+  }
   return new Promise(function(resolve, reject) {
     const setStyle = function() {
       const source = layer.getSource();

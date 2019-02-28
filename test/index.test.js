@@ -7,8 +7,8 @@ import VectorTileLayer from 'ol/layer/VectorTile';
 import VectorTileSource from 'ol/source/VectorTile';
 import {toLonLat} from 'ol/proj';
 
-import HotOsm from './fixtures/hot-osm/hot-osm.json';
 import brightV9 from 'mapbox-gl-styles/styles/bright-v9.json';
+import {defaultResolutions} from '../util';
 delete brightV9.sprite;
 
 describe('ol-mapbox-style', function() {
@@ -156,12 +156,13 @@ describe('ol-mapbox-style', function() {
 
     it('handles vector sources from TileJSON', function(done) {
 
-      olms(target, HotOsm)
+      olms(target, './fixtures/hot-osm/hot-osm.json')
         .then(function(map) {
           const center = toLonLat(map.getView().getCenter());
           should(center[0]).be.approximately(8.54806714892635, 1e-8);
           should(center[1]).be.approximately(47.37180823552663, 1e-8);
           should(map.getView().getZoom()).equal(12.241790506353492);
+          should(map.getView().getResolution()).equal(defaultResolutions[0] / Math.pow(2, 12.241790506353492));
           const layer = map.getLayers().item(0);
           const source = layer.getSource();
           should(source).be.instanceof(VectorTileSource);
@@ -172,37 +173,210 @@ describe('ol-mapbox-style', function() {
         });
     });
 
-    it('handles visibility for raster layers', function(done) {
-      const context = {
-        'version': 8,
-        'name': 'states-wms',
-        'sources': {
-          'states': {
-            'type': 'raster',
-            'maxzoom': 12,
-            'tileSize': 256,
-            'tiles': ['https://ahocevar.com/geoserver/gwc/service/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image/png&SRS=EPSG:900913&LAYERS=topp:states&STYLES=&WIDTH=256&HEIGHT=256&BBOX={bbox-epsg-3857}']
-          }
-        },
-        'layers': [
-          {
-            'id': 'states-wms',
-            'source': 'states',
-            'type': 'raster',
-            'layout': {
-              'visibility': 'none'
-            }
-          }
-        ]
-      };
-      olms(target, context)
+    it('creates a view with default resolutions', function(done) {
+      olms(target, './fixtures/hot-osm/hot-osm.json')
         .then(function(map) {
-          should(map.getLayers().item(0).get('visible')).be.false();
+          should(map.getView().getResolutions()).eql(defaultResolutions);
           done();
         })
         .catch(function(err) {
           done(err);
         });
+    });
+
+    describe('raster sources and layers', function() {
+
+      let context;
+
+      beforeEach(function() {
+        context = {
+          'version': 8,
+          'name': 'states-wms',
+          'sources': {
+            'states': {
+              'type': 'raster',
+              'maxzoom': 12,
+              'tileSize': 256,
+              'tiles': ['https://ahocevar.com/geoserver/gwc/service/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image/png&SRS=EPSG:900913&LAYERS=topp:states&STYLES=&WIDTH=256&HEIGHT=256&BBOX={bbox-epsg-3857}']
+            }
+          },
+          'layers': [
+            {
+              'id': 'states-wms',
+              'source': 'states',
+              'type': 'raster',
+              'layout': {
+                'visibility': 'none'
+              }
+            }
+          ]
+        };
+      });
+
+      it('creates the correct tile grid for raster sources', function(done) {
+        olms(target, context)
+          .then(function(map) {
+            const source = map.getLayers().item(0).getSource();
+            const tileGrid = source.getTileGrid();
+            should(tileGrid.getTileSize()).eql(256);
+            should(tileGrid.getExtent()).eql([-20037508.342789244, -20037508.342789244, 20037508.342789244, 20037508.342789244]);
+            should(tileGrid.getOrigin()).eql([-20037508.342789244, 20037508.342789244]);
+            should(tileGrid.getMinZoom()).eql(0);
+            should(tileGrid.getMaxZoom()).eql(12);
+            done();
+          })
+          .catch(function(err) {
+            done(err);
+          });
+      });
+
+      it('limits layer minzoom to source minzoom', function(done) {
+        context.sources.states.minzoom = 10;
+        olms(target, context)
+          .then(function(map) {
+            should(map.getLayers().item(0).getMaxResolution()).eql(defaultResolutions[9] + 1e-9);
+            done();
+          })
+          .catch(function(err) {
+            done(err);
+          });
+      });
+
+      it('respects layer minzoom and maxzoom', function(done) {
+        context.layers[0].minzoom = 10;
+        context.layers[0].maxzoom = 12;
+        olms(target, context)
+          .then(function(map) {
+            should(map.getLayers().item(0).getMaxResolution()).eql(defaultResolutions[10] + 1e-9);
+            should(map.getLayers().item(0).getMinResolution()).eql(defaultResolutions[12] + 1e-9);
+            done();
+          })
+          .catch(function(err) {
+            done(err);
+          });
+      });
+
+      it('handles visibility', function(done) {
+        olms(target, context)
+          .then(function(map) {
+            should(map.getLayers().item(0).get('visible')).be.false();
+            done();
+          })
+          .catch(function(err) {
+            done(err);
+          });
+      });
+
+    });
+
+    describe('vector sources and layers', function() {
+
+      let context;
+
+      beforeEach(function() {
+        context = {
+          'version': 8,
+          'name': 'osm',
+          'sources': {
+            'osm': {
+              'type': 'vector',
+              'bounds': [-180, -85.0511, 180, 85.0511],
+              'minzoom': 0,
+              'maxzoom': 20,
+              'tiles': [
+                'https://osm-lambda.tegola.io/v1/maps/osm/{z}/{x}/{y}.pbf'
+              ]
+            }
+          },
+          'layers': [{
+            'id': 'airports',
+            'type': 'fill',
+            'source': 'osm',
+            'source-layer': 'transport_areas',
+            'minzoom': 12,
+            'maxzoom': 23,
+            'filter': [
+              'all',
+              [
+                '==',
+                'type',
+                'apron'
+              ]
+            ],
+            'layout': {
+              'visibility': 'visible'
+            },
+            'paint': {
+              'fill-color': 'rgba(221, 221, 221, 1)'
+            }
+          }, {
+            'id': 'landuse_areas_z7',
+            'type': 'fill',
+            'source': 'osm',
+            'source-layer': 'landuse_areas',
+            'minzoom': 7,
+            'maxzoom': 10,
+            'filter': [
+              'all',
+              [
+                'in',
+                'type',
+                'forest',
+                'wood',
+                'nature_reserve'
+              ]
+            ],
+            'layout': {
+              'visibility': 'visible'
+            },
+            'paint': {
+              'fill-color': 'rgba(178, 194, 157, 1)'
+            }
+          }]
+        };
+      });
+
+      it('creates the correct tile grid for vector sources', function(done) {
+        olms(target, context)
+          .then(function(map) {
+            const source = map.getLayers().item(0).getSource();
+            const tileGrid = source.getTileGrid();
+            should(tileGrid.getTileSize()).eql(512);
+            should(tileGrid.getExtent()).eql([-20037508.342789244, -20037471.205137074, 20037508.342789244, 20037471.205137093]);
+            should(tileGrid.getOrigin()).eql([-20037508.342789244, 20037508.342789244]);
+            should(tileGrid.getMinZoom()).eql(0);
+            should(tileGrid.getMaxZoom()).eql(20);
+            done();
+          })
+          .catch(function(err) {
+            done(err);
+          });
+      });
+
+      it('limits layer minzoom to source minzoom', function(done) {
+        context.sources.osm.minzoom = 8;
+        olms(target, context)
+          .then(function(map) {
+            should(map.getLayers().item(0).getMaxResolution()).eql(defaultResolutions[8] + 1e-9);
+            done();
+          })
+          .catch(function(err) {
+            done(err);
+          });
+      });
+
+      it('respects layer minzoom and maxzoom', function(done) {
+        olms(target, context)
+          .then(function(map) {
+            should(map.getLayers().item(0).getMaxResolution()).eql(defaultResolutions[7] + 1e-9);
+            should(map.getLayers().item(0).getMinResolution()).eql(defaultResolutions[23] + 1e-9);
+            done();
+          })
+          .catch(function(err) {
+            done(err);
+          });
+      });
+
     });
 
   });

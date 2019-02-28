@@ -2,6 +2,14 @@ export function deg2rad(degrees) {
   return degrees * Math.PI / 180;
 }
 
+export const defaultResolutions = (function() {
+  const resolutions = [];
+  for (let res = 78271.51696402048; resolutions.length <= 24; res /= 2) {
+    resolutions.push(res);
+  }
+  return resolutions;
+})();
+
 export function getZoomForResolution(resolution, resolutions) {
   let i = 0;
   const ii = resolutions.length;

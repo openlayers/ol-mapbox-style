@@ -2,10 +2,27 @@
 
 ## Next version
 
+### Breaking changes
+
+#### Zoom handling
+
+The way how we handle `zoom`, `minzoom` and `maxzoom` throughout the library has been reworked:
+
+* When ol-mapbox-style creates an `ol/View` instance, it will be configured with the zoom level range that mapbox-gl uses. When updating from previous versions, you will notice that the zoom levels of the OpenLayers view will now match those in the Mapbox Style object. Previously OpenLayers zoom levels were higher by 1.
+* When a Mapbox Style object is configured with a `zoom`, the zoom level will now be interpreted like in mapbox-gl, i.e. you will be zoomed in one level deeper than before the update.
+* `minzoom` and `maxzoom` on a Mapbox Style layer were previously determined by the tile size of the underlying source. For raster sources with a tile size of 256, this means that `minzoom` and `maxzoom` are zoomed in one level deeper than before the update. For sources with a tile size of 512, nothing changes.
+* `minzoom` and `maxzoom` on a Mapbox Style source now influence the `ol/tilegrid/TileGrid` that ol-mapbox-style creates for a source in a different way. The resolutions will always match mapbox-gl default zoom levels.
+* `minzoom` and `maxzoom` on Mapbox Style layers no longer  influences whether the `ol/layer/Layer` instance is  set `visible` at a certain resolution. Instead, the layer's `maxResolution` and `minResolution` are set.
+
+### Other changes
+
+* Add support for `text-letter-spacing`
+
 ## 3.9.0
 
 * Reduce garbage by reusing padding array
 * Fix `getSource()`, `getLayer()` and `getLayers()` utility functions
+* Add support for `text-padding`
 
 ## 3.8.0
 

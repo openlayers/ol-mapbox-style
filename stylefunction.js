@@ -19,7 +19,7 @@ import {
   featureFilter as createFilter
 } from '@mapbox/mapbox-gl-style-spec';
 import mb2css from 'mapbox-to-css-font';
-import {deg2rad, getZoomForResolution} from './util';
+import {deg2rad, defaultResolutions, getZoomForResolution} from './util';
 
 const isFunction = fn.isFunction;
 const convertFunction = fn.convertFunction;
@@ -179,13 +179,7 @@ function fromTemplate(text, properties) {
  * @return {ol.style.StyleFunction} Style function for use in
  * `ol.layer.Vector` or `ol.layer.VectorTile`.
  */
-export default function(olLayer, glStyle, source, resolutions, spriteData, spriteImageUrl, getFonts) {
-  if (!resolutions) {
-    resolutions = [];
-    for (let res = 78271.51696402048; resolutions.length <= 24; res /= 2) {
-      resolutions.push(res);
-    }
-  }
+export default function(olLayer, glStyle, source, resolutions = defaultResolutions, spriteData, spriteImageUrl, getFonts) {
   if (typeof glStyle == 'string') {
     glStyle = JSON.parse(glStyle);
   }
