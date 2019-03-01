@@ -52,27 +52,29 @@ function hasFontFamily(family) {
   return family in loadedFontFamilies;
 }
 
-const fontFamilies = {};
+const processedFontFamilies = {};
 const googleFamilies = googleFonts.getNames();
 function getFonts(fonts) {
   const fontsKey = fonts.toString();
-  if (fontsKey in fontFamilies) {
+  if (fontsKey in processedFontFamilies) {
     return fonts;
   }
   const families = fonts.map(function(font) {
     return mb2css(font, 1).split(' 1px ')[1].replace(/"/g, '');
   });
-  const family = families[0];
-  if (!hasFontFamily(family) && googleFamilies.indexOf(family) !== -1) {
-    const fontUrl = 'https://fonts.googleapis.com/css?family=' + family.replace(/ /g, '+');
-    if (!document.querySelector('link[href="' + fontUrl + '"]')) {
-      const markup = document.createElement('link');
-      markup.href = fontUrl;
-      markup.rel = 'stylesheet';
-      document.getElementsByTagName('head')[0].appendChild(markup);
+  for (let i = 0, ii = families.length; i < ii; ++i) {
+    const family = families[i];
+    if (!hasFontFamily(family) && googleFamilies.indexOf(family) !== -1) {
+      const fontUrl = 'https://fonts.googleapis.com/css?family=' + family.replace(/ /g, '+');
+      if (!document.querySelector('link[href="' + fontUrl + '"]')) {
+        const markup = document.createElement('link');
+        markup.href = fontUrl;
+        markup.rel = 'stylesheet';
+        document.getElementsByTagName('head')[0].appendChild(markup);
+      }
     }
   }
-  fontFamilies[fontsKey] = true;
+  processedFontFamilies[fontsKey] = true;
   return fonts;
 }
 
