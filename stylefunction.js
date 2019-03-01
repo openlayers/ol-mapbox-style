@@ -171,7 +171,7 @@ function fromTemplate(text, properties) {
  * @param {Object} [spriteImageUrl=undefined] Sprite image url for the sprite
  * specified in the Mapbox Style object's `sprite` property. Only required if a
  * `sprite` property is specified in the Mapbox Style object.
- * @param {function(Array<string>):string} [getFonts=undefined] Function that
+ * @param {function(Array<string>):Array<string>} [getFonts=undefined] Function that
  * receives a font stack as arguments, and returns a (modified) font stack that
  * is available. Font names are the names used in the Mapbox Style object. If
  * not provided, the font stack will be used as-is. This function can also be
