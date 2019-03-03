@@ -70,7 +70,7 @@ function getFonts(fonts) {
         const markup = document.createElement('link');
         markup.href = fontUrl;
         markup.rel = 'stylesheet';
-        document.getElementsByTagName('head')[0].appendChild(markup);
+        document.head.appendChild(markup);
       }
     }
   }
