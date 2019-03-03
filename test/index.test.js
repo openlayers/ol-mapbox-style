@@ -1,5 +1,6 @@
 import should from 'should';
 import olms, {applyBackground, apply, getLayer, getLayers, getSource} from '..';
+import {_getFonts as getFonts} from '../index';
 import Map from 'ol/Map';
 import TileSource from 'ol/source/Tile';
 import VectorSource from 'ol/source/Vector';
@@ -437,6 +438,27 @@ describe('ol-mapbox-style', function() {
       }).catch(function(error) {
         done(error);
       });
+    });
+  });
+
+  describe('getFonts', function() {
+    it('does not loads standard fonts', function() {
+      getFonts(['monospace', 'sans-serif']);
+      const stylesheets = document.querySelectorAll('link[rel=stylesheet]');
+      should(stylesheets.length).eql(0);
+    });
+
+    it('loads fonts from fonts.google.com', function() {
+      let stylesheets;
+      getFonts(['Noto Sans Bold', 'Noto Sans Regular Italic']);
+      stylesheets = document.querySelectorAll('link[rel=stylesheet]');
+      should(stylesheets.length).eql(1);
+      should(stylesheets.item(0).href).eql('https://fonts.googleapis.com/css?family=Noto+Sans');
+
+      // same familly, no new link
+      getFonts(['Noto Sans Regular']);
+      stylesheets = document.querySelectorAll('link[rel=stylesheet]');
+      should(stylesheets.length).eql(1);
     });
   });
 });

@@ -731,4 +731,7 @@ export function getSource(map, sourceId) {
   }
 }
 
-export {finalizeLayer as _finalizeLayer};
+export {
+  finalizeLayer as _finalizeLayer,
+  getFonts as _getFonts
+};
