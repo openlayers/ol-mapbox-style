@@ -358,7 +358,8 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
             if (color) {
               if ('fill-outline-color' in paint) {
                 strokeColor = colorWithOpacity(getValue(layer, 'paint', 'fill-outline-color', zoom, f), opacity);
-              } else {
+              }
+              if (!strokeColor) {
                 strokeColor = color;
               }
               ++stylesLength;
