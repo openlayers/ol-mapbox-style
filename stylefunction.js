@@ -604,10 +604,6 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
           text.setText(wrappedLabel);
           text.setFont(font);
           text.setRotation(deg2rad(getValue(layer, 'layout', 'text-rotate', zoom, f)));
-          const textRotationAlignment = getValue(layer, 'layout', 'text-rotation-alignment', zoom, f);
-          if (textRotationAlignment == 'map') {
-            text.setRotateWithView(true);
-          }
           const textAnchor = getValue(layer, 'layout', 'text-anchor', zoom, f);
           const placement = (hasImage || type == 1) ? 'point' : getValue(layer, 'layout', 'symbol-placement', zoom, f);
           text.setPlacement(placement);
@@ -619,6 +615,12 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
               textAlign = 'right';
             }
             text.setTextAlign(textAlign);
+            const textRotationAlignment = getValue(layer, 'layout', 'text-rotation-alignment', zoom, f);
+            if (textRotationAlignment == 'map') {
+              text.setRotateWithView(true);
+            } else {
+              text.setRotateWithView(false);
+            }
           } else {
             text.setTextAlign();
           }
