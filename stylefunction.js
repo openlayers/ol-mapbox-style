@@ -664,6 +664,7 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
 }
 
 export {
+  colorWithOpacity as _colorWithOpacity,
   filterCache as _filterCache,
   evaluateFilter as _evaluateFilter,
   fromTemplate as _fromTemplate,
