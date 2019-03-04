@@ -356,35 +356,24 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
           } else {
             color = colorWithOpacity(getValue(layer, 'paint', 'fill-color', zoom, f), opacity);
             if (color) {
+              if ('fill-outline-color' in paint) {
+                strokeColor = colorWithOpacity(getValue(layer, 'paint', 'fill-outline-color', zoom, f), opacity);
+              } else {
+                strokeColor = color;
+              }
               ++stylesLength;
               style = styles[stylesLength];
-              if (!style || !style.getFill() || style.getStroke() || style.getText()) {
+              if (!style || !(style.getFill() && style.getStroke()) || style.getText()) {
                 style = styles[stylesLength] = new Style({
-                  fill: new Fill()
+                  fill: new Fill(),
+                  stroke: new Stroke()
                 });
               }
               fill = style.getFill();
               fill.setColor(color);
-              style.setZIndex(index);
-            }
-            if ('fill-outline-color' in paint) {
-              strokeColor = colorWithOpacity(getValue(layer, 'paint', 'fill-outline-color', zoom, f), opacity);
-            }
-            if (strokeColor) {
-              ++stylesLength;
-              style = styles[stylesLength];
-              if (!style || !style.getStroke() || style.getFill() || style.getText()) {
-                style = styles[stylesLength] = new Style({
-                  stroke: new Stroke()
-                });
-              }
               stroke = style.getStroke();
-              stroke.setLineCap(spec['layout_line']['line-cap']);
-              stroke.setLineJoin(spec['layout_line']['line-join']);
-              stroke.setMiterLimit(spec['layout_line']['line-miter-limit']);
               stroke.setColor(strokeColor);
               stroke.setWidth(1);
-              stroke.setLineDash(null);
               style.setZIndex(index);
             }
           }
