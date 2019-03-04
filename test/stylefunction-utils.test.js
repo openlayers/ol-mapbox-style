@@ -7,6 +7,7 @@ import spec from '@mapbox/mapbox-gl-style-spec/reference/latest';
 
 
 import {
+  _colorWithOpacity as colorWithOpacity,
   _filterCache as filterCache,
   _evaluateFilter as evaluateFilter,
   _fromTemplate as fromTemplate,
@@ -16,6 +17,18 @@ import {
 
 
 describe('utility functions currently in stylefunction.js', function() {
+
+  describe('colorWithOpacity()', function() {
+    it('should parse Color instances', function() {
+      should(colorWithOpacity(new Color(1, 0, 0, 1), 1)).eql([255, 0, 0, 1]);
+      should(colorWithOpacity(new Color(1, 0, 0, 1), 0.25)).eql([255, 0, 0, 0.25]);
+    });
+
+    it('should return undefined if alpha or opacity is 0', function() {
+      should(colorWithOpacity(new Color(1, 0, 0, 0), 1)).eql(undefined);
+      should(colorWithOpacity(new Color(1, 0, 0, 1), 0)).eql(undefined);
+    });
+  });
 
   describe('evaluateFilter()', function() {
     const feature = new Feature({geometry: new Point([0, 0], 'XY')});
