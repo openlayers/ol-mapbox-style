@@ -616,13 +616,10 @@ export default function(olLayer, glStyle, source, resolutions, spriteData, sprit
             }
             text.setTextAlign(textAlign);
             const textRotationAlignment = getValue(layer, 'layout', 'text-rotation-alignment', zoom, f);
-            if (textRotationAlignment == 'map') {
-              text.setRotateWithView(true);
-            } else {
-              text.setRotateWithView(false);
-            }
+            text.setRotateWithView(textRotationAlignment == 'map');
           } else {
             text.setTextAlign();
+            text.setRotateWithView(false);
           }
           let textBaseline = 'middle';
           if (textAnchor.indexOf('bottom') == 0) {
