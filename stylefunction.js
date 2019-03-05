@@ -102,6 +102,9 @@ function evaluateFilter(layerId, filter, feature, zoom) {
 const colorCache = {};
 function colorWithOpacity(color, opacity) {
   if (color && opacity !== undefined) {
+    if (color.a === 0 || opacity === 0) {
+      return undefined;
+    }
     let colorData = colorCache[color];
     if (!colorData) {
       colorCache[color] = colorData = {
@@ -111,9 +114,6 @@ function colorWithOpacity(color, opacity) {
     }
     color = colorData.color;
     color[3] = colorData.opacity * opacity;
-    if (color[3] === 0) {
-      color = undefined;
-    }
   }
   return color;
 }
