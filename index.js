@@ -344,7 +344,7 @@ function setupRasterLayer(glSource, url) {
       const tileJSONDoc = source.getTileJSON();
       const extent = extentFromTileJSON(tileJSONDoc);
       const tileGrid = source.getTileGrid();
-      const tileSize = tileJSONDoc.tileSize || 512;
+      const tileSize = glSource.tileSize || tileJSONDoc.tileSize || 512;
       const minZoom = tileJSONDoc.minzoom || 0;
       const maxZoom = tileJSONDoc.maxzoom || 22;
       // Only works when using ES modules
