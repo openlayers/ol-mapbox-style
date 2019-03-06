@@ -25,6 +25,16 @@ Commit the change to master.
 
     npm publish
 
+### Update README when API docs changed
+
+When the above results in changes to README.md, commit these changes to master:
+
+    git checkout master
+    git add README.md
+    git commit -m "Update API docs in README"
+    git push origin master
+    git checkout v2.11.0
+
 ### Commit release artifacts
 
     git add -f dist
