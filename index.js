@@ -216,12 +216,11 @@ function setBackground(map, layer) {
       element.style.backgroundColor = Color.parse(bg).toString();
     }
     if (paint['background-opacity'] !== undefined) {
-      element.style.backgroundOpacity =
-        getValue(background, 'paint', 'background-opacity', zoom, emptyObj);
+      element.style.opacity = getValue(background, 'paint', 'background-opacity', zoom, emptyObj);
     }
     if (layout.visibility == 'none') {
       element.style.backgroundColor = '';
-      element.style.backgroundOpacity = '';
+      element.style.opacity = '';
     }
   }
   if (map.getTargetElement()) {

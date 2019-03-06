@@ -9,6 +9,7 @@ import VectorTileSource from 'ol/source/VectorTile';
 import {toLonLat} from 'ol/proj';
 
 import brightV9 from 'mapbox-gl-styles/styles/bright-v9.json';
+import backgroundStyle from './fixtures/background.json';
 import {defaultResolutions} from '../util';
 delete brightV9.sprite;
 
@@ -61,8 +62,9 @@ describe('ol-mapbox-style', function() {
       const target = document.createElement('div');
       target.style.width = target.style.height = '100px';
       const map = new Map({target: target});
-      applyBackground(map, brightV9);
+      applyBackground(map, backgroundStyle);
       should(target.style.backgroundColor).be.exactly('rgb(248, 244, 240)');
+      should(target.style.opacity).be.eql('0.75');
     });
   });
 
