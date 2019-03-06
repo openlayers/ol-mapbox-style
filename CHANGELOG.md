@@ -4,7 +4,7 @@
 
 ## 4.1.0
 
-v4.0.1 brings a few performance improvements and bug fixes:
+v4.1.0 brings a few performance improvements and bug fixes:
 
 * More efficient font caching
 * Always stroke polygons to be in line with the style spec
