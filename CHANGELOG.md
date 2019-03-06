@@ -2,6 +2,17 @@
 
 ## Next version
 
+## 4.1.0
+
+v4.0.1 brings a few performance improvements and bug fixes:
+
+* More efficient font caching
+* Always stroke polygons to be in line with the style spec
+* Stroke polygons without drawing the outline a 2nd time
+* Do not cache transparent colors, making hiding features more efficient
+* Fix background opacity
+* Respect minzoom from TileJSON sources, avoiding underzooming which can lead to loading thousands of tiles
+
 ## 4.0.0
 
 ### Breaking changes
