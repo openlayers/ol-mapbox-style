@@ -289,7 +289,7 @@ Two additional properties will be set on the provided layer:
 -   `spriteImageUrl` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Sprite image url for the sprite
     specified in the Mapbox Style object's `sprite` property. Only required if a
     `sprite` property is specified in the Mapbox Style object. (optional, default `undefined`)
--   `getFonts` **function ([Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>): [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Function that
+-   `getFonts` **function ([Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>): [Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>** Function that
     receives a font stack as arguments, and returns a (modified) font stack that
     is available. Font names are the names used in the Mapbox Style object. If
     not provided, the font stack will be used as-is. This function can also be
