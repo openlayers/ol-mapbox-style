@@ -22,7 +22,7 @@ import TileJSON from 'ol/source/TileJSON';
 import VectorSource from 'ol/source/Vector';
 import VectorTileSource from 'ol/source/VectorTile';
 import {Color} from '@mapbox/mapbox-gl-style-spec';
-import {defaultResolutions, getZoomForResolution} from './util';
+import {defaultResolutions} from './util';
 
 const fontFamilyRegEx = /font-family: ?([^;]*);/;
 const stripQuotesRegEx = /("|')/g;
@@ -426,7 +426,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
   const glLayers = glStyle.layers;
   let layerIds = [];
 
-  let glLayer, glSource, glSourceId, id, layer, minZoom, maxZoom, url;
+  let glLayer, glSource, glSourceId, id, layer, url;
   for (let i = 0, ii = glLayers.length; i < ii; ++i) {
     glLayer = glLayers[i];
     if (glLayer.type == 'background') {
@@ -436,11 +436,9 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
       // this technique assumes gl layers will be in a particular order
       if (id != glSourceId) {
         if (layerIds.length) {
-          promises.push(finalizeLayer(layer, layerIds, glStyle, path, map, minZoom, maxZoom));
+          promises.push(finalizeLayer(layer, layerIds, glStyle, path, map));
           layerIds = [];
         }
-        minZoom = 24;
-        maxZoom = 0;
         glSource = glStyle.sources[id];
         url = glSource.url;
         if (url && path && url.startsWith('.')) {
@@ -463,16 +461,9 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
         }
       }
       layerIds.push(glLayer.id);
-      minZoom = Math.min(
-        'minzoom' in glSource ?
-          // Limit layer minzoom to source minzoom. No underzooming, see https://github.com/mapbox/mapbox-gl-js/issues/7388
-          Math.max(getZoomForResolution(layer.getSource().getTileGrid().getResolutions()[glSource.minzoom], defaultResolutions), glLayer.minzoom || 0) :
-          glLayer.minzoom || 0,
-        minZoom);
-      maxZoom = Math.max(glLayer.maxzoom || 24, maxZoom);
     }
   }
-  promises.push(finalizeLayer(layer, layerIds, glStyle, path, map, minZoom, maxZoom));
+  promises.push(finalizeLayer(layer, layerIds, glStyle, path, map));
   map.set('mapbox-style', glStyle);
   return Promise.all(promises);
 }
@@ -625,21 +616,39 @@ export function apply(map, style) {
  * @param {string|undefined} path The path part of the style URL. Only required
  * when a relative path is used with the `"sprite"` property of the style.
  * @param {ol.Map} map OpenLayers Map.
- * @param {number} minZoom Minimum zoom.
- * @param {number} maxZoom Maximum zoom.
  * @return {Promise} Returns a promise that resolves after the source has
  * been set on the specified layer, and the style has been applied.
  */
-function finalizeLayer(layer, layerIds, glStyle, path, map, minZoom, maxZoom) {
-  if (minZoom > 0) {
-    layer.setMaxResolution(defaultResolutions[minZoom] + 1e-9);
-  }
-  if (maxZoom < 24) {
-    layer.setMinResolution(defaultResolutions[maxZoom] + 1e-9);
+function finalizeLayer(layer, layerIds, glStyle, path, map) {
+  let minZoom = 24;
+  let maxZoom = 0;
+  const glLayers = glStyle.layers;
+  for (let i = 0, ii = glLayers.length; i < ii; ++i) {
+    const glLayer = glLayers[i];
+    if (layerIds.indexOf(glLayer.id) !== -1) {
+      minZoom = Math.min('minzoom' in glLayer ? glLayer.minzoom : 0, minZoom);
+      maxZoom = Math.max('maxzoom' in glLayer ? glLayer.maxzoom : 24, maxZoom);
+    }
   }
   return new Promise(function(resolve, reject) {
     const setStyle = function() {
       const source = layer.getSource();
+      if (!source || source.getState() === 'error') {
+        reject(new Error('Error accessing data for source ' + layer.get('mapbox-source')));
+        return;
+      }
+      if (typeof source.getTileGrid === 'function') {
+        const tileGrid = source.getTileGrid();
+        if (tileGrid) {
+          const sourceMinZoom = tileGrid.getMinZoom();
+          if (minZoom > 0 || sourceMinZoom > 0) {
+            layer.setMaxResolution(Math.min(defaultResolutions[minZoom], tileGrid.getResolution(sourceMinZoom)) + 1e-9);
+          }
+          if (maxZoom < 24) {
+            layer.setMinResolution(defaultResolutions[maxZoom] + 1e-9);
+          }
+        }
+      }
       if (source instanceof VectorSource || source instanceof VectorTileSource) {
         applyStyle(layer, glStyle, layerIds, path).then(function() {
           layer.setVisible(true);
@@ -648,11 +657,7 @@ function finalizeLayer(layer, layerIds, glStyle, path, map, minZoom, maxZoom) {
           reject(e);
         });
       } else {
-        if (!source || source.getState() === 'error') {
-          reject(new Error('Error accessing data for source ' + layer.get('mapbox-source')));
-        } else {
-          resolve();
-        }
+        resolve();
       }
     };
 
