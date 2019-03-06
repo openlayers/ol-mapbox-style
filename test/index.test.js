@@ -86,12 +86,8 @@ describe('ol-mapbox-style', function() {
     });
 
     it('handles raster sources', function(done) {
-      const map = apply(target, './fixtures/wms.json');
-
-      let count = 0;
-      map.getLayers().on('add', function() {
-        ++count;
-        if (count == 2) {
+      olms(target, './fixtures/wms.json')
+        .then(function(map) {
           const osm = map.getLayers().item(0);
           const wms = map.getLayers().item(1);
           should(osm.get('mapbox-layers')).eql(['osm']);
@@ -114,8 +110,10 @@ describe('ol-mapbox-style', function() {
           should(wms.getSource().getTileGrid().getTileSize()).eql(256);
           should(wms.getSource().getTileGrid().getMaxZoom()).eql(12);
           done();
-        }
-      }, 200);
+        })
+        .catch(function(err) {
+          done(err);
+        });
     });
 
     it('handles geojson sources', function(done) {
@@ -358,6 +356,23 @@ describe('ol-mapbox-style', function() {
 
       it('limits layer minzoom to source minzoom', function(done) {
         context.sources.osm.minzoom = 8;
+        olms(target, context)
+          .then(function(map) {
+            should(map.getLayers().item(0).getMaxResolution()).eql(defaultResolutions[8] + 1e-9);
+            done();
+          })
+          .catch(function(err) {
+            done(err);
+          });
+      });
+
+      it('limits layer minzoom to TileJSON source minzoom', function(done) {
+        const osm = context.sources.osm;
+        osm.minzoom = 8;
+        context.sources.osm = {
+          type: 'vector',
+          url: 'data:text/plain;charset=UTF-8,' + JSON.stringify(osm)
+        };
         olms(target, context)
           .then(function(map) {
             should(map.getLayers().item(0).getMaxResolution()).eql(defaultResolutions[8] + 1e-9);
