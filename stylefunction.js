@@ -202,8 +202,8 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
 
   const ctx = document.createElement('CANVAS').getContext('2d');
   const measureCache = {};
-  function wrapText(text, font, em) {
-    const key = em + ',' + font + ',' + text;
+  function wrapText(text, font, em, letterSpacing) {
+    const key = em + ',' + font + ',' + text + ',' + letterSpacing;
     let wrappedText = measureCache[key];
     if (!wrappedText) {
       const words = text.split(' ');
@@ -215,8 +215,9 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
         const lines = [];
         for (let i = 0, ii = words.length; i < ii; ++i) {
           const word = words[i];
-          if ((ctx.measureText(line + word).width <= width)) {
-            line += (line ? ' ' : '') + word;
+          const testLine = line + (line ? ' ' : '') + word;
+          if (ctx.measureText(testLine).width + (testLine.length - 1) * letterSpacing <= width) {
+            line = testLine;
           } else {
             if (line) {
               lines.push(line);
@@ -589,8 +590,8 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
           } else if (textTransform == 'lowercase') {
             label = label.toLowerCase();
           }
-          const wrappedLabel = type == 2 ? label : wrapText(label, font, getValue(layer, 'layout', 'text-max-width', zoom, f));
           const letterSpacing = getValue(layer, 'layout', 'text-letter-spacing', zoom, f);
+          const wrappedLabel = type == 2 ? label : wrapText(label, font, getValue(layer, 'layout', 'text-max-width', zoom, f), letterSpacing);
           if (letterSpacing >= 0.05) {
             let wrappedLabelWithLetterSpacing = '';
             const wrappedLabelLines = wrappedLabel.split('\n');
