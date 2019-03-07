@@ -199,6 +199,11 @@ describe('ol-mapbox-style', function() {
               'maxzoom': 12,
               'tileSize': 256,
               'tiles': ['https://ahocevar.com/geoserver/gwc/service/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image/png&SRS=EPSG:900913&LAYERS=topp:states&STYLES=&WIDTH=256&HEIGHT=256&BBOX={bbox-epsg-3857}']
+            },
+            'hillshading': {
+              'type': 'raster',
+              'tileSize': 1024,
+              'url': 'fixtures/tilejson.raster.json'
             }
           },
           'layers': [
@@ -209,6 +214,11 @@ describe('ol-mapbox-style', function() {
               'layout': {
                 'visibility': 'none'
               }
+            },
+            {
+              'id': 'hillshading',
+              'source': 'hillshading',
+              'type': 'raster'
             }
           ]
         };
@@ -217,13 +227,20 @@ describe('ol-mapbox-style', function() {
       it('creates the correct tile grid for raster sources', function(done) {
         olms(target, context)
           .then(function(map) {
-            const source = map.getLayers().item(0).getSource();
-            const tileGrid = source.getTileGrid();
-            should(tileGrid.getTileSize()).eql(256);
-            should(tileGrid.getExtent()).eql([-20037508.342789244, -20037508.342789244, 20037508.342789244, 20037508.342789244]);
-            should(tileGrid.getOrigin()).eql([-20037508.342789244, 20037508.342789244]);
-            should(tileGrid.getMinZoom()).eql(0);
-            should(tileGrid.getMaxZoom()).eql(12);
+            const statesSource = map.getLayers().item(0).getSource();
+            const statesTileGrid = statesSource.getTileGrid();
+            should(statesTileGrid.getTileSize()).eql(256);
+            should(statesTileGrid.getExtent()).eql([-20037508.342789244, -20037508.342789244, 20037508.342789244, 20037508.342789244]);
+            should(statesTileGrid.getOrigin()).eql([-20037508.342789244, 20037508.342789244]);
+            should(statesTileGrid.getMinZoom()).eql(0);
+            should(statesTileGrid.getMaxZoom()).eql(12);
+
+            const hillshadingSource = map.getLayers().item(1).getSource();
+            const hillshadingTileGrid = hillshadingSource.getTileGrid();
+            should(hillshadingTileGrid.getTileSize()).eql(1024);
+            should(hillshadingTileGrid.getMinZoom()).eql(0);
+            should(hillshadingTileGrid.getMaxZoom()).eql(20);
+
             done();
           })
           .catch(function(err) {
@@ -261,6 +278,7 @@ describe('ol-mapbox-style', function() {
         olms(target, context)
           .then(function(map) {
             should(map.getLayers().item(0).get('visible')).be.false();
+            should(map.getLayers().item(1).get('visible')).be.true();
             done();
           })
           .catch(function(err) {
