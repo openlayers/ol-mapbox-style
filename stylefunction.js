@@ -583,7 +583,8 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
           text = style.getText();
           const textSize = getValue(layer, 'layout', 'text-size', zoom, f);
           const fontArray = getValue(layer, 'layout', 'text-font', zoom, f);
-          const font = mb2css(getFonts ? getFonts(fontArray) : fontArray, textSize);
+          const textLineHeight = getValue(layer, 'layout', 'text-line-height', zoom, f);
+          const font = mb2css(getFonts ? getFonts(fontArray) : fontArray, textSize, textLineHeight);
           const textTransform = layout['text-transform'];
           if (textTransform == 'uppercase') {
             label = label.toUpperCase();
@@ -611,12 +612,19 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
           const textAnchor = getValue(layer, 'layout', 'text-anchor', zoom, f);
           const placement = (hasImage || type == 1) ? 'point' : getValue(layer, 'layout', 'symbol-placement', zoom, f);
           text.setPlacement(placement);
+          let textHaloWidth = getValue(layer, 'paint', 'text-halo-width', zoom, f);
+          const textOffset = getValue(layer, 'layout', 'text-offset', zoom, f);
+          // Text offset has to take halo width and line height into account
+          let vOffset = 0;
+          let hOffset = 0;
           if (placement == 'point') {
             let textAlign = 'center';
             if (textAnchor.indexOf('left') !== -1) {
               textAlign = 'left';
+              hOffset = textHaloWidth;
             } else if (textAnchor.indexOf('right') !== -1) {
               textAlign = 'right';
+              hOffset = -textHaloWidth;
             }
             text.setTextAlign(textAlign);
           } else {
@@ -625,21 +633,22 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
           let textBaseline = 'middle';
           if (textAnchor.indexOf('bottom') == 0) {
             textBaseline = 'bottom';
+            vOffset = -textHaloWidth - (0.5 * (textLineHeight - 1)) * textSize;
           } else if (textAnchor.indexOf('top') == 0) {
             textBaseline = 'top';
+            vOffset = textHaloWidth + (0.5 * (textLineHeight - 1)) * textSize;
           }
           text.setTextBaseline(textBaseline);
-          const textOffset = getValue(layer, 'layout', 'text-offset', zoom, f);
-          text.setOffsetX(textOffset[0] * textSize);
-          text.setOffsetY(textOffset[1] * textSize);
+          text.setOffsetX(textOffset[0] * textSize + hOffset);
+          text.setOffsetY(textOffset[1] * textSize + vOffset);
           textColor.setColor(colorWithOpacity(getValue(layer, 'paint', 'text-color', zoom, f), opacity));
           text.setFill(textColor);
           const haloColor = colorWithOpacity(getValue(layer, 'paint', 'text-halo-color', zoom, f), opacity);
           if (haloColor) {
             textHalo.setColor(haloColor);
             // spec here : https://docs.mapbox.com/mapbox-gl-js/style-spec/#paint-symbol-text-halo-width
-            // stroke must be doubled because it is applied around the center of the text outline
-            const textHaloWidth = getValue(layer, 'paint', 'text-halo-width', zoom, f) * 2;
+            // Halo width must be doubled because it is applied around the center of the text outline
+            textHaloWidth *= 2;
             // 1/4 of text size (spec) x 2
             const halfTextSize = 0.5 * textSize;
             textHalo.setWidth(textHaloWidth <= halfTextSize ? textHaloWidth : halfTextSize);
