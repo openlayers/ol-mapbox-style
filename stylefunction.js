@@ -19,13 +19,12 @@ import {
   featureFilter as createFilter
 } from '@mapbox/mapbox-gl-style-spec';
 import mb2css from 'mapbox-to-css-font';
-import {deg2rad, defaultResolutions, getZoomForResolution} from './util';
+import {deg2rad, defaultResolutions, getZoomForResolution, wrapText, applyLetterSpacing} from './util';
 
 const isFunction = fn.isFunction;
 const convertFunction = fn.convertFunction;
 const isExpression = expression.isExpression;
 const createPropertyExpression = expression.createPropertyExpression;
-const hairSpacePool = Array(256).join('\u200A');
 
 const types = {
   'Point': 1,
@@ -200,42 +199,6 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
     img.src = spriteImageUrl;
   }
 
-  const ctx = document.createElement('CANVAS').getContext('2d');
-  const measureCache = {};
-  function wrapText(text, font, em, letterSpacing) {
-    const key = em + ',' + font + ',' + text + ',' + letterSpacing;
-    let wrappedText = measureCache[key];
-    if (!wrappedText) {
-      const words = text.split(' ');
-      if (words.length > 1) {
-        ctx.font = font;
-        const oneEm = ctx.measureText('M').width;
-        const width = oneEm * em;
-        let line = '';
-        const lines = [];
-        for (let i = 0, ii = words.length; i < ii; ++i) {
-          const word = words[i];
-          const testLine = line + (line ? ' ' : '') + word;
-          if (ctx.measureText(testLine).width + (testLine.length - 1) * letterSpacing <= width) {
-            line = testLine;
-          } else {
-            if (line) {
-              lines.push(line);
-            }
-            line = word;
-          }
-        }
-        if (line) {
-          lines.push(line);
-        }
-        wrappedText = lines.join('\n');
-      } else {
-        wrappedText = text;
-      }
-      measureCache[key] = wrappedText;
-    }
-    return wrappedText;
-  }
 
   const allLayers = derefLayers(glStyle.layers);
 
@@ -591,22 +554,10 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
           } else if (textTransform == 'lowercase') {
             label = label.toLowerCase();
           }
+          const maxTextWidth = getValue(layer, 'layout', 'text-max-width', zoom, f);
           const letterSpacing = getValue(layer, 'layout', 'text-letter-spacing', zoom, f);
-          const wrappedLabel = type == 2 ? label : wrapText(label, font, getValue(layer, 'layout', 'text-max-width', zoom, f), letterSpacing);
-          if (letterSpacing >= 0.05) {
-            let wrappedLabelWithLetterSpacing = '';
-            const wrappedLabelLines = wrappedLabel.split('\n');
-            const joinSpaceString = hairSpacePool.slice(0, Math.round(letterSpacing / 0.1));
-            for (let l = 0, ll = wrappedLabelLines.length; l < ll; ++l) {
-              if (l > 0) {
-                wrappedLabelWithLetterSpacing += '\n';
-              }
-              wrappedLabelWithLetterSpacing += wrappedLabelLines[l].split('').join(joinSpaceString);
-            }
-            text.setText(wrappedLabelWithLetterSpacing);
-          } else {
-            text.setText(wrappedLabel);
-          }
+          const wrappedLabel = type == 2 ? applyLetterSpacing(label, letterSpacing) : wrapText(label, font, maxTextWidth, letterSpacing);
+          text.setText(wrappedLabel);
           text.setFont(font);
           text.setRotation(deg2rad(getValue(layer, 'layout', 'text-rotate', zoom, f)));
           const textAnchor = getValue(layer, 'layout', 'text-anchor', zoom, f);
