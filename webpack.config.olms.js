@@ -11,7 +11,6 @@ module.exports = {
         test: /\.js$/,
         include: [
           __dirname,
-          path.resolve(__dirname, 'exmaple'),
           /node_modules\/(?!(ol|@mapbox\/mapbox-gl-style-spec)\/)/
         ],
         use: {
