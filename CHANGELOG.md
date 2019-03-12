@@ -2,6 +2,15 @@
 
 ## Next version
 
+## 4.2.0
+
+* Smarter text wrapping. We now try to distribute text more evenly across lines
+* Take letter spacing into account for calculating line breaks
+* Add support for the `text-line-height` layout property
+* Respect text halo for text anchor
+* Fix how we interpret the `text-halo-width` paint property
+* Respect `tileSize` for TileJSON when specified in the style doc
+
 ## 4.1.0
 
 v4.1.0 brings a few performance improvements and bug fixes:
