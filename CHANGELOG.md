@@ -2,7 +2,7 @@
 
 ## Next version
 
-## 4.2.0
+## 4.2.1
 
 * Smarter text wrapping. We now try to distribute text more evenly across lines
 * Take letter spacing into account for calculating line breaks
