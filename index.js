@@ -59,13 +59,15 @@ function getFonts(fonts) {
   if (fontsKey in processedFontFamilies) {
     return fonts;
   }
-  const families = fonts.map(function(font) {
-    return mb2css(font, 1).split(' 1px ')[1].replace(/"/g, '');
+  const googleFontDescriptions = fonts.map(function(font) {
+    const parts = mb2css(font, 1).split(' ');
+    return [parts.slice(3, 5).join(' ').replace(/"/g, ''), parts[1] + parts[0]];
   });
-  for (let i = 0, ii = families.length; i < ii; ++i) {
-    const family = families[i];
+  for (let i = 0, ii = googleFontDescriptions.length; i < ii; ++i) {
+    const googleFontDescription = googleFontDescriptions[i];
+    const family = googleFontDescription[0];
     if (!hasFontFamily(family) && googleFamilies.indexOf(family) !== -1) {
-      const fontUrl = 'https://fonts.googleapis.com/css?family=' + family.replace(/ /g, '+');
+      const fontUrl = 'https://fonts.googleapis.com/css?family=' + family.replace(/ /g, '+') + ':' + googleFontDescription[1];
       if (!document.querySelector('link[href="' + fontUrl + '"]')) {
         const markup = document.createElement('link');
         markup.href = fontUrl;
