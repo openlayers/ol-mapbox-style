@@ -129,4 +129,69 @@ describe('stylefunction', function() {
     });
   });
 
+  describe('Max angle', function() {
+    let style;
+    beforeEach(function() {
+      style = {
+        version: '8',
+        name: 'test',
+        sources: {
+          'geojson': {
+            type: 'geojson',
+            data: {
+              type: 'FeatureCollection',
+              features: [{
+                type: 'Feature',
+                geometry: {
+                  type: 'LineString',
+                  coordinates: [[0, 0], [1, 1]]
+                },
+                properties: {
+                  'name': 'test'
+                }
+              }]
+            }
+          }
+        },
+        layers: [{
+          id: 'test',
+          type: 'symbol',
+          source: 'geojson',
+          layout: {
+            'symbol-placement': 'line',
+            'text-field': '{name}'
+          }
+        }]
+      };
+    });
+
+    it('should set max angle when exists', function(done) {
+      style.layers[0].layout['text-max-angle'] = 0;
+      olms(document.createElement('div'), style).then(function(map) {
+        const layer = map.getLayers().item(0);
+        const styleFunction = layer.getStyle();
+        const feature = layer.getSource().getFeatures()[0];
+        const styles = styleFunction(feature, 1);
+        const text = styles[0].getText();
+        should(text.getMaxAngle()).eql(0);
+        done();
+      }).catch(function(err) {
+        done(err);
+      });
+    });
+
+    it('should not set max angle when it doesnt exist', function(done) {
+      olms(document.createElement('div'), style).then(function(map) {
+        const layer = map.getLayers().item(0);
+        const styleFunction = layer.getStyle();
+        const feature = layer.getSource().getFeatures()[0];
+        const styles = styleFunction(feature, 1);
+        const text = styles[0].getText();
+        should(text.getMaxAngle()).eql(Math.PI / 4);
+        done();
+      }).catch(function(err) {
+        done(err);
+      });
+    });
+  });
 });
