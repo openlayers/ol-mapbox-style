@@ -579,6 +579,7 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
             }
             text.setTextAlign(textAlign);
           } else {
+            text.setMaxAngle(deg2rad(getValue(layer, 'layout', 'text-max-angle', zoom, f)));
             text.setTextAlign();
           }
           let textBaseline = 'middle';
@@ -611,10 +612,6 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
           const padding = text.getPadding();
           if (textPadding !== padding[0]) {
             padding[0] = padding[1] = padding[2] = padding[3] = textPadding;
-          }
-          const textMaxAngle = getValue(layer, 'layout', 'text-max-angle', zoom, f);
-          if (textMaxAngle !== undefined && placement === 'line') {
-            text.setMaxAngle(deg2rad(textMaxAngle));
           }
           style.setZIndex(99999 - index);
         }
