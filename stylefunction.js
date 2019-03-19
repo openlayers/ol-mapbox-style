@@ -98,21 +98,15 @@ function evaluateFilter(layerId, filter, feature, zoom) {
   return filterCache[layerId](zoomObj, feature);
 }
 
-const colorCache = {};
 function colorWithOpacity(color, opacity) {
-  if (color && opacity !== undefined) {
+  if (color) {
     if (color.a === 0 || opacity === 0) {
       return undefined;
     }
-    let colorData = colorCache[color];
-    if (!colorData) {
-      colorCache[color] = colorData = {
-        color: color.toArray(),
-        opacity: color.a
-      };
-    }
-    color = colorData.color;
-    color[3] = colorData.opacity * opacity;
+    const a = color.a;
+    opacity = opacity === undefined ? 1 : opacity;
+    return 'rgba(' + Math.round(color.r * 255 / a) + ',' + Math.round(color.g * 255 / a) +
+      ',' + Math.round(color.b * 255 / a) + ',' + (a * opacity) + ')';
   }
   return color;
 }
