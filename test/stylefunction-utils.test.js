@@ -20,8 +20,10 @@ describe('utility functions currently in stylefunction.js', function() {
 
   describe('colorWithOpacity()', function() {
     it('should parse Color instances', function() {
-      should(colorWithOpacity(new Color(1, 0, 0, 1), 1)).eql([255, 0, 0, 1]);
-      should(colorWithOpacity(new Color(1, 0, 0, 1), 0.25)).eql([255, 0, 0, 0.25]);
+      should(colorWithOpacity(new Color(1, 0, 0, 1), 1)).eql('rgba(255,0,0,1)');
+      should(colorWithOpacity(new Color(1, 0, 0, 1), 0.25)).eql('rgba(255,0,0,0.25)');
+      should(colorWithOpacity(new Color(1, 0, 0, 1))).eql('rgba(255,0,0,1)');
+      should(colorWithOpacity(new Color(1, 0, 0, 1))).eql('rgba(255,0,0,1)');
     });
 
     it('should return undefined if alpha or opacity is 0', function() {
