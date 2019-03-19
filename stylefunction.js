@@ -104,15 +104,14 @@ function colorWithOpacity(color, opacity) {
     if (color.a === 0 || opacity === 0) {
       return undefined;
     }
-    let colorData = colorCache[color];
+    const cache_key = color + '.' + opacity;
+    let colorData = colorCache[cache_key];
     if (!colorData) {
-      colorCache[color] = colorData = {
-        color: color.toArray(),
-        opacity: color.a
-      };
+      colorData = color.toArray();
+      colorData[3] = color.a * opacity;
+      colorCache[cache_key] = colorData;
     }
-    color = colorData.color;
-    color[3] = colorData.opacity * opacity;
+    color = colorData;
   }
   return color;
 }
