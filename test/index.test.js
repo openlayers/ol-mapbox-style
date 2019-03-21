@@ -185,6 +185,19 @@ describe('ol-mapbox-style', function() {
         });
     });
 
+    it('creates a view with default resolutions for a map with an undefined view', function(done) {
+      olms(new Map({
+        target: target
+      }), './fixtures/hot-osm/hot-osm.json')
+        .then(function(map) {
+          should(map.getView().getResolutions()).eql(defaultResolutions);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+
     describe('raster sources and layers', function() {
 
       let context;
