@@ -404,7 +404,14 @@ function updateRasterLayerProperties(glLayer, layer, view) {
 
 function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
   const promises = [];
-  const view = map.getView();
+  let view = map.getView();
+  if (!view.isDef() && !view.getRotation() && !view.getResolutions()) {
+    view = new View({
+      resolutions: defaultResolutions
+    });
+    map.setView(view);
+  }
+
   if ('center' in glStyle && !view.getCenter()) {
     view.setCenter(fromLonLat(glStyle.center));
   }
@@ -520,10 +527,7 @@ export default function olms(map, style) {
 
   if (!(map instanceof Map)) {
     map = new Map({
-      target: map,
-      view: new View({
-        resolutions: defaultResolutions
-      })
+      target: map
     });
   }
 
