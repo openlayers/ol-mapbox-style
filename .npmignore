@@ -1,2 +1,6 @@
-node_modules
-.babelrc
+.circleci/
+example/
+test/
+.editorconfig
+.eslintrc
+webpack.*.js
