@@ -438,7 +438,10 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
   let glLayer, glSource, glSourceId, id, layer, url;
   for (let i = 0, ii = glLayers.length; i < ii; ++i) {
     glLayer = glLayers[i];
-    if (glLayer.type == 'background') {
+    const type = glLayer.type;
+    if (type == 'heatmap' || type == 'fill-extrusion' || type == 'hillshade') {
+      //FIXME Unsupported layer type
+    } else if (type == 'background') {
       setBackground(map, glLayer);
     } else {
       id = glLayer.source || getSourceIdByRef(glLayers, glLayer.ref);
