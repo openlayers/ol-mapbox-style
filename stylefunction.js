@@ -559,6 +559,7 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
           text.setPlacement(placement);
           let textHaloWidth = getValue(layer, 'paint', 'text-halo-width', zoom, f);
           const textOffset = getValue(layer, 'layout', 'text-offset', zoom, f);
+          const textTranslate = getValue(layer, 'paint', 'text-translate', zoom, f);
           // Text offset has to take halo width and line height into account
           let vOffset = 0;
           let hOffset = 0;
@@ -585,8 +586,8 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
             vOffset = textHaloWidth + (0.5 * (textLineHeight - 1)) * textSize;
           }
           text.setTextBaseline(textBaseline);
-          text.setOffsetX(textOffset[0] * textSize + hOffset);
-          text.setOffsetY(textOffset[1] * textSize + vOffset);
+          text.setOffsetX(textOffset[0] * textSize + hOffset + textTranslate[0]);
+          text.setOffsetY(textOffset[1] * textSize + vOffset + textTranslate[1]);
           textColor.setColor(colorWithOpacity(getValue(layer, 'paint', 'text-color', zoom, f), opacity));
           text.setFill(textColor);
           const haloColor = colorWithOpacity(getValue(layer, 'paint', 'text-halo-color', zoom, f), opacity);
