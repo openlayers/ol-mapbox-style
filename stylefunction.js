@@ -497,7 +497,7 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
             circleColor + '.' + circleStrokeWidth;
           iconImg = iconImageCache[cache_key];
           if (!iconImg) {
-            iconImg = new Circle({
+            iconImg = iconImageCache[cache_key] = new Circle({
               radius: circleRadius,
               stroke: circleStrokeColor && circleStrokeWidth > 0 ? new Stroke({
                 width: circleStrokeWidth,
