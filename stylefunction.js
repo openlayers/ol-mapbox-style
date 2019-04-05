@@ -621,6 +621,7 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
   olLayer.setStyle(styleFunction);
   olLayer.set('mapbox-source', mapboxSource);
   olLayer.set('mapbox-layers', mapboxLayers);
+  olLayer.set('mapbox-layer-style', allLayers);
   return styleFunction;
 }
 

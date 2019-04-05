@@ -1,10 +1,11 @@
 import should from 'should';
-import olms, {applyBackground, apply, getLayer, getLayers, getSource} from '..';
+import olms, {applyBackground, apply, getLayer, getLayers, getSource, setLayoutProperty} from '..';
 import {_getFonts as getFonts} from '../index';
 import Map from 'ol/Map';
 import TileSource from 'ol/source/Tile';
 import VectorSource from 'ol/source/Vector';
 import VectorTileLayer from 'ol/layer/VectorTile';
+import TileLayer from 'ol/layer/Tile';
 import VectorTileSource from 'ol/source/VectorTile';
 import {toLonLat} from 'ol/proj';
 
@@ -508,6 +509,112 @@ describe('ol-mapbox-style', function() {
       getFonts(['Noto Sans Bold']);
       stylesheets = document.querySelectorAll('link[rel=stylesheet]');
       should(stylesheets.length).eql(2);
+    });
+  });
+
+  describe('setLayoutProperty', function() {
+    let target;
+    let context;
+    beforeEach(function() {
+      target = document.createElement('div');
+      context = {
+        'version': 8,
+        'name': 'osm',
+        'sources': {
+          'osm': {
+            'type': 'vector',
+            'bounds': [-180, -85.0511, 180, 85.0511],
+            'minzoom': 0,
+            'maxzoom': 20,
+            'tiles': [
+              'https://osm-lambda.tegola.io/v1/maps/osm/{z}/{x}/{y}.pbf'
+            ]
+          },
+          'states': {
+            'type': 'raster',
+            'maxzoom': 12,
+            'tileSize': 256,
+            'tiles': ['https://ahocevar.com/geoserver/gwc/service/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image/png&SRS=EPSG:900913&LAYERS=topp:states&STYLES=&WIDTH=256&HEIGHT=256&BBOX={bbox-epsg-3857}']
+          }
+        },
+        'layers': [{
+          'id': 'states-wms',
+          'type': 'raster',
+          'source': 'states'
+        }, {
+          'id': 'airports',
+          'type': 'fill',
+          'source': 'osm',
+          'source-layer': 'transport_areas',
+          'minzoom': 12,
+          'maxzoom': 23,
+          'filter': [
+            'all',
+            [
+              '==',
+              'type',
+              'apron'
+            ]
+          ],
+          'layout': {
+            'visibility': 'visible'
+          },
+          'paint': {
+            'fill-color': 'rgba(221, 221, 221, 1)'
+          }
+        }, {
+          'id': 'landuse_areas_z7',
+          'type': 'fill',
+          'source': 'osm',
+          'source-layer': 'landuse_areas',
+          'minzoom': 7,
+          'maxzoom': 10,
+          'filter': [
+            'all',
+            [
+              'in',
+              'type',
+              'forest',
+              'wood',
+              'nature_reserve'
+            ]
+          ],
+          'layout': {
+            'visibility': 'visible'
+          },
+          'paint': {
+            'fill-color': 'rgba(178, 194, 157, 1)'
+          }
+        }]
+      };
+    });
+
+    it('change the visibility og VectorTileLayer', function(done) {
+      olms(target, context).then(function(map) {
+        setLayoutProperty(map, 'airports', 'visibility', 'none');
+        const mbLayer = context.layers[1];
+        const olLayer = getLayer(map, 'airports');
+        should(olLayer).be.an.instanceOf(VectorTileLayer);
+        should(olLayer.getVisible()).be.a.true();
+        should(mbLayer.layout.visibility).is.equal('none');
+        done();
+      }).catch(function(error) {
+        done(error);
+      });
+    });
+
+    it('change the visibility og TileLayer', function(done) {
+      olms(target, context).then(function(map) {
+        setLayoutProperty(map, 'states-wms', 'visibility', 'none');
+        const mbLayer = context.layers[0];
+        const olLayer = getLayer(map, 'states-wms');
+        should(olLayer).be.an.instanceOf(TileLayer);
+        should(olLayer.getVisible()).be.a.false();
+        should(mbLayer.layout.visibility).is.equal('none');
+        done();
+      }).catch(function(error) {
+        done(error);
+      });
     });
   });
 });
