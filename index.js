@@ -5,7 +5,7 @@ License: https://raw.githubusercontent.com/openlayers/ol-mapbox-style/master/LIC
 */
 
 import mb2css from 'mapbox-to-css-font';
-import applyStyleFunction, {getValue} from './stylefunction';
+import applyStyleFunction, {getValue, _filterCache as filterCache} from './stylefunction';
 import googleFonts from 'webfont-matcher/lib/fonts/google';
 import {fromLonLat} from 'ol/proj';
 import {createXYZ} from 'ol/tilegrid';
@@ -23,6 +23,7 @@ import VectorSource from 'ol/source/Vector';
 import VectorTileSource from 'ol/source/VectorTile';
 import {Color} from '@mapbox/mapbox-gl-style-spec';
 import {defaultResolutions} from './util';
+import equal from 'fast-deep-equal';
 
 const fontFamilyRegEx = /font-family: ?([^;]*);/;
 const stripQuotesRegEx = /("|')/g;
@@ -742,6 +743,53 @@ export function getSource(map, sourceId) {
       return source;
     }
   }
+}
+
+function getMapBoxLayer(map, layerId) {
+  const layers = map.getLayers().getArray();
+  for (let i = 0, ii = layers.length; i < ii; ++i) {
+    const mapboxLayers = layers[i].get('mapbox-layer-style');
+    if (mapboxLayers && mapboxLayers.length) {
+      for (let j = 0, jj = mapboxLayers.length; j < jj; ++j) {
+        if (mapboxLayers[j].id === layerId) {
+          return mapboxLayers[j];
+        }
+      }
+    }
+  }
+}
+
+/**
+ * ```js
+ * import {setFilter} from 'ol-mapbox-style';
+ * ```
+ * Sets the filter for the specified style layer in the Mapbox Style.
+ *
+ * @param {ol.Map} map OpenLayers Map.
+ * @param {string} layerId Mapbox Style layer id.
+ * @param {string} filter The filter to set.
+ */
+export function setFilter(map, layerId, filter) {
+  const layer = getLayer(map, layerId);
+  if (!layer) {
+    new Error(`The layer '${layerId}' does not exist`);
+    return;
+  }
+
+  const glLayer = getMapBoxLayer(map, layerId);
+  const oldFilter = (glLayer.layout || emptyObj)[name];
+
+  if (equal(oldFilter, filter)) {
+    return;
+  }
+
+  if (filter === null) {
+    filter = undefined;
+  }
+
+  glLayer.filter = filter;
+  delete filterCache[layerId];
+  layer.changed();
 }
 
 export {
