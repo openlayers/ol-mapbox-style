@@ -16,6 +16,19 @@ Commit the change to master.
     git commit -m "Set version to 2.11.0"
     git push origin master
 
+### Update README when API docs changed
+
+To build the docs, run
+
+    npm run doc
+
+When the above results in changes to README.md, commit these changes to master:
+
+    git add README.md
+    git commit -m "Update API docs in README"
+    git push origin master
+    git checkout v2.11.0
+
 ### Create and checkout a release branch
 
     git branch v2.11.0
@@ -24,16 +37,6 @@ Commit the change to master.
 ### Publish to npm
 
     npm publish
-
-### Update README when API docs changed
-
-When the above results in changes to README.md, commit these changes to master:
-
-    git checkout master
-    git add README.md
-    git commit -m "Update API docs in README"
-    git push origin master
-    git checkout v2.11.0
 
 ### Commit release artifacts
 
