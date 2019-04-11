@@ -2,6 +2,17 @@
 
 ## Next version
 
+## 4.3.0
+
+* Load Google fonts with the correct weight and style
+* Support for the `text-max-angle` layout property
+* More efficient color handling without cache
+* Improve text wrapping for to avoid short lines
+* Apply default resolutions (Mapbox zoom levels) to the view
+* Do not create layers for unsupported layer types
+* Support for the `text-translate` paint property
+* Improve performance for circle styles
+
 ## 4.2.1
 
 * Smarter text wrapping. We now try to distribute text more evenly across lines
