@@ -1,4 +1,5 @@
 .circleci/
+.git/
 example/
 test/
 .editorconfig
