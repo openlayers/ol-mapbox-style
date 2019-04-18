@@ -78,8 +78,14 @@ fetch('data/states.json').then(function(response) {
     -   [Parameters](#parameters-5)
 -   [getSource](#getsource)
     -   [Parameters](#parameters-6)
--   [stylefunction](#stylefunction)
+-   [removeFeatureState](#removefeaturestate)
     -   [Parameters](#parameters-7)
+-   [getFeatureState](#getfeaturestate)
+    -   [Parameters](#parameters-8)
+-   [setFeatureState](#setfeaturestate)
+    -   [Parameters](#parameters-9)
+-   [stylefunction](#stylefunction)
+    -   [Parameters](#parameters-10)
 
 ### applyStyle
 
@@ -245,6 +251,42 @@ Get the OpenLayers source instance for the provided Mapbox Style `source`.
 -   `sourceId` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Mapbox Style source id.
 
 Returns **ol.source.Source** OpenLayers source instance.
+
+### removeFeatureState
+
+```js
+import {removeFeatureState} from 'ol-mapbox-style';
+```
+
+#### Parameters
+
+-   `map` **ol.Map** OpenLayers Map.
+-   `feature` **ol.Feature** Object of state.
+-   `key` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** (optional) The key in the feature state to reset.
+
+### getFeatureState
+
+```js
+import {getFeatureState} from 'ol-mapbox-style';
+```
+
+#### Parameters
+
+-   `feature` **ol.Feature** Object of state.
+
+Returns **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** The state of the feature.
+
+### setFeatureState
+
+```js
+import {setFeatureState} from 'ol-mapbox-style';
+```
+
+#### Parameters
+
+-   `map` **ol.Map** OpenLayers Map.
+-   `feature` **ol.Feature** Object of state.
+-   `state` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** A set of key-value pairs. The values should be valid JSON types.
 
 ### stylefunction
 

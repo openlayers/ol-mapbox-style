@@ -46,6 +46,7 @@ const expressionData = function(rawExpression, propertySpec) {
 const emptyObj = {};
 const zoomObj = {zoom: 0};
 const functionCache = {};
+const featureStateCache = {};
 
 /**
  * @private
@@ -86,7 +87,41 @@ export function getValue(layer, layoutOrPaint, property, zoom, feature) {
     }
   }
   zoomObj.zoom = zoom;
-  return functions[property](zoomObj, feature);
+  return functions[property](zoomObj, feature, getFeatureState(feature));
+}
+
+
+function getFeatureStateId(feature) {
+  const id = feature.id || feature.getId();
+  const properties = feature.properties || feature.getProperties();
+  const sourceId = properties.source;
+
+  return `${sourceId}${id}`;
+}
+
+function setFeatureState(feature, state) {
+  const id = getFeatureStateId(feature);
+  if (!featureStateCache[id]) {
+    featureStateCache[id] = {};
+  }
+  const cache = featureStateCache[id];
+  for (const key in state) {
+    cache[key] = state[key];
+  }
+}
+
+function removeFeatureState(feature, key) {
+  const id = getFeatureStateId(feature);
+  if (featureStateCache[id] && featureStateCache[id][key]) {
+    delete featureStateCache[id][key];
+  }
+}
+
+function getFeatureState(feature) {
+  if (feature && (feature.id || feature.getId)) {
+    return featureStateCache[getFeatureStateId(feature)] || {};
+  }
+  return {};
 }
 
 const filterCache = {};
@@ -631,5 +666,9 @@ export {
   evaluateFilter as _evaluateFilter,
   fromTemplate as _fromTemplate,
   getValue as _getValue,
-  functionCache as _functionCache
+  functionCache as _functionCache,
+  featureStateCache as _featureStateCache,
+  setFeatureState as _setFeatureState,
+  removeFeatureState as _removeFeatureState,
+  getFeatureState as _getFeatureState
 };

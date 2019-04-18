@@ -5,7 +5,7 @@ License: https://raw.githubusercontent.com/openlayers/ol-mapbox-style/master/LIC
 */
 
 import mb2css from 'mapbox-to-css-font';
-import applyStyleFunction, {getValue} from './stylefunction';
+import applyStyleFunction, {getValue, _setFeatureState, _removeFeatureState, _getFeatureState} from './stylefunction';
 import googleFonts from 'webfont-matcher/lib/fonts/google';
 import {fromLonLat} from 'ol/proj';
 import {createXYZ} from 'ol/tilegrid';
@@ -377,7 +377,7 @@ function setupRasterLayer(glSource, url) {
 }
 
 const geoJsonFormat = new GeoJSON();
-function setupGeoJSONLayer(glSource, path) {
+function setupGeoJSONLayer(glSource, path, glSourceId) {
   const data = glSource.data;
   let features, geoJsonUrl;
   if (typeof data == 'string') {
@@ -385,13 +385,20 @@ function setupGeoJSONLayer(glSource, path) {
   } else {
     features = geoJsonFormat.readFeatures(data, {featureProjection: 'EPSG:3857'});
   }
+  const source = new VectorSource({
+    attributions: glSource.attribution,
+    features: features,
+    format: geoJsonFormat,
+    url: geoJsonUrl
+  });
+  source.on('addfeature', ({feature}) => {
+    const properties = feature.getProperties();
+    if (!properties.source) {
+      feature.setProperties({'source': glSourceId});
+    }
+  });
   return new VectorLayer({
-    source: new VectorSource({
-      attributions: glSource.attribution,
-      features: features,
-      format: geoJsonFormat,
-      url: geoJsonUrl
-    }),
+    source: source,
     visible: false
   });
 }
@@ -465,7 +472,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
           view.on('change:resolution', updateRasterLayerProperties.bind(this, glLayer, layer, view));
           updateRasterLayerProperties(glLayer, layer, view);
         } else if (glSource.type == 'geojson') {
-          layer = setupGeoJSONLayer(glSource, path);
+          layer = setupGeoJSONLayer(glSource, path, id);
         }
         glSourceId = id;
         if (layer) {
@@ -741,6 +748,58 @@ export function getSource(map, sourceId) {
     if (layers[i].get('mapbox-source') === sourceId) {
       return source;
     }
+  }
+}
+
+
+/**
+ * ```js
+ * import {removeFeatureState} from 'ol-mapbox-style';
+ * ```
+ * @param {ol.Map} map OpenLayers Map.
+ * @param {ol.Feature} feature Object of state.
+ * @param {string} key (optional) The key in the feature state to reset.
+ */
+export function removeFeatureState(map, feature, key) {
+  const properties = feature.getProperties();
+  const sourceId = properties.source;
+  const layers = getLayers(map, sourceId);
+  _removeFeatureState(feature, key);
+
+  const len = layers.length;
+  for (let i = 0; i < len; i++) {
+    layers[i].changed();
+  }
+}
+
+/**
+ * ```js
+ * import {getFeatureState} from 'ol-mapbox-style';
+ * ```
+ * @param {ol.Feature} feature Object of state.
+ * @return {Object} The state of the feature.
+ */
+export function getFeatureState(feature) {
+  return _getFeatureState(feature);
+}
+
+/**
+ * ```js
+ * import {setFeatureState} from 'ol-mapbox-style';
+ * ```
+ * @param {ol.Map} map OpenLayers Map.
+ * @param {ol.Feature} feature Object of state.
+ * @param {Object} state A set of key-value pairs. The values should be valid JSON types.
+ */
+export function setFeatureState(map, feature, state) {
+  const properties = feature.getProperties();
+  const sourceId = properties.source;
+  const layers = getLayers(map, sourceId);
+  _setFeatureState(feature, state);
+
+  const len = layers.length;
+  for (let i = 0; i < len; i++) {
+    layers[i].changed();
   }
 }
 
