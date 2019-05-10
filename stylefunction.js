@@ -574,7 +574,7 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
             }
             text.setTextAlign(textAlign);
           } else {
-            text.setMaxAngle(deg2rad(getValue(layer, 'layout', 'text-max-angle', zoom, f)));
+            text.setMaxAngle(deg2rad(getValue(layer, 'layout', 'text-max-angle', zoom, f)) * label.length / wrappedLabel.length);
             text.setTextAlign();
           }
           let textBaseline = 'middle';
