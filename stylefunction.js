@@ -573,9 +573,12 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
               hOffset = -textHaloWidth;
             }
             text.setTextAlign(textAlign);
+            const textRotationAlignment = getValue(layer, 'layout', 'text-rotation-alignment', zoom, f);
+            text.setRotateWithView(textRotationAlignment == 'map');
           } else {
             text.setMaxAngle(deg2rad(getValue(layer, 'layout', 'text-max-angle', zoom, f)) * label.length / wrappedLabel.length);
             text.setTextAlign();
+            text.setRotateWithView(false);
           }
           let textBaseline = 'middle';
           if (textAnchor.indexOf('bottom') == 0) {
