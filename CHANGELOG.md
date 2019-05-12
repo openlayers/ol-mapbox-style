@@ -2,6 +2,13 @@
 
 ## Next version
 
+## 5.0.0-beta.1
+
+* Requires ol@6
+* Uses new OpenLayers z-index ordering for decluttered content
+* Support for the `text-rotaation-alignment` property
+* Better `max-angle` handling in combination with `text-letter-spacint`
+
 ## 4.3.0
 
 * Load Google fonts with the correct weight and style
