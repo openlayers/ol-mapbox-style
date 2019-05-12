@@ -6,7 +6,7 @@
 
 * Requires ol@6
 * Uses new OpenLayers z-index ordering for decluttered content
-* Support for the `text-rotaation-alignment` property
+* Support for the `text-rotation-alignment` property
 * Better `max-angle` handling in combination with `text-letter-spacint`
 
 ## 4.3.0
