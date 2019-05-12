@@ -473,7 +473,7 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
                 style.setImage(iconImg);
                 text = style.getText();
                 style.setText(undefined);
-                style.setZIndex(99999 - index);
+                style.setZIndex(index);
                 hasImage = true;
                 skipLabel = false;
               } else {
@@ -512,7 +512,7 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
           text = style.getText();
           style.setText(undefined);
           style.setGeometry(undefined);
-          style.setZIndex(99999 - index);
+          style.setZIndex(index);
           hasImage = true;
         }
 
@@ -611,7 +611,7 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
           if (textPadding !== padding[0]) {
             padding[0] = padding[1] = padding[2] = padding[3] = textPadding;
           }
-          style.setZIndex(99999 - index);
+          style.setZIndex(index);
         }
       }
     }
