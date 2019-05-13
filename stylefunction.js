@@ -10,7 +10,7 @@ import Stroke from 'ol/style/Stroke';
 import Icon from 'ol/style/Icon';
 import Text from 'ol/style/Text';
 import Circle from 'ol/style/Circle';
-import Point from 'ol/geom/Point';
+import RenderFeature from 'ol/render/Feature';
 import derefLayers from '@mapbox/mapbox-gl-style-spec/deref';
 import spec from '@mapbox/mapbox-gl-style-spec/reference/latest';
 import {
@@ -46,6 +46,7 @@ const expressionData = function(rawExpression, propertySpec) {
 const emptyObj = {};
 const zoomObj = {zoom: 0};
 const functionCache = {};
+let renderFeatureCoordinates, renderFeature;
 
 /**
  * @private
@@ -387,7 +388,13 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
                   if (size > 150) {
                     //FIXME Do not hard-code a size of 150
                     const midpoint = geom.getFlatMidpoint();
-                    styleGeom = new Point(midpoint);
+                    if (!renderFeature) {
+                      renderFeatureCoordinates = [NaN, NaN];
+                      renderFeature = new RenderFeature('Point', renderFeatureCoordinates, [], {}, null);
+                    }
+                    styleGeom = renderFeature;
+                    renderFeatureCoordinates[0] = midpoint[0];
+                    renderFeatureCoordinates[1] = midpoint[1];
                     const placement = getValue(layer, 'layout', 'symbol-placement', zoom, f);
                     if (placement === 'line' && iconRotationAlignment === 'map') {
                       const stride = geom.getStride();
