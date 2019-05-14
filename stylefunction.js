@@ -526,7 +526,7 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
         let label;
         if ('text-field' in layout) {
           const textField = getValue(layer, 'layout', 'text-field', zoom, f).toString();
-          label = fromTemplate(textField, properties);
+          label = fromTemplate(textField, properties).trim();
           opacity = getValue(layer, 'paint', 'text-opacity', zoom, f);
         }
         if (label && opacity && !skipLabel) {
