@@ -12,10 +12,10 @@ import Text from 'ol/style/Text';
 import Circle from 'ol/style/Circle';
 import RenderFeature from 'ol/render/Feature';
 import derefLayers from '@mapbox/mapbox-gl-style-spec/deref';
-import spec from '@mapbox/mapbox-gl-style-spec/reference/latest';
 import {
   expression, Color,
   function as fn,
+  latest as spec,
   featureFilter as createFilter
 } from '@mapbox/mapbox-gl-style-spec';
 import mb2css from 'mapbox-to-css-font';
