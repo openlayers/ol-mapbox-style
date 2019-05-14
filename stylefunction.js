@@ -545,7 +545,7 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
             }));
           }
           text = style.getText();
-          const textSize = getValue(layer, 'layout', 'text-size', zoom, f);
+          const textSize = Math.round(getValue(layer, 'layout', 'text-size', zoom, f));
           const fontArray = getValue(layer, 'layout', 'text-font', zoom, f);
           const textLineHeight = getValue(layer, 'layout', 'text-line-height', zoom, f);
           const font = mb2css(getFonts ? getFonts(fontArray) : fontArray, textSize, textLineHeight);
