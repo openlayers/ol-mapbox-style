@@ -1,0 +1,2 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[6],{124:function(s,t,e){"use strict";e.r(t);e(56);var o=e(28);Object(o.b)("map","https://vectortiles.geo.admin.ch/gl-styles/ch.swisstopo.leichte-basiskarte.vt/v006/style.json")}},[[124,0]]]);
+//# sourceMappingURL=swisstopo.js.map
