@@ -2,6 +2,13 @@
 
 ## Next version
 
+## 5.0.0-beta.2
+
+* More efficient midpoint rendering
+* Only include style spec once
+* Trim the label-field string
+* Round text size to integer pixels
+
 ## 5.0.0-beta.1
 
 * Requires ol@6
