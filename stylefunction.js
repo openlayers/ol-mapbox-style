@@ -436,7 +436,6 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
                   const spriteImageData = spriteData[icon];
                   if (iconColor !== null) {
                     // cut out the sprite and color it
-                    color = colorWithOpacity(iconColor, 1);
                     const canvas = document.createElement('canvas');
                     canvas.width = spriteImageData.width;
                     canvas.height = spriteImageData.height;
@@ -454,9 +453,13 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
                     );
                     const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
                     for (let c = 0, cc = data.data.length; c < cc; c += 4) {
-                      data.data[c] = color[0];
-                      data.data[c + 1] = color[1];
-                      data.data[c + 2] = color[2];
+                      const a = iconColor.a;
+                      if (a !== 0) {
+                        data.data[c] = iconColor.r * 255 / a;
+                        data.data[c + 1] = iconColor.g * 255 / a;
+                        data.data[c + 2] = iconColor.b * 255 / a;
+                      }
+                      data.data[c + 3] = a;
                     }
                     ctx.putImageData(data, 0, 0);
                     iconImg = iconImageCache[icon_cache_key] = new Icon({
