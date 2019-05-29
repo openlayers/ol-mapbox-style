@@ -498,16 +498,17 @@ describe('ol-mapbox-style', function() {
 
     it('loads fonts from fonts.google.com', function() {
       let stylesheets;
-      getFonts(['Noto Sans Bold', 'Noto Sans Regular Italic']);
+      getFonts(['Noto Sans Bold', 'Noto Sans Regular Italic', 'Averia Sans Libre Bold']);
       stylesheets = document.querySelectorAll('link[rel=stylesheet]');
-      should(stylesheets.length).eql(2);
+      should(stylesheets.length).eql(3);
       should(stylesheets.item(0).href).eql('https://fonts.googleapis.com/css?family=Noto+Sans:700normal');
       should(stylesheets.item(1).href).eql('https://fonts.googleapis.com/css?family=Noto+Sans:400italic');
+      should(stylesheets.item(2).href).eql('https://fonts.googleapis.com/css?family=Averia+Sans+Libre:700normal');
 
       // already loaded family, no additional link
       getFonts(['Noto Sans Bold']);
       stylesheets = document.querySelectorAll('link[rel=stylesheet]');
-      should(stylesheets.length).eql(2);
+      should(stylesheets.length).eql(3);
     });
   });
 });

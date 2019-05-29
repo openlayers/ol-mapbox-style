@@ -61,7 +61,7 @@ function getFonts(fonts) {
   }
   const googleFontDescriptions = fonts.map(function(font) {
     const parts = mb2css(font, 1).split(' ');
-    return [parts.slice(3, 5).join(' ').replace(/"/g, ''), parts[1] + parts[0]];
+    return [parts.slice(3).join(' ').replace(/"/g, ''), parts[1] + parts[0]];
   });
   for (let i = 0, ii = googleFontDescriptions.length; i < ii; ++i) {
     const googleFontDescription = googleFontDescriptions[i];
