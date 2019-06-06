@@ -43,8 +43,8 @@ const anchor = {
   'top-left': [0, 0],
   'top-right': [1, 0],
   'bottom-left': [0, 1],
-  'bottom-right': [1, 1],
- }
+  'bottom-right': [1, 1]
+ };
 
 const expressionData = function(rawExpression, propertySpec) {
   const compiledExpression = createPropertyExpression(rawExpression, propertySpec);
