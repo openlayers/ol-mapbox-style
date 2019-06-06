@@ -2,6 +2,20 @@
 
 ## Next version
 
+## 5.0.0-beta.2
+
+* More efficient midpoint rendering
+* Only include style spec once
+* Trim the label-field string
+* Round text size to integer pixels
+
+## 5.0.0-beta.1
+
+* Requires ol@6
+* Uses new OpenLayers z-index ordering for decluttered content
+* Support for the `text-rotation-alignment` property
+* Better `max-angle` handling in combination with `text-letter-spacing`
+
 ## 4.3.0
 
 * Load Google fonts with the correct weight and style

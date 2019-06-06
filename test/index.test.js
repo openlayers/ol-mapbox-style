@@ -100,10 +100,10 @@ describe('ol-mapbox-style', function() {
             urls.push(tileUrlFunction(tileCoord));
           });
           should(urls).eql([
+            'https://a.tile.openstreetmap.org/1/0/0.png',
             'https://b.tile.openstreetmap.org/1/0/1.png',
-            'https://c.tile.openstreetmap.org/1/0/0.png',
-            'https://a.tile.openstreetmap.org/1/1/1.png',
-            'https://b.tile.openstreetmap.org/1/1/0.png'
+            'https://c.tile.openstreetmap.org/1/1/0.png',
+            'https://a.tile.openstreetmap.org/1/1/1.png'
           ]);
           should(osm.getSource().getAttributions()({extent: extent})[0]).equal(
             '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors.');
@@ -498,16 +498,17 @@ describe('ol-mapbox-style', function() {
 
     it('loads fonts from fonts.google.com', function() {
       let stylesheets;
-      getFonts(['Noto Sans Bold', 'Noto Sans Regular Italic']);
+      getFonts(['Noto Sans Bold', 'Noto Sans Regular Italic', 'Averia Sans Libre Bold']);
       stylesheets = document.querySelectorAll('link[rel=stylesheet]');
-      should(stylesheets.length).eql(2);
+      should(stylesheets.length).eql(3);
       should(stylesheets.item(0).href).eql('https://fonts.googleapis.com/css?family=Noto+Sans:700normal');
       should(stylesheets.item(1).href).eql('https://fonts.googleapis.com/css?family=Noto+Sans:400italic');
+      should(stylesheets.item(2).href).eql('https://fonts.googleapis.com/css?family=Averia+Sans+Libre:700normal');
 
       // already loaded family, no additional link
       getFonts(['Noto Sans Bold']);
       stylesheets = document.querySelectorAll('link[rel=stylesheet]');
-      should(stylesheets.length).eql(2);
+      should(stylesheets.length).eql(3);
     });
   });
 });

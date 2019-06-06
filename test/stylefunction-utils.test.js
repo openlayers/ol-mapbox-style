@@ -2,8 +2,7 @@
 import should from 'should';
 import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
-import {Color} from '@mapbox/mapbox-gl-style-spec';
-import spec from '@mapbox/mapbox-gl-style-spec/reference/latest';
+import {Color, latest as spec} from '@mapbox/mapbox-gl-style-spec';
 
 
 import {

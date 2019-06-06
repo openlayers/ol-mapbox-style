@@ -32,7 +32,6 @@ module.exports = {
     'ol/style/Icon': 'ol.style.Icon',
     'ol/style/Stroke': 'ol.style.Stroke',
     'ol/style/Fill': 'ol.style.Fill',
-    'ol/geom/Point': 'ol.geom.Point',
     'ol/proj': 'ol.proj',
     'ol/tilegrid': 'ol.tilegrid',
     'ol/tilegrid/TileGrid': 'ol.tilegrid.TileGrid',

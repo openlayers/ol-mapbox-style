@@ -10,12 +10,12 @@ import Stroke from 'ol/style/Stroke';
 import Icon from 'ol/style/Icon';
 import Text from 'ol/style/Text';
 import Circle from 'ol/style/Circle';
-import Point from 'ol/geom/Point';
+import RenderFeature from 'ol/render/Feature';
 import derefLayers from '@mapbox/mapbox-gl-style-spec/deref';
-import spec from '@mapbox/mapbox-gl-style-spec/reference/latest';
 import {
   expression, Color,
   function as fn,
+  latest as spec,
   featureFilter as createFilter
 } from '@mapbox/mapbox-gl-style-spec';
 import mb2css from 'mapbox-to-css-font';
@@ -57,6 +57,7 @@ const expressionData = function(rawExpression, propertySpec) {
 const emptyObj = {};
 const zoomObj = {zoom: 0};
 const functionCache = {};
+let renderFeatureCoordinates, renderFeature;
 
 /**
  * @private
@@ -398,7 +399,13 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
                   if (size > 150) {
                     //FIXME Do not hard-code a size of 150
                     const midpoint = geom.getFlatMidpoint();
-                    styleGeom = new Point(midpoint);
+                    if (!renderFeature) {
+                      renderFeatureCoordinates = [NaN, NaN];
+                      renderFeature = new RenderFeature('Point', renderFeatureCoordinates, [], {}, null);
+                    }
+                    styleGeom = renderFeature;
+                    renderFeatureCoordinates[0] = midpoint[0];
+                    renderFeatureCoordinates[1] = midpoint[1];
                     const placement = getValue(layer, 'layout', 'symbol-placement', zoom, f);
                     if (placement === 'line' && iconRotationAlignment === 'map') {
                       const stride = geom.getStride();
@@ -440,7 +447,6 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
                   const spriteImageData = spriteData[icon];
                   if (iconColor !== null) {
                     // cut out the sprite and color it
-                    color = colorWithOpacity(iconColor, 1);
                     const canvas = document.createElement('canvas');
                     canvas.width = spriteImageData.width;
                     canvas.height = spriteImageData.height;
@@ -458,9 +464,13 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
                     );
                     const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
                     for (let c = 0, cc = data.data.length; c < cc; c += 4) {
-                      data.data[c] = color[0];
-                      data.data[c + 1] = color[1];
-                      data.data[c + 2] = color[2];
+                      const a = iconColor.a;
+                      if (a !== 0) {
+                        data.data[c] = iconColor.r * 255 / a;
+                        data.data[c + 1] = iconColor.g * 255 / a;
+                        data.data[c + 2] = iconColor.b * 255 / a;
+                      }
+                      data.data[c + 3] = a;
                     }
                     ctx.putImageData(data, 0, 0);
                     iconImg = iconImageCache[icon_cache_key] = new Icon({
@@ -485,7 +495,7 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
                 style.setImage(iconImg);
                 text = style.getText();
                 style.setText(undefined);
-                style.setZIndex(99999 - index);
+                style.setZIndex(index);
                 hasImage = true;
                 skipLabel = false;
               } else {
@@ -524,14 +534,14 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
           text = style.getText();
           style.setText(undefined);
           style.setGeometry(undefined);
-          style.setZIndex(99999 - index);
+          style.setZIndex(index);
           hasImage = true;
         }
 
         let label;
         if ('text-field' in layout) {
           const textField = getValue(layer, 'layout', 'text-field', zoom, f).toString();
-          label = fromTemplate(textField, properties);
+          label = fromTemplate(textField, properties).trim();
           opacity = getValue(layer, 'paint', 'text-opacity', zoom, f);
         }
         if (label && opacity && !skipLabel) {
@@ -550,7 +560,7 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
             }));
           }
           text = style.getText();
-          const textSize = getValue(layer, 'layout', 'text-size', zoom, f);
+          const textSize = Math.round(getValue(layer, 'layout', 'text-size', zoom, f));
           const fontArray = getValue(layer, 'layout', 'text-font', zoom, f);
           const textLineHeight = getValue(layer, 'layout', 'text-line-height', zoom, f);
           const font = mb2css(getFonts ? getFonts(fontArray) : fontArray, textSize, textLineHeight);
@@ -585,9 +595,12 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
               hOffset = -textHaloWidth;
             }
             text.setTextAlign(textAlign);
+            const textRotationAlignment = getValue(layer, 'layout', 'text-rotation-alignment', zoom, f);
+            text.setRotateWithView(textRotationAlignment == 'map');
           } else {
-            text.setMaxAngle(deg2rad(getValue(layer, 'layout', 'text-max-angle', zoom, f)));
+            text.setMaxAngle(deg2rad(getValue(layer, 'layout', 'text-max-angle', zoom, f)) * label.length / wrappedLabel.length);
             text.setTextAlign();
+            text.setRotateWithView(false);
           }
           let textBaseline = 'middle';
           if (textAnchor.indexOf('bottom') == 0) {
@@ -620,7 +633,7 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
           if (textPadding !== padding[0]) {
             padding[0] = padding[1] = padding[2] = padding[3] = textPadding;
           }
-          style.setZIndex(99999 - index);
+          style.setZIndex(index);
         }
       }
     }

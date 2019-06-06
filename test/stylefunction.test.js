@@ -98,7 +98,7 @@ describe('stylefunction', function() {
             'icon-image': 'donut',
             'text-anchor': 'bottom',
             'text-line-height': 1.2,
-            'text-field': '{name}',
+            'text-field': '{name}\n',
             'text-font': ['sans-serif'],
             'text-size': 12,
             'text-justify': 'center'
@@ -122,6 +122,20 @@ describe('stylefunction', function() {
         const textSize = style.layers[0].layout['text-size'];
         // offsetY is the halo width plus half the distance between two lines
         should(text.getOffsetY()).eql(-textHaloWidth - (0.5 * (textLineHeight - 1)) * textSize);
+        done();
+      }).catch(function(err) {
+        done(err);
+      });
+    });
+
+    it('trims the label-field', function(done) {
+      olms(document.createElement('div'), style).then(function(map) {
+        const layer = map.getLayers().item(0);
+        const styleFunction = layer.getStyle();
+        const feature = layer.getSource().getFeatures()[0];
+        const styles = styleFunction(feature, 1);
+        const text = styles[0].getText();
+        should(text.getText()).eql('test');
         done();
       }).catch(function(err) {
         done(err);

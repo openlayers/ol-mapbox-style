@@ -1,20 +1,22 @@
 To create and publish a release, perform the following steps:
 
-### Checkout the master branch
+### Create a release branch
 
-    git checkout master
+In order to make these release-related changes, create a branch in your repository clone.
+Note that all the examples below use 2.11.0 as the release version, you'll want to use the appropriate version numbers for the release you're working toward.
+
+    git checkout -b v2.11.0 origin/master
 
 ### Bump the version in package.json
 
-We use [semantic versioning](https://semver.org). Set the correct `"version"` (2.11.0 in the following examples) in package.json.
+We use [semantic versioning](https://semver.org). Set the correct `"version"` in package.json.
 
 Edit `CHANGELOG.md`: Add the version you are about to release just below the `## Next version` heading. Review the changes since the last release and document changes as appropriate.
 
-Commit the change to master.
+Commit the changes.
 
     git add package.json CHANGELOG.md
     git commit -m "Set version to 2.11.0"
-    git push origin master
 
 ### Update README when API docs changed
 
@@ -26,13 +28,10 @@ When the above results in changes to README.md, commit these changes to master:
 
     git add README.md
     git commit -m "Update API docs in README"
-    git push origin master
-    git checkout v2.11.0
 
-### Create and checkout a release branch
+### Merge the release branch
 
-    git branch v2.11.0
-    git checkout v2.11.0
+Create a pull request and merge the release branch. This allows for any final review of upgrade notes or other parts of the changelog.
 
 ### Publish to npm
 
