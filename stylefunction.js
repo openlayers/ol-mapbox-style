@@ -34,6 +34,17 @@ const types = {
   'Polygon': 3,
   'MultiPolygon': 3
 };
+const anchor = {
+  'center': [0.5, 0.5],
+  'left': [0, 0.5],
+  'right': [1, 0.5],
+  'top': [0.5, 0],
+  'bottom': [0.5, 1],
+  'top-left': [0, 0],
+  'top-right': [1, 0],
+  'bottom-left': [0, 1],
+  'bottom-right': [1, 1]
+};
 
 const expressionData = function(rawExpression, propertySpec) {
   const compiledExpression = createPropertyExpression(rawExpression, propertySpec);
@@ -480,6 +491,7 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
                 }
                 iconImg.setRotation(placementAngle + deg2rad(getValue(layer, 'layout', 'icon-rotate', zoom, f)));
                 iconImg.setOpacity(getValue(layer, 'paint', 'icon-opacity', zoom, f));
+                iconImg.setAnchor(anchor[getValue(layer, 'layout', 'icon-anchor', zoom, f)]);
                 style.setImage(iconImg);
                 text = style.getText();
                 style.setText(undefined);
