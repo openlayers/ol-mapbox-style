@@ -6,7 +6,7 @@
   "sources": {
     "tilejson": {
       "type": "raster",
-      "url": "https://api.tiles.mapbox.com/v3/mapbox.geography-class.json?secure"
+      "url": "./geography-class.json"
     }
   },
   "layers": [
