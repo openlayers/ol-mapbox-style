@@ -20,10 +20,11 @@
     "start": "webpack-dev-server --config ./webpack.config.js",
     "prepare": "npm run doc && npm run build",
     "build": "webpack-cli --mode=production --config ./webpack.config.olms.js && webpack-cli --mode=production",
-    "doc": "documentation readme -s API index.js",
+    "doc": "documentation readme -s API index.js stylefunction.js --document-exported true",
     "karma": "karma start test/karma.conf.js",
     "lint": "eslint test example *.js",
-    "pretest": "npm run lint",
+    "typecheck": "tsc --project tsconfig-typecheck.json",
+    "pretest": "npm run lint && npm run typecheck",
     "test": "npm run karma -- --single-run --log-level error"
   },
   "dependencies": {
@@ -35,13 +36,14 @@
     "ol": "^6.0.0-beta.7"
   },
   "devDependencies": {
+    "@types/node": "^12.0.8",
     "babel-loader": "^8.0.5",
     "buble": "^0.19.6",
     "buble-loader": "^0.5.1",
     "copy-webpack-plugin": "^4.6.0",
     "css-loader": "^1.0.1",
     "deep-freeze": "0.0.1",
-    "documentation": "^9.1.1",
+    "documentation": "^11.0.1",
     "eslint": "^5.13.0",
     "eslint-config-openlayers": "^11.0.0",
     "html-webpack-plugin": "^3.2.0",
@@ -54,11 +56,12 @@
     "mapbox-gl-styles": "^2.0.2",
     "mini-css-extract-plugin": "^0.4.5",
     "mocha": "^5.2.0",
-    "ol": "^6.0.0-beta.7",
+    "ol": "^6.0.0-beta.8",
     "puppeteer": "^1.12.2",
     "should": "^13.2.3",
     "sinon": "^7.2.3",
     "style-loader": "^0.23.1",
+    "typescript": "^3.5.2",
     "webpack": "^4.29.3",
     "webpack-cli": "^3.2.3",
     "webpack-dev-server": "^3.1.14"

@@ -1,9 +1,10 @@
 import olms, {apply, applyBackground, applyStyle} from './index';
 import stylefunction from './stylefunction';
 
-olms.apply = apply;
-olms.applyBackground = applyBackground;
-olms.applyStyle = applyStyle;
-olms.stylefunction = stylefunction;
+const exports = /** @type {Object} */ (olms);
+exports.apply = apply;
+exports.applyBackground = applyBackground;
+exports.applyStyle = applyStyle;
+exports.stylefunction = stylefunction;
 
-export default olms;
+export default exports;
