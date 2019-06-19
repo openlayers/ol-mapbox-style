@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "noEmit": true,
+    "allowJs": true,
+    "checkJs": true,
+    "baseUrl": "./",
+    "paths": {
+      "ol": ["node_modules/ol/src"],
+      "ol/*": ["node_modules/ol/src/*"]
+    },
+    "lib": [
+      "es2015",
+      "dom"
+    ]
+  },
+  "include": [
+    "*.js"
+  ]
+}

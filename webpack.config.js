@@ -9,7 +9,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
  *  @param {String} dirName - Name of the directory to read.
  *  @param {Function} callback - Function to execute for each example.
  *
- *  @returns {undefined} Nothing.
+ *  @returns {Object} Entries.
  */
 function getExamples(dirName, callback) {
   const example_files = fs.readdirSync(dirName);

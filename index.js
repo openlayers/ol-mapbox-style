@@ -24,6 +24,15 @@ import VectorTileSource from 'ol/source/VectorTile';
 import {Color} from '@mapbox/mapbox-gl-style-spec';
 import {defaultResolutions} from './util';
 
+/**
+ * @typedef {import("ol/layer/VectorTile").default} VectorTileLayer
+ * @typedef {import("ol/layer/Vector").default} VectorLayer
+ * @typedef {import("ol/PluggableMap").default} PluggableMap
+ * @typedef {import("ol/layer/Layer").default} Layer
+ * @typedef {import("ol/source/Source").default} Source
+ * @private
+ */
+
 const fontFamilyRegEx = /font-family: ?([^;]*);/;
 const stripQuotesRegEx = /("|')/g;
 let loadedFontFamilies;
@@ -32,7 +41,7 @@ function hasFontFamily(family) {
     loadedFontFamilies = {};
     const styleSheets = document.styleSheets;
     for (let i = 0, ii = styleSheets.length; i < ii; ++i) {
-      const styleSheet = styleSheets[i];
+      const styleSheet = /** @type {CSSStyleSheet} */ (styleSheets[i]);
       try {
         const cssRules = styleSheet.rules || styleSheet.cssRules;
         if (cssRules) {
@@ -54,6 +63,12 @@ function hasFontFamily(family) {
 
 const processedFontFamilies = {};
 const googleFamilies = googleFonts.getNames();
+
+/**
+ * @private
+ * @param {Array} fonts Fonts.
+ * @return {Array} Processed fonts.
+ */
 function getFonts(fonts) {
   const fontsKey = fonts.toString();
   if (fontsKey in processedFontFamilies) {
@@ -98,6 +113,10 @@ function toSpriteUrl(url, path, extension) {
 }
 
 /**
+ * ```js
+ * import {applyStyle} from 'ol-mapbox-style';
+ * ```
+ *
  * Applies a style function to an `ol.layer.VectorTile` or `ol.layer.Vector`
  * with an `ol.source.VectorTile` or an `ol.source.Vector`. The style function
  * will render all layers from the `glStyle` object that use the specified
@@ -113,7 +132,7 @@ function toSpriteUrl(url, path, extension) {
  *  * `mapbox-layers`: The `id`s of the Mapbox Style document's layers that are
  *    included in the OpenLayers layer.
  *
- * @param {ol.layer.VectorTile|ol.layer.Vector} layer OpenLayers layer.
+ * @param {VectorTileLayer|VectorLayer} layer OpenLayers layer.
  * @param {string|Object} glStyle Mapbox Style object.
  * @param {string|Array<string>} source `source` key or an array of layer `id`s from the
  * Mapbox Style object. When a `source` key is provided, all layers for the
@@ -236,7 +255,7 @@ function setBackground(map, layer) {
  * import {applyBackground} from 'ol-mapbox-style';
  * ```
  * Applies properties of the Mapbox Style's first `background` layer to the map.
- * @param {ol.Map} map OpenLayers Map.
+ * @param {PluggableMap} map OpenLayers Map.
  * @param {Object} glStyle Mapbox Style object.
  */
 export function applyBackground(map, glStyle) {
@@ -310,7 +329,7 @@ function setupVectorLayer(glSource, accessToken, url) {
         attributions: tilejson.getAttributions(),
         format: new MVT(),
         tileGrid: new TileGrid({
-          origin: tileGrid.getOrigin(),
+          origin: tileGrid.getOrigin(0),
           extent: extent || tileGrid.getExtent(),
           minZoom: minZoom,
           resolutions: defaultResolutions.slice(0, maxZoom + 1),
@@ -343,7 +362,7 @@ function setupRasterLayer(glSource, url) {
     const state = source.getState();
     if (state === 'ready') {
       unByKey(key);
-      const tileJSONDoc = source.getTileJSON();
+      const tileJSONDoc = /** @type {Object} */ (source.getTileJSON());
       const extent = extentFromTileJSON(tileJSONDoc);
       const tileGrid = source.getTileGrid();
       const tileSize = glSource.tileSize || tileJSONDoc.tileSize || 512;
@@ -351,7 +370,7 @@ function setupRasterLayer(glSource, url) {
       const maxZoom = tileJSONDoc.maxzoom || 22;
       // Only works when using ES modules
       source.tileGrid = new TileGrid({
-        origin: tileGrid.getOrigin(),
+        origin: tileGrid.getOrigin(0),
         extent: extent || tileGrid.getExtent(),
         minZoom: minZoom,
         resolutions: createXYZ({
@@ -371,7 +390,8 @@ function setupRasterLayer(glSource, url) {
       const bbox = source.getTileGrid().getTileCoordExtent(tile.getTileCoord());
       src = src.replace('{bbox-epsg-3857}', bbox.toString());
     }
-    tile.getImage().src = src;
+    const img = /** @type {import("ol/ImageTile").default} */ (tile).getImage();
+    /** @type {HTMLImageElement} */ (img).src = src;
   });
   return layer;
 }
@@ -506,7 +526,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
  * This function sets an additional `mapbox-style` property on the OpenLayers
  * map instance, which holds the Mapbox Style object.
  *
- * @param {ol.Map|HTMLElement|string} map Either an existing OpenLayers Map
+ * @param {PluggableMap|HTMLElement|string} map Either an existing OpenLayers Map
  * instance, or a HTML element, or the id of a HTML element that will be the
  * target of a new OpenLayers Map.
  * @param {string|Object} style JSON style object or style url pointing to a
@@ -528,7 +548,7 @@ export default function olms(map, style) {
   let accessToken, baseUrl, host, path, promise;
   accessToken = baseUrl = host = path = '';
 
-  if (!(map instanceof Map)) {
+  if (typeof map === 'string' || map instanceof HTMLElement) {
     map = new Map({
       target: map
     });
@@ -548,7 +568,7 @@ export default function olms(map, style) {
           return response.json();
         })
         .then(function(glStyle) {
-          const a = document.createElement('A');
+          const a = /** @type {HTMLAnchorElement} */ (document.createElement('A'));
           a.href = style;
           const href = a.href;
           path = a.pathname.split('/').slice(0, -1).join('/') + '/';
@@ -581,9 +601,9 @@ export default function olms(map, style) {
  * ```js
  * import {apply} from 'ol-mapbox-style';
  * ```
- * Like `olms`, but returns an `ol.Map` instance instead of a `Promise`.
+ * Like `olms`, but returns an `ol/Map` instance instead of a `Promise`.
  *
- * @param {ol.Map|HTMLElement|string} map Either an existing OpenLayers Map
+ * @param {PluggableMap|HTMLElement|string} map Either an existing OpenLayers Map
  * instance, or a HTML element, or the id of a HTML element that will be the
  * target of a new OpenLayers Map.
  * @param {string|Object} style JSON style object or style url pointing to a
@@ -595,11 +615,11 @@ export default function olms(map, style) {
  * they are defined by a TileJSON url in the Mapbox Style document). When passed
  * as style url, layers will be added to the map when the Mapbox Style document
  * is loaded and parsed.
- * @return {ol.Map} The OpenLayers Map instance that will be populated with the
+ * @return {PluggableMap} The OpenLayers Map instance that will be populated with the
  * contents described in the Mapbox Style object.
  */
 export function apply(map, style) {
-  if (!(map instanceof Map)) {
+  if (typeof map === 'string' || map instanceof HTMLElement) {
     map = new Map({
       target: map
     });
@@ -619,12 +639,12 @@ export function apply(map, style) {
  * The layer may not yet have a source when the function is called.  If so, the style
  * is applied to the layer via a once listener on the 'change:source' event.
  *
- * @param {ol.layer.Layer} layer An OpenLayers layer instance.
+ * @param {Layer} layer An OpenLayers layer instance.
  * @param {Array<string>} layerIds Array containing layer ids of already-processed layers.
  * @param {Object} glStyle Style as a JSON object.
  * @param {string|undefined} path The path part of the style URL. Only required
  * when a relative path is used with the `"sprite"` property of the style.
- * @param {ol.Map} map OpenLayers Map.
+ * @param {PluggableMap} map OpenLayers Map.
  * @return {Promise} Returns a promise that resolves after the source has
  * been set on the specified layer, and the style has been applied.
  */
@@ -659,7 +679,7 @@ function finalizeLayer(layer, layerIds, glStyle, path, map) {
         }
       }
       if (source instanceof VectorSource || source instanceof VectorTileSource) {
-        applyStyle(layer, glStyle, layerIds, path).then(function() {
+        applyStyle(/** @type {import("ol/layer/Vector").default|import("ol/layer/VectorTile").default} */ (layer), glStyle, layerIds, path).then(function() {
           layer.setVisible(true);
           resolve();
         }, function(e) {
@@ -691,16 +711,16 @@ function finalizeLayer(layer, layerIds, glStyle, path, map) {
  * Get the OpenLayers layer instance that contains the provided Mapbox Style
  * `layer`. Note that multiple Mapbox Style layers are combined in a single
  * OpenLayers layer instance when they use the same Mapbox Style `source`.
- * @param {ol.Map} map OpenLayers Map.
+ * @param {PluggableMap} map OpenLayers Map.
  * @param {string} layerId Mapbox Style layer id.
- * @return {ol.layer.Layer} OpenLayers layer instance.
+ * @return {Layer} OpenLayers layer instance.
  */
 export function getLayer(map, layerId) {
   const layers = map.getLayers().getArray();
   for (let i = 0, ii = layers.length; i < ii; ++i) {
     const mapboxLayers = layers[i].get('mapbox-layers');
     if (mapboxLayers && mapboxLayers.indexOf(layerId) !== -1) {
-      return layers[i];
+      return /** @type {Layer} */ (layers[i]);
     }
   }
 }
@@ -710,16 +730,16 @@ export function getLayer(map, layerId) {
  * import {getLayers} from 'ol-mapbox-style';
  * ```
  * Get the OpenLayers layer instances for the provided Mapbox Style `source`.
- * @param {ol.Map} map OpenLayers Map.
+ * @param {PluggableMap} map OpenLayers Map.
  * @param {string} sourceId Mapbox Style source id.
- * @return {Array<ol.layer.Layer>} OpenLayers layer instances.
+ * @return {Array<Layer>} OpenLayers layer instances.
  */
 export function getLayers(map, sourceId) {
   const result = [];
   const layers = map.getLayers().getArray();
   for (let i = 0, ii = layers.length; i < ii; ++i) {
     if (layers[i].get('mapbox-source') === sourceId) {
-      result.push(layers[i]);
+      result.push(/** @type {Layer} */ (layers[i]));
     }
   }
   return result;
@@ -730,14 +750,14 @@ export function getLayers(map, sourceId) {
  * import {getSource} from 'ol-mapbox-style';
  * ```
  * Get the OpenLayers source instance for the provided Mapbox Style `source`.
- * @param {ol.Map} map OpenLayers Map.
+ * @param {PluggableMap} map OpenLayers Map.
  * @param {string} sourceId Mapbox Style source id.
- * @return {ol.source.Source} OpenLayers source instance.
+ * @return {Source} OpenLayers source instance.
  */
 export function getSource(map, sourceId) {
   const layers = map.getLayers().getArray();
   for (let i = 0, ii = layers.length; i < ii; ++i) {
-    const source = layers[i].getSource();
+    const source = /** @type {Layer} */ (layers[i]).getSource();
     if (layers[i].get('mapbox-source') === sourceId) {
       return source;
     }

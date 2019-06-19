@@ -21,6 +21,12 @@ import {
 import mb2css from 'mapbox-to-css-font';
 import {deg2rad, defaultResolutions, getZoomForResolution, wrapText, applyLetterSpacing} from './util';
 
+/**
+ * @typedef {import("ol/layer/Vector").default} VectorLayer
+ * @typedef {import("ol/layer/VectorTile").default} VectorTileLayer
+ * @typedef {import("ol/style/Style").StyleFunction} StyleFunction
+ */
+
 const isFunction = fn.isFunction;
 const convertFunction = fn.convertFunction;
 const isExpression = expression.isExpression;
@@ -56,6 +62,7 @@ const expressionData = function(rawExpression, propertySpec) {
 
 const emptyObj = {};
 const zoomObj = {zoom: 0};
+/** @private */
 const functionCache = {};
 let renderFeatureCoordinates, renderFeature;
 
@@ -101,7 +108,17 @@ export function getValue(layer, layoutOrPaint, property, zoom, feature) {
   return functions[property](zoomObj, feature);
 }
 
+/** @private */
 const filterCache = {};
+
+/**
+ * @private
+ * @param {string} layerId Layer id.
+ * @param {?} filter Filter.
+ * @param {Object} feature Feature.
+ * @param {number} zoom Zoom.
+ * @return {boolean} Filter result.
+ */
 function evaluateFilter(layerId, filter, feature, zoom) {
   if (!(layerId in filterCache)) {
     filterCache[layerId] = createFilter(filter);
@@ -110,6 +127,12 @@ function evaluateFilter(layerId, filter, feature, zoom) {
   return filterCache[layerId](zoomObj, feature);
 }
 
+/**
+ * @private
+ * @param {?} color Color.
+ * @param {number} opacity Opacity.
+ * @return {string} Color.
+ */
 function colorWithOpacity(color, opacity) {
   if (color) {
     if (color.a === 0 || opacity === 0) {
@@ -124,6 +147,13 @@ function colorWithOpacity(color, opacity) {
 }
 
 const templateRegEx = /^([^]*)\{(.*)\}([^]*)$/;
+
+/**
+ * @private
+ * @param {string} text Text.
+ * @param {Object} properties Properties.
+ * @return {string} Text.
+ */
 function fromTemplate(text, properties) {
   let parts;
   do {
@@ -153,7 +183,7 @@ function fromTemplate(text, properties) {
  *  * `mapbox-layers`: The `id`s of the Mapbox Style document's layers that are
  *    included in the OpenLayers layer.
  *
- * @param {ol.layer.Vector|ol.layer.VectorTile} olLayer OpenLayers layer to
+ * @param {VectorLayer|VectorTileLayer} olLayer OpenLayers layer to
  * apply the style to. In addition to the style, the layer will get two
  * properties: `mapbox-source` will be the `id` of the `glStyle`'s source used
  * for the layer, and `mapbox-layers` will be an array of the `id`s of the
@@ -164,11 +194,11 @@ function fromTemplate(text, properties) {
  * the specified source will be included in the style function. When layer `id`s
  * are provided, they must be from layers that use the same source.
  * @param {Array<number>} [resolutions=[78271.51696402048, 39135.75848201024,
- * 19567.87924100512, 9783.93962050256, 4891.96981025128, 2445.98490512564,
- * 1222.99245256282, 611.49622628141, 305.748113140705, 152.8740565703525,
- * 76.43702828517625, 38.21851414258813, 19.109257071294063, 9.554628535647032,
- * 4.777314267823516, 2.388657133911758, 1.194328566955879, 0.5971642834779395,
- * 0.29858214173896974, 0.14929107086948487, 0.07464553543474244]]
+   19567.87924100512, 9783.93962050256, 4891.96981025128, 2445.98490512564,
+   1222.99245256282, 611.49622628141, 305.748113140705, 152.8740565703525,
+   76.43702828517625, 38.21851414258813, 19.109257071294063, 9.554628535647032,
+   4.777314267823516, 2.388657133911758, 1.194328566955879, 0.5971642834779395,
+   0.29858214173896974, 0.14929107086948487, 0.07464553543474244]]
  * Resolutions for mapping resolution to zoom level.
  * @param {Object} [spriteData=undefined] Sprite data from the url specified in
  * the Mapbox Style object's `sprite` property. Only required if a `sprite`
@@ -181,7 +211,7 @@ function fromTemplate(text, properties) {
  * is available. Font names are the names used in the Mapbox Style object. If
  * not provided, the font stack will be used as-is. This function can also be
  * used for loading web fonts.
- * @return {ol.style.StyleFunction} Style function for use in
+ * @return {StyleFunction} Style function for use in
  * `ol.layer.Vector` or `ol.layer.VectorTile`.
  */
 export default function(olLayer, glStyle, source, resolutions = defaultResolutions, spriteData, spriteImageUrl, getFonts) {

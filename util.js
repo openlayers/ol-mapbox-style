@@ -44,7 +44,7 @@ export function applyLetterSpacing(text, letterSpacing) {
   return text;
 }
 
-const ctx = document.createElement('CANVAS').getContext('2d');
+const ctx = /** @type {HTMLCanvasElement} */ (document.createElement('CANVAS')).getContext('2d');
 function measureText(text, letterSpacing) {
   return ctx.measureText(text).width + (text.length - 1) * letterSpacing;
 }
