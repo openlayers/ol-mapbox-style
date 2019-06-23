@@ -332,7 +332,7 @@ function setupVectorLayer(glSource, accessToken, url) {
       const minZoom = tileJSONDoc.minzoom || 0;
       const maxZoom = tileJSONDoc.maxzoom || 22;
       let source = tilejson.get('ol-source');
-      if (source !== null) {
+      if (source === undefined) {
         source = new VectorTileSource({
           attributions: tilejson.getAttributions(),
           format: new MVT(),
