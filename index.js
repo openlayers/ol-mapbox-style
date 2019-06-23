@@ -33,6 +33,8 @@ import {defaultResolutions} from './util';
  * @private
  */
 
+const tilejsonCache = {};
+
 const fontFamilyRegEx = /font-family: ?([^;]*);/;
 const stripQuotesRegEx = /("|')/g;
 let loadedFontFamilies;
@@ -304,10 +306,14 @@ function setupVectorLayer(glSource, accessToken, url) {
     declutter: true,
     visible: false
   });
-  const tilejson = new TileJSON({
-    url: glSource.tiles ? undefined : url,
-    tileJSON: glSource.tiles ? glSource : undefined
-  });
+  const cacheKey = JSON.stringify(glSource);
+  let tilejson = tilejsonCache[cacheKey];
+  if (!tilejson) {
+    tilejson = tilejsonCache[cacheKey] = new TileJSON({
+      url: glSource.tiles ? undefined : url,
+      tileJSON: glSource.tiles ? glSource : undefined
+    });
+  }
   const key = tilejson.on('change', function() {
     const state = tilejson.getState();
     if (state === 'ready') {
@@ -325,26 +331,31 @@ function setupVectorLayer(glSource, accessToken, url) {
       const extent = extentFromTileJSON(tileJSONDoc);
       const minZoom = tileJSONDoc.minzoom || 0;
       const maxZoom = tileJSONDoc.maxzoom || 22;
-      const source = new VectorTileSource({
-        attributions: tilejson.getAttributions(),
-        format: new MVT(),
-        tileGrid: new TileGrid({
-          origin: tileGrid.getOrigin(0),
-          extent: extent || tileGrid.getExtent(),
-          minZoom: minZoom,
-          resolutions: defaultResolutions.slice(0, maxZoom + 1),
-          tileSize: 512
-        }),
-        urls: tiles
-      });
+      let source = tilejson.get('ol-source');
+      if (source !== null) {
+        source = new VectorTileSource({
+          attributions: tilejson.getAttributions(),
+          format: new MVT(),
+          tileGrid: new TileGrid({
+            origin: tileGrid.getOrigin(0),
+            extent: extent || tileGrid.getExtent(),
+            minZoom: minZoom,
+            resolutions: defaultResolutions.slice(0, maxZoom + 1),
+            tileSize: 512
+          }),
+          urls: tiles
+        });
+        tilejson.set('ol-source', source);
+      }
       unByKey(key);
       layer.setSource(source);
     } else if (state === 'error') {
+      tilejson.set('ol-source', null);
       unByKey(key);
       layer.setSource(undefined);
     }
   });
-  if (glSource.tiles) {
+  if (tilejson.getState() === 'ready') {
     tilejson.changed();
   }
   return layer;
