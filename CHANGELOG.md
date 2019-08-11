@@ -2,6 +2,13 @@
 
 ## Next version
 
+## 5.0.0-beta.3
+
+* Fix an issue with `icon-color´ handling
+* Fix an issue with parsing Google font names
+* Add support for the `icon-anchor` property
+* More efficient handling or tilejson and shared vector tile sources
+
 ## 5.0.0-beta.2
 
 * More efficient midpoint rendering
