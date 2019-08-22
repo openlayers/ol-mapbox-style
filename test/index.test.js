@@ -177,7 +177,7 @@ describe('ol-mapbox-style', function() {
     it('creates a view with default resolutions', function(done) {
       olms(target, './fixtures/hot-osm/hot-osm.json')
         .then(function(map) {
-          should(map.getView().getResolutions()).eql(defaultResolutions);
+          should(map.getView().getMaxResolution()).eql(defaultResolutions[0]);
           done();
         })
         .catch(function(err) {
@@ -190,7 +190,7 @@ describe('ol-mapbox-style', function() {
         target: target
       }), './fixtures/hot-osm/hot-osm.json')
         .then(function(map) {
-          should(map.getView().getResolutions()).eql(defaultResolutions);
+          should(map.getView().getMaxResolution()).eql(defaultResolutions[0]);
           done();
         })
         .catch(function(err) {

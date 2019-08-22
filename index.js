@@ -438,7 +438,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
   let view = map.getView();
   if (!view.isDef() && !view.getRotation() && !view.getResolutions()) {
     view = new View({
-      resolutions: defaultResolutions
+      maxResolution: defaultResolutions[0]
     });
     map.setView(view);
   }
