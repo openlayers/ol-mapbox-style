@@ -23,6 +23,7 @@ import VectorSource from 'ol/source/Vector';
 import VectorTileSource from 'ol/source/VectorTile';
 import {Color} from '@mapbox/mapbox-gl-style-spec';
 import {defaultResolutions} from './util';
+import equal from 'fast-deep-equal';
 
 /**
  * @typedef {import("ol/layer/VectorTile").default} VectorTileLayer
@@ -773,6 +774,54 @@ export function getSource(map, sourceId) {
       return source;
     }
   }
+}
+
+function getMapboxLayer(map, layerId) {
+  const layers = map.getLayers().getArray();
+  for (let i = 0, ii = layers.length; i < ii; ++i) {
+    const mapboxLayers = layers[i].get('mapbox-layer-style');
+    if (mapboxLayers && mapboxLayers.length) {
+      for (let j = 0, jj = layers.length; j < jj; ++j) {
+        if (mapboxLayers[j].id === layerId) {
+          return mapboxLayers[j];
+        }
+      }
+    }
+  }
+}
+/**
+ * ```js
+ * import {setLayoutProperty} from 'ol-mapbox-style';
+ * ```
+ * Sets the vaule of a layout property in the Mapbox Style.
+ * @param {ol.Map} map OpenLayers Map.
+ * @param {string} layerId Mapbox Style layer id.
+ * @param {string} name The name of the layout property to set.
+ * @param {*} value The value of the layout property.
+ */
+export function setLayoutProperty(map, layerId, name, value) {
+  const layer = getLayer(map, layerId);
+  if (!layer) {
+    new Error(`The layer '${layerId}' does not exist.`);
+    return;
+  }
+
+  const glLayer = getMapboxLayer(map, layerId);
+  const oldValue = (glLayer.layout || emptyObj)[name];
+  if (equal(oldValue, value)) {
+    return;
+  }
+
+  if (name === 'visibility' && layer instanceof TileLayer) {
+    layer.setVisible(value !== 'none');
+  }
+
+  if (!glLayer.layout) {
+    glLayer.layout = {};
+  }
+  glLayer.layout[name] = value;
+
+  layer.changed();
 }
 
 export {
