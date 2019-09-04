@@ -1,16 +1,18 @@
 import should from 'should';
 import olms, {applyBackground, apply, getLayer, getLayers, getSource} from '..';
-import {_getFonts as getFonts} from '../index';
+import {_getFonts as getFonts, setFilter} from '../index';
 import Map from 'ol/Map';
 import TileSource from 'ol/source/Tile';
 import VectorSource from 'ol/source/Vector';
 import VectorTileLayer from 'ol/layer/VectorTile';
 import VectorTileSource from 'ol/source/VectorTile';
+import VectorLayer from 'ol/layer/Vector';
 import {toLonLat} from 'ol/proj';
 
 import brightV9 from 'mapbox-gl-styles/styles/bright-v9.json';
 import backgroundStyle from './fixtures/background.json';
 import {defaultResolutions} from '../util';
+import {_filterCache as filterCache} from '../stylefunction';
 delete brightV9.sprite;
 
 describe('ol-mapbox-style', function() {
@@ -509,6 +511,66 @@ describe('ol-mapbox-style', function() {
       getFonts(['Noto Sans Bold']);
       stylesheets = document.querySelectorAll('link[rel=stylesheet]');
       should(stylesheets.length).eql(3);
+    });
+  });
+
+  describe('setFilter', function() {
+    let target;
+    let context;
+    beforeEach(function() {
+      target = document.createElement('div');
+      context = {
+        'version': 8,
+        'name': 'osm',
+        'sources': {
+          'osm': {
+            type: 'geojson',
+            data: {
+              type: 'FeatureCollection',
+              features: [{
+                type: 'Feature',
+                geometry: {
+                  type: 'LineString',
+                  coordinates: [[0, 0], [1, 1]]
+                },
+                properties: {
+                  'name': 'test'
+                }
+              }]
+            }
+          }
+        },
+        'layers': [{
+          'id': 'state_outlines',
+          'type': 'line',
+          'source': 'osm',
+          'filter': ['<=', 'PERSONS', 200],
+          'paint': {
+            'line-color': '#8cadbf',
+            'line-width': 0.1
+          }
+        }]
+      };
+    });
+
+    it('sets filter', function(done) {
+      olms(target, context).then(function(map) {
+        const layer = map.getLayers().item(0);
+        const styleFunction = layer.getStyle();
+        const feature = layer.getSource().getFeatures()[0];
+        styleFunction(feature, 1);
+        should('state_outlines' in filterCache).be.true();
+        setFilter(map, 'state_outlines', ['>=', 'PERSONS', 100]);
+        const mbLayer = context.layers[0];
+        const olLayer = getLayer(map, 'state_outlines');
+        should(olLayer).be.an.instanceOf(VectorLayer);
+        should(olLayer.getVisible()).be.a.true();
+        should(mbLayer.filter).is.deepEqual(['>=', 'PERSONS', 100]);
+        should('state_outlines' in filterCache).be.false();
+        done();
+      }).catch(function(error) {
+        done(error);
+      });
     });
   });
 });
