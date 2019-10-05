@@ -316,7 +316,7 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
           if ('fill-pattern' in paint) {
             const fillIcon = getValue(layer, 'paint', 'fill-pattern', zoom, f);
             if (fillIcon) {
-              const icon = fromTemplate(fillIcon, properties);
+              const icon = fromTemplate(fillIcon.toString(), properties);
               if (spriteImage && spriteData && spriteData[icon]) {
                 ++stylesLength;
                 style = styles[stylesLength];
@@ -413,7 +413,7 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
         if ((type == 1 || type == 2) && 'icon-image' in layout) {
           const iconImage = getValue(layer, 'layout', 'icon-image', zoom, f);
           if (iconImage) {
-            icon = fromTemplate(iconImage, properties);
+            icon = fromTemplate(iconImage.toString(), properties);
             let styleGeom = undefined;
             if (spriteImage && spriteData && spriteData[icon]) {
               const iconRotationAlignment = getValue(layer, 'layout', 'icon-rotation-alignment', zoom, f);
