@@ -1,0 +1,2 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[7],{132:function(o,s,t){"use strict";t.r(s);t(61);var e=t(37);Object(e.a)("map"," https://demo.tegola.io/styles/hot-osm.json")}},[[132,0]]]);
+//# sourceMappingURL=tilejson-vectortile.js.map
