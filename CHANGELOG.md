@@ -2,6 +2,12 @@
 
 ## Next version
 
+## 5.0.0
+
+* Use ol@6.0.1
+* Do not fail when icons come from an expression
+* Only set the maxResolution on a new view, instead of the whole resolutions array
+
 ## 5.0.0-beta.3
 
 * Fix an issue with `icon-color´ handling
