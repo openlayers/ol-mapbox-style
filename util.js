@@ -57,6 +57,33 @@ if (labelCache) {
   });
 }
 export function wrapText(text, font, em, letterSpacing) {
+  // 验证是否是中文
+  var pattern = new RegExp("[\u4E00-\u9FA5]+");
+  // 处理中文poi标注不能换行问题
+  if(pattern.test(text)){
+    let tempText = "",tempText1 = "",tempText2 = "",tempText3 = "",tempText4 = "";
+    if (text.length > em) {
+      tempText1 = text.substr(0,em) + " ";
+      tempText2 = text.substr(em);
+      if (tempText2.length > em) {
+        tempText3 = tempText2.substr(0,em) + " ";
+        tempText4 = tempText2.substr(em);
+        if (tempText4.length <=2) {
+          tempText = tempText1 + tempText3.trim() + tempText4;
+        } else {
+          tempText = tempText1 + tempText3 + tempText4;
+        }
+        text = tempText;
+      } else {
+        if (tempText2.length <=2) {
+          tempText = tempText1.trim() + tempText2;
+        } else {
+          tempText = tempText1 + tempText2;
+        }
+        text = tempText;
+      }
+    }
+  }
   const key = em + ',' + font + ',' + text + ',' + letterSpacing;
   let wrappedText = measureCache[key];
   if (!wrappedText) {
