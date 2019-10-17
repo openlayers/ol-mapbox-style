@@ -456,6 +456,11 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
                         if (midpoint[0] >= minX && midpoint[0] <= maxX &&
                             midpoint[1] >= minY && midpoint[1] <= maxY) {
                           placementAngle = Math.atan2(y1 - y2, x2 - x1);
+                          if (placementAngle < -1.57) { // 1.57 等于90度，当斜率大于1.57或小于-1.57是会出现图片翻转的情况
+                              placementAngle += 3.14
+                            } else if (placementAngle > 1.57) {
+                              placementAngle -= 3.14
+                            }
                           break;
                         }
                       }
