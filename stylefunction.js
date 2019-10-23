@@ -274,7 +274,6 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
   }
 
   const textHalo = new Stroke();
-  const textColor = new Fill();
 
   const iconImageCache = {};
   const patternCache = {};
@@ -652,6 +651,8 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
           text.setTextBaseline(textBaseline);
           text.setOffsetX(textOffset[0] * textSize + hOffset + textTranslate[0]);
           text.setOffsetY(textOffset[1] * textSize + vOffset + textTranslate[1]);
+          // Move the definition of textColor to use, because when a layer is configured twice in the style sheet and marked with different fields, the font color of the label will be different from the set color, sometimes correct. Sometimes wrong, one font color will affect the other
+          const textColor = new Fill(); // 
           textColor.setColor(colorWithOpacity(getValue(layer, 'paint', 'text-color', zoom, f), opacity));
           text.setFill(textColor);
           const haloColor = colorWithOpacity(getValue(layer, 'paint', 'text-halo-color', zoom, f), opacity);
