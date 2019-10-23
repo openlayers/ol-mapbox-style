@@ -57,9 +57,9 @@ if (labelCache) {
   });
 }
 export function wrapText(text, font, em, letterSpacing) {
-  // 验证是否是中文
+  // Verify if it is Chinese
   var pattern = new RegExp("[\u4E00-\u9FA5]+");
-  // 处理中文poi标注不能换行问题
+  // Handling Chinese poi annotations can't be changed
   if(pattern.test(text)){
     let tempText = "",tempText1 = "",tempText2 = "",tempText3 = "",tempText4 = "";
     if (text.length > em) {
