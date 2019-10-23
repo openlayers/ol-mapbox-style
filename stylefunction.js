@@ -411,6 +411,12 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
         let text = null;
         let placementAngle = 0;
         let icon, iconImg, skipLabel;
+        let label;
+        if ('text-field' in layout) {
+          const textField = getValue(layer, 'layout', 'text-field', zoom, f).toString();
+          label = fromTemplate(textField, properties).trim();
+          opacity = getValue(layer, 'paint', 'text-opacity', zoom, f);
+        }
         if ((type == 1 || type == 2) && 'icon-image' in layout) {
           const iconImage = getValue(layer, 'layout', 'icon-image', zoom, f);
           if (iconImage) {
@@ -474,7 +480,10 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
                   style = styles[stylesLength] = new Style();
                 }
                 style.setGeometry(styleGeom);
-                const iconSize = getValue(layer, 'layout', 'icon-size', zoom, f);
+                let iconSize = getValue(layer, 'layout', 'icon-size', zoom, f);
+                if (icon.endsWith(".9")) { // The picture ending in .9 in the style sheet ("icon-image": "ic_map_ss.9") changes with the size of the text. Mapbox has this function.
+                    iconSize = label.length / 10 + 0.3;
+                }
                 const iconColor = paint['icon-color'] !== undefined ? getValue(layer, 'paint', 'icon-color', zoom, f) : null;
                 let icon_cache_key = icon + '.' + iconSize;
                 if (iconColor !== null) {
@@ -576,12 +585,7 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
           hasImage = true;
         }
 
-        let label;
-        if ('text-field' in layout) {
-          const textField = getValue(layer, 'layout', 'text-field', zoom, f).toString();
-          label = fromTemplate(textField, properties).trim();
-          opacity = getValue(layer, 'paint', 'text-opacity', zoom, f);
-        }
+        
         if (label && opacity && !skipLabel) {
           if (!hasImage) {
             ++stylesLength;
