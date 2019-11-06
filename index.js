@@ -143,10 +143,11 @@ function toSpriteUrl(url, path, extension) {
  * @param {string} [path=undefined] Path of the style file. Only required when
  * a relative path is used with the `"sprite"` property of the style.
  * @param {Array<number>} [resolutions=undefined] Resolutions for mapping resolution to zoom level.
+ * @param {string} [credentials=undefined] Credentials type for fetching sprite
  * @return {Promise} Promise which will be resolved when the style can be used
  * for rendering.
  */
-export function applyStyle(layer, glStyle, source, path, resolutions) {
+export function applyStyle(layer, glStyle, source, path, resolutions, credentials) {
   return new Promise(function(resolve, reject) {
 
     // TODO: figure out where best place to check source type is
@@ -161,7 +162,7 @@ export function applyStyle(layer, glStyle, source, path, resolutions) {
     if (!(layer instanceof VectorLayer || layer instanceof VectorTileLayer)) {
       return reject(new Error('Can only apply to VectorLayer or VectorTileLayer'));
     }
-
+    credentials = typeof credentials !== 'undefined' ? credentials: "same-origin";
     let spriteScale, spriteData, spriteImageUrl, style;
     function onChange() {
       if (!style && (!glStyle.sprite || spriteData)) {
@@ -184,11 +185,11 @@ export function applyStyle(layer, glStyle, source, path, resolutions) {
       const sizeFactor = spriteScale == 0.5 ? '@2x' : '';
       let spriteUrl = toSpriteUrl(glStyle.sprite, path, sizeFactor + '.json');
 
-      fetch(spriteUrl, {credentials: 'same-origin'})
+      fetch(spriteUrl, {credentials: credentials})
         .then(function(response) {
           if (!response.ok && (sizeFactor !== '')) {
             spriteUrl = toSpriteUrl(glStyle.sprite, path, '.json');
-            return fetch(spriteUrl, {credentials: 'same-origin'});
+            return fetch(spriteUrl, {credentials: credentials});
           } else {
             return response;
           }
@@ -549,15 +550,17 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
  * they are defined by a TileJSON url in the Mapbox Style document). When passed
  * as style url, layers will be added to the map when the Mapbox Style document
  * is loaded and parsed.
+ * @param {string} [credentials=undefined] Credentials type for fetching style
  * @return {Promise} A promise that resolves after all layers have been added to
  * the OpenLayers Map instance, their sources set, and their styles applied. the
  * `resolve` callback will be called with the OpenLayers Map instance as
  * argument.
  */
-export default function olms(map, style) {
+export default function olms(map, style, credentials) {
 
   let accessToken, baseUrl, host, path, promise;
   accessToken = baseUrl = host = path = '';
+  credentials = typeof credentials !== 'undefined' ? credentials: "same-origin";
 
   if (typeof map === 'string' || map instanceof HTMLElement) {
     map = new Map({
@@ -573,7 +576,7 @@ export default function olms(map, style) {
     }
     promise = new Promise(function(resolve, reject) {
       fetch(style, {
-        credentials: 'same-origin'
+        credentials: credentials
       })
         .then(function(response) {
           return response.json();
