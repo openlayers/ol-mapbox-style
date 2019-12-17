@@ -120,7 +120,7 @@ for rendering.
 ### stylefunction
 
 ```js
-import stylefunction from 'ol-mapbox-style/stylefunction';
+import stylefunction from 'ol-mapbox-style/dist/stylefunction';
 ```
 
 Creates a style function from the `glStyle` object for all layers that use

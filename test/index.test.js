@@ -1,6 +1,6 @@
 import should from 'should';
 import olms, {applyBackground, apply, getLayer, getLayers, getSource} from '..';
-import {_getFonts as getFonts} from '../index';
+import {_getFonts as getFonts} from '../src/index';
 import Map from 'ol/Map';
 import TileSource from 'ol/source/Tile';
 import VectorSource from 'ol/source/Vector';
@@ -10,7 +10,7 @@ import {toLonLat} from 'ol/proj';
 
 import brightV9 from 'mapbox-gl-styles/styles/bright-v9.json';
 import backgroundStyle from './fixtures/background.json';
-import {defaultResolutions} from '../util';
+import {defaultResolutions} from '../src/util';
 delete brightV9.sprite;
 
 describe('ol-mapbox-style', function() {

@@ -1,7 +1,7 @@
 const path = require('path');
 
 module.exports = {
-  entry: './olms.js',
+  entry: './src/olms.js',
   devtool: 'source-map',
   node: {fs: 'empty'},
   mode: 'production',
@@ -10,8 +10,7 @@ module.exports = {
       {
         test: /\.js$/,
         include: [
-          __dirname,
-          /node_modules\/(?!(ol|@mapbox\/mapbox-gl-style-spec)\/)/
+          __dirname
         ],
         use: {
           loader: 'buble-loader'
