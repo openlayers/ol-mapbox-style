@@ -4,7 +4,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
-/** Get the list of examples from the example directory.
+/** Get the list of examples from the examples directory.
  *
  *  @param {String} dirName - Name of the directory to read.
  *  @param {Function} callback - Function to execute for each example.
@@ -77,7 +77,7 @@ module.exports = (env, argv) => {
     context: __dirname,
     target: 'web',
     mode: prod ? 'production' : 'development',
-    entry: getEntries(path.resolve(__dirname, './example')),
+    entry: getEntries(path.resolve(path.join(__dirname, 'examples'))),
     optimization: {
       runtimeChunk: {
         name: 'common'
@@ -90,11 +90,11 @@ module.exports = (env, argv) => {
     },
     output: {
       filename: '[name].js',
-      path: path.join(__dirname, 'dist')
+      path: path.join(__dirname, 'dist', 'examples')
     },
     resolve: {
       alias: {
-        'ol-mapbox-style': path.join(__dirname, '.')
+        'ol-mapbox-style': path.join(__dirname, 'src')
       }
     },
     devtool: 'source-map',
@@ -112,7 +112,7 @@ module.exports = (env, argv) => {
           test: /\.js$/,
           include: [
             __dirname,
-            /node_modules\/(?!(ol|@mapbox\/mapbox-gl-style-spec)\/)/
+            /node_modules\/(?!(@mapbox\/mapbox-gl-style-spec)\/)/
           ],
           use: {
             loader: 'buble-loader'
@@ -129,16 +129,17 @@ module.exports = (env, argv) => {
       }),
       // ensure the data is copied over.
       // currently the index.html is manually created.
+      // @ts-ignore
       new CopyWebpackPlugin([
         {
-          from: path.resolve(__dirname, './example/data'),
+          from: path.resolve(__dirname, './examples/data'),
           to: 'data'
         },
         {
-          from: path.resolve(__dirname, './example/index.html'),
+          from: path.resolve(__dirname, './examples/index.html'),
           to: 'index.html'
         }
       ])
-    ].concat(getHtmlTemplates('./example'))
+    ].concat(getHtmlTemplates('./examples'))
   };
 };

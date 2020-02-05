@@ -10,12 +10,6 @@ To use the library in an application with an npm based dev environment, install 
 
     npm install ol-mapbox-style
 
-When using webpack as bundler, make sure to include the following in your webpack configuration:
-
-```js
-  node: {fs: 'empty'}
-```
-
 When installed this way, just import the ol-mapbox-style module, like in the usage example below. To use a standalone build of ol-mapbox-style, just include 'dist/olms.js' on your HTML page, and access the global `olms` object.
 
 ### Usage example
@@ -56,6 +50,24 @@ fetch('data/states.json').then(function(response) {
     stylefunction(layer, glStyle, 'states');
   });
 });
+```
+
+## Compatibility notes
+
+### Support for old browsers
+
+Internet Explorer (version 11) and other old browsers (Android 4.x) are supported when polyfills for the following features are loaded:
+
+* `fetch` (including `Promise`)
+* `String.prototype.startsWith`
+* `Object.assign`
+
+### Webpack
+
+When using webpack as bundler, it may be necessary to include the following in your webpack configuration:
+
+```js
+  node: {fs: 'empty'}
 ```
 
 ## API
@@ -120,7 +132,7 @@ for rendering.
 ### stylefunction
 
 ```js
-import stylefunction from 'ol-mapbox-style/stylefunction';
+import stylefunction from 'ol-mapbox-style/dist/stylefunction';
 ```
 
 Creates a style function from the `glStyle` object for all layers that use

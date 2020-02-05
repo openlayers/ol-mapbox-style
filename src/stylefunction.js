@@ -11,7 +11,8 @@ import Icon from 'ol/style/Icon';
 import Text from 'ol/style/Text';
 import Circle from 'ol/style/Circle';
 import RenderFeature from 'ol/render/Feature';
-import derefLayers from '@mapbox/mapbox-gl-style-spec/deref';
+import {derefLayers} from '@mapbox/mapbox-gl-style-spec';
+
 import {
   expression, Color,
   function as fn,
@@ -168,7 +169,7 @@ function fromTemplate(text, properties) {
 
 /**
  * ```js
- * import stylefunction from 'ol-mapbox-style/stylefunction';
+ * import stylefunction from 'ol-mapbox-style/dist/stylefunction';
  * ```
  * Creates a style function from the `glStyle` object for all layers that use
  * the specified `source`, which needs to be a `"type": "vector"` or

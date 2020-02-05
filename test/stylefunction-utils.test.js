@@ -12,7 +12,7 @@ import {
   _fromTemplate as fromTemplate,
   _getValue as getValue,
   _functionCache as functionCache
-} from '../stylefunction';
+} from '../src/stylefunction';
 
 
 describe('utility functions currently in stylefunction.js', function() {

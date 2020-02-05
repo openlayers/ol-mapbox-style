@@ -1,8 +1,8 @@
 {
   "name": "ol-mapbox-style",
-  "version": "5.0.2",
+  "version": "6.0.0",
   "description": "Create OpenLayers maps from Mapbox Style objects",
-  "main": "index.js",
+  "main": "dist/index.js",
   "repository": {
     "type": "git",
     "url": "git://github.com/openlayers/ol-mapbox-style.git"
@@ -17,18 +17,18 @@
   ],
   "license": "BSD-2-Clause",
   "scripts": {
-    "start": "webpack-dev-server --config ./webpack.config.js",
+    "start": "webpack-dev-server --config ./webpack.config.examples.js",
     "prepare": "npm run doc && npm run build",
-    "build": "webpack-cli --mode=production --config ./webpack.config.olms.js && webpack-cli --mode=production",
-    "doc": "documentation readme -s API index.js stylefunction.js --document-exported true",
+    "build": "tsc --project tsconfig-build.json && webpack-cli --mode=production --config ./webpack.config.olms.js && webpack-cli --mode=production --config ./webpack.config.examples.js",
+    "doc": "documentation readme -s API src/index.js src/stylefunction.js --document-exported true",
     "karma": "karma start test/karma.conf.js",
-    "lint": "eslint test example *.js",
+    "lint": "eslint test examples src",
     "typecheck": "tsc --project tsconfig-typecheck.json",
     "pretest": "npm run lint && npm run typecheck",
     "test": "npm run karma -- --single-run --log-level error"
   },
   "dependencies": {
-    "@mapbox/mapbox-gl-style-spec": "^13.9.0",
+    "@mapbox/mapbox-gl-style-spec": "^13.11.0",
     "mapbox-to-css-font": "^2.4.0",
     "webfont-matcher": "^1.1.0"
   },
@@ -36,18 +36,18 @@
     "ol": "^6.1.0"
   },
   "devDependencies": {
-    "@types/node": "^12.7.12",
+    "@types/node": "^12.12.19",
     "babel-loader": "^8.0.6",
     "buble": "^0.19.8",
     "buble-loader": "^0.5.1",
     "copy-webpack-plugin": "^4.6.0",
-    "css-loader": "^1.0.1",
+    "css-loader": "^3.4.0",
     "deep-freeze": "0.0.1",
-    "documentation": "^11.0.1",
+    "documentation": "^12.1.4",
     "eslint": "^5.16.0",
     "eslint-config-openlayers": "^11.0.0",
     "html-webpack-plugin": "^3.2.0",
-    "karma": "^4.3.0",
+    "karma": "^4.4.1",
     "karma-chrome-launcher": "^2.2.0",
     "karma-coverage": "^1.1.2",
     "karma-mocha": "^1.3.0",
@@ -56,14 +56,14 @@
     "mapbox-gl-styles": "^2.0.2",
     "mini-css-extract-plugin": "^0.4.5",
     "mocha": "^5.2.0",
-    "ol": "^6.0.1",
+    "ol": "^6.1.1",
     "puppeteer": "^1.20.0",
     "should": "^13.2.3",
     "sinon": "^7.5.0",
     "style-loader": "^0.23.1",
-    "typescript": "^3.6.3",
-    "webpack": "^4.41.0",
-    "webpack-cli": "^3.3.9",
-    "webpack-dev-server": "^3.8.2"
+    "typescript": "3.5.3",
+    "webpack": "^4.41.3",
+    "webpack-cli": "^3.3.10",
+    "webpack-dev-server": "^3.9.0"
   }
 }

@@ -13,7 +13,7 @@ import styleEmptySprite from './fixtures/style-empty-sprite.json';
 import styleMissingSprite from './fixtures/style-missing-sprite.json';
 import styleInvalidSpriteURL from './fixtures/style-invalid-sprite-url.json';
 
-import {applyStyle} from '../index.js';
+import {applyStyle} from '../src/index.js';
 
 
 describe('applyStyle style argument validation', function() {

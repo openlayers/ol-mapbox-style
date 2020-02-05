@@ -9,7 +9,7 @@ import TileSource from 'ol/source/Tile';
 import glStyle from './fixtures/osm-liberty/style.json';
 import invalidStyle from './fixtures/style-invalid-version.json';
 
-import {_finalizeLayer as finalizeLayer} from '../index';
+import {_finalizeLayer as finalizeLayer} from '../src/index';
 
 describe('finalizeLayer promise', function() {
 
