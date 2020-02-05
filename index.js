@@ -291,17 +291,6 @@ function extentFromTileJSON(tileJSON) {
 
 function setupVectorLayer(glSource, accessToken, url) {
   glSource = Object.assign({}, glSource);
-  if (url) {
-    if (url.indexOf('mapbox://') == 0) {
-      const mapid = url.replace('mapbox://', '');
-      glSource.tiles = ['a', 'b', 'c', 'd'].map(function(host) {
-        return 'https://' + host + '.tiles.mapbox.com/v4/' + mapid +
-            '/{z}/{x}/{y}.' +
-            (glSource.type == 'vector' ? 'vector.pbf' : 'png') +
-            accessToken;
-      });
-    }
-  }
   const layer = new VectorTileLayer({
     declutter: true,
     visible: false
@@ -484,9 +473,19 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
         }
         glSource = glStyle.sources[id];
         url = glSource.url;
-        if (url && path && url.startsWith('.')) {
-          url = path + url;
+        if (url) {
+          url = withPath(url, path);
+          if (url.indexOf('mapbox://') == 0) {
+            const mapid = url.replace('mapbox://', '');
+            glSource.tiles = ['a', 'b', 'c', 'd'].map(function(host) {
+              return 'https://' + host + '.tiles.mapbox.com/v4/' + mapid +
+                  '/{z}/{x}/{y}.' +
+                  (glSource.type == 'vector' ? 'vector.pbf' : 'png') +
+                  accessToken;
+            });
+          }
         }
+
 
         if (glSource.type == 'vector') {
           layer = setupVectorLayer(glSource, accessToken, url);
