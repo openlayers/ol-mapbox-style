@@ -19,6 +19,10 @@ needs to be changed to
 import stylefunction from 'ol-mapbox-style/dist/stylefunction';
 ```
 
+### Other changes
+
+* Allow mapbox:// urls for all layer types, not just vector
+
 ## 5.0.2
 
 * Update dependencies
