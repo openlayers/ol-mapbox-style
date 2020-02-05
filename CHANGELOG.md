@@ -2,6 +2,23 @@
 
 ## Next version
 
+## 6.0.0
+
+### Breaking changes
+
+#### Module paths
+
+ol-mapbox-style now ships with transpiled modules in the `dist/` folder, and sources in the `src/` folder. Previously, all modules were provided in the root directory.
+
+When upgrading, the import paths need to be checked. For example,
+```js
+import stylefunction from 'ol-mapbox-style/stylefunction';
+```
+needs to be changed to
+```js
+import stylefunction from 'ol-mapbox-style/dist/stylefunction';
+```
+
 ## 5.0.2
 
 * Update dependencies

@@ -11,10 +11,7 @@ import Icon from 'ol/style/Icon';
 import Text from 'ol/style/Text';
 import Circle from 'ol/style/Circle';
 import RenderFeature from 'ol/render/Feature';
-
-//TODO Import derefLayers directly from '@mapbox/mapbox-gl-style-spec' when
-// https://github.com/mapbox/mapbox-gl-js/pull/9121 is merged.
-import derefLayers from '@mapbox/mapbox-gl-style-spec/deref';
+import {derefLayers} from '@mapbox/mapbox-gl-style-spec';
 
 import {
   expression, Color,
