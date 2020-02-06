@@ -58,9 +58,9 @@ fetch('data/states.json').then(function(response) {
 
 Internet Explorer (version 11) and other old browsers (Android 4.x) are supported when polyfills for the following features are loaded:
 
-* `fetch` (including `Promise`)
-* `String.prototype.startsWith`
-* `Object.assign`
+-   `fetch` (including `Promise`)
+-   `String.prototype.startsWith`
+-   `Object.assign`
 
 ### Webpack
 
