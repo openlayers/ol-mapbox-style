@@ -1,5 +1,5 @@
 import should from 'should';
-import olms, {applyBackground, apply, getLayer, getLayers, getSource} from '..';
+import olms, {applyBackground, apply, getLayer, getLayers, getSource} from '../src';
 import {_getFonts as getFonts} from '../src/index';
 import Map from 'ol/Map';
 import TileSource from 'ol/source/Tile';

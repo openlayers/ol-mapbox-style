@@ -5,7 +5,7 @@ import GeoJsonFormat from 'ol/format/GeoJSON';
 import Map from 'ol/Map';
 import View from 'ol/View';
 
-import stylefunction from 'ol-mapbox-style/stylefunction';
+import stylefunction from 'ol-mapbox-style/dist/stylefunction';
 
 const layer = new VectorLayer({
   declutter: true,
