@@ -86,7 +86,7 @@ export function wrapText(text, font, em, letterSpacing) {
       // Pass 2 - add lines with a width of less than 30% of maxWidth to the previous or next line
       for (let i = 0, ii = lines.length; i < ii; ++i) {
         const line = lines[i];
-        if (measureText(line, letterSpacing) < maxWidth * 0.35) {
+        if ((measureText(line, letterSpacing) < maxWidth * 0.35) && (lines[i + 1] !== undefined)) {
           const prevWidth = i > 0 ? measureText(lines[i - 1], letterSpacing) : Infinity;
           const nextWidth = i < ii - 1 ? measureText(lines[i + 1], letterSpacing) : Infinity;
           lines.splice(i, 1);
