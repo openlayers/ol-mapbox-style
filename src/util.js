@@ -14,17 +14,8 @@ export const defaultResolutions = (function() {
   return resolutions;
 })();
 
-let workerOffscreenCanvas;
 export function createCanvas(width, height) {
-  if (workerOffscreenCanvas === undefined) {
-    try {
-      //eslint-disable-next-line
-      workerOffscreenCanvas = self instanceof WorkerGlobalScope && self.OffscreenCanvas;
-    } catch (e) {
-      workerOffscreenCanvas = false;
-    }
-  }
-  if (workerOffscreenCanvas) {
+  if (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope && typeof OffscreenCanvas !== 'undefined') { // eslint-disable-line
     return new OffscreenCanvas(width, height);
   } else {
     const canvas = document.createElement('canvas');

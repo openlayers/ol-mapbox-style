@@ -225,7 +225,7 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
 
   let spriteImage, spriteImgSize;
   if (spriteImageUrl) {
-    try {
+    if (typeof Image !== 'undefined') {
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = function() {
@@ -235,20 +235,18 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
         img.onload = null;
       };
       img.src = spriteImageUrl;
-    } catch (e) {
-      if (self instanceof WorkerGlobalScope) {
-        // Main thread needs to handle 'loadImage' and dispatch 'imageLoaded'
-        self.postMessage({
-          action: 'loadImage',
-          src: spriteImageUrl
-        });
-        self.addEventListener('message', function handler(event) {
-          if (event.data.action === 'imageLoaded' && event.data.src === spriteImageUrl) {
-            spriteImage = event.data.image;
-            spriteImgSize = [spriteImage.width, spriteImage.height];
-          }
-        });
-      }
+    } else if (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) { //eslint-disable-line
+      // Main thread needs to handle 'loadImage' and dispatch 'imageLoaded'
+      self.postMessage({
+        action: 'loadImage',
+        src: spriteImageUrl
+      });
+      self.addEventListener('message', function handler(event) {
+        if (event.data.action === 'imageLoaded' && event.data.src === spriteImageUrl) {
+          spriteImage = event.data.image;
+          spriteImgSize = [spriteImage.width, spriteImage.height];
+        }
+      });
     }
   }
 
