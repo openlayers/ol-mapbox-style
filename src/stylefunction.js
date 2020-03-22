@@ -259,12 +259,13 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
       };
       img.src = spriteImageUrl;
     } else if (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) { //eslint-disable-line
+      const worker = /** @type {*} */ (self);
       // Main thread needs to handle 'loadImage' and dispatch 'imageLoaded'
-      self.postMessage({
+      worker.postMessage({
         action: 'loadImage',
         src: spriteImageUrl
       });
-      self.addEventListener('message', function handler(event) {
+      worker.addEventListener('message', function handler(event) {
         if (event.data.action === 'imageLoaded' && event.data.src === spriteImageUrl) {
           spriteImage = event.data.image;
           spriteImgSize = [spriteImage.width, spriteImage.height];
@@ -372,7 +373,7 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
                 if (!pattern) {
                   const spriteImageData = spriteData[icon];
                   const canvas = createCanvas(spriteImageData.width, spriteImageData.height);
-                  const ctx = canvas.getContext('2d');
+                  const ctx = /** @type {CanvasRenderingContext2D} */ (canvas.getContext('2d'));
                   ctx.globalAlpha = opacity;
                   ctx.drawImage(
                     spriteImage,
@@ -518,7 +519,7 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
                   if (iconColor !== null) {
                     // cut out the sprite and color it
                     const canvas = createCanvas(spriteImageData.width, spriteImageData.height);
-                    const ctx = canvas.getContext('2d');
+                    const ctx = /** @type {CanvasRenderingContext2D} */ (canvas.getContext('2d'));
                     ctx.drawImage(
                       spriteImage,
                       spriteImageData.x,
