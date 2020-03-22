@@ -20,7 +20,7 @@ import {
   featureFilter as createFilter
 } from '@mapbox/mapbox-gl-style-spec';
 import mb2css from 'mapbox-to-css-font';
-import {deg2rad, defaultResolutions, getZoomForResolution, wrapText, applyLetterSpacing} from './util';
+import {deg2rad, defaultResolutions, getZoomForResolution, wrapText, applyLetterSpacing, createCanvas} from './util';
 
 /**
  * @typedef {import("ol/layer/Vector").default} VectorLayer
@@ -184,6 +184,29 @@ function fromTemplate(text, properties) {
  *  * `mapbox-layers`: The `id`s of the Mapbox Style document's layers that are
  *    included in the OpenLayers layer.
  *
+ * This function also works in a web worker. In worker mode, the main thread needs
+ * to listen to messages from the worker and respond with another message to make
+ * sure that sprite image loading works:
+ *
+ * ```js
+ *  worker.addEventListener('message', event => {
+ *   if (event.data.action === 'loadImage') {
+ *     const image = new Image();
+ *     image.crossOrigin = 'anonymous';
+ *     image.addEventListener('load', function() {
+ *       createImageBitmap(image, 0, 0, image.width, image.height).then(imageBitmap => {
+ *         worker.postMessage({
+ *           action: 'imageLoaded',
+ *           image: imageBitmap,
+ *           src: event.data.src
+ *         }, [imageBitmap]);
+ *       });
+ *     });
+ *     image.src = event.data.src;
+ *   }
+ * });
+ * ```
+ *
  * @param {VectorLayer|VectorTileLayer} olLayer OpenLayers layer to
  * apply the style to. In addition to the style, the layer will get two
  * properties: `mapbox-source` will be the `id` of the `glStyle`'s source used
@@ -225,15 +248,30 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
 
   let spriteImage, spriteImgSize;
   if (spriteImageUrl) {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = function() {
-      spriteImage = img;
-      spriteImgSize = [img.width, img.height];
-      olLayer.changed();
-      img.onload = null;
-    };
-    img.src = spriteImageUrl;
+    if (typeof Image !== 'undefined') {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = function() {
+        spriteImage = img;
+        spriteImgSize = [img.width, img.height];
+        olLayer.changed();
+        img.onload = null;
+      };
+      img.src = spriteImageUrl;
+    } else if (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) { //eslint-disable-line
+      const worker = /** @type {*} */ (self);
+      // Main thread needs to handle 'loadImage' and dispatch 'imageLoaded'
+      worker.postMessage({
+        action: 'loadImage',
+        src: spriteImageUrl
+      });
+      worker.addEventListener('message', function handler(event) {
+        if (event.data.action === 'imageLoaded' && event.data.src === spriteImageUrl) {
+          spriteImage = event.data.image;
+          spriteImgSize = [spriteImage.width, spriteImage.height];
+        }
+      });
+    }
   }
 
 
@@ -334,10 +372,8 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
                 let pattern = patternCache[icon_cache_key];
                 if (!pattern) {
                   const spriteImageData = spriteData[icon];
-                  const canvas = document.createElement('canvas');
-                  canvas.width = spriteImageData.width;
-                  canvas.height = spriteImageData.height;
-                  const ctx = canvas.getContext('2d');
+                  const canvas = createCanvas(spriteImageData.width, spriteImageData.height);
+                  const ctx = /** @type {CanvasRenderingContext2D} */ (canvas.getContext('2d'));
                   ctx.globalAlpha = opacity;
                   ctx.drawImage(
                     spriteImage,
@@ -482,10 +518,8 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
                   const spriteImageData = spriteData[icon];
                   if (iconColor !== null) {
                     // cut out the sprite and color it
-                    const canvas = document.createElement('canvas');
-                    canvas.width = spriteImageData.width;
-                    canvas.height = spriteImageData.height;
-                    const ctx = canvas.getContext('2d');
+                    const canvas = createCanvas(spriteImageData.width, spriteImageData.height);
+                    const ctx = /** @type {CanvasRenderingContext2D} */ (canvas.getContext('2d'));
                     ctx.drawImage(
                       spriteImage,
                       spriteImageData.x,
