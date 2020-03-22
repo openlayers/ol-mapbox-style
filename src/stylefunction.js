@@ -184,6 +184,29 @@ function fromTemplate(text, properties) {
  *  * `mapbox-layers`: The `id`s of the Mapbox Style document's layers that are
  *    included in the OpenLayers layer.
  *
+ * This function also works in a web worker. In worker mode, the main thread needs
+ * to listen to messages from the worker and respond with another message to make
+ * sure that sprite image loading works:
+ *
+ * ```js
+ *  worker.addEventListener('message', event => {
+ *   if (event.data.action === 'loadImage') {
+ *     const image = new Image();
+ *     image.crossOrigin = 'anonymous';
+ *     image.addEventListener('load', function() {
+ *       createImageBitmap(image, 0, 0, image.width, image.height).then(imageBitmap => {
+ *         worker.postMessage({
+ *           action: 'imageLoaded',
+ *           image: imageBitmap,
+ *           src: event.data.src
+ *         }, [imageBitmap]);
+ *       });
+ *     });
+ *     image.src = event.data.src;
+ *   }
+ * });
+ * ```
+ *
  * @param {VectorLayer|VectorTileLayer} olLayer OpenLayers layer to
  * apply the style to. In addition to the style, the layer will get two
  * properties: `mapbox-source` will be the `id` of the `glStyle`'s source used
