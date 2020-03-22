@@ -14,6 +14,26 @@ export const defaultResolutions = (function() {
   return resolutions;
 })();
 
+let workerOffscreenCanvas;
+export function createCanvas(width, height) {
+  if (workerOffscreenCanvas === undefined) {
+    try {
+      //eslint-disable-next-line
+      workerOffscreenCanvas = self instanceof WorkerGlobalScope && self.OffscreenCanvas;
+    } catch (e) {
+      workerOffscreenCanvas = false;
+    }
+  }
+  if (workerOffscreenCanvas) {
+    return new OffscreenCanvas(width, height);
+  } else {
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    return canvas;
+  }
+}
+
 export function getZoomForResolution(resolution, resolutions) {
   let i = 0;
   const ii = resolutions.length;
@@ -44,9 +64,16 @@ export function applyLetterSpacing(text, letterSpacing) {
   return text;
 }
 
-const ctx = /** @type {HTMLCanvasElement} */ (document.createElement('CANVAS')).getContext('2d');
+let measureContext;
+function getMeasureContext() {
+  if (!measureContext) {
+    measureContext = createCanvas(1, 1).getContext('2d');
+  }
+  return measureContext;
+}
+
 function measureText(text, letterSpacing) {
-  return ctx.measureText(text).width + (text.length - 1) * letterSpacing;
+  return getMeasureContext().measureText(text).width + (text.length - 1) * letterSpacing;
 }
 
 let measureCache = {};
@@ -70,6 +97,7 @@ export function wrapText(text, font, em, letterSpacing) {
   if (!wrappedText) {
     const words = text.split(' ');
     if (words.length > 1) {
+      const ctx = getMeasureContext();
       ctx.font = font;
       const oneEm = ctx.measureText('M').width;
       const maxWidth = oneEm * em;

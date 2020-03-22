@@ -20,7 +20,7 @@ import {
   featureFilter as createFilter
 } from '@mapbox/mapbox-gl-style-spec';
 import mb2css from 'mapbox-to-css-font';
-import {deg2rad, defaultResolutions, getZoomForResolution, wrapText, applyLetterSpacing} from './util';
+import {deg2rad, defaultResolutions, getZoomForResolution, wrapText, applyLetterSpacing, createCanvas} from './util';
 
 /**
  * @typedef {import("ol/layer/Vector").default} VectorLayer
@@ -225,15 +225,31 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
 
   let spriteImage, spriteImgSize;
   if (spriteImageUrl) {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = function() {
-      spriteImage = img;
-      spriteImgSize = [img.width, img.height];
-      olLayer.changed();
-      img.onload = null;
-    };
-    img.src = spriteImageUrl;
+    try {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = function() {
+        spriteImage = img;
+        spriteImgSize = [img.width, img.height];
+        olLayer.changed();
+        img.onload = null;
+      };
+      img.src = spriteImageUrl;
+    } catch (e) {
+      if (self instanceof WorkerGlobalScope) {
+        // Main thread needs to handle 'loadImage' and dispatch 'imageLoaded'
+        self.postMessage({
+          action: 'loadImage',
+          src: spriteImageUrl
+        });
+        self.addEventListener('message', function handler(event) {
+          if (event.data.action === 'imageLoaded' && event.data.src === spriteImageUrl) {
+            spriteImage = event.data.image;
+            spriteImgSize = [spriteImage.width, spriteImage.height];
+          }
+        });
+      }
+    }
   }
 
 
@@ -334,9 +350,7 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
                 let pattern = patternCache[icon_cache_key];
                 if (!pattern) {
                   const spriteImageData = spriteData[icon];
-                  const canvas = document.createElement('canvas');
-                  canvas.width = spriteImageData.width;
-                  canvas.height = spriteImageData.height;
+                  const canvas = createCanvas(spriteImageData.width, spriteImageData.height);
                   const ctx = canvas.getContext('2d');
                   ctx.globalAlpha = opacity;
                   ctx.drawImage(
@@ -482,9 +496,7 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
                   const spriteImageData = spriteData[icon];
                   if (iconColor !== null) {
                     // cut out the sprite and color it
-                    const canvas = document.createElement('canvas');
-                    canvas.width = spriteImageData.width;
-                    canvas.height = spriteImageData.height;
+                    const canvas = createCanvas(spriteImageData.width, spriteImageData.height);
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(
                       spriteImage,
