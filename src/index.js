@@ -236,7 +236,7 @@ function setBackground(map, layer) {
     const zoom = map.getView().getZoom();
     if (paint['background-color'] !== undefined) {
       const bg = getValue(background, 'paint', 'background-color', zoom, emptyObj);
-      element.style.backgroundColor = Color.parse(bg).toString();
+      element.style.background = Color.parse(bg).toString();
     }
     if (paint['background-opacity'] !== undefined) {
       element.style.opacity = getValue(background, 'paint', 'background-opacity', zoom, emptyObj);
