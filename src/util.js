@@ -57,6 +57,14 @@ if (labelCache) {
   });
 }
 export function wrapText(text, font, em, letterSpacing) {
+  if (text.indexOf('\n') !== -1) {
+    const hardLines = text.split('\n');
+    const lines = [];
+    for (let i = 0, ii = hardLines.length; i < ii; ++i) {
+      lines.push(wrapText(hardLines[i], font, em, letterSpacing));
+    }
+    return lines.join('\n');
+  }
   const key = em + ',' + font + ',' + text + ',' + letterSpacing;
   let wrappedText = measureCache[key];
   if (!wrappedText) {
@@ -84,11 +92,11 @@ export function wrapText(text, font, em, letterSpacing) {
         lines.push(line);
       }
       // Pass 2 - add lines with a width of less than 30% of maxWidth to the previous or next line
-      for (let i = 0, ii = lines.length; i < ii; ++i) {
+      for (let i = 0; i < lines.length; ++i) {
         const line = lines[i];
-        if ((measureText(line, letterSpacing) < maxWidth * 0.35) && (lines[i + 1] !== undefined)) {
+        if (measureText(line, letterSpacing) < maxWidth * 0.35) {
           const prevWidth = i > 0 ? measureText(lines[i - 1], letterSpacing) : Infinity;
-          const nextWidth = i < ii - 1 ? measureText(lines[i + 1], letterSpacing) : Infinity;
+          const nextWidth = i < lines.length - 1 ? measureText(lines[i + 1], letterSpacing) : Infinity;
           lines.splice(i, 1);
           if (prevWidth < nextWidth) {
             lines[i - 1] += ' ' + line;
@@ -96,7 +104,7 @@ export function wrapText(text, font, em, letterSpacing) {
           } else {
             lines[i] = line + ' ' + lines[i];
           }
-          ii -= 1;
+          lines.length -= 1;
         }
       }
       // Pass 3 - try to fill 80% of maxWidth for each line
