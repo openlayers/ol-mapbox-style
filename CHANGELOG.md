@@ -1,6 +1,9 @@
 # Changelog
 
-## Next version
+## 6.1.0
+
+* Improvements and bug fixes for multi-line text and wrapping
+* Support for running `stylefunction` in web workers
 
 ## 6.0.0
 
