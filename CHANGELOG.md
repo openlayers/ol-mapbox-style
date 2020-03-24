@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.1.1
+
+* Fix version issue with @mapbox/mapbox-gl-style-spec
+
 ## 6.1.0
 
 * Improvements and bug fixes for multi-line text and wrapping
