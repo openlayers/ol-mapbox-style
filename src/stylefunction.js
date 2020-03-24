@@ -122,7 +122,7 @@ const filterCache = {};
  */
 function evaluateFilter(layerId, filter, feature, zoom) {
   if (!(layerId in filterCache)) {
-    filterCache[layerId] = createFilter(filter);
+    filterCache[layerId] = createFilter(filter).filter;
   }
   zoomObj.zoom = zoom;
   return filterCache[layerId](zoomObj, feature);

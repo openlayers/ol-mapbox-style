@@ -28,7 +28,7 @@
     "test": "npm run karma -- --single-run --log-level error"
   },
   "dependencies": {
-    "@mapbox/mapbox-gl-style-spec": "^13.11.0",
+    "@mapbox/mapbox-gl-style-spec": "13.13.0",
     "mapbox-to-css-font": "^2.4.0",
     "webfont-matcher": "^1.1.0"
   },
