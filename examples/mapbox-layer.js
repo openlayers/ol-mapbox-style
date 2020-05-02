@@ -1,7 +1,7 @@
 import 'ol/ol.css';
 import Map from 'ol/Map';
 import View from 'ol/View';
-import MapboxLayer from 'ol-mapbox-style/dist/MapboxLayer';
+import MapboxVectorLayer from 'ol-mapbox-style/dist/MapboxVectorLayer';
 
 
 let key = document.cookie.replace(/(?:(?:^|.*;\s*)mapbox_access_token\s*\=\s*([^;]*).*$)|^.*$/, '$1');
@@ -17,7 +17,7 @@ new Map({
     zoom: 2
   }),
   layers: [
-    new MapboxLayer({
+    new MapboxVectorLayer({
       accessToken: key,
       styleURL: 'mapbox://styles/mapbox/bright-v9'
     })

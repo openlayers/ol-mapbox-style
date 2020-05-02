@@ -50,7 +50,7 @@ function normalizeSourceURL(url, token) {
   return `https://{a-d}.tiles.mapbox.com/v4/${mapboxPath}/{z}/{x}/{y}.vector.pbf?access_token=${token}`;
 }
 
-export default class MapboxLayer extends VectorTileLayer {
+export default class MapboxVectorLayer extends VectorTileLayer {
   constructor(options) {
     const superOptions = Object.assign({
       declutter: true
