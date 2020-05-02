@@ -131,8 +131,14 @@ export default class MapboxLayer extends VectorTileLayer {
       style.sprite = normalizeSpriteURL(style.sprite, this.accessToken);
     }
 
+    const styleSource = style.sources[sourceId];
+    if (styleSource.type !== 'vector') {
+      this.handleError(new Error(`only works for vector sources, found ${styleSource.type}`));
+      return;
+    }
+
     const source = this.getSource();
-    source.setUrl(normalizeSourceURL(style.sources[sourceId].url, this.accessToken));
+    source.setUrl(normalizeSourceURL(styleSource.url, this.accessToken));
 
     applyStyle(this, style, sourceIdOrLayersList).then(() => {
       source.setState(SourceState.READY);
