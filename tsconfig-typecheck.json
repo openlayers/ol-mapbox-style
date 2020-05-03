@@ -3,6 +3,8 @@
     "noEmit": true,
     "allowJs": true,
     "checkJs": true,
+    "target": "ES5",
+    "moduleResolution": "node",
     "skipLibCheck": true,
     "baseUrl": "./",
     "paths": {
@@ -16,6 +18,7 @@
     ]
   },
   "include": [
-    "src/*.js"
+    "src/*.js",
+    "node_modules/ol/src/**/*.js"
   ]
 }

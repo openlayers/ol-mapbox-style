@@ -30,13 +30,17 @@
   "dependencies": {
     "@mapbox/mapbox-gl-style-spec": "13.13.0",
     "mapbox-to-css-font": "^2.4.0",
+    "ol": "^6.3.2-dev.1588437998514",
     "webfont-matcher": "^1.1.0"
   },
   "peerDependencies": {
     "ol": "^6.1.0"
   },
   "devDependencies": {
+    "@types/arcgis-rest-api": "^10.4.4",
+    "@types/geojson": "^7946.0.7",
     "@types/node": "^12.12.19",
+    "@types/topojson-specification": "^1.0.1",
     "babel-loader": "^8.0.6",
     "buble": "^0.19.8",
     "buble-loader": "^0.5.1",
@@ -56,12 +60,11 @@
     "mapbox-gl-styles": "^2.0.2",
     "mini-css-extract-plugin": "^0.4.5",
     "mocha": "^5.2.0",
-    "ol": "^6.1.1",
     "puppeteer": "^1.20.0",
     "should": "^13.2.3",
     "sinon": "^7.5.0",
     "style-loader": "^0.23.1",
-    "typescript": "3.5.3",
+    "typescript": "^3.8.3",
     "webpack": "^4.41.3",
     "webpack-cli": "^3.3.10",
     "webpack-dev-server": "^3.9.0"

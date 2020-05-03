@@ -14,9 +14,14 @@ export const defaultResolutions = (function() {
   return resolutions;
 })();
 
+/**
+ * @param {number} width Width of the canvas.
+ * @param {number} height Height of the canvas.
+ * @return {HTMLCanvasElement} Canvas.
+ */
 export function createCanvas(width, height) {
   if (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope && typeof OffscreenCanvas !== 'undefined') { // eslint-disable-line
-    return new OffscreenCanvas(width, height);
+    return /** @type {?} */ (new OffscreenCanvas(width, height));
   } else {
     const canvas = document.createElement('canvas');
     canvas.width = width;
