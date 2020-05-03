@@ -25,9 +25,7 @@ import {Color} from '@mapbox/mapbox-gl-style-spec';
 import {defaultResolutions} from './util';
 
 /**
- * @typedef {import("ol/layer/VectorTile").default} VectorTileLayer
- * @typedef {import("ol/layer/Vector").default} VectorLayer
- * @typedef {import("ol/PluggableMap").default} PluggableMap
+ * @typedef {import("ol/Map").default} PluggableMap
  * @typedef {import("ol/layer/Layer").default} Layer
  * @typedef {import("ol/source/Source").default} Source
  * @private
