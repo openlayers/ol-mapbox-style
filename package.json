@@ -28,9 +28,8 @@
     "test": "npm run karma -- --single-run --log-level error"
   },
   "dependencies": {
-    "@mapbox/mapbox-gl-style-spec": "13.13.0",
+    "@mapbox/mapbox-gl-style-spec": "^13.14.0",
     "mapbox-to-css-font": "^2.4.0",
-    "ol": "^6.3.2-dev.1588437998514",
     "webfont-matcher": "^1.1.0"
   },
   "peerDependencies": {
@@ -60,6 +59,7 @@
     "mapbox-gl-styles": "^2.0.2",
     "mini-css-extract-plugin": "^0.4.5",
     "mocha": "^5.2.0",
+    "ol": "^6.3.2-dev.1588516261795",
     "puppeteer": "^1.20.0",
     "should": "^13.2.3",
     "sinon": "^7.5.0",
