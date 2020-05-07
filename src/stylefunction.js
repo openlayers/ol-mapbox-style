@@ -461,7 +461,7 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
               if (type == 2) {
                 const geom = feature.getGeometry();
                 // ol package and ol-debug.js only
-                if (geom.getFlatMidpoint) {
+                if (geom.getFlatMidpoint || geom.getFlatMidpoints) {
                   const extent = geom.getExtent();
                   const size = Math.sqrt(Math.max(
                     Math.pow((extent[2] - extent[0]) / resolution, 2),
@@ -469,7 +469,7 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
                   );
                   if (size > 150) {
                     //FIXME Do not hard-code a size of 150
-                    const midpoint = geom.getFlatMidpoint();
+                    const midpoint = geom.getType() === 'MultiLineString' ? geom.getFlatMidpoints() : geom.getFlatMidpoint();
                     if (!renderFeature) {
                       renderFeatureCoordinates = [NaN, NaN];
                       renderFeature = new RenderFeature('Point', renderFeatureCoordinates, [], {}, null);
