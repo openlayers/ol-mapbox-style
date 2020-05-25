@@ -22,5 +22,11 @@ describe('util', function() {
       const result = wrapText(text, 'normal 400 12px/1.2 sans-serif', 10, 0);
       should(result).equal('Großer\nSonnleitstein\n1639 m');
     });
+
+    it('should combine lines with less than 30% max width', function() {
+      const text = 'Single_Long_Word 30%';
+      const result = wrapText(text, 'normal 400 12px/1.2 sans-serif', 10, 0);
+      should(result).equal(text);
+    });
   });
 });
