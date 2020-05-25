@@ -128,7 +128,6 @@ export function wrapText(text, font, em, letterSpacing) {
           } else {
             lines[i] = line + ' ' + lines[i];
           }
-          lines.length -= 1;
         }
       }
       // Pass 3 - try to fill 80% of maxWidth for each line
