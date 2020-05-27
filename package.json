@@ -20,7 +20,7 @@
     "start": "webpack-dev-server --config ./webpack.config.examples.js",
     "prepare": "npm run doc && npm run build",
     "build": "tsc --project tsconfig-build.json && webpack-cli --mode=production --config ./webpack.config.olms.js && webpack-cli --mode=production --config ./webpack.config.examples.js",
-    "doc": "documentation readme -s API src/index.js src/stylefunction.js --document-exported true",
+    "doc": "npx documentation readme -s API src/index.js src/stylefunction.js --document-exported true",
     "karma": "karma start test/karma.conf.js",
     "lint": "eslint test examples src",
     "typecheck": "tsc --project tsconfig-typecheck.json",
