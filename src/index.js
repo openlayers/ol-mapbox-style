@@ -14,6 +14,7 @@ import Map from 'ol/Map';
 import View from 'ol/View';
 import GeoJSON from 'ol/format/GeoJSON';
 import MVT from 'ol/format/MVT';
+import {assign} from 'ol/obj';
 import {unByKey} from 'ol/Observable';
 import TileLayer from 'ol/layer/Tile';
 import VectorLayer from 'ol/layer/Vector';
@@ -98,7 +99,7 @@ function getFonts(fonts) {
 const spriteRegEx = /^(.*)(\?.*)$/;
 
 function withPath(url, path) {
-  if (path && url.startsWith('.')) {
+  if (path && url.indexOf('.') === 0) {
     url = path + url;
   }
   return url;
@@ -288,7 +289,7 @@ function extentFromTileJSON(tileJSON) {
 }
 
 function setupVectorLayer(glSource, accessToken, url) {
-  glSource = Object.assign({}, glSource);
+  glSource = assign({}, glSource);
   const layer = new VectorTileLayer({
     declutter: true,
     visible: false
