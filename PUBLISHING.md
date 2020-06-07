@@ -15,7 +15,7 @@ Edit `CHANGELOG.md`: Add the version you are about to release just below the `##
 
 Commit the changes.
 
-    git add package.json CHANGELOG.md
+    git add package.json package-lock.json CHANGELOG.md
     git commit -m "Set version to 2.11.0"
 
 ### Update README when API docs changed
