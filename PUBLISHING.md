@@ -9,7 +9,7 @@ Note that all the examples below use 2.11.0 as the release version, you'll want 
 
 ### Bump the version in package.json
 
-We use [semantic versioning](https://semver.org). Set the correct `"version"` in package.json.
+We use [semantic versioning](https://semver.org). Set the correct `"version"` in package.json. Run `npm install` so `package-lock.json` can pick up the changes.
 
 Edit `CHANGELOG.md`: Add the version you are about to release just below the `## Next version` heading. Review the changes since the last release and document changes as appropriate.
 
