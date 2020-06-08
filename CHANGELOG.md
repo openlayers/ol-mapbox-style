@@ -1,5 +1,13 @@
 # Changelog
 
+## 6.1.2
+
+* No more polyfills for `Object.assign` and `String#startsWith` needed #276
+* Fixed issue with disappearing labels #273
+* MultiLineString labeling improvements #272
+* Improved developer experience with proper TypeScript configuration #270
+
+
 ## 6.1.1
 
 * Fix version issue with @mapbox/mapbox-gl-style-spec
