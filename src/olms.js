@@ -1,6 +1,6 @@
 import olms, {apply, applyBackground, applyStyle} from './index';
 import stylefunction from './stylefunction';
-import {assign} from 'ol/obj';
+import {assign} from './util';
 
 assign(olms, {apply, applyBackground, applyStyle, stylefunction});
 
