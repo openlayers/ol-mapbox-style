@@ -14,7 +14,6 @@ import Map from 'ol/Map';
 import View from 'ol/View';
 import GeoJSON from 'ol/format/GeoJSON';
 import MVT from 'ol/format/MVT';
-import {assign} from 'ol/obj';
 import {unByKey} from 'ol/Observable';
 import TileLayer from 'ol/layer/Tile';
 import VectorLayer from 'ol/layer/Vector';
@@ -23,7 +22,7 @@ import TileJSON from 'ol/source/TileJSON';
 import VectorSource from 'ol/source/Vector';
 import VectorTileSource from 'ol/source/VectorTile';
 import {Color} from '@mapbox/mapbox-gl-style-spec';
-import {defaultResolutions} from './util';
+import {assign, defaultResolutions} from './util';
 
 /**
  * @typedef {import("ol/Map").default} PluggableMap
