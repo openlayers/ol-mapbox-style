@@ -13,7 +13,6 @@ const externals = {
   'ol/format/MVT': 'ol.format.MVT',
   'ol/Map': 'ol.Map',
   'ol/View': 'ol.View',
-  'ol/obj': 'ol.obj',
   'ol/Observable': 'ol.Observable',
   'ol/layer/Tile': 'ol.layer.Tile',
   'ol/layer/Vector': 'ol.layer.Vector',
