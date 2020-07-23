@@ -5,7 +5,19 @@ describe('util', function() {
 
   describe('wrapText()', function() {
 
-    it('should not combine undefined when no next line exists', function() {
+    it('properly wraps text', function() {
+      const text = 'Verylongtext i i longtext short Shor T i i';
+      const result = wrapText(text, 'normal 400 12px/1.2 sans-serif', 10, 0);
+      should(result).equal('Verylongtext i i\nlongtext short\nShor T i i');
+    });
+
+    it('should not produce undefined lines', function() {
+      const text = 'Shor T';
+      const result = wrapText(text, 'normal 400 12px/1.2 sans-serif', 10, 0);
+      should(result).equal(text);
+    });
+
+    it('should not combine re-combined lines when last is empty', function() {
       const text = 'i i';
       const result = wrapText(text, 'normal 400 12px/1.2 sans-serif', 10, 0);
       should(result).equal(text);
