@@ -6,7 +6,7 @@ describe('util', function() {
   describe('wrapText()', function() {
 
     it('should not combine undefined when no next line exists', function() {
-      const text = 'Shor T';
+      const text = 'i i';
       const result = wrapText(text, 'normal 400 12px/1.2 sans-serif', 10, 0);
       should(result).equal(text);
     });
