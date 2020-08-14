@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.1.3
+
+* Added `Object.assign` polyfill for compatibility with old browsers #281
+* Fix line wrapping of text labels #283 #284
+* Fix OpenLayers version mismatch with legacy builds #291
+
 ## 6.1.2
 
 * No more polyfills for `Object.assign` and `String#startsWith` needed #276
