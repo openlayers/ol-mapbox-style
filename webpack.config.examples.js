@@ -131,16 +131,18 @@ module.exports = (env, argv) => {
       // ensure the data is copied over.
       // currently the index.html is manually created.
       // @ts-ignore
-      new CopyWebpackPlugin([
-        {
-          from: path.resolve(__dirname, './examples/data'),
-          to: 'data'
-        },
-        {
-          from: path.resolve(__dirname, './examples/index.html'),
-          to: 'index.html'
-        }
-      ])
+      new CopyWebpackPlugin({
+        patterns: [
+          {
+            from: path.resolve(__dirname, './examples/data'),
+            to: 'data'
+          },
+          {
+            from: path.resolve(__dirname, './examples/index.html'),
+            to: 'index.html'
+          }
+        ]
+      })
     ].concat(getHtmlTemplates('./examples'))
   };
 };
