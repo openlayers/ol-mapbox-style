@@ -1,5 +1,9 @@
 # Changelog
 
+# 6.1.4
+
+* Fix OpenLayers version mismatch with legacy builds (was missing in 6.1.3) #291
+
 ## 6.1.3
 
 * Added `Object.assign` polyfill for compatibility with old browsers #281

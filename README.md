@@ -337,9 +337,9 @@ Returns **Source** OpenLayers source instance.
 
 ## Building the library
 
-    npm install
+    npm run build
 
-The resulting binary (`olms.js`) will be in the `dist/` folder. To see the library in action, navigate to `dist/index.html`.
+The resulting distribution files will be in the `dist/` folder. To see the library in action, navigate to `dist/index.html`.
 
 To run test locally, run
 
