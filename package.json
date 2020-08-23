@@ -59,7 +59,7 @@
     "mapbox-gl-styles": "^2.0.2",
     "mini-css-extract-plugin": "^0.4.5",
     "mocha": "^8.1.1",
-    "ol": "^6.3.2-dev.1588516261795",
+    "ol": "^6.4.3",
     "puppeteer": "^1.20.0",
     "should": "^13.2.3",
     "sinon": "^7.5.0",
