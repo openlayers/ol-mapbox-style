@@ -350,10 +350,10 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
       if (!filter || evaluateFilter(layerId, filter, f, zoom)) {
         let color, opacity, fill, stroke, strokeColor, style;
         const index = layerData.index;
-        if (type == 3 && layer.type == 'fill') {
-          opacity = getValue(layer, 'paint', 'fill-opacity', zoom, f);
-          if ('fill-pattern' in paint) {
-            const fillIcon = getValue(layer, 'paint', 'fill-pattern', zoom, f);
+        if (type == 3 && (layer.type == 'fill' || layer.type == 'fill-extrusion')) {
+          opacity = getValue(layer, 'paint', layer.type + '-opacity', zoom, f);
+          if (layer.type + '-pattern' in paint) {
+            const fillIcon = getValue(layer, 'paint', layer.type + '-pattern', zoom, f);
             if (fillIcon) {
               const icon = typeof fillIcon === 'string'
                 ? fromTemplate(fillIcon, properties)
@@ -393,10 +393,10 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
               }
             }
           } else {
-            color = colorWithOpacity(getValue(layer, 'paint', 'fill-color', zoom, f), opacity);
+            color = colorWithOpacity(getValue(layer, 'paint', layer.type + '-color', zoom, f), opacity);
             if (color) {
-              if ('fill-outline-color' in paint) {
-                strokeColor = colorWithOpacity(getValue(layer, 'paint', 'fill-outline-color', zoom, f), opacity);
+              if (layer.type + '-outline-color' in paint) {
+                strokeColor = colorWithOpacity(getValue(layer, 'paint', layer.type + '-outline-color', zoom, f), opacity);
               }
               if (!strokeColor) {
                 strokeColor = color;
