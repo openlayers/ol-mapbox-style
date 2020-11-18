@@ -137,14 +137,14 @@ describe('applyStyle sprite retrieval', function() {
     });
   });
 
-  it('should reject on empty sprite JSON', function(done) {
+  it('should reject when sprite JSON is not found', function(done) {
     const style = Object.assign({}, glStyle);
-    style.sprite = window.location.protocol + '//' + window.location.host + '/fixtures/empty';
+    style.sprite = './not-found';
 
     global.devicePixelRatio = 1;
 
     applyStyle(layer, style, source).then(function() {
-      done(new Error('empty sprite JSON promise should reject'));
+      done(new Error('sprite JSON not found - promise should reject'));
     }).catch(function(err) {
       done();
     });
