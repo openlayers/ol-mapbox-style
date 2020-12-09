@@ -1,8 +1,12 @@
 # Changelog
 
+# 6.2.1
+
+* Improved support for relative urls in style documents (#307)
+
 # 6.2.0
 
-* Improved support for relative urls in style documents (#304, #307)
+* Improved support for relative urls in style documents (#304)
 * Allow empty spritesheets (#306)
 * Added support for `fill-extrusion`, using a 2D fallback (#303)
 
