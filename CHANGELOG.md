@@ -1,5 +1,11 @@
 # Changelog
 
+# 6.2.0
+
+* Improved support for relative urls in style documents (#304, #307)
+* Allow empty spritesheets (#306)
+* Added support for `fill-extrusion`, using a 2D fallback (#303)
+
 # 6.1.4
 
 * Fix OpenLayers version mismatch with legacy builds (was missing in 6.1.3) #291
