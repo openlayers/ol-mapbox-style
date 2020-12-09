@@ -306,11 +306,11 @@ function setupVectorLayer(glSource, accessToken, url) {
     if (state === 'ready') {
       const tileJSONDoc = tilejson.getTileJSON();
       const tiles = Array.isArray(tileJSONDoc.tiles) ? tileJSONDoc.tiles : [tileJSONDoc.tiles];
-      if (glSource.url) {
+      if (url) {
         for (let i = 0, ii = tiles.length; i < ii; ++i) {
           const tile = tiles[i];
           if (tile.indexOf('http') != 0) {
-            tiles[i] = glSource.url.replace(/\/?$/, '/') + tile.replace(/^\//, '');
+            tiles[i] = url.replace(/\/?$/, '/') + tile.replace(/^\//, '');
           }
         }
       }
@@ -481,6 +481,8 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
                   (glSource.type == 'vector' ? 'vector.pbf' : 'png') +
                   accessToken;
             });
+          } else if (url.indexOf('/') === 0 && host.indexOf('http') === 0) {
+            url = host + url;
           }
         }
 
