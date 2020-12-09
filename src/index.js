@@ -199,7 +199,7 @@ export function applyStyle(layer, glStyle, source, path, resolutions) {
           }
         })
         .then(function(spritesJson) {
-          if ((spritesJson === undefined) || (Object.keys(spritesJson).length === 0)) {
+          if ((spritesJson === undefined)) {
             return reject(new Error('No sprites found.'));
           }
           spriteData = spritesJson;
