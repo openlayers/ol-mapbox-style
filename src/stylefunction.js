@@ -167,6 +167,21 @@ function fromTemplate(text, properties) {
   return text;
 }
 
+let recordLayer = false;
+
+/**
+ * ```js
+ * import {recordStyleLayer} from 'ol-mapbox-style/dist/stylefunction';
+ * ```
+ * Turns recording of the Mapbox Style's `layer` on and off. When turned on,
+ * the layer that a rendered feature belongs to will be set as the feature's
+ * `mapbox-layer` property.
+ * @param {boolean} [record=false] Recording of the style layer is on.
+ */
+export function recordStyleLayer(record) {
+  recordLayer = record;
+}
+
 /**
  * ```js
  * import stylefunction from 'ol-mapbox-style/dist/stylefunction';
@@ -335,6 +350,7 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
       type: type
     };
     let stylesLength = -1;
+    let featureBelongsToLayer;
     for (let i = 0, ii = layers.length; i < ii; ++i) {
       const layerData = layers[i];
       const layer = layerData.layer;
@@ -348,6 +364,7 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
       }
       const filter = layer.filter;
       if (!filter || evaluateFilter(layerId, filter, f, zoom)) {
+        featureBelongsToLayer = layer;
         let color, opacity, fill, stroke, strokeColor, style;
         const index = layerData.index;
         if (type == 3 && (layer.type == 'fill' || layer.type == 'fill-extrusion')) {
@@ -709,6 +726,15 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
 
     if (stylesLength > -1) {
       styles.length = stylesLength + 1;
+      if (recordLayer) {
+        if (typeof feature.set === 'function') {
+          // ol/Feature
+          feature.set('mapbox-layer', featureBelongsToLayer);
+        } else {
+          // ol/render/Feature
+          feature.getProperties()['mapbox-layer'] = featureBelongsToLayer;
+        }
+      }
       return styles;
     }
   };
