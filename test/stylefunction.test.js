@@ -1,6 +1,6 @@
 import should from 'should';
 import deepFreeze from 'deep-freeze';
-import applyStyleFunction from '../src/stylefunction';
+import applyStyleFunction, {recordStyleLayer} from '../src/stylefunction';
 import olms from '../src/index';
 import states from './fixtures/states.json';
 import Feature from 'ol/Feature';
@@ -14,6 +14,10 @@ describe('stylefunction', function() {
     beforeEach(function() {
       feature = new Feature(new Polygon([[[-1, -1], [-1, 1], [1, 1], [1, -1], [-1, -1]]]));
       layer = new VectorLayer();
+    });
+
+    afterEach(function() {
+      recordStyleLayer(false);
     });
 
     it('does not modify the input style object', function() {
@@ -61,6 +65,17 @@ describe('stylefunction', function() {
     it('should handle layer visibility', function() {
       const style = applyStyleFunction(layer, states, ['state_names']);
       should(style(feature, 1)).be.undefined();
+    });
+
+    it('records the style layer the feature belongs to', function() {
+      const style = applyStyleFunction(layer, states, ['population_lt_2m', 'population_gt_4m']);
+      recordStyleLayer(true);
+      feature.set('PERSONS', 5000000);
+      style(feature, 1);
+      should(feature.get('mapbox-layer').id).equal('population_gt_4m');
+      feature.set('PERSONS', 1000000);
+      style(feature, 1);
+      should(feature.get('mapbox-layer').id).equal('population_lt_2m');
     });
   });
 
