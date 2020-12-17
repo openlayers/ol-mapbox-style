@@ -1,16 +1,20 @@
 # Changelog
 
-# 6.2.1
+## 6.3.0
+
+* New `stylefunction.recordStyleLayer()` function to know which rendered layer a feature belongs to (#309)
+
+## 6.2.1
 
 * Improved support for relative urls in style documents (#307)
 
-# 6.2.0
+## 6.2.0
 
 * Improved support for relative urls in style documents (#304)
 * Allow empty spritesheets (#306)
 * Added support for `fill-extrusion`, using a 2D fallback (#303)
 
-# 6.1.4
+## 6.1.4
 
 * Fix OpenLayers version mismatch with legacy builds (was missing in 6.1.3) #291
 

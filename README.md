@@ -76,20 +76,22 @@ When using webpack as bundler, it may be necessary to include the following in y
 
 -   [applyStyle](#applystyle)
     -   [Parameters](#parameters)
--   [stylefunction](#stylefunction)
+-   [recordStyleLayer](#recordstylelayer)
     -   [Parameters](#parameters-1)
--   [applyBackground](#applybackground)
+-   [stylefunction](#stylefunction)
     -   [Parameters](#parameters-2)
--   [olms](#olms)
+-   [applyBackground](#applybackground)
     -   [Parameters](#parameters-3)
--   [apply](#apply)
+-   [olms](#olms)
     -   [Parameters](#parameters-4)
--   [getLayer](#getlayer)
+-   [apply](#apply)
     -   [Parameters](#parameters-5)
--   [getLayers](#getlayers)
+-   [getLayer](#getlayer)
     -   [Parameters](#parameters-6)
--   [getSource](#getsource)
+-   [getLayers](#getlayers)
     -   [Parameters](#parameters-7)
+-   [getSource](#getsource)
+    -   [Parameters](#parameters-8)
 
 ### applyStyle
 
@@ -126,6 +128,20 @@ Two additional properties will be set on the provided layer:
 
 Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** Promise which will be resolved when the style can be used
 for rendering.
+
+### recordStyleLayer
+
+```js
+import {recordStyleLayer} from 'ol-mapbox-style/dist/stylefunction';
+```
+
+Turns recording of the Mapbox Style's `layer` on and off. When turned on,
+the layer that a rendered feature belongs to will be set as the feature's
+`mapbox-layer` property.
+
+#### Parameters
+
+-   `record` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Recording of the style layer is on. (optional, default `false`)
 
 ### stylefunction
 
