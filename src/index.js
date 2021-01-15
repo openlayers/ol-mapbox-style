@@ -420,7 +420,7 @@ function updateRasterLayerProperties(glLayer, layer, view) {
   layer.setOpacity(opacity);
 }
 
-function processStyle(glStyle, map, baseUrl, host, path, accessToken) {
+function processStyle(glStyle, map, baseUrl, host, path, accessToken = '') {
   const promises = [];
   let view = map.getView();
   if (!view.isDef() && !view.getRotation() && !view.getResolutions()) {
