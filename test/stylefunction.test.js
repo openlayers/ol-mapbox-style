@@ -158,6 +158,72 @@ describe('stylefunction', function() {
     });
   });
 
+  describe('Icon color with zero opacity', function() {
+    let style;
+    beforeEach(function() {
+      style = {
+        version: '8',
+        name: 'test',
+        sprite: '/fixtures/sprites',
+        sources: {
+          'geojson': {
+            type: 'geojson',
+            data: {
+              type: 'FeatureCollection',
+              features: [{
+                type: 'Feature',
+                geometry: {
+                  type: 'Point',
+                  coordinates: [0, 0]
+                },
+                properties: {
+                  'name': 'test'
+                }
+              }]
+            }
+          }
+        },
+        layers: [{
+          id: 'test',
+          type: 'symbol',
+          source: 'geojson',
+          layout: {
+            'symbol-placement': 'point',
+            'icon-image': 'amenity_firestation',
+            'text-anchor': 'bottom',
+            'text-line-height': 1.2,
+            'text-field': '{name}\n',
+            'text-font': ['sans-serif'],
+            'text-size': 12,
+            'text-justify': 'center'
+          },
+          paint: {
+            'text-halo-width': 2,
+            'icon-color': 'rgba(255,255,255,0)'
+          }
+        }]
+      };
+    });
+
+    it('does not create an image style when iconColor opacity is 0', function(done) {
+      olms(document.createElement('div'), style).then(function(map) {
+        const layer = map.getLayers().item(0);
+        layer.once('change', () => {
+          const styleFunction = layer.getStyle();
+          const feature = layer.getSource().getFeatures()[0];
+          const styles = styleFunction(feature, 1);
+          const text = styles[0].getText();
+          should(text.getText()).eql('test');
+          const image = styles[0].getImage();
+          should(image).eql(undefined);
+          done();
+        });
+      }).catch(function(err) {
+        done(err);
+      });
+    });
+  });
+
   describe('Max angle', function() {
     let style;
     beforeEach(function() {

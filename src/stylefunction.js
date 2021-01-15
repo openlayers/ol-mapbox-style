@@ -518,72 +518,76 @@ export default function(olLayer, glStyle, source, resolutions = defaultResolutio
                 }
               }
               if (type !== 2 || styleGeom) {
-                ++stylesLength;
-                style = styles[stylesLength];
-                if (!style || !style.getImage() || style.getFill() || style.getStroke()) {
-                  style = styles[stylesLength] = new Style();
-                }
-                style.setGeometry(styleGeom);
                 const iconSize = getValue(layer, 'layout', 'icon-size', zoom, f);
                 const iconColor = paint['icon-color'] !== undefined ? getValue(layer, 'paint', 'icon-color', zoom, f) : null;
-                let icon_cache_key = icon + '.' + iconSize;
-                if (iconColor !== null) {
-                  icon_cache_key += '.' + iconColor;
-                }
-                iconImg = iconImageCache[icon_cache_key];
-                if (!iconImg) {
-                  const spriteImageData = spriteData[icon];
+                if (!iconColor || iconColor.a !== 0) {
+                  let icon_cache_key = icon + '.' + iconSize;
                   if (iconColor !== null) {
-                    // cut out the sprite and color it
-                    const canvas = createCanvas(spriteImageData.width, spriteImageData.height);
-                    const ctx = /** @type {CanvasRenderingContext2D} */ (canvas.getContext('2d'));
-                    ctx.drawImage(
-                      spriteImage,
-                      spriteImageData.x,
-                      spriteImageData.y,
-                      spriteImageData.width,
-                      spriteImageData.height,
-                      0,
-                      0,
-                      spriteImageData.width,
-                      spriteImageData.height
-                    );
-                    const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                    for (let c = 0, cc = data.data.length; c < cc; c += 4) {
-                      const a = iconColor.a;
-                      if (a !== 0) {
-                        data.data[c] = iconColor.r * 255 / a;
-                        data.data[c + 1] = iconColor.g * 255 / a;
-                        data.data[c + 2] = iconColor.b * 255 / a;
+                    icon_cache_key += '.' + iconColor;
+                  }
+                  iconImg = iconImageCache[icon_cache_key];
+                  if (!iconImg) {
+                    const spriteImageData = spriteData[icon];
+                    if (iconColor !== null) {
+                      // cut out the sprite and color it
+                      const canvas = createCanvas(spriteImageData.width, spriteImageData.height);
+                      const ctx = /** @type {CanvasRenderingContext2D} */ (canvas.getContext('2d'));
+                      ctx.drawImage(
+                        spriteImage,
+                        spriteImageData.x,
+                        spriteImageData.y,
+                        spriteImageData.width,
+                        spriteImageData.height,
+                        0,
+                        0,
+                        spriteImageData.width,
+                        spriteImageData.height
+                      );
+                      const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                      for (let c = 0, cc = data.data.length; c < cc; c += 4) {
+                        const a = iconColor.a;
+                        if (a !== 0) {
+                          data.data[c] = iconColor.r * 255 / a;
+                          data.data[c + 1] = iconColor.g * 255 / a;
+                          data.data[c + 2] = iconColor.b * 255 / a;
+                        }
+                        data.data[c + 3] = a;
                       }
-                      data.data[c + 3] = a;
+                      ctx.putImageData(data, 0, 0);
+                      iconImg = iconImageCache[icon_cache_key] = new Icon({
+                        img: canvas,
+                        imgSize: [canvas.width, canvas.height],
+                        scale: iconSize / spriteImageData.pixelRatio
+                      });
+                    } else {
+                      iconImg = iconImageCache[icon_cache_key] = new Icon({
+                        img: spriteImage,
+                        imgSize: spriteImgSize,
+                        size: [spriteImageData.width, spriteImageData.height],
+                        offset: [spriteImageData.x, spriteImageData.y],
+                        rotateWithView: iconRotationAlignment === 'map',
+                        scale: iconSize / spriteImageData.pixelRatio
+                      });
                     }
-                    ctx.putImageData(data, 0, 0);
-                    iconImg = iconImageCache[icon_cache_key] = new Icon({
-                      img: canvas,
-                      imgSize: [canvas.width, canvas.height],
-                      scale: iconSize / spriteImageData.pixelRatio
-                    });
-                  } else {
-                    iconImg = iconImageCache[icon_cache_key] = new Icon({
-                      img: spriteImage,
-                      imgSize: spriteImgSize,
-                      size: [spriteImageData.width, spriteImageData.height],
-                      offset: [spriteImageData.x, spriteImageData.y],
-                      rotateWithView: iconRotationAlignment === 'map',
-                      scale: iconSize / spriteImageData.pixelRatio
-                    });
                   }
                 }
-                iconImg.setRotation(placementAngle + deg2rad(getValue(layer, 'layout', 'icon-rotate', zoom, f)));
-                iconImg.setOpacity(getValue(layer, 'paint', 'icon-opacity', zoom, f));
-                iconImg.setAnchor(anchor[getValue(layer, 'layout', 'icon-anchor', zoom, f)]);
-                style.setImage(iconImg);
-                text = style.getText();
-                style.setText(undefined);
-                style.setZIndex(index);
-                hasImage = true;
-                skipLabel = false;
+                if (iconImg) {
+                  ++stylesLength;
+                  style = styles[stylesLength];
+                  if (!style || !style.getImage() || style.getFill() || style.getStroke()) {
+                    style = styles[stylesLength] = new Style();
+                  }
+                  style.setGeometry(styleGeom);
+                  iconImg.setRotation(placementAngle + deg2rad(getValue(layer, 'layout', 'icon-rotate', zoom, f)));
+                  iconImg.setOpacity(getValue(layer, 'paint', 'icon-opacity', zoom, f));
+                  iconImg.setAnchor(anchor[getValue(layer, 'layout', 'icon-anchor', zoom, f)]);
+                  style.setImage(iconImg);
+                  text = style.getText();
+                  style.setText(undefined);
+                  style.setZIndex(index);
+                  hasImage = true;
+                  skipLabel = false;
+                }
               } else {
                 skipLabel = true;
               }
