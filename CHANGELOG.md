@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.3.1
+
+* Do not render icons when `icon-color` has zero opacity (#317)
+
 ## 6.3.0
 
 * New `stylefunction.recordStyleLayer()` function to know which rendered layer a feature belongs to (#309)
