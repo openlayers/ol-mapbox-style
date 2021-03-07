@@ -485,7 +485,9 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken = '') {
             url = host + url;
           }
         }
-
+        if (glSource.tiles) {
+          glSource.tiles = glSource.tiles.map(url => withPath(url, path));
+        }
 
         if (glSource.type == 'vector') {
           layer = setupVectorLayer(glSource, accessToken, url);
