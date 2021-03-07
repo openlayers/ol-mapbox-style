@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.3.2
+
+* Support relative urls for TileJSON tiles (#320)
+
 ## 6.3.1
 
 * Do not render icons when `icon-color` has zero opacity (#317)
