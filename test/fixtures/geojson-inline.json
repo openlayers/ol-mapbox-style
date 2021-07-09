@@ -15,6 +15,9 @@
           [2, "amenity_firestation"]
         ]
       }
+    },
+    "paint": {
+      "icon-color": "#000000"
     }
   }],
   "name": "QGIS project",

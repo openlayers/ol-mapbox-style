@@ -28,12 +28,12 @@
     "test": "npm run karma -- --single-run --log-level error"
   },
   "dependencies": {
-    "@mapbox/mapbox-gl-style-spec": "^13.14.0",
+    "@mapbox/mapbox-gl-style-spec": "^13.20.1",
     "mapbox-to-css-font": "^2.4.0",
     "webfont-matcher": "^1.1.0"
   },
   "peerDependencies": {
-    "ol": "^6.1.0"
+    "ol": ">= 6.1.0 < 7"
   },
   "devDependencies": {
     "@types/arcgis-rest-api": "^10.4.4",
@@ -46,16 +46,16 @@
     "copy-webpack-plugin": "^6.0.3",
     "css-loader": "^3.4.0",
     "deep-freeze": "0.0.1",
-    "documentation": "^13.0.2",
-    "eslint": "^5.16.0",
-    "eslint-config-openlayers": "^11.0.0",
+    "documentation": "^13.2.5",
+    "eslint": "^7.30.0",
+    "eslint-config-openlayers": "^15.1.0",
     "html-webpack-plugin": "^3.2.0",
-    "karma": "^5.1.1",
+    "karma": "^6.3.4",
     "karma-chrome-launcher": "^2.2.0",
     "karma-coverage": "^1.1.2",
     "karma-mocha": "^2.0.1",
     "karma-sourcemap-loader": "^0.3.7",
-    "karma-webpack": "^3.0.5",
+    "karma-webpack": "^4.0.2",
     "mapbox-gl-styles": "^2.0.2",
     "mini-css-extract-plugin": "^0.4.5",
     "mocha": "^8.1.1",
@@ -64,9 +64,9 @@
     "should": "^13.2.3",
     "sinon": "^7.5.0",
     "style-loader": "^0.23.1",
-    "typescript": "^3.8.3",
+    "typescript": "^3.9.10",
     "webpack": "^4.41.3",
     "webpack-cli": "^3.3.10",
-    "webpack-dev-server": "^3.9.0"
+    "webpack-dev-server": "^3.11.2"
   }
 }

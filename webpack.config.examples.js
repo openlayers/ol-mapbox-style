@@ -6,10 +6,10 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 /** Get the list of examples from the examples directory.
  *
- *  @param {String} dirName - Name of the directory to read.
- *  @param {Function} callback - Function to execute for each example.
+ *  @param {string} dirName Name of the directory to read.
+ *  @param {Function} callback Function to execute for each example.
  *
- *  @returns {Object} Entries.
+ *  @return {Object} Entries.
  */
 function getExamples(dirName, callback) {
   const example_files = fs.readdirSync(dirName);
@@ -31,9 +31,9 @@ function getExamples(dirName, callback) {
 /** Creates an object with the entry names and file names
  *  to be transformed.
  *
- *  @param {String} dirName - Name of the directory to read.
+ *  @param {string} dirName Name of the directory to read.
  *
- *  @returns {Object} with webpack entry points.
+ *  @return {Object} with webpack entry points.
  */
 function getEntries(dirName) {
   const entries = {};
@@ -46,9 +46,9 @@ function getEntries(dirName) {
 /** Each example needs a dedicated HTML file.
  *  This will create a "plugin" that outputs HTML from a template.
  *
- *  @param {String} dirName - Name of the directory to read.
+ *  @param {string} dirName Name of the directory to read.
  *
- *  @returns {Array} specifying webpack plugins.
+ *  @return {Array} specifying webpack plugins.
  */
 function getHtmlTemplates(dirName) {
   const html_conf = [];
@@ -63,13 +63,12 @@ function getHtmlTemplates(dirName) {
         template,
         // without specifying chunks, all chunks are
         //  included with the file.
-        chunks: ['common', entryName]
+        chunks: ['common', entryName],
       })
     );
   });
   return html_conf;
 }
-
 
 module.exports = (env, argv) => {
   const prod = argv.mode === 'production';
@@ -80,23 +79,23 @@ module.exports = (env, argv) => {
     entry: getEntries(path.resolve(path.join(__dirname, 'examples'))),
     optimization: {
       runtimeChunk: {
-        name: 'common'
+        name: 'common',
       },
       splitChunks: {
         name: 'common',
         chunks: 'initial',
-        minChunks: 2
-      }
+        minChunks: 2,
+      },
     },
     output: {
       filename: '[name].js',
-      path: path.join(__dirname, 'dist', 'examples')
+      path: path.join(__dirname, 'dist', 'examples'),
     },
     resolve: {
       alias: {
         'ol-mapbox-style/dist': path.join(__dirname, 'src'),
-        'ol-mapbox-style': path.join(__dirname, 'src')
-      }
+        'ol-mapbox-style': path.join(__dirname, 'src'),
+      },
     },
     devtool: 'source-map',
     node: {fs: 'empty'},
@@ -106,27 +105,30 @@ module.exports = (env, argv) => {
           test: /\.css$/,
           use: [
             prod ? MiniCssExtractPlugin.loader : 'style-loader',
-            'css-loader'
-          ]
+            'css-loader',
+          ],
         },
         {
           test: /\.js$/,
           include: [
             __dirname,
-            /node_modules\/(?!(@mapbox\/mapbox-gl-style-spec)\/)/
+            /node_modules\/(?!(@mapbox\/mapbox-gl-style-spec)\/)/,
           ],
           use: {
-            loader: 'buble-loader'
-          }
-        }
-      ]
+            loader: 'buble-loader',
+            options: {
+              transforms: {dangerousForOf: true},
+            },
+          },
+        },
+      ],
     },
     plugins: [
       new MiniCssExtractPlugin({
         // Options similar to the same options in webpackOptions.output
         // both options are optional
         filename: '[name].css',
-        chunkFilename: '[id].css'
+        chunkFilename: '[id].css',
       }),
       // ensure the data is copied over.
       // currently the index.html is manually created.
@@ -135,14 +137,14 @@ module.exports = (env, argv) => {
         patterns: [
           {
             from: path.resolve(__dirname, './examples/data'),
-            to: 'data'
+            to: 'data',
           },
           {
             from: path.resolve(__dirname, './examples/index.html'),
-            to: 'index.html'
-          }
-        ]
-      })
-    ].concat(getHtmlTemplates('./examples'))
+            to: 'index.html',
+          },
+        ],
+      }),
+    ].concat(getHtmlTemplates('./examples')),
   };
 };
