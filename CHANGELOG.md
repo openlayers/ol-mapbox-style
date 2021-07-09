@@ -1,5 +1,10 @@
 # Changelog
 
+## 6.4.0
+
+* Change package to `"type": "module"`
+* Updates to work seamlessly with ol > 6.5
+
 ## 6.3.2
 
 * Support relative urls for TileJSON tiles (#320)
