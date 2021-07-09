@@ -18,7 +18,6 @@
     ]
   },
   "include": [
-    "src/**/*.js",
-    "node_modules/ol/src/**/*.js"
+    "src/**/*.js"
   ]
 }
