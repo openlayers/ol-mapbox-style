@@ -1,34 +1,43 @@
-import should from 'should';
+import Feature from 'ol/Feature.js';
+import Polygon from 'ol/geom/Polygon.js';
+import VectorLayer from 'ol/layer/Vector.js';
+import applyStyleFunction, {recordStyleLayer} from '../src/stylefunction.js';
 import deepFreeze from 'deep-freeze';
-import applyStyleFunction, {recordStyleLayer} from '../src/stylefunction';
-import olms from '../src/index';
+import olms from '../src/index.js';
+import should from 'should';
 import states from './fixtures/states.json';
-import Feature from 'ol/Feature';
-import VectorLayer from 'ol/layer/Vector';
-import Polygon from 'ol/geom/Polygon';
 
-describe('stylefunction', function() {
-
-  describe('OpenLayers Style object creation', function() {
+describe('stylefunction', function () {
+  describe('OpenLayers Style object creation', function () {
     let feature, layer;
-    beforeEach(function() {
-      feature = new Feature(new Polygon([[[-1, -1], [-1, 1], [1, 1], [1, -1], [-1, -1]]]));
+    beforeEach(function () {
+      feature = new Feature(
+        new Polygon([
+          [
+            [-1, -1],
+            [-1, 1],
+            [1, 1],
+            [1, -1],
+            [-1, -1],
+          ],
+        ])
+      );
       layer = new VectorLayer();
     });
 
-    afterEach(function() {
+    afterEach(function () {
       recordStyleLayer(false);
     });
 
-    it('does not modify the input style object', function() {
+    it('does not modify the input style object', function () {
       const style = JSON.parse(JSON.stringify(states));
       deepFreeze(style);
-      should.doesNotThrow(function() {
+      should.doesNotThrow(function () {
         applyStyleFunction(layer, style, 'states');
       });
     });
 
-    it('creates a style function with all layers of a source', function() {
+    it('creates a style function with all layers of a source', function () {
       const style = applyStyleFunction(layer, states, 'states');
       should(style).be.a.Function();
       feature.set('PERSONS', 2000000);
@@ -39,7 +48,7 @@ describe('stylefunction', function() {
       should(style(feature, 1)).be.an.Array();
     });
 
-    it('creates a style function with some layers of a source', function() {
+    it('creates a style function with some layers of a source', function () {
       const style = applyStyleFunction(layer, states, ['population_lt_2m']);
       should(style).be.a.Function;
       feature.set('PERSONS', 2000000);
@@ -50,7 +59,7 @@ describe('stylefunction', function() {
       should(style(feature, 1)).be.undefined();
     });
 
-    it('should handle has and !has', function() {
+    it('should handle has and !has', function () {
       const style = applyStyleFunction(layer, states, ['has_male']);
       should(style).be.a.Function;
       should(style(feature, 1)).be.undefined();
@@ -62,13 +71,16 @@ describe('stylefunction', function() {
       should(style2(feature, 1)).be.an.Array();
     });
 
-    it('should handle layer visibility', function() {
+    it('should handle layer visibility', function () {
       const style = applyStyleFunction(layer, states, ['state_names']);
       should(style(feature, 1)).be.undefined();
     });
 
-    it('records the style layer the feature belongs to', function() {
-      const style = applyStyleFunction(layer, states, ['population_lt_2m', 'population_gt_4m']);
+    it('records the style layer the feature belongs to', function () {
+      const style = applyStyleFunction(layer, states, [
+        'population_lt_2m',
+        'population_gt_4m',
+      ]);
       recordStyleLayer(true);
       feature.set('PERSONS', 5000000);
       style(feature, 1);
@@ -79,10 +91,9 @@ describe('stylefunction', function() {
     });
   });
 
-  describe('Points with labels', function() {
-
+  describe('Points with labels', function () {
     let style;
-    beforeEach(function() {
+    beforeEach(function () {
       style = {
         version: '8',
         name: 'test',
@@ -91,76 +102,86 @@ describe('stylefunction', function() {
             type: 'geojson',
             data: {
               type: 'FeatureCollection',
-              features: [{
-                type: 'Feature',
-                geometry: {
-                  type: 'Point',
-                  coordinates: [0, 0]
+              features: [
+                {
+                  type: 'Feature',
+                  geometry: {
+                    type: 'Point',
+                    coordinates: [0, 0],
+                  },
+                  properties: {
+                    'name': 'test',
+                  },
                 },
-                properties: {
-                  'name': 'test'
-                }
-              }]
-            }
-          }
-        },
-        layers: [{
-          id: 'test',
-          type: 'symbol',
-          source: 'geojson',
-          layout: {
-            'symbol-placement': 'point',
-            'icon-image': 'donut',
-            'text-anchor': 'bottom',
-            'text-line-height': 1.2,
-            'text-field': '{name}\n',
-            'text-font': ['sans-serif'],
-            'text-size': 12,
-            'text-justify': 'center'
+              ],
+            },
           },
-          paint: {
-            'text-halo-width': 2
-          }
-        }]
+        },
+        layers: [
+          {
+            id: 'test',
+            type: 'symbol',
+            source: 'geojson',
+            layout: {
+              'symbol-placement': 'point',
+              'icon-image': 'donut',
+              'text-anchor': 'bottom',
+              'text-line-height': 1.2,
+              'text-field': '{name}\n',
+              'text-font': ['sans-serif'],
+              'text-size': 12,
+              'text-justify': 'center',
+            },
+            paint: {
+              'text-halo-width': 2,
+            },
+          },
+        ],
       };
     });
 
-    it('calculates correct offsetY', function(done) {
-      olms(document.createElement('div'), style).then(function(map) {
-        const layer = map.getLayers().item(0);
-        const styleFunction = layer.getStyle();
-        const feature = layer.getSource().getFeatures()[0];
-        const styles = styleFunction(feature, 1);
-        const text = styles[0].getText();
-        const textHaloWidth = style.layers[0].paint['text-halo-width'];
-        const textLineHeight = style.layers[0].layout['text-line-height'];
-        const textSize = style.layers[0].layout['text-size'];
-        // offsetY is the halo width plus half the distance between two lines
-        should(text.getOffsetY()).eql(-textHaloWidth - (0.5 * (textLineHeight - 1)) * textSize);
-        done();
-      }).catch(function(err) {
-        done(err);
-      });
+    it('calculates correct offsetY', function (done) {
+      olms(document.createElement('div'), style)
+        .then(function (map) {
+          const layer = map.getLayers().item(0);
+          const styleFunction = layer.getStyle();
+          const feature = layer.getSource().getFeatures()[0];
+          const styles = styleFunction(feature, 1);
+          const text = styles[0].getText();
+          const textHaloWidth = style.layers[0].paint['text-halo-width'];
+          const textLineHeight = style.layers[0].layout['text-line-height'];
+          const textSize = style.layers[0].layout['text-size'];
+          // offsetY is the halo width plus half the distance between two lines
+          should(text.getOffsetY()).eql(
+            -textHaloWidth - 0.5 * (textLineHeight - 1) * textSize
+          );
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
     });
 
-    it('trims the label-field', function(done) {
-      olms(document.createElement('div'), style).then(function(map) {
-        const layer = map.getLayers().item(0);
-        const styleFunction = layer.getStyle();
-        const feature = layer.getSource().getFeatures()[0];
-        const styles = styleFunction(feature, 1);
-        const text = styles[0].getText();
-        should(text.getText()).eql('test');
-        done();
-      }).catch(function(err) {
-        done(err);
-      });
+    it('trims the label-field', function (done) {
+      olms(document.createElement('div'), style)
+        .then(function (map) {
+          const layer = map.getLayers().item(0);
+          const styleFunction = layer.getStyle();
+          const feature = layer.getSource().getFeatures()[0];
+          const styles = styleFunction(feature, 1);
+          const text = styles[0].getText();
+          should(text.getText()).eql('test');
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
     });
   });
 
-  describe('Icon color with zero opacity', function() {
+  describe('Icon color with zero opacity', function () {
     let style;
-    beforeEach(function() {
+    beforeEach(function () {
       style = {
         version: '8',
         name: 'test',
@@ -170,63 +191,69 @@ describe('stylefunction', function() {
             type: 'geojson',
             data: {
               type: 'FeatureCollection',
-              features: [{
-                type: 'Feature',
-                geometry: {
-                  type: 'Point',
-                  coordinates: [0, 0]
+              features: [
+                {
+                  type: 'Feature',
+                  geometry: {
+                    type: 'Point',
+                    coordinates: [0, 0],
+                  },
+                  properties: {
+                    'name': 'test',
+                  },
                 },
-                properties: {
-                  'name': 'test'
-                }
-              }]
-            }
-          }
-        },
-        layers: [{
-          id: 'test',
-          type: 'symbol',
-          source: 'geojson',
-          layout: {
-            'symbol-placement': 'point',
-            'icon-image': 'amenity_firestation',
-            'text-anchor': 'bottom',
-            'text-line-height': 1.2,
-            'text-field': '{name}\n',
-            'text-font': ['sans-serif'],
-            'text-size': 12,
-            'text-justify': 'center'
+              ],
+            },
           },
-          paint: {
-            'text-halo-width': 2,
-            'icon-color': 'rgba(255,255,255,0)'
-          }
-        }]
+        },
+        layers: [
+          {
+            id: 'test',
+            type: 'symbol',
+            source: 'geojson',
+            layout: {
+              'symbol-placement': 'point',
+              'icon-image': 'amenity_firestation',
+              'text-anchor': 'bottom',
+              'text-line-height': 1.2,
+              'text-field': '{name}\n',
+              'text-font': ['sans-serif'],
+              'text-size': 12,
+              'text-justify': 'center',
+            },
+            paint: {
+              'text-halo-width': 2,
+              'icon-color': 'rgba(255,255,255,0)',
+            },
+          },
+        ],
       };
     });
 
-    it('does not create an image style when iconColor opacity is 0', function(done) {
-      olms(document.createElement('div'), style).then(function(map) {
-        const layer = map.getLayers().item(0);
-        layer.once('change', () => {
-          const styleFunction = layer.getStyle();
-          const feature = layer.getSource().getFeatures()[0];
-          const styles = styleFunction(feature, 1);
-          const text = styles[0].getText();
-          should(text.getText()).eql('test');
-          const image = styles[0].getImage();
-          should(image).eql(undefined);
-          done();
+    it('does not create an image style when iconColor opacity is 0', function (done) {
+      olms(document.createElement('div'), style)
+        .then(function (map) {
+          const layer = map.getLayers().item(0);
+          layer.once('change', () => {
+            const styleFunction = layer.getStyle();
+            const feature = layer.getSource().getFeatures()[0];
+            const styles = styleFunction(feature, 1);
+            const text = styles[0].getText();
+            should(text.getText()).eql('test');
+            const image = styles[0].getImage();
+            should(image).eql(undefined);
+            done();
+          });
+        })
+        .catch(function (err) {
+          done(err);
         });
-      }).catch(function(err) {
-        done(err);
-      });
     });
   });
 
-  describe('Max angle', function() {
+  describe('Max angle', function () {
     let style;
-    beforeEach(function() {
+    beforeEach(function () {
       style = {
         version: '8',
         name: 'test',
@@ -235,58 +262,69 @@ describe('stylefunction', function() {
             type: 'geojson',
             data: {
               type: 'FeatureCollection',
-              features: [{
-                type: 'Feature',
-                geometry: {
-                  type: 'LineString',
-                  coordinates: [[0, 0], [1, 1]]
+              features: [
+                {
+                  type: 'Feature',
+                  geometry: {
+                    type: 'LineString',
+                    coordinates: [
+                      [0, 0],
+                      [1, 1],
+                    ],
+                  },
+                  properties: {
+                    'name': 'test',
+                  },
                 },
-                properties: {
-                  'name': 'test'
-                }
-              }]
-            }
-          }
+              ],
+            },
+          },
         },
-        layers: [{
-          id: 'test',
-          type: 'symbol',
-          source: 'geojson',
-          layout: {
-            'symbol-placement': 'line',
-            'text-field': '{name}'
-          }
-        }]
+        layers: [
+          {
+            id: 'test',
+            type: 'symbol',
+            source: 'geojson',
+            layout: {
+              'symbol-placement': 'line',
+              'text-field': '{name}',
+            },
+          },
+        ],
       };
     });
 
-    it('should set max angle when exists', function(done) {
+    it('should set max angle when exists', function (done) {
       style.layers[0].layout['text-max-angle'] = 0;
-      olms(document.createElement('div'), style).then(function(map) {
-        const layer = map.getLayers().item(0);
-        const styleFunction = layer.getStyle();
-        const feature = layer.getSource().getFeatures()[0];
-        const styles = styleFunction(feature, 1);
-        const text = styles[0].getText();
-        should(text.getMaxAngle()).eql(0);
-        done();
-      }).catch(function(err) {
-        done(err);
-      });
+      olms(document.createElement('div'), style)
+        .then(function (map) {
+          const layer = map.getLayers().item(0);
+          const styleFunction = layer.getStyle();
+          const feature = layer.getSource().getFeatures()[0];
+          const styles = styleFunction(feature, 1);
+          const text = styles[0].getText();
+          should(text.getMaxAngle()).eql(0);
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
     });
 
-    it('should not set max angle when it doesnt exist', function(done) {
-      olms(document.createElement('div'), style).then(function(map) {
-        const layer = map.getLayers().item(0);
-        const styleFunction = layer.getStyle();
-        const feature = layer.getSource().getFeatures()[0];
-        const styles = styleFunction(feature, 1);
-        const text = styles[0].getText();
-        should(text.getMaxAngle()).eql(Math.PI / 4);
-        done();
-      }).catch(function(err) {
-        done(err);
-      });
+    it('should not set max angle when it doesnt exist', function (done) {
+      olms(document.createElement('div'), style)
+        .then(function (map) {
+          const layer = map.getLayers().item(0);
+          const styleFunction = layer.getStyle();
+          const feature = layer.getSource().getFeatures()[0];
+          const styles = styleFunction(feature, 1);
+          const text = styles[0].getText();
+          should(text.getMaxAngle()).eql(Math.PI / 4);
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
     });
   });
 });

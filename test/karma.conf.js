@@ -1,43 +1,42 @@
 const path = require('path');
 
-module.exports = function(karma) {
+module.exports = function (karma) {
   karma.set({
     browserDisconnectTolerance: 2,
     frameworks: ['mocha'],
     client: {
       runInParent: true,
       mocha: {
-        timeout: 2500
-      }
+        timeout: 2500,
+      },
     },
     files: [
       {
         pattern: path.resolve(__dirname, './index_test.js'),
-        watched: false
-      }, {
+        watched: false,
+      },
+      {
         pattern: '**/*',
         included: false,
-        watched: false
-      }
+        watched: false,
+      },
     ],
-    exclude: [
-      '**/*.test.js'
-    ],
+    exclude: ['**/*.test.js'],
     proxies: {
-      '/fixtures/': '/base/fixtures/'
+      '/fixtures/': '/base/fixtures/',
     },
     preprocessors: {
-      '**/*.js': ['webpack', 'sourcemap']
+      '**/*.js': ['webpack', 'sourcemap'],
     },
     reporters: ['dots'],
     webpack: {
       devtool: 'inline-source-map',
       node: {fs: 'empty'},
-      mode: 'development'
+      mode: 'development',
     },
     webpackMiddleware: {
-      noInfo: true
-    }
+      noInfo: true,
+    },
   });
 
   process.env.CHROME_BIN = require('puppeteer').executablePath();
@@ -45,24 +44,24 @@ module.exports = function(karma) {
     karma.set({
       browsers: ['Chrome'],
       preprocessors: {
-        '../src/**/*.js': ['coverage']
+        '../src/**/*.js': ['coverage'],
       },
       coverageReporter: {
         reporters: [
           {
             type: 'lcovonly', // that's enough for coveralls, no HTML
             dir: '../coverage/',
-            subdir: '.'
+            subdir: '.',
           },
           {
-            type: 'text-summary' // prints the textual summary to the terminal
-          }
-        ]
-      }
+            type: 'text-summary', // prints the textual summary to the terminal
+          },
+        ],
+      },
     });
   } else {
     karma.set({
-      browsers: ['ChromeHeadless']
+      browsers: ['ChromeHeadless'],
     });
   }
 };

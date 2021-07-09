@@ -20,7 +20,7 @@ const externals = {
   'ol/layer/VectorTile': 'ol.layer.VectorTile',
   'ol/source/TileJSON': 'ol.source.TileJSON',
   'ol/source/Vector': 'ol.source.Vector',
-  'ol/source/VectorTile': 'ol.source.VectorTile'
+  'ol/source/VectorTile': 'ol.source.VectorTile',
 };
 
 function createExternals() {
@@ -30,7 +30,7 @@ function createExternals() {
       root: externals[key].split('.'),
       commonjs: key,
       commonjs2: key,
-      amd: key
+      amd: key,
     };
   }
   return createdExternals;
@@ -45,21 +45,22 @@ module.exports = {
     rules: [
       {
         test: /\.js$/,
-        include: [
-          __dirname
-        ],
+        include: [__dirname],
         use: {
-          loader: 'buble-loader'
-        }
-      }
-    ]
+          loader: 'buble-loader',
+          options: {
+            transforms: {dangerousForOf: true},
+          },
+        },
+      },
+    ],
   },
   output: {
     path: path.resolve('./dist'), // Path of output file
     filename: 'olms.js',
     library: 'olms',
     libraryTarget: 'umd',
-    libraryExport: 'default'
+    libraryExport: 'default',
   },
-  externals: createExternals()
+  externals: createExternals(),
 };
