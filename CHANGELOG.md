@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.4.1
+
+* Fix `webfont-matcher` import
+
 ## 6.4.0
 
 * Change package to `"type": "module"`

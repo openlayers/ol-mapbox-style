@@ -16,7 +16,7 @@ import VectorTileLayer from 'ol/layer/VectorTile.js';
 import VectorTileSource from 'ol/source/VectorTile.js';
 import View from 'ol/View.js';
 import applyStyleFunction, {getValue} from './stylefunction.js';
-import googleFonts from 'webfont-matcher/lib/fonts/google';
+import googleFonts from 'webfont-matcher/lib/fonts/google.js';
 import mb2css from 'mapbox-to-css-font';
 import {Color} from '@mapbox/mapbox-gl-style-spec/dist/index.es.js';
 import {assign, defaultResolutions} from './util.js';
