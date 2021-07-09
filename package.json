@@ -3,6 +3,7 @@
   "version": "6.3.2",
   "description": "Create OpenLayers maps from Mapbox Style objects",
   "main": "dist/index.js",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git://github.com/openlayers/ol-mapbox-style.git"
@@ -17,9 +18,9 @@
   ],
   "license": "BSD-2-Clause",
   "scripts": {
-    "start": "webpack-dev-server --config ./webpack.config.examples.js",
+    "start": "webpack-dev-server --config ./webpack.config.examples.cjs",
     "prepare": "npm run doc && npm run build",
-    "build": "tsc --project tsconfig-build.json && webpack-cli --mode=production --config ./webpack.config.olms.js && webpack-cli --mode=production --config ./webpack.config.examples.js",
+    "build": "tsc --project tsconfig-build.json && webpack-cli --mode=production --config ./webpack.config.olms.cjs && webpack-cli --mode=production --config ./webpack.config.examples.cjs",
     "doc": "documentation readme -s API src/index.js src/stylefunction.js --document-exported true",
     "karma": "karma start test/karma.conf.js",
     "lint": "eslint test examples src",
@@ -59,7 +60,7 @@
     "mapbox-gl-styles": "^2.0.2",
     "mini-css-extract-plugin": "^0.4.5",
     "mocha": "^8.1.1",
-    "ol": "^6.4.3",
+    "ol": "^6.5.0",
     "puppeteer": "^1.20.0",
     "should": "^13.2.3",
     "sinon": "^7.5.0",
