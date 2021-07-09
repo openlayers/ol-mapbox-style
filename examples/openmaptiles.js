@@ -1,7 +1,7 @@
 import 'ol/ol.css';
 import olms from 'ol-mapbox-style';
 
-const baseUrl = 'https://maps.tilehosting.com/styles/basic/style.json';
+const baseUrl = 'https://api.maptiler.com/maps/basic/style.json';
 
 let key = document.cookie.replace(
   /(?:(?:^|.*;\s*)tilehosting_access_token\s*\=\s*([^;]*).*$)|^.*$/,
