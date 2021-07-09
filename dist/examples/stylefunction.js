@@ -1,0 +1,2 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[5],{132:function(e,t,a){"use strict";a.r(t);a(62);var n=a(103),s=a(83),o=a(85),r=a(84),w=a(74),c=a(70),u=new o.a({declutter:!0,source:new r.a({format:new n.a,url:"data/states.geojson"})}),d=new s.a({target:"map",view:new w.a({center:[-13603186.115192635,6785744.563386],zoom:2})});fetch("data/states.json").then((function(e){return e.json()})).then((function(e){Object(c.a)(u,e,"states"),-1===d.getLayers().getArray().indexOf(u)&&d.addLayer(u)}))}},[[132,0]]]);
+//# sourceMappingURL=stylefunction.js.map
