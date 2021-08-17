@@ -20,7 +20,7 @@ import {
   expression,
   function as fn,
   latest as spec,
-} from '@mapbox/mapbox-gl-style-spec/dist/index.es.js';
+} from '@mapbox/mapbox-gl-style-spec';
 import {
   applyLetterSpacing,
   createCanvas,

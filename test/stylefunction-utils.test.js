@@ -5,7 +5,7 @@ import should from 'should';
 import {
   Color,
   latest as spec,
-} from '@mapbox/mapbox-gl-style-spec/dist/index.es.js';
+} from '@mapbox/mapbox-gl-style-spec';
 
 import {
   _colorWithOpacity as colorWithOpacity,
