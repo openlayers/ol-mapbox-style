@@ -2,10 +2,7 @@
 import Feature from 'ol/Feature.js';
 import Point from 'ol/geom/Point.js';
 import should from 'should';
-import {
-  Color,
-  latest as spec,
-} from '@mapbox/mapbox-gl-style-spec';
+import {Color, latest as spec} from '@mapbox/mapbox-gl-style-spec';
 
 import {
   _colorWithOpacity as colorWithOpacity,
