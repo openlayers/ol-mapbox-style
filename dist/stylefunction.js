@@ -11,7 +11,7 @@ import Stroke from 'ol/style/Stroke.js';
 import Style from 'ol/style/Style.js';
 import Text from 'ol/style/Text.js';
 import mb2css from 'mapbox-to-css-font';
-import { Color, featureFilter as createFilter, derefLayers, expression, function as fn, latest as spec, } from '@mapbox/mapbox-gl-style-spec/dist/index.es.js';
+import { Color, featureFilter as createFilter, derefLayers, expression, function as fn, latest as spec, } from '@mapbox/mapbox-gl-style-spec';
 import { applyLetterSpacing, createCanvas, defaultResolutions, deg2rad, getZoomForResolution, wrapText, } from './util.js';
 /**
  * @typedef {import("ol/layer/Vector").default} VectorLayer

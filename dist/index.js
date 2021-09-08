@@ -17,7 +17,7 @@ import View from 'ol/View.js';
 import applyStyleFunction, { getValue } from './stylefunction.js';
 import googleFonts from 'webfont-matcher/lib/fonts/google.js';
 import mb2css from 'mapbox-to-css-font';
-import { Color } from '@mapbox/mapbox-gl-style-spec/dist/index.es.js';
+import { Color } from '@mapbox/mapbox-gl-style-spec';
 import { assign, defaultResolutions } from './util.js';
 import { createXYZ } from 'ol/tilegrid.js';
 import { fromLonLat } from 'ol/proj.js';
