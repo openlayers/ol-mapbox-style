@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.4.2
+
+* Fix import of `@mapbox/mapbox-gl-style-spec`
+
 ## 6.4.1
 
 * Fix `webfont-matcher` import
