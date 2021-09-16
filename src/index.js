@@ -405,6 +405,7 @@ function setupRasterLayer(glSource, url) {
       const minZoom = tileJSONDoc.minzoom || 0;
       const maxZoom = tileJSONDoc.maxzoom || 22;
       // Only works when using ES modules
+      //@ts-ignore
       source.tileGrid = new TileGrid({
         origin: tileGrid.getOrigin(0),
         extent: extent || tileGrid.getExtent(),

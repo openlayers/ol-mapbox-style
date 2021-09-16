@@ -112,6 +112,7 @@ function measureText(text, letterSpacing) {
 let measureCache = {};
 if (labelCache) {
   // Only available when using ES modules
+  //@ts-ignore
   listen(labelCache, EventType.CLEAR, function () {
     measureCache = {};
   });

@@ -8,8 +8,6 @@
     "skipLibCheck": true,
     "baseUrl": "./",
     "paths": {
-      "ol": ["node_modules/ol/src"],
-      "ol/*": ["node_modules/ol/src/*"],
       "@mapbox/mapbox-gl-style-spec": ["node_modules/@mapbox/mapbox-gl-style-spec/dist/index.es.js"]
     },
     "lib": [
