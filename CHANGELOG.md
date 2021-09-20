@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.5.0
+
+* Export `setupVectorSource()` for use in OpenLayers
+
 ## 6.4.2
 
 * Fix import of `@mapbox/mapbox-gl-style-spec`
