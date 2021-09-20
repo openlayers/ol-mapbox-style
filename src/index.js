@@ -322,12 +322,16 @@ function extentFromTileJSON(tileJSON) {
   }
 }
 
-function setupVectorLayer(glSource, accessToken, url) {
+/**
+ * Creates an OpenLayers VectorTile source for a gl source entry.
+ * @param {Object} glSource "source" entry from a Mapbox Style object.
+ * @param {string} url URL to use for the source. This is expected to be the complete http(s) url,
+ * with access key applied.
+ * @return {Promise<import("ol/source/VectorTile").default>} Promise resolving to a VectorTile source.
+ * @private
+ */
+export function setupVectorSource(glSource, url) {
   glSource = assign({}, glSource);
-  const layer = new VectorTileLayer({
-    declutter: true,
-    visible: false,
-  });
   const cacheKey = JSON.stringify(glSource);
   let tilejson = tilejsonCache[cacheKey];
   if (!tilejson) {
@@ -337,52 +341,64 @@ function setupVectorLayer(glSource, accessToken, url) {
     });
     tilejsonCache[cacheKey] = tilejson;
   }
-  const key = tilejson.on('change', function () {
-    const state = tilejson.getState();
-    if (state === 'ready') {
-      const tileJSONDoc = tilejson.getTileJSON();
-      const tiles = Array.isArray(tileJSONDoc.tiles)
-        ? tileJSONDoc.tiles
-        : [tileJSONDoc.tiles];
-      if (url) {
-        for (let i = 0, ii = tiles.length; i < ii; ++i) {
-          const tile = tiles[i];
-          if (tile.indexOf('http') != 0) {
-            tiles[i] = url.replace(/\/?$/, '/') + tile.replace(/^\//, '');
+  return new Promise((resolve) => {
+    const key = tilejson.on('change', function () {
+      const state = tilejson.getState();
+      if (state === 'ready') {
+        const tileJSONDoc = tilejson.getTileJSON();
+        const tiles = Array.isArray(tileJSONDoc.tiles)
+          ? tileJSONDoc.tiles
+          : [tileJSONDoc.tiles];
+        if (url) {
+          for (let i = 0, ii = tiles.length; i < ii; ++i) {
+            const tile = tiles[i];
+            if (tile.indexOf('http') != 0) {
+              tiles[i] = url.replace(/\/?$/, '/') + tile.replace(/^\//, '');
+            }
           }
         }
+        const tileGrid = tilejson.getTileGrid();
+        const extent = extentFromTileJSON(tileJSONDoc);
+        const minZoom = tileJSONDoc.minzoom || 0;
+        const maxZoom = tileJSONDoc.maxzoom || 22;
+        let source = tilejson.get('ol-source');
+        if (source === undefined) {
+          source = new VectorTileSource({
+            attributions: tilejson.getAttributions(),
+            format: new MVT(),
+            tileGrid: new TileGrid({
+              origin: tileGrid.getOrigin(0),
+              extent: extent || tileGrid.getExtent(),
+              minZoom: minZoom,
+              resolutions: defaultResolutions.slice(0, maxZoom + 1),
+              tileSize: 512,
+            }),
+            urls: tiles,
+          });
+          tilejson.set('ol-source', source);
+        }
+        unByKey(key);
+        resolve(source);
+      } else if (state === 'error') {
+        tilejson.set('ol-source', null);
+        unByKey(key);
+        resolve(undefined);
       }
-      const tileGrid = tilejson.getTileGrid();
-      const extent = extentFromTileJSON(tileJSONDoc);
-      const minZoom = tileJSONDoc.minzoom || 0;
-      const maxZoom = tileJSONDoc.maxzoom || 22;
-      let source = tilejson.get('ol-source');
-      if (source === undefined) {
-        source = new VectorTileSource({
-          attributions: tilejson.getAttributions(),
-          format: new MVT(),
-          tileGrid: new TileGrid({
-            origin: tileGrid.getOrigin(0),
-            extent: extent || tileGrid.getExtent(),
-            minZoom: minZoom,
-            resolutions: defaultResolutions.slice(0, maxZoom + 1),
-            tileSize: 512,
-          }),
-          urls: tiles,
-        });
-        tilejson.set('ol-source', source);
-      }
-      unByKey(key);
-      layer.setSource(source);
-    } else if (state === 'error') {
-      tilejson.set('ol-source', null);
-      unByKey(key);
-      layer.setSource(undefined);
+    });
+    if (tilejson.getState() === 'ready') {
+      tilejson.changed();
     }
   });
-  if (tilejson.getState() === 'ready') {
-    tilejson.changed();
-  }
+}
+
+function setupVectorLayer(glSource, url) {
+  const layer = new VectorTileLayer({
+    declutter: true,
+    visible: false,
+  });
+  setupVectorSource(glSource, url).then((source) => {
+    layer.setSource(source);
+  });
   return layer;
 }
 
@@ -536,7 +552,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken = '') {
         }
 
         if (glSource.type == 'vector') {
-          layer = setupVectorLayer(glSource, accessToken, url);
+          layer = setupVectorLayer(glSource, url);
         } else if (glSource.type == 'raster') {
           layer = setupRasterLayer(glSource, url);
           layer.setVisible(
