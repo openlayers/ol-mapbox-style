@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.5.1
+
+* Remove `ol` peer dependency from `package.json` for easier of use dev versions of `ol`
+
 ## 6.5.0
 
 * Export `setupVectorSource()` for use in OpenLayers
