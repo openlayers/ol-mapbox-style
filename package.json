@@ -46,7 +46,7 @@
     "deep-freeze": "0.0.1",
     "documentation": "^13.2.5",
     "eslint": "^7.30.0",
-    "eslint-config-openlayers": "^15.1.0",
+    "eslint-config-openlayers": "^16.0.1",
     "html-webpack-plugin": "^5.5.0",
     "karma": "^6.3.4",
     "karma-chrome-launcher": "^2.2.0",
