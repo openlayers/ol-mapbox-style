@@ -1,9 +1,9 @@
 import 'ol/ol.css';
-import GeoJsonFormat from 'ol/format/GeoJSON';
-import Map from 'ol/Map';
-import VectorLayer from 'ol/layer/Vector';
-import VectorSource from 'ol/source/Vector';
-import View from 'ol/View';
+import GeoJsonFormat from 'ol/format/GeoJSON.js';
+import Map from 'ol/Map.js';
+import VectorLayer from 'ol/layer/Vector.js';
+import VectorSource from 'ol/source/Vector.js';
+import View from 'ol/View.js';
 
 import stylefunction from 'ol-mapbox-style/dist/stylefunction';
 

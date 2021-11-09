@@ -2,8 +2,9 @@ const path = require('path');
 
 module.exports = function (karma) {
   karma.set({
+    browsers: ['ChromeHeadless'],
     browserDisconnectTolerance: 2,
-    frameworks: ['mocha'],
+    frameworks: ['webpack', 'mocha'],
     client: {
       runInParent: true,
       mocha: {
@@ -12,7 +13,7 @@ module.exports = function (karma) {
     },
     files: [
       {
-        pattern: path.resolve(__dirname, './index_test.js'),
+        pattern: '**/*.test.js',
         watched: false,
       },
       {
@@ -21,7 +22,6 @@ module.exports = function (karma) {
         watched: false,
       },
     ],
-    exclude: ['**/*.test.js'],
     proxies: {
       '/fixtures/': '/base/fixtures/',
     },
@@ -31,7 +31,6 @@ module.exports = function (karma) {
     reporters: ['dots'],
     webpack: {
       devtool: 'inline-source-map',
-      node: {fs: 'empty'},
       mode: 'development',
     },
     webpackMiddleware: {
@@ -40,28 +39,4 @@ module.exports = function (karma) {
   });
 
   process.env.CHROME_BIN = require('puppeteer').executablePath();
-  if (process.env.CIRCLECI) {
-    karma.set({
-      browsers: ['Chrome'],
-      preprocessors: {
-        '../src/**/*.js': ['coverage'],
-      },
-      coverageReporter: {
-        reporters: [
-          {
-            type: 'lcovonly', // that's enough for coveralls, no HTML
-            dir: '../coverage/',
-            subdir: '.',
-          },
-          {
-            type: 'text-summary', // prints the textual summary to the terminal
-          },
-        ],
-      },
-    });
-  } else {
-    karma.set({
-      browsers: ['ChromeHeadless'],
-    });
-  }
 };

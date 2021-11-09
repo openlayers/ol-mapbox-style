@@ -1,11 +1,11 @@
 import should from 'should';
 import sinon from 'sinon';
 
-import ImageLayer from 'ol/layer/Image';
-import VectorLayer from 'ol/layer/Vector';
-import VectorTileLayer from 'ol/layer/VectorTile';
-import VectorTileSource from 'ol/source/VectorTile';
-import {createXYZ} from 'ol/tilegrid';
+import ImageLayer from 'ol/layer/Image.js';
+import VectorLayer from 'ol/layer/Vector.js';
+import VectorTileLayer from 'ol/layer/VectorTile.js';
+import VectorTileSource from 'ol/source/VectorTile.js';
+import {createXYZ} from 'ol/tilegrid.js';
 
 import glStyle from './fixtures/osm-liberty/style.json';
 import styleEmptySprite from './fixtures/style-empty-sprite.json';
@@ -117,7 +117,7 @@ describe('applyStyle sprite retrieval', function () {
       window.location.host +
       '/fixtures/osm-liberty/osm-liberty';
 
-    global.devicePixelRatio = 2;
+    devicePixelRatio = 2;
 
     applyStyle(layer, style, source)
       .then(function () {
@@ -138,7 +138,7 @@ describe('applyStyle sprite retrieval', function () {
       window.location.host +
       '/fixtures/osm-liberty/osm-liberty';
 
-    global.devicePixelRatio = 1;
+    devicePixelRatio = 1;
 
     applyStyle(layer, style, source)
       .then(function () {
@@ -156,7 +156,7 @@ describe('applyStyle sprite retrieval', function () {
     style.sprite =
       window.location.protocol + '//' + window.location.host + '/invalid';
 
-    global.devicePixelRatio = 2;
+    devicePixelRatio = 2;
 
     applyStyle(layer, style, source)
       .then(function () {
@@ -172,7 +172,7 @@ describe('applyStyle sprite retrieval', function () {
     const style = Object.assign({}, glStyle);
     style.sprite = './not-found';
 
-    global.devicePixelRatio = 1;
+    devicePixelRatio = 1;
 
     applyStyle(layer, style, source)
       .then(function () {
