@@ -39,7 +39,6 @@ function createExternals() {
 module.exports = {
   entry: './src/olms.js',
   devtool: 'source-map',
-  node: {fs: 'empty'},
   mode: 'production',
   module: {
     rules: [
