@@ -262,7 +262,7 @@ export function recordStyleLayer(record) {
  * @param {Object} [spriteData=undefined] Sprite data from the url specified in
  * the Mapbox Style object's `sprite` property. Only required if a `sprite`
  * property is specified in the Mapbox Style object.
- * @param {Object} [spriteImageUrl=undefined] Sprite image url for the sprite
+ * @param {string} [spriteImageUrl=undefined] Sprite image url for the sprite
  * specified in the Mapbox Style object's `sprite` property. Only required if a
  * `sprite` property is specified in the Mapbox Style object.
  * @param {function(Array<string>):Array<string>} [getFonts=undefined] Function that
