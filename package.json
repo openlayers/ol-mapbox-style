@@ -42,7 +42,7 @@
     "buble": "^0.19.8",
     "buble-loader": "^0.5.1",
     "copy-webpack-plugin": "^6.0.3",
-    "css-loader": "^3.4.0",
+    "css-loader": "^5.2.7",
     "deep-freeze": "0.0.1",
     "documentation": "^13.2.5",
     "eslint": "^7.30.0",
