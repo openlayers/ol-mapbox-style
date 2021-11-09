@@ -18,7 +18,7 @@
   ],
   "license": "BSD-2-Clause",
   "scripts": {
-    "start": "webpack-dev-server --config ./webpack.config.examples.cjs",
+    "start": "webpack serve --config ./webpack.config.examples.cjs",
     "prepare": "npm run doc && npm run build",
     "build": "tsc --project tsconfig-build.json && webpack-cli --mode=production --config ./webpack.config.olms.cjs && webpack-cli --mode=production --config ./webpack.config.examples.cjs",
     "doc": "documentation readme -s API src/index.js src/stylefunction.js --document-exported true",
@@ -60,9 +60,10 @@
     "puppeteer": "^11.0.0",
     "should": "^13.2.3",
     "sinon": "^7.5.0",
-    "style-loader": "^0.23.1",
+    "style-loader": "^3.3.1",
     "typescript": "4.3",
     "webpack": "^5.62.1",
-    "webpack-cli": "^4.9.1"
+    "webpack-cli": "^4.9.1",
+    "webpack-dev-server": "^4.4.0"
   }
 }
