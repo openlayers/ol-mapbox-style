@@ -28,10 +28,32 @@ module.exports = function (karma) {
     preprocessors: {
       '**/*.js': ['webpack', 'sourcemap'],
     },
-    reporters: ['dots'],
+    plugins: [
+      'karma-chrome-launcher',
+      'karma-mocha',
+      'karma-webpack',
+      'karma-sourcemap-loader',
+      'karma-coverage-istanbul-reporter',
+    ],
+    reporters: ['dots', 'coverage-istanbul'],
+    coverageIstanbulReporter: {
+      reports: ['html', 'text-summary'],
+      dir: path.join(__dirname, '..', 'coverage'),
+      fixWebpackSourcePaths: true,
+    },
     webpack: {
       devtool: 'inline-source-map',
       mode: 'development',
+      module: {
+        rules: [
+          {
+            test: /\.js/,
+            include: /src/,
+            exclude: /node_modules|\.test\.js$/,
+            use: 'coverage-istanbul-loader',
+          },
+        ],
+      },
     },
     webpackMiddleware: {
       noInfo: true,
