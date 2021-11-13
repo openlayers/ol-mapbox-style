@@ -6,6 +6,7 @@
     "sourceMap": true,
     "allowJs": true,
     "importHelpers": false,
+    "declaration": true,
   },
   "include": [
     "./src/**/*.js"
