@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.5.2
+
+* Publish auto-generated `.d.ts` files for TypeScript
+
 ## 6.5.1
 
 * Remove `ol` peer dependency from `package.json` for easier of use dev versions of `ol`
