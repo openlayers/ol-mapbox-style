@@ -37,6 +37,7 @@
     "@types/arcgis-rest-api": "^10.4.4",
     "@types/geojson": "^7946.0.7",
     "@types/node": "^16.11.7",
+    "@types/offscreencanvas": "^2019.6.4",
     "@types/topojson-specification": "^1.0.1",
     "babel-loader": "^8.0.6",
     "buble": "^0.20.0",
