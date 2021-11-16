@@ -665,59 +665,24 @@ export default function (
                   iconImg = iconImageCache[icon_cache_key];
                   if (!iconImg) {
                     const spriteImageData = spriteData[icon];
-                    if (iconColor !== null) {
-                      // cut out the sprite and color it
-                      const canvas = createCanvas(
-                        spriteImageData.width,
-                        spriteImageData.height
-                      );
-                      const ctx = /** @type {CanvasRenderingContext2D} */ (
-                        canvas.getContext('2d')
-                      );
-                      ctx.drawImage(
-                        spriteImage,
-                        spriteImageData.x,
-                        spriteImageData.y,
-                        spriteImageData.width,
-                        spriteImageData.height,
-                        0,
-                        0,
-                        spriteImageData.width,
-                        spriteImageData.height
-                      );
-                      const data = ctx.getImageData(
-                        0,
-                        0,
-                        canvas.width,
-                        canvas.height
-                      );
-                      for (let c = 0, cc = data.data.length; c < cc; c += 4) {
-                        const a = iconColor.a;
-                        if (a !== 0) {
-                          data.data[c] = (iconColor.r * 255) / a;
-                          data.data[c + 1] = (iconColor.g * 255) / a;
-                          data.data[c + 2] = (iconColor.b * 255) / a;
-                        }
-                        data.data[c + 3] = a;
-                      }
-                      ctx.putImageData(data, 0, 0);
-                      iconImg = new Icon({
-                        img: canvas,
-                        imgSize: [canvas.width, canvas.height],
-                        scale: iconSize / spriteImageData.pixelRatio,
-                      });
-                      iconImageCache[icon_cache_key] = iconImg;
-                    } else {
-                      iconImg = new Icon({
-                        img: spriteImage,
-                        imgSize: spriteImgSize,
-                        size: [spriteImageData.width, spriteImageData.height],
-                        offset: [spriteImageData.x, spriteImageData.y],
-                        rotateWithView: iconRotationAlignment === 'map',
-                        scale: iconSize / spriteImageData.pixelRatio,
-                      });
-                      iconImageCache[icon_cache_key] = iconImg;
-                    }
+
+                    iconImg = new Icon({
+                      color: iconColor
+                        ? [
+                            iconColor.r * 255,
+                            iconColor.g * 255,
+                            iconColor.b * 255,
+                            iconColor.a,
+                          ]
+                        : undefined,
+                      img: spriteImage,
+                      imgSize: spriteImgSize,
+                      size: [spriteImageData.width, spriteImageData.height],
+                      offset: [spriteImageData.x, spriteImageData.y],
+                      rotateWithView: iconRotationAlignment === 'map',
+                      scale: iconSize / spriteImageData.pixelRatio,
+                    });
+                    iconImageCache[icon_cache_key] = iconImg;
                   }
                 }
                 if (iconImg) {
