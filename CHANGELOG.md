@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.5.3
+
+* Fix handling of `icon-color`
+
 ## 6.5.2
 
 * Publish auto-generated `.d.ts` files for TypeScript
