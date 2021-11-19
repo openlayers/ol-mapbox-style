@@ -121,35 +121,56 @@ describe('utility functions currently in stylefunction.js', function () {
       'type': 'line',
     };
 
+    const uid = '1';
+
     it('should get correct default property', function () {
       const d = spec['layout_line']['line-cap']['default'];
 
-      should.equal(getValue(glLayer2, 'layout', 'line-cap', zoom, feature), d);
-      should(functionCache).have.key(glLayer2.id);
+      should.equal(
+        getValue(glLayer2, 'layout', 'line-cap', zoom, feature, uid),
+        d
+      );
+      should(functionCache).have.key(uid);
+      should(functionCache[uid]).have.key(glLayer2.id);
     });
 
     it('should get simple layout property', function () {
       should.equal(
-        getValue(glLayer, 'layout', 'visibility', zoom, feature),
+        getValue(glLayer, 'layout', 'visibility', zoom, feature, uid),
         'visible'
       );
-      should(functionCache).have.key(glLayer.id);
+      should(functionCache).have.key(uid);
+      should(functionCache[uid]).have.key(glLayer.id);
     });
 
     it('should get simple paint property', function () {
       should.equal(
-        getValue(glLayer, 'paint', 'fill-opacity', zoom, feature),
+        getValue(glLayer, 'paint', 'fill-opacity', zoom, feature, uid),
         0.7
       );
     });
 
     it('should get color paint property', function () {
-      const result = getValue(glLayer, 'paint', 'fill-color', zoom, feature);
+      const result = getValue(
+        glLayer,
+        'paint',
+        'fill-color',
+        zoom,
+        feature,
+        uid
+      );
       should(result).be.instanceof(Color);
     });
 
     it('should get complex paint property', function () {
-      const result = getValue(glLayer2, 'paint', 'line-gap-width', 20, feature);
+      const result = getValue(
+        glLayer2,
+        'paint',
+        'line-gap-width',
+        20,
+        feature,
+        uid
+      );
       should(result).equal(6);
     });
   });
