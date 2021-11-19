@@ -11,6 +11,7 @@ import RenderFeature from 'ol/render/Feature.js';
 import Stroke from 'ol/style/Stroke.js';
 import Style from 'ol/style/Style.js';
 import Text from 'ol/style/Text.js';
+import {getUid} from 'ol/util.js';
 
 import mb2css from 'mapbox-to-css-font';
 import {
@@ -89,14 +90,30 @@ let renderFeatureCoordinates, renderFeature;
  * @param {string} property Feature property.
  * @param {number} zoom Zoom.
  * @param {Object} feature Gl feature.
+ * @param {string} [opt_uid] OpenLayers layer uid.
  * @return {?} Value.
  */
-export function getValue(layer, layoutOrPaint, property, zoom, feature) {
-  const layerId = layer.id;
-  if (!functionCache[layerId]) {
-    functionCache[layerId] = {};
+export function getValue(
+  layer,
+  layoutOrPaint,
+  property,
+  zoom,
+  feature,
+  opt_uid
+) {
+  let uid = opt_uid;
+  if (!uid) {
+    uid = '0';
+    delete functionCache[uid];
   }
-  const functions = functionCache[layerId];
+  if (!functionCache[uid]) {
+    functionCache[uid] = {};
+  }
+  const layerId = layer.id;
+  if (!functionCache[uid][layerId]) {
+    functionCache[uid][layerId] = {};
+  }
+  const functions = functionCache[uid][layerId];
   if (!functions[property]) {
     let value = (layer[layoutOrPaint] || emptyObj)[property];
     const propertySpec = spec[`${layoutOrPaint}_${layer.type}`][property];
@@ -130,18 +147,23 @@ const filterCache = {};
 
 /**
  * @private
+ * @param {string} uid OpenLayers layer uid.
  * @param {string} layerId Layer id.
  * @param {?} filter Filter.
  * @param {Object} feature Feature.
  * @param {number} zoom Zoom.
  * @return {boolean} Filter result.
  */
-function evaluateFilter(layerId, filter, feature, zoom) {
-  if (!(layerId in filterCache)) {
-    filterCache[layerId] = createFilter(filter).filter;
+function evaluateFilter(uid, layerId, filter, feature, zoom) {
+  if (!filterCache[uid]) {
+    filterCache[uid] = {};
+  }
+  const filters = filterCache[uid];
+  if (!(layerId in filters)) {
+    filters[layerId] = createFilter(filter).filter;
   }
   zoomObj.zoom = zoom;
-  return filterCache[layerId](zoomObj, feature);
+  return filters[layerId](zoomObj, feature);
 }
 
 /**
@@ -357,9 +379,6 @@ export default function (
       });
       mapboxLayers.push(layerId);
     }
-    // TODO revisit when diffing gets added
-    delete functionCache[layerId];
-    delete filterCache[layerId];
   }
 
   const textHalo = new Stroke();
@@ -368,6 +387,10 @@ export default function (
   const iconImageCache = {};
   const patternCache = {};
   const styles = [];
+
+  const layerUid = getUid(olLayer);
+  delete functionCache[layerUid];
+  delete filterCache[layerUid];
 
   const styleFunction = function (feature, resolution) {
     const properties = feature.getProperties();
@@ -389,7 +412,9 @@ export default function (
     for (let i = 0, ii = layers.length; i < ii; ++i) {
       const layerData = layers[i];
       const layer = layerData.layer;
-      const layerId = layer.id;
+      const getLayerValue = function (layoutOrPaint, property) {
+        return getValue(layer, layoutOrPaint, property, zoom, f, layerUid);
+      };
 
       const layout = layer.layout || emptyObj;
       const paint = layer.paint || emptyObj;
@@ -401,7 +426,7 @@ export default function (
         continue;
       }
       const filter = layer.filter;
-      if (!filter || evaluateFilter(layerId, filter, f, zoom)) {
+      if (!filter || evaluateFilter(layerUid, layer.id, filter, f, zoom)) {
         featureBelongsToLayer = layer;
         let color, opacity, fill, stroke, strokeColor, style;
         const index = layerData.index;
@@ -409,15 +434,9 @@ export default function (
           type == 3 &&
           (layer.type == 'fill' || layer.type == 'fill-extrusion')
         ) {
-          opacity = getValue(layer, 'paint', layer.type + '-opacity', zoom, f);
+          opacity = getLayerValue('paint', layer.type + '-opacity');
           if (layer.type + '-pattern' in paint) {
-            const fillIcon = getValue(
-              layer,
-              'paint',
-              layer.type + '-pattern',
-              zoom,
-              f
-            );
+            const fillIcon = getLayerValue('paint', layer.type + '-pattern');
             if (fillIcon) {
               const icon =
                 typeof fillIcon === 'string'
@@ -470,19 +489,13 @@ export default function (
             }
           } else {
             color = colorWithOpacity(
-              getValue(layer, 'paint', layer.type + '-color', zoom, f),
+              getLayerValue('paint', layer.type + '-color'),
               opacity
             );
             if (color) {
               if (layer.type + '-outline-color' in paint) {
                 strokeColor = colorWithOpacity(
-                  getValue(
-                    layer,
-                    'paint',
-                    layer.type + '-outline-color',
-                    zoom,
-                    f
-                  ),
+                  getLayerValue('paint', layer.type + '-outline-color'),
                   opacity
                 );
               }
@@ -515,11 +528,11 @@ export default function (
           color =
             !('line-pattern' in paint) && 'line-color' in paint
               ? colorWithOpacity(
-                  getValue(layer, 'paint', 'line-color', zoom, f),
-                  getValue(layer, 'paint', 'line-opacity', zoom, f)
+                  getLayerValue('paint', 'line-color'),
+                  getLayerValue('paint', 'line-opacity')
                 )
               : undefined;
-          const width = getValue(layer, 'paint', 'line-width', zoom, f);
+          const width = getLayerValue('paint', 'line-width');
           if (color && width > 0) {
             ++stylesLength;
             style = styles[stylesLength];
@@ -535,20 +548,16 @@ export default function (
               styles[stylesLength] = style;
             }
             stroke = style.getStroke();
-            stroke.setLineCap(getValue(layer, 'layout', 'line-cap', zoom, f));
-            stroke.setLineJoin(getValue(layer, 'layout', 'line-join', zoom, f));
-            stroke.setMiterLimit(
-              getValue(layer, 'layout', 'line-miter-limit', zoom, f)
-            );
+            stroke.setLineCap(getLayerValue('layout', 'line-cap'));
+            stroke.setLineJoin(getLayerValue('layout', 'line-join'));
+            stroke.setMiterLimit(getLayerValue('layout', 'line-miter-limit'));
             stroke.setColor(color);
             stroke.setWidth(width);
             stroke.setLineDash(
               paint['line-dasharray']
-                ? getValue(layer, 'paint', 'line-dasharray', zoom, f).map(
-                    function (x) {
-                      return x * width;
-                    }
-                  )
+                ? getLayerValue('paint', 'line-dasharray').map(function (x) {
+                    return x * width;
+                  })
                 : null
             );
             style.setZIndex(index);
@@ -560,7 +569,7 @@ export default function (
         let placementAngle = 0;
         let icon, iconImg, skipLabel;
         if ((type == 1 || type == 2) && 'icon-image' in layout) {
-          const iconImage = getValue(layer, 'layout', 'icon-image', zoom, f);
+          const iconImage = getLayerValue('layout', 'icon-image');
           if (iconImage) {
             icon =
               typeof iconImage === 'string'
@@ -568,12 +577,9 @@ export default function (
                 : iconImage.toString();
             let styleGeom = undefined;
             if (spriteImage && spriteData && spriteData[icon]) {
-              const iconRotationAlignment = getValue(
-                layer,
+              const iconRotationAlignment = getLayerValue(
                 'layout',
-                'icon-rotation-alignment',
-                zoom,
-                f
+                'icon-rotation-alignment'
               );
               if (type == 2) {
                 const geom = feature.getGeometry();
@@ -605,12 +611,9 @@ export default function (
                     styleGeom = renderFeature;
                     renderFeatureCoordinates[0] = midpoint[0];
                     renderFeatureCoordinates[1] = midpoint[1];
-                    const placement = getValue(
-                      layer,
+                    const placement = getLayerValue(
                       'layout',
-                      'symbol-placement',
-                      zoom,
-                      f
+                      'symbol-placement'
                     );
                     if (
                       placement === 'line' &&
@@ -646,16 +649,10 @@ export default function (
                 }
               }
               if (type !== 2 || styleGeom) {
-                const iconSize = getValue(
-                  layer,
-                  'layout',
-                  'icon-size',
-                  zoom,
-                  f
-                );
+                const iconSize = getLayerValue('layout', 'icon-size');
                 const iconColor =
                   paint['icon-color'] !== undefined
-                    ? getValue(layer, 'paint', 'icon-color', zoom, f)
+                    ? getLayerValue('paint', 'icon-color')
                     : null;
                 if (!iconColor || iconColor.a !== 0) {
                   let icon_cache_key = icon + '.' + iconSize;
@@ -700,13 +697,11 @@ export default function (
                   style.setGeometry(styleGeom);
                   iconImg.setRotation(
                     placementAngle +
-                      deg2rad(getValue(layer, 'layout', 'icon-rotate', zoom, f))
+                      deg2rad(getLayerValue('layout', 'icon-rotate'))
                   );
-                  iconImg.setOpacity(
-                    getValue(layer, 'paint', 'icon-opacity', zoom, f)
-                  );
+                  iconImg.setOpacity(getLayerValue('paint', 'icon-opacity'));
                   iconImg.setAnchor(
-                    anchor[getValue(layer, 'layout', 'icon-anchor', zoom, f)]
+                    anchor[getLayerValue('layout', 'icon-anchor')]
                   );
                   style.setImage(iconImg);
                   text = style.getText();
@@ -734,27 +729,18 @@ export default function (
             style = new Style();
             styles[stylesLength] = style;
           }
-          const circleRadius = getValue(
-            layer,
-            'paint',
-            'circle-radius',
-            zoom,
-            f
-          );
+          const circleRadius = getLayerValue('paint', 'circle-radius');
           const circleStrokeColor = colorWithOpacity(
-            getValue(layer, 'paint', 'circle-stroke-color', zoom, f),
-            getValue(layer, 'paint', 'circle-stroke-opacity', zoom, f)
+            getLayerValue('paint', 'circle-stroke-color'),
+            getLayerValue('paint', 'circle-stroke-opacity')
           );
           const circleColor = colorWithOpacity(
-            getValue(layer, 'paint', 'circle-color', zoom, f),
-            getValue(layer, 'paint', 'circle-opacity', zoom, f)
+            getLayerValue('paint', 'circle-color'),
+            getLayerValue('paint', 'circle-opacity')
           );
-          const circleStrokeWidth = getValue(
-            layer,
+          const circleStrokeWidth = getLayerValue(
             'paint',
-            'circle-stroke-width',
-            zoom,
-            f
+            'circle-stroke-width'
           );
           const cache_key =
             circleRadius +
@@ -793,15 +779,9 @@ export default function (
 
         let label;
         if ('text-field' in layout) {
-          const textField = getValue(
-            layer,
-            'layout',
-            'text-field',
-            zoom,
-            f
-          ).toString();
+          const textField = getLayerValue('layout', 'text-field').toString();
           label = fromTemplate(textField, properties).trim();
-          opacity = getValue(layer, 'paint', 'text-opacity', zoom, f);
+          opacity = getLayerValue('paint', 'text-opacity');
         }
         if (label && opacity && !skipLabel) {
           if (!hasImage) {
@@ -828,17 +808,9 @@ export default function (
             );
           }
           text = style.getText();
-          const textSize = Math.round(
-            getValue(layer, 'layout', 'text-size', zoom, f)
-          );
-          const fontArray = getValue(layer, 'layout', 'text-font', zoom, f);
-          const textLineHeight = getValue(
-            layer,
-            'layout',
-            'text-line-height',
-            zoom,
-            f
-          );
+          const textSize = Math.round(getLayerValue('layout', 'text-size'));
+          const fontArray = getLayerValue('layout', 'text-font');
+          const textLineHeight = getLayerValue('layout', 'text-line-height');
           const font = mb2css(
             getFonts ? getFonts(fontArray) : fontArray,
             textSize,
@@ -850,50 +822,24 @@ export default function (
           } else if (textTransform == 'lowercase') {
             label = label.toLowerCase();
           }
-          const maxTextWidth = getValue(
-            layer,
-            'layout',
-            'text-max-width',
-            zoom,
-            f
-          );
-          const letterSpacing = getValue(
-            layer,
-            'layout',
-            'text-letter-spacing',
-            zoom,
-            f
-          );
+          const maxTextWidth = getLayerValue('layout', 'text-max-width');
+          const letterSpacing = getLayerValue('layout', 'text-letter-spacing');
           const wrappedLabel =
             type == 2
               ? applyLetterSpacing(label, letterSpacing)
               : wrapText(label, font, maxTextWidth, letterSpacing);
           text.setText(wrappedLabel);
           text.setFont(font);
-          text.setRotation(
-            deg2rad(getValue(layer, 'layout', 'text-rotate', zoom, f))
-          );
-          const textAnchor = getValue(layer, 'layout', 'text-anchor', zoom, f);
+          text.setRotation(deg2rad(getLayerValue('layout', 'text-rotate')));
+          const textAnchor = getLayerValue('layout', 'text-anchor');
           const placement =
             hasImage || type == 1
               ? 'point'
-              : getValue(layer, 'layout', 'symbol-placement', zoom, f);
+              : getLayerValue('layout', 'symbol-placement');
           text.setPlacement(placement);
-          let textHaloWidth = getValue(
-            layer,
-            'paint',
-            'text-halo-width',
-            zoom,
-            f
-          );
-          const textOffset = getValue(layer, 'layout', 'text-offset', zoom, f);
-          const textTranslate = getValue(
-            layer,
-            'paint',
-            'text-translate',
-            zoom,
-            f
-          );
+          let textHaloWidth = getLayerValue('paint', 'text-halo-width');
+          const textOffset = getLayerValue('layout', 'text-offset');
+          const textTranslate = getLayerValue('paint', 'text-translate');
           // Text offset has to take halo width and line height into account
           let vOffset = 0;
           let hOffset = 0;
@@ -907,17 +853,14 @@ export default function (
               hOffset = -textHaloWidth;
             }
             text.setTextAlign(textAlign);
-            const textRotationAlignment = getValue(
-              layer,
+            const textRotationAlignment = getLayerValue(
               'layout',
-              'text-rotation-alignment',
-              zoom,
-              f
+              'text-rotation-alignment'
             );
             text.setRotateWithView(textRotationAlignment == 'map');
           } else {
             text.setMaxAngle(
-              (deg2rad(getValue(layer, 'layout', 'text-max-angle', zoom, f)) *
+              (deg2rad(getLayerValue('layout', 'text-max-angle')) *
                 label.length) /
                 wrappedLabel.length
             );
@@ -940,14 +883,11 @@ export default function (
             textOffset[1] * textSize + vOffset + textTranslate[1]
           );
           textColor.setColor(
-            colorWithOpacity(
-              getValue(layer, 'paint', 'text-color', zoom, f),
-              opacity
-            )
+            colorWithOpacity(getLayerValue('paint', 'text-color'), opacity)
           );
           text.setFill(textColor);
           const haloColor = colorWithOpacity(
-            getValue(layer, 'paint', 'text-halo-color', zoom, f),
+            getLayerValue('paint', 'text-halo-color'),
             opacity
           );
           if (haloColor) {
@@ -964,13 +904,7 @@ export default function (
           } else {
             text.setStroke(undefined);
           }
-          const textPadding = getValue(
-            layer,
-            'layout',
-            'text-padding',
-            zoom,
-            f
-          );
+          const textPadding = getLayerValue('layout', 'text-padding');
           const padding = text.getPadding();
           if (textPadding !== padding[0]) {
             padding[0] = textPadding;
