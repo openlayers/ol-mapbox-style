@@ -327,4 +327,78 @@ describe('stylefunction', function () {
         });
     });
   });
+
+  describe('Multiple related styles', function () {
+    let style;
+    beforeEach(function () {
+      style = {
+        version: '8',
+        name: 'test',
+        sources: {
+          'geojson': {
+            type: 'geojson',
+            data: {
+              type: 'FeatureCollection',
+              features: [
+                {
+                  type: 'Feature',
+                  geometry: {
+                    type: 'Polygon',
+                    coordinates: [
+                      [
+                        [-1, -1],
+                        [-1, 1],
+                        [1, 1],
+                        [1, -1],
+                        [-1, -1],
+                      ],
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        },
+        layers: [
+          {
+            id: 'test',
+            type: 'fill',
+            source: 'geojson',
+            paint: {
+              'fill-color': '#A6CEE3',
+            },
+          },
+        ],
+      };
+    });
+
+    it('returns distinct values for same layer id', function (done) {
+      const style1 = JSON.parse(JSON.stringify(style));
+      const style2 = JSON.parse(JSON.stringify(style));
+      style2.layers[0].paint['fill-color'] = '#B2DF8A';
+
+      Promise.all([
+        olms(document.createElement('div'), style1),
+        olms(document.createElement('div'), style2),
+      ])
+        .then(function (maps) {
+          const layer1 = maps[0].getLayers().item(0);
+          const layer2 = maps[1].getLayers().item(0);
+          const styleFunction1 = layer1.getStyle();
+          const feature1 = layer1.getSource().getFeatures()[0];
+          const styles1 = styleFunction1(feature1, 1);
+          const fill1 = styles1[0].getFill();
+          should(fill1.getColor()).eql('rgba(166,206,227,1)');
+          const styleFunction2 = layer2.getStyle();
+          const feature2 = layer2.getSource().getFeatures()[0];
+          const styles2 = styleFunction2(feature2, 1);
+          const fill2 = styles2[0].getFill();
+          should(fill2.getColor()).eql('rgba(178,223,138,1)');
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+  });
 });
