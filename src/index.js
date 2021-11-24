@@ -325,8 +325,8 @@ function extentFromTileJSON(tileJSON) {
 /**
  * Creates an OpenLayers VectorTile source for a gl source entry.
  * @param {Object} glSource "source" entry from a Mapbox Style object.
- * @param {string} url URL to use for the source. This is expected to be the complete http(s) url,
- * with access key applied.
+ * @param {string|undefined} url URL to use for the source. This is expected to be the complete http(s) url,
+ * with access key applied.When not provided, `glSource.tiles` has to be set.
  * @return {Promise<import("ol/source/VectorTile").default>} Promise resolving to a VectorTile source.
  * @private
  */
