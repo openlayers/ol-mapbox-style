@@ -7,6 +7,7 @@
     "allowJs": true,
     "importHelpers": false,
     "declaration": true,
+    "declarationMap": true
   },
   "include": [
     "./src/**/*.js"
