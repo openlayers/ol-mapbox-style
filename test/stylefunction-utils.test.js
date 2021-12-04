@@ -7,9 +7,7 @@ import {Color, latest as spec} from '@mapbox/mapbox-gl-style-spec';
 import {
   _colorWithOpacity as colorWithOpacity,
   _evaluateFilter as evaluateFilter,
-  _filterCache as filterCache,
   _fromTemplate as fromTemplate,
-  _functionCache as functionCache,
   _getValue as getValue,
 } from '../src/stylefunction.js';
 
@@ -31,6 +29,7 @@ describe('utility functions currently in stylefunction.js', function () {
   });
 
   describe('evaluateFilter()', function () {
+    const filterCache = {};
     const feature = new Feature({geometry: new Point([0, 0], 'XY')});
     const zoom = 11;
 
@@ -39,15 +38,17 @@ describe('utility functions currently in stylefunction.js', function () {
       const filter = '[ "all" ]';
 
       should(filterCache).not.have.key(glLayerId);
-      should(evaluateFilter(glLayerId, filter, feature, zoom)).be.true;
-      should(filterCache).have.key(glLayerId);
+      should(evaluateFilter(glLayerId, filter, feature, zoom, filterCache)).be
+        .true;
+      should(filterCache, filterCache).have.key(glLayerId);
     });
 
     it('should be false with LineString filter and Point geom', function () {
       const glLayerId = 'gl-layer-id-2';
       const filter = '[ "==", "$type", "LineString" ]';
 
-      should(evaluateFilter(glLayerId, filter, feature, zoom)).be.false;
+      should(evaluateFilter(glLayerId, filter, feature, zoom, filterCache)).be
+        .false;
       should(filterCache).have.key(glLayerId);
     });
 
@@ -55,7 +56,8 @@ describe('utility functions currently in stylefunction.js', function () {
       const glLayerId = 'gl-layer-id-2';
       const filter = '[ "==", "$type", "Point" ]';
 
-      should(evaluateFilter(glLayerId, filter, feature, zoom)).be.false;
+      should(evaluateFilter(glLayerId, filter, feature, zoom, filterCache)).be
+        .false;
       should(filterCache).have.key(glLayerId);
     });
   });
@@ -96,6 +98,7 @@ describe('utility functions currently in stylefunction.js', function () {
   describe('getValue()', function () {
     const zoom = 11;
     const feature = new Feature({geometry: new Point([0, 0], 'XY')});
+    const functionCache = {};
     const glLayer = {
       'id': 'landuse-residential',
       'layout': {
@@ -124,13 +127,16 @@ describe('utility functions currently in stylefunction.js', function () {
     it('should get correct default property', function () {
       const d = spec['layout_line']['line-cap']['default'];
 
-      should.equal(getValue(glLayer2, 'layout', 'line-cap', zoom, feature), d);
+      should.equal(
+        getValue(glLayer2, 'layout', 'line-cap', zoom, feature, functionCache),
+        d
+      );
       should(functionCache).have.key(glLayer2.id);
     });
 
     it('should get simple layout property', function () {
       should.equal(
-        getValue(glLayer, 'layout', 'visibility', zoom, feature),
+        getValue(glLayer, 'layout', 'visibility', zoom, feature, functionCache),
         'visible'
       );
       should(functionCache).have.key(glLayer.id);
