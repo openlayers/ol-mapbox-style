@@ -244,6 +244,7 @@ function setBackground(map, layer) {
   const background = {
     type: layer.type,
   };
+  const functionCache = {};
   function updateStyle() {
     const element = map.getTargetElement();
     if (!element) {
@@ -261,7 +262,8 @@ function setBackground(map, layer) {
         'paint',
         'background-color',
         zoom,
-        emptyObj
+        emptyObj,
+        functionCache
       );
       element.style.background = Color.parse(bg).toString();
     }
@@ -271,7 +273,8 @@ function setBackground(map, layer) {
         'paint',
         'background-opacity',
         zoom,
-        emptyObj
+        emptyObj,
+        functionCache
       );
     }
     if (layout.visibility == 'none') {
@@ -471,9 +474,16 @@ function setupGeoJSONLayer(glSource, path) {
   });
 }
 
-function updateRasterLayerProperties(glLayer, layer, view) {
+function updateRasterLayerProperties(glLayer, layer, view, functionCache) {
   const zoom = view.getZoom();
-  const opacity = getValue(glLayer, 'paint', 'raster-opacity', zoom, emptyObj);
+  const opacity = getValue(
+    glLayer,
+    'paint',
+    'raster-opacity',
+    zoom,
+    emptyObj,
+    functionCache
+  );
   layer.setOpacity(opacity);
 }
 
@@ -558,11 +568,18 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken = '') {
           layer.setVisible(
             glLayer.layout ? glLayer.layout.visibility !== 'none' : true
           );
+          const functionCache = {};
           view.on(
             'change:resolution',
-            updateRasterLayerProperties.bind(this, glLayer, layer, view)
+            updateRasterLayerProperties.bind(
+              this,
+              glLayer,
+              layer,
+              view,
+              functionCache
+            )
           );
-          updateRasterLayerProperties(glLayer, layer, view);
+          updateRasterLayerProperties(glLayer, layer, view, functionCache);
         } else if (glSource.type == 'geojson') {
           layer = setupGeoJSONLayer(glSource, path);
         }
