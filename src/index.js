@@ -332,7 +332,7 @@ function extentFromTileJSON(tileJSON) {
  */
 export function setupVectorSource(glSource, url) {
   glSource = assign({}, glSource);
-  const cacheKey = JSON.stringify(glSource);
+  const cacheKey = [url, JSON.stringify(glSource)].toString();
   let tilejson = tilejsonCache[cacheKey];
   if (!tilejson) {
     tilejson = new TileJSON({
@@ -351,10 +351,7 @@ export function setupVectorSource(glSource, url) {
           : [tileJSONDoc.tiles];
         if (url) {
           for (let i = 0, ii = tiles.length; i < ii; ++i) {
-            const tile = tiles[i];
-            if (tile.indexOf('http') != 0) {
-              tiles[i] = url.replace(/\/?$/, '/') + tile.replace(/^\//, '');
-            }
+            tiles[i] = decodeURI(new URL(tiles[i], url).href);
           }
         }
         const tileGrid = tilejson.getTileGrid();
