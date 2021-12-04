@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.6.0
+
+* Publish declaration source maps
+* Fix TileJSON handling of relative urls
+* Cache functions and filters per `stylefunction` invocation
+
 ## 6.5.3
 
 * Fix handling of `icon-color`
