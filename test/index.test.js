@@ -70,6 +70,21 @@ describe('ol-mapbox-style', function () {
       should(target.style.backgroundColor).be.exactly('rgb(248, 244, 240)');
       should(target.style.opacity).be.eql('0.75');
     });
+    it('applies a background to a layer', function () {
+      const layer = new VectorTileLayer({
+        source: new VectorTileSource({}),
+      });
+      if (typeof layer.setBackground !== 'function') {
+        layer.setBackground = function (background) {
+          layer.background = background;
+        };
+        layer.getBackground = function () {
+          return layer.background;
+        };
+      }
+      applyBackground(layer, backgroundStyle);
+      should(layer.getBackground()(1)).be.exactly('rgba(248,244,240,0.75)');
+    });
   });
 
   describe('apply', function () {
