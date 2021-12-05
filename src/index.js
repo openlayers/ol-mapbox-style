@@ -15,7 +15,10 @@ import VectorSource from 'ol/source/Vector.js';
 import VectorTileLayer from 'ol/layer/VectorTile.js';
 import VectorTileSource from 'ol/source/VectorTile.js';
 import View from 'ol/View.js';
-import applyStyleFunction, {getValue} from './stylefunction.js';
+import applyStyleFunction, {
+  _colorWithOpacity,
+  getValue,
+} from './stylefunction.js';
 import googleFonts from 'webfont-matcher/lib/fonts/google.js';
 import mb2css from 'mapbox-to-css-font';
 import {Color} from '@mapbox/mapbox-gl-style-spec';
@@ -240,24 +243,27 @@ export function applyStyle(layer, glStyle, source, path, resolutions) {
 
 const emptyObj = {};
 
-function setBackground(map, layer) {
+function setBackground(mapOrLayer, layer) {
   const background = {
+    id: layer.id,
     type: layer.type,
   };
   const functionCache = {};
-  function updateStyle() {
-    const element = map.getTargetElement();
-    if (!element) {
-      return;
-    }
+  function updateStyle(resolution) {
     const layout = layer.layout || {};
     const paint = layer.paint || {};
     background['paint'] = paint;
-    background.id =
-      'olms-bg-' + paint['background-opacity'] + paint['background-color'];
-    const zoom = map.getView().getZoom();
+    const zoom =
+      typeof mapOrLayer.getSource === 'function'
+        ? mapOrLayer.getSource().getTileGrid().getZForResolution(resolution)
+        : mapOrLayer.getView().getZoom();
+    const element =
+      typeof mapOrLayer.getTargetElement === 'function'
+        ? mapOrLayer.getTargetElement()
+        : undefined;
+    let bg, opacity;
     if (paint['background-color'] !== undefined) {
-      const bg = getValue(
+      bg = getValue(
         background,
         'paint',
         'background-color',
@@ -265,10 +271,12 @@ function setBackground(map, layer) {
         emptyObj,
         functionCache
       );
-      element.style.background = Color.parse(bg).toString();
+      if (element) {
+        element.style.background = Color.parse(bg).toString();
+      }
     }
     if (paint['background-opacity'] !== undefined) {
-      element.style.opacity = getValue(
+      opacity = getValue(
         background,
         'paint',
         'background-opacity',
@@ -276,30 +284,44 @@ function setBackground(map, layer) {
         emptyObj,
         functionCache
       );
+      if (element) {
+        element.style.opacity = opacity;
+      }
     }
     if (layout.visibility == 'none') {
-      element.style.backgroundColor = '';
-      element.style.opacity = '';
+      if (element) {
+        element.style.backgroundColor = '';
+        element.style.opacity = '';
+        return undefined;
+      }
     }
+    return _colorWithOpacity(bg, opacity);
   }
-  if (map.getTargetElement()) {
-    updateStyle();
+  if (typeof mapOrLayer.getTargetElement === 'function') {
+    if (mapOrLayer.getTargetElement()) {
+      updateStyle();
+    }
+    mapOrLayer.on(['change:resolution', 'change:target'], updateStyle);
+  } else if (typeof mapOrLayer.setBackground === 'function') {
+    mapOrLayer.setBackground(updateStyle);
+  } else {
+    throw new Error('Unable to apply background.');
   }
-  map.on(['change:resolution', 'change:target'], updateStyle);
 }
 
 /**
  * ```js
  * import {applyBackground} from 'ol-mapbox-style';
  * ```
- * Applies properties of the Mapbox Style's first `background` layer to the map.
- * @param {PluggableMap} map OpenLayers Map.
+ * Applies properties of the Mapbox Style's first `background` layer to the
+ * provided map or VectorTile layer.
+ * @param {PluggableMap|import("ol/layer/VectorTile").default} mapOrLayer OpenLayers Map.
  * @param {Object} glStyle Mapbox Style object.
  */
-export function applyBackground(map, glStyle) {
+export function applyBackground(mapOrLayer, glStyle) {
   glStyle.layers.some(function (l) {
     if (l.type == 'background') {
-      setBackground(map, l);
+      setBackground(mapOrLayer, l);
       return true;
     }
   });
