@@ -315,7 +315,7 @@ function setBackground(mapOrLayer, layer) {
  * ```
  * Applies properties of the Mapbox Style's first `background` layer to the
  * provided map or VectorTile layer.
- * @param {PluggableMap|import("ol/layer/VectorTile").default} mapOrLayer OpenLayers Map.
+ * @param {PluggableMap|VectorTileLayer} mapOrLayer OpenLayers Map or VectorTile layer.
  * @param {Object} glStyle Mapbox Style object.
  */
 export function applyBackground(mapOrLayer, glStyle) {
