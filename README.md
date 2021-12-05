@@ -29,7 +29,7 @@ Only commonly available system fonts and [Google Fonts](https://developers.googl
 
 To apply a subset of the layers defined in the Mapbox Style layer to a custom OpenLayers layer, use the `applyStyle()` function.
 
-To apply the properties of the Mapbox Style's `background` layer to the map, use the `applyBackground()` function.
+To apply the properties of the Mapbox Style's `background` layer to the map or a `VectorTile` layer, use the `applyBackground()` function.
 
 To create a style function for individual OpenLayers vector or vector tile layers, use the `stylefunction` module:
 
@@ -213,11 +213,12 @@ Returns **StyleFunction** Style function for use in
 import {applyBackground} from 'ol-mapbox-style';
 ```
 
-Applies properties of the Mapbox Style's first `background` layer to the map.
+Applies properties of the Mapbox Style's first `background` layer to the
+provided map or VectorTile layer.
 
 #### Parameters
 
-*   `map` **PluggableMap** OpenLayers Map.
+*   `mapOrLayer` **(PluggableMap | VectorTileLayer)** OpenLayers Map or VectorTile layer.
 *   `glStyle` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Mapbox Style object.
 
 ### olms

@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.7.0
+
+* `applyBackground()` now also accepts an OpenLayers >= 6.10 `VectorTile` layer as first argument.
+
 ## 6.6.0
 
 * Publish declaration source maps
