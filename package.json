@@ -49,6 +49,7 @@
     "documentation": "^13.2.5",
     "eslint": "^8.2.0",
     "eslint-config-openlayers": "^16.0.1",
+    "eslint-import-resolver-alias": "^1.1.2",
     "html-webpack-plugin": "^5.5.0",
     "karma": "^6.3.4",
     "karma-chrome-launcher": "^3.1.0",

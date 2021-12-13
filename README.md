@@ -70,22 +70,24 @@ Internet Explorer (version 11) and other old browsers (Android 4.x) are supporte
 
 *   [applyStyle](#applystyle)
     *   [Parameters](#parameters)
-*   [recordStyleLayer](#recordstylelayer)
+*   [renderTransparent](#rendertransparent)
     *   [Parameters](#parameters-1)
-*   [stylefunction](#stylefunction)
+*   [recordStyleLayer](#recordstylelayer)
     *   [Parameters](#parameters-2)
-*   [applyBackground](#applybackground)
+*   [stylefunction](#stylefunction)
     *   [Parameters](#parameters-3)
-*   [olms](#olms)
+*   [applyBackground](#applybackground)
     *   [Parameters](#parameters-4)
-*   [apply](#apply)
+*   [olms](#olms)
     *   [Parameters](#parameters-5)
-*   [getLayer](#getlayer)
+*   [apply](#apply)
     *   [Parameters](#parameters-6)
-*   [getLayers](#getlayers)
+*   [getLayer](#getlayer)
     *   [Parameters](#parameters-7)
-*   [getSource](#getsource)
+*   [getLayers](#getlayers)
     *   [Parameters](#parameters-8)
+*   [getSource](#getsource)
+    *   [Parameters](#parameters-9)
 
 ### applyStyle
 
@@ -122,6 +124,18 @@ Two additional properties will be set on the provided layer:
 
 Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** Promise which will be resolved when the style can be used
 for rendering.
+
+### renderTransparent
+
+Configure whether features with a transparent style should be rendered. When
+set to `true`, it will be possible to hit detect content that is not visible,
+like transparent fills of polygons, using `ol/layer/Layer#getFeatures()` or
+`ol/Map#getFeaturesAtPixel()`
+
+#### Parameters
+
+*   `enabled` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Rendering of transparent elements is enabled.
+    Default is `false`.
 
 ### recordStyleLayer
 

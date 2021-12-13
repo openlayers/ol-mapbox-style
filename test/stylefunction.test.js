@@ -1,7 +1,10 @@
 import Feature from 'ol/Feature.js';
 import Polygon from 'ol/geom/Polygon.js';
 import VectorLayer from 'ol/layer/Vector.js';
-import applyStyleFunction, {recordStyleLayer} from '../src/stylefunction.js';
+import applyStyleFunction, {
+  recordStyleLayer,
+  renderTransparent,
+} from '../src/stylefunction.js';
 import deepFreeze from 'deep-freeze';
 import olms from '../src/index.js';
 import should from 'should';
@@ -27,6 +30,7 @@ describe('stylefunction', function () {
 
     afterEach(function () {
       recordStyleLayer(false);
+      renderTransparent(false);
     });
 
     it('does not modify the input style object', function () {
@@ -88,6 +92,37 @@ describe('stylefunction', function () {
       feature.set('PERSONS', 1000000);
       style(feature, 1);
       should(feature.get('mapbox-layer').id).equal('population_lt_2m');
+    });
+
+    it('does not render transparent content by default', function () {
+      const styleObject = JSON.parse(JSON.stringify(states));
+      styleObject.layers.push({
+        'id': 'transparent',
+        'type': 'fill',
+        'source': 'states',
+        'paint': {
+          'fill-color': 'rgba(0,0,0,0)',
+        },
+      });
+      const styleFn = applyStyleFunction(layer, styleObject, ['transparent']);
+      const style = styleFn(feature, 1);
+      should(style).be.undefined;
+    });
+
+    it('renders transparent content when `renderTransparent(true)` is set', function () {
+      const styleObject = JSON.parse(JSON.stringify(states));
+      styleObject.layers.push({
+        'id': 'transparent',
+        'type': 'fill',
+        'source': 'states',
+        'paint': {
+          'fill-color': 'rgba(0,0,0,0)',
+        },
+      });
+      renderTransparent(true);
+      const styleFn = applyStyleFunction(layer, styleObject, ['transparent']);
+      const style = styleFn(feature, 1);
+      should(style).be.an.Array();
     });
   });
 
