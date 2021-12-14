@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.8.0
+
+* New `renderTransparent()` configuration option for more flexible hit detection
+* Add `stylefunction` module functions to legacy build
+* Better default view detection to avoid overwriting of view configurations
+
 ## 6.7.0
 
 * `applyBackground()` now also accepts an OpenLayers >= 6.10 `VectorTile` layer as first argument.
