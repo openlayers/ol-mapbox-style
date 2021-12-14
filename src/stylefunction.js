@@ -155,6 +155,20 @@ function evaluateFilter(layerId, filter, feature, zoom, filterCache) {
   return filterCache[layerId](zoomObj, feature);
 }
 
+let renderTransparentEnabled = false;
+
+/**
+ * Configure whether features with a transparent style should be rendered. When
+ * set to `true`, it will be possible to hit detect content that is not visible,
+ * like transparent fills of polygons, using `ol/layer/Layer#getFeatures()` or
+ * `ol/Map#getFeaturesAtPixel()`
+ * @param {boolean} enabled Rendering of transparent elements is enabled.
+ * Default is `false`.
+ */
+export function renderTransparent(enabled) {
+  renderTransparentEnabled = enabled;
+}
+
 /**
  * @private
  * @param {?} color Color.
@@ -163,7 +177,7 @@ function evaluateFilter(layerId, filter, feature, zoom, filterCache) {
  */
 function colorWithOpacity(color, opacity) {
   if (color) {
-    if (color.a === 0 || opacity === 0) {
+    if (!renderTransparentEnabled && (color.a === 0 || opacity === 0)) {
       return undefined;
     }
     const a = color.a;
@@ -534,7 +548,7 @@ export default function (
               fill.setColor(color);
               stroke = style.getStroke();
               stroke.setColor(strokeColor);
-              stroke.setWidth(1);
+              stroke.setWidth(0.5);
               style.setZIndex(index);
             }
           }
