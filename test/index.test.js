@@ -3,6 +3,9 @@ import TileSource from 'ol/source/Tile.js';
 import VectorSource from 'ol/source/Vector.js';
 import VectorTileLayer from 'ol/layer/VectorTile.js';
 import VectorTileSource from 'ol/source/VectorTile.js';
+import View from 'ol/View.js';
+import backgroundStyle from './fixtures/background.json';
+import brightV9 from 'mapbox-gl-styles/styles/bright-v9.json';
 import olms, {
   apply,
   applyBackground,
@@ -12,11 +15,8 @@ import olms, {
   getSource,
 } from '../src/index.js';
 import should from 'should';
-import {toLonLat} from 'ol/proj.js';
-
-import backgroundStyle from './fixtures/background.json';
-import brightV9 from 'mapbox-gl-styles/styles/bright-v9.json';
 import {defaultResolutions} from '../src/util.js';
+import {toLonLat} from 'ol/proj.js';
 delete brightV9.sprite;
 
 describe('ol-mapbox-style', function () {
@@ -215,6 +215,25 @@ describe('ol-mapbox-style', function () {
       )
         .then(function (map) {
           should(map.getView().getMaxResolution()).eql(defaultResolutions[0]);
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+
+    it('maintains incomplete view config when configured with a map', function (done) {
+      olms(
+        new Map({
+          target: target,
+          view: new View({
+            maxZoom: 11,
+          }),
+        }),
+        './fixtures/hot-osm/hot-osm.json'
+      )
+        .then(function (map) {
+          should(map.getView().getMaxZoom()).eql(11);
           done();
         })
         .catch(function (err) {
