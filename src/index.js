@@ -25,6 +25,7 @@ import {Color} from '@mapbox/mapbox-gl-style-spec';
 import {assign, defaultResolutions} from './util.js';
 import {createXYZ} from 'ol/tilegrid.js';
 import {fromLonLat} from 'ol/proj.js';
+import {isEmpty} from 'ol/obj.js';
 import {unByKey} from 'ol/Observable.js';
 
 /**
@@ -509,7 +510,11 @@ function updateRasterLayerProperties(glLayer, layer, view, functionCache) {
 function processStyle(glStyle, map, baseUrl, host, path, accessToken = '') {
   const promises = [];
   let view = map.getView();
-  if (!view.isDef() && !view.getRotation() && !view.getResolutions()) {
+  if (
+    typeof view.options_ === 'object'
+      ? isEmpty(view.options_)
+      : !view.isDef() && !view.getRotation() && !view.getResolutions()
+  ) {
     view = new View({
       maxResolution: defaultResolutions[0],
     });
