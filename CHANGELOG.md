@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.8.1
+
+* Fix color calculation for zero opacity when `renderTransparent(true)` is set.
+
 ## 6.8.0
 
 * New `renderTransparent()` configuration option for more flexible hit detection
