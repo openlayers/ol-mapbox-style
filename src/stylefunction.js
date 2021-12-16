@@ -182,17 +182,17 @@ function colorWithOpacity(color, opacity) {
     }
     const a = color.a;
     opacity = opacity === undefined ? 1 : opacity;
-    return (
-      'rgba(' +
-      Math.round((color.r * 255) / a) +
-      ',' +
-      Math.round((color.g * 255) / a) +
-      ',' +
-      Math.round((color.b * 255) / a) +
-      ',' +
-      a * opacity +
-      ')'
-    );
+    return a === 0
+      ? 'transparent'
+      : 'rgba(' +
+          Math.round((color.r * 255) / a) +
+          ',' +
+          Math.round((color.g * 255) / a) +
+          ',' +
+          Math.round((color.b * 255) / a) +
+          ',' +
+          a * opacity +
+          ')';
   }
   return color;
 }
