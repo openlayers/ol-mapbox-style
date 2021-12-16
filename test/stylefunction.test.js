@@ -123,6 +123,24 @@ describe('stylefunction', function () {
       const styleFn = applyStyleFunction(layer, styleObject, ['transparent']);
       const style = styleFn(feature, 1);
       should(style).be.an.Array();
+      should(style[0].getFill().getColor()).eql('transparent');
+    });
+
+    it('renders the correct fill color with opacity', function () {
+      const styleObject = JSON.parse(JSON.stringify(states));
+      styleObject.layers.push({
+        'id': 'transparent',
+        'type': 'fill',
+        'source': 'states',
+        'paint': {
+          'fill-color': 'rgba(16,234,42,0.5)',
+        },
+      });
+      renderTransparent(true);
+      const styleFn = applyStyleFunction(layer, styleObject, ['transparent']);
+      const style = styleFn(feature, 1);
+      should(style).be.an.Array();
+      should(style[0].getFill().getColor()).eql('rgba(16,234,42,0.5)');
     });
   });
 
