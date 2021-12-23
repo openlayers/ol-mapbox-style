@@ -515,9 +515,11 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken = '') {
       ? isEmpty(view.options_)
       : !view.isDef() && !view.getRotation() && !view.getResolutions()
   ) {
-    view = new View({
-      maxResolution: defaultResolutions[0],
-    });
+    view = new View(
+      assign(view.getProperties(), {
+        maxResolution: defaultResolutions[0],
+      })
+    );
     map.setView(view);
   }
 
