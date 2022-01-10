@@ -293,8 +293,8 @@ function setBackground(mapOrLayer, layer) {
       if (element) {
         element.style.backgroundColor = '';
         element.style.opacity = '';
-        return undefined;
       }
+      return undefined;
     }
     return _colorWithOpacity(bg, opacity);
   }
