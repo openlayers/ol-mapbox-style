@@ -1,5 +1,10 @@
 # Changelog
 
+## 6.8.2
+
+* Use OpenLayers's fixed `ol/View#getProperties()` method, if available
+* Avoid applying background if layout is none
+
 ## 6.8.1
 
 * Fix color calculation for zero opacity when `renderTransparent(true)` is set.
