@@ -4,6 +4,7 @@ import VectorSource from 'ol/source/Vector.js';
 import VectorTileLayer from 'ol/layer/VectorTile.js';
 import VectorTileSource from 'ol/source/VectorTile.js';
 import View from 'ol/View.js';
+import backgroundNoneStyle from './fixtures/background-none.json';
 import backgroundStyle from './fixtures/background.json';
 import brightV9 from 'mapbox-gl-styles/styles/bright-v9.json';
 import olms, {
@@ -84,6 +85,30 @@ describe('ol-mapbox-style', function () {
       }
       applyBackground(layer, backgroundStyle);
       should(layer.getBackground()(1)).be.exactly('rgba(248,244,240,0.75)');
+    });
+    it('ignores background if layout: none (with map container)', function () {
+      const target = document.createElement('div');
+      target.style.width = '100px';
+      target.style.height = '100px';
+      const map = new Map({target: target});
+      applyBackground(map, backgroundNoneStyle);
+      should(target.style.backgroundColor).be.exactly('');
+      should(target.style.opacity).be.eql('');
+    });
+    it('ignores background if layout: none (with a layer)', function () {
+      const layer = new VectorTileLayer({
+        source: new VectorTileSource({}),
+      });
+      if (typeof layer.setBackground !== 'function') {
+        layer.setBackground = function (background) {
+          layer.background = background;
+        };
+        layer.getBackground = function () {
+          return layer.background;
+        };
+      }
+      applyBackground(layer, backgroundNoneStyle);
+      should(layer.getBackground()(1)).be.undefined();
     });
   });
 
