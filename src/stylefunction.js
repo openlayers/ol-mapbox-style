@@ -517,41 +517,48 @@ export default function (
               ),
               opacity
             );
-            if (color) {
-              if (layer.type + '-outline-color' in paint) {
-                strokeColor = colorWithOpacity(
-                  getValue(
-                    layer,
-                    'paint',
-                    layer.type + '-outline-color',
-                    zoom,
-                    f,
-                    functionCache
-                  ),
-                  opacity
-                );
-              }
-              if (!strokeColor) {
-                strokeColor = color;
-              }
+            if (layer.type + '-outline-color' in paint) {
+              strokeColor = colorWithOpacity(
+                getValue(
+                  layer,
+                  'paint',
+                  layer.type + '-outline-color',
+                  zoom,
+                  f,
+                  functionCache
+                ),
+                opacity
+              );
+            }
+            if (!strokeColor) {
+              strokeColor = color;
+            }
+            if (color || strokeColor) {
               ++stylesLength;
               style = styles[stylesLength];
               if (
                 !style ||
-                !(style.getFill() && style.getStroke()) ||
+                (color && !style.getFill()) ||
+                (!color && style.getFill()) ||
+                (strokeColor && !style.getStroke()) ||
+                (!strokeColor && style.getStroke()) ||
                 style.getText()
               ) {
                 style = new Style({
-                  fill: new Fill(),
-                  stroke: new Stroke(),
+                  fill: color ? new Fill() : undefined,
+                  stroke: strokeColor ? new Stroke() : undefined,
                 });
                 styles[stylesLength] = style;
               }
-              fill = style.getFill();
-              fill.setColor(color);
-              stroke = style.getStroke();
-              stroke.setColor(strokeColor);
-              stroke.setWidth(0.5);
+              if (color) {
+                fill = style.getFill();
+                fill.setColor(color);
+              }
+              if (strokeColor) {
+                stroke = style.getStroke();
+                stroke.setColor(strokeColor);
+                stroke.setWidth(0.5);
+              }
               style.setZIndex(index);
             }
           }
