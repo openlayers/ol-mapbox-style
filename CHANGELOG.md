@@ -1,5 +1,10 @@
 # Changelog
 
+## 6.8.3
+
+* Fix handling of fonts with two-word weights (e.g. "Semi Bold")
+* Fix rendering of fill-outline when fill is fully transparent
+
 ## 6.8.2
 
 * Use OpenLayers's fixed `ol/View#getProperties()` method, if available
