@@ -158,6 +158,9 @@ function evaluateFilter(layerId, filter, feature, zoom, filterCache) {
 let renderTransparentEnabled = false;
 
 /**
+ * ```js
+ * import {renderTransparent} from 'ol-mapbox-style/dist/stylefunction';
+ * ```
  * Configure whether features with a transparent style should be rendered. When
  * set to `true`, it will be possible to hit detect content that is not visible,
  * like transparent fills of polygons, using `ol/layer/Layer#getFeatures()` or
