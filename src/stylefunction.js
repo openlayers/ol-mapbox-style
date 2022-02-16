@@ -864,7 +864,7 @@ export default function (
           }
         }
 
-        if (type == 1 && 'circle-radius' in paint) {
+        if (type == 1 && layer.type === 'circle') {
           ++stylesLength;
           style = styles[stylesLength];
           if (
@@ -876,14 +876,17 @@ export default function (
             style = new Style();
             styles[stylesLength] = style;
           }
-          const circleRadius = getValue(
-            layer,
-            'paint',
-            'circle-radius',
-            zoom,
-            f,
-            functionCache
-          );
+          const circleRadius =
+            'circle-radius' in paint
+              ? getValue(
+                  layer,
+                  'paint',
+                  'circle-radius',
+                  zoom,
+                  f,
+                  functionCache
+                )
+              : 5;
           const circleStrokeColor = colorWithOpacity(
             getValue(
               layer,
