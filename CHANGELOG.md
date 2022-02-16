@@ -1,5 +1,10 @@
 # Changelog
 
+## 6.9.0
+
+* Add support for the `icon-offset` layout property
+* Fix `circle` layers with default radius
+
 ## 6.8.3
 
 * Fix handling of fonts with two-word weights (e.g. "Semi Bold")
