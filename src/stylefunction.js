@@ -787,6 +787,17 @@ export default function (
                       offset: [spriteImageData.x, spriteImageData.y],
                       rotateWithView: iconRotationAlignment === 'map',
                       scale: iconSize / spriteImageData.pixelRatio,
+                      displacement:
+                        'icon-offset' in layout
+                          ? getValue(
+                              layer,
+                              'layout',
+                              'icon-offset',
+                              zoom,
+                              f,
+                              functionCache
+                            ).map((v) => -v * spriteImageData.pixelRatio)
+                          : undefined,
                     });
                     iconImageCache[icon_cache_key] = iconImg;
                   }
