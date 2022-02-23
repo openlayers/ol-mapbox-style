@@ -25,7 +25,6 @@ import {Color} from '@mapbox/mapbox-gl-style-spec';
 import {assign, defaultResolutions} from './util.js';
 import {createXYZ} from 'ol/tilegrid.js';
 import {fromLonLat} from 'ol/proj.js';
-import {isEmpty} from 'ol/obj.js';
 import {unByKey} from 'ol/Observable.js';
 
 /**
@@ -510,11 +509,7 @@ function updateRasterLayerProperties(glLayer, layer, view, functionCache) {
 function processStyle(glStyle, map, baseUrl, host, path, accessToken = '') {
   const promises = [];
   let view = map.getView();
-  if (
-    typeof view.options_ === 'object'
-      ? isEmpty(view.options_)
-      : !view.isDef() && !view.getRotation() && !view.getResolutions()
-  ) {
+  if (!view.isDef() && !view.getRotation() && !view.getResolutions()) {
     view = new View(
       assign(view.getProperties(), {
         maxResolution: defaultResolutions[0],
@@ -795,8 +790,11 @@ function finalizeLayer(layer, layerIds, glStyle, path, map) {
         );
         return;
       }
-      if (typeof source.getTileGrid === 'function') {
-        const tileGrid = source.getTileGrid();
+      if ('getTileGrid' in source) {
+        const tileGrid =
+          /** @type {import("ol/source/Tile.js").default|import("ol/source/VectorTile.js").default} */ (
+            source
+          ).getTileGrid();
         if (tileGrid) {
           const sourceMinZoom = tileGrid.getMinZoom();
           if (minZoom > 0 || sourceMinZoom > 0) {

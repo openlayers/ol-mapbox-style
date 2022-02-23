@@ -952,8 +952,48 @@ export default function (
           hasImage = true;
         }
 
-        let label;
+        let label, font, textLineHeight, textSize, letterSpacing, maxTextWidth;
         if ('text-field' in layout) {
+          textSize = Math.round(
+            getValue(layer, 'layout', 'text-size', zoom, f, functionCache)
+          );
+          const fontArray = getValue(
+            layer,
+            'layout',
+            'text-font',
+            zoom,
+            f,
+            functionCache
+          );
+          textLineHeight = getValue(
+            layer,
+            'layout',
+            'text-line-height',
+            zoom,
+            f,
+            functionCache
+          );
+          font = mb2css(
+            getFonts ? getFonts(fontArray) : fontArray,
+            textSize,
+            textLineHeight
+          );
+          letterSpacing = getValue(
+            layer,
+            'layout',
+            'text-letter-spacing',
+            zoom,
+            f,
+            functionCache
+          );
+          maxTextWidth = getValue(
+            layer,
+            'layout',
+            'text-max-width',
+            zoom,
+            f,
+            functionCache
+          );
           const textField = getValue(
             layer,
             'layout',
@@ -961,8 +1001,47 @@ export default function (
             zoom,
             f,
             functionCache
-          ).toString();
-          label = fromTemplate(textField, properties).trim();
+          );
+          if (typeof textField === 'object' && textField.sections) {
+            if (textField.sections.length === 1) {
+              label = textField.toString();
+            } else {
+              label = textField.sections.reduce((acc, chunk, i) => {
+                const fonts = chunk.fontStack
+                  ? chunk.fontStack.split(',')
+                  : fontArray;
+                const chunkFont = mb2css(
+                  getFonts ? getFonts(fonts) : fonts,
+                  textSize * (chunk.scale || 1),
+                  textLineHeight
+                );
+                let text = chunk.text;
+                if (text === '\n') {
+                  acc.push('\n', '');
+                  return acc;
+                }
+                if (type == 2) {
+                  acc.push(applyLetterSpacing(text, letterSpacing), chunkFont);
+                  return;
+                }
+                text = wrapText(
+                  text,
+                  chunkFont,
+                  maxTextWidth,
+                  letterSpacing
+                ).split('\n');
+                for (let i = 0, ii = text.length; i < ii; ++i) {
+                  if (i > 0) {
+                    acc.push('\n', '');
+                  }
+                  acc.push(text[i], chunkFont);
+                }
+                return acc;
+              }, []);
+            }
+          } else {
+            label = fromTemplate(textField, properties).trim();
+          }
           opacity = getValue(
             layer,
             'paint',
@@ -997,56 +1076,21 @@ export default function (
             );
           }
           text = style.getText();
-          const textSize = Math.round(
-            getValue(layer, 'layout', 'text-size', zoom, f, functionCache)
-          );
-          const fontArray = getValue(
-            layer,
-            'layout',
-            'text-font',
-            zoom,
-            f,
-            functionCache
-          );
-          const textLineHeight = getValue(
-            layer,
-            'layout',
-            'text-line-height',
-            zoom,
-            f,
-            functionCache
-          );
-          const font = mb2css(
-            getFonts ? getFonts(fontArray) : fontArray,
-            textSize,
-            textLineHeight
-          );
           const textTransform = layout['text-transform'];
           if (textTransform == 'uppercase') {
-            label = label.toUpperCase();
+            label = Array.isArray(label)
+              ? label.map((t, i) => (i % 2 ? t : t.toUpperCase()))
+              : label.toUpperCase();
           } else if (textTransform == 'lowercase') {
-            label = label.toLowerCase();
+            label = Array.isArray(label)
+              ? label.map((t, i) => (i % 2 ? t : t.toLowerCase()))
+              : label.toLowerCase();
           }
-          const maxTextWidth = getValue(
-            layer,
-            'layout',
-            'text-max-width',
-            zoom,
-            f,
-            functionCache
-          );
-          const letterSpacing = getValue(
-            layer,
-            'layout',
-            'text-letter-spacing',
-            zoom,
-            f,
-            functionCache
-          );
-          const wrappedLabel =
-            type == 2
-              ? applyLetterSpacing(label, letterSpacing)
-              : wrapText(label, font, maxTextWidth, letterSpacing);
+          const wrappedLabel = Array.isArray(label)
+            ? label
+            : type == 2
+            ? applyLetterSpacing(label, letterSpacing)
+            : wrapText(label, font, maxTextWidth, letterSpacing);
           text.setText(wrappedLabel);
           text.setFont(font);
           text.setRotation(
