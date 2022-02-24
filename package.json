@@ -1,6 +1,6 @@
 {
   "name": "ol-mapbox-style",
-  "version": "6.9.0",
+  "version": "7.0.0-beta.0",
   "description": "Create OpenLayers maps from Mapbox Style objects",
   "main": "dist/index.js",
   "type": "module",
@@ -60,12 +60,12 @@
     "mapbox-gl-styles": "^2.0.2",
     "mini-css-extract-plugin": "^2.4.4",
     "mocha": "^9.1.3",
-    "ol": "^6.9.0",
+    "ol": "^6.12.1-dev.1645634577440",
     "puppeteer": "^13.0.0",
     "should": "^13.2.3",
     "sinon": "^13.0.0",
     "style-loader": "^3.3.1",
-    "typescript": "4.5",
+    "typescript": "^4.6.0-beta",
     "webpack": "^5.62.1",
     "webpack-cli": "^4.9.1",
     "webpack-dev-server": "^4.4.0"
