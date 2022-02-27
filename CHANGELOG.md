@@ -1,5 +1,16 @@
 # Changelog
 
+## 7.0.0
+
+### Breaking changes
+
+ol-mapbox-style now requires OpenLayers >= 6.13.
+
+### All changes
+
+* Add support for rich text labels (with OpenLayers v6.13+)
+* Require ol >= 6.13
+
 ## 6.9.0
 
 * Add support for the `icon-offset` layout property
