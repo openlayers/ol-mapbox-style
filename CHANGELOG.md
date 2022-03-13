@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.1.0
+
+* Declutter also vector layers
+* Allow text to overflow polygons
+
 ## 7.0.0
 
 ### Breaking changes
