@@ -483,6 +483,7 @@ function setupGeoJSONLayer(glSource, path) {
     });
   }
   return new VectorLayer({
+    declutter: true,
     source: new VectorSource({
       attributions: glSource.attribution,
       features: features,
