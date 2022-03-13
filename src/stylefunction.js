@@ -1071,6 +1071,7 @@ export default function (
             style.setText(
               text ||
                 new Text({
+                  overflow: true,
                   padding: [2, 2, 2, 2],
                 })
             );
