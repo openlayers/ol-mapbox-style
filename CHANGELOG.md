@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.1.1
+
+* Do not use overflow for line labels
+
 ## 7.1.0
 
 * Declutter also vector layers

@@ -1071,7 +1071,6 @@ export default function (
             style.setText(
               text ||
                 new Text({
-                  overflow: true,
                   padding: [2, 2, 2, 2],
                 })
             );
@@ -1119,6 +1118,7 @@ export default function (
                   functionCache
                 );
           text.setPlacement(placement);
+          text.setOverflow(placement === 'point');
           let textHaloWidth = getValue(
             layer,
             'paint',
