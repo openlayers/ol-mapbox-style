@@ -1,6 +1,6 @@
 {
   "name": "ol-mapbox-style",
-  "version": "7.1.1",
+  "version": "7.1.2-alpha",
   "description": "Create OpenLayers maps from Mapbox Style objects",
   "main": "dist/olms.js",
   "module": "dist/index.js",
