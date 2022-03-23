@@ -28,7 +28,7 @@ function createExternals() {
   const createdExternals = {};
   for (const key in externals) {
     createdExternals[key] = {
-      root: externals[key],
+      root: externals[key].split('.'),
       commonjs: key,
       commonjs2: key,
       amd: key,

@@ -12,15 +12,11 @@ import Stroke from 'ol/style/Stroke.js';
 import Style from 'ol/style/Style.js';
 import Text from 'ol/style/Text.js';
 
+import Color from '@openlayers/mapbox-gl-style-spec/Color';
+import createFilter from '@openlayers/mapbox-gl-style-spec/featureFilter';
+import derefLayers from '@openlayers/mapbox-gl-style-spec/derefLayers';
 import mb2css from 'mapbox-to-css-font';
-import {
-  Color,
-  featureFilter as createFilter,
-  derefLayers,
-  expression,
-  function as fn,
-  latest as spec,
-} from '@mapbox/mapbox-gl-style-spec';
+import spec from '@openlayers/mapbox-gl-style-spec/latest';
 import {
   applyLetterSpacing,
   createCanvas,
@@ -29,17 +25,20 @@ import {
   getZoomForResolution,
   wrapText,
 } from './util.js';
+import {
+  convertFunction,
+  isFunction,
+} from '@openlayers/mapbox-gl-style-spec/function';
+import {
+  createPropertyExpression,
+  isExpression,
+} from '@openlayers/mapbox-gl-style-spec/expression';
 
 /**
  * @typedef {import("ol/layer/Vector").default} VectorLayer
  * @typedef {import("ol/layer/VectorTile").default} VectorTileLayer
  * @typedef {import("ol/style/Style").StyleFunction} StyleFunction
  */
-
-const isFunction = fn.isFunction;
-const convertFunction = fn.convertFunction;
-const isExpression = expression.isExpression;
-const createPropertyExpression = expression.createPropertyExpression;
 
 const types = {
   'Point': 1,
@@ -159,7 +158,7 @@ let renderTransparentEnabled = false;
 
 /**
  * ```js
- * import {renderTransparent} from 'ol-mapbox-style/dist/stylefunction';
+ * import {renderTransparent} from 'ol-mapbox-style';
  * ```
  * Configure whether features with a transparent style should be rendered. When
  * set to `true`, it will be possible to hit detect content that is not visible,
@@ -224,7 +223,7 @@ let recordLayer = false;
 
 /**
  * ```js
- * import {recordStyleLayer} from 'ol-mapbox-style/dist/stylefunction';
+ * import {recordStyleLayer} from 'ol-mapbox-style';
  * ```
  * Turns recording of the Mapbox Style's `layer` on and off. When turned on,
  * the layer that a rendered feature belongs to will be set as the feature's
@@ -237,7 +236,7 @@ export function recordStyleLayer(record) {
 
 /**
  * ```js
- * import stylefunction from 'ol-mapbox-style/dist/stylefunction';
+ * import stylefunction from 'ol-mapbox-style';
  * ```
  * Creates a style function from the `glStyle` object for all layers that use
  * the specified `source`, which needs to be a `"type": "vector"` or
