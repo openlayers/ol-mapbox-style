@@ -4,6 +4,7 @@ Copyright 2016-present ol-mapbox-style contributors
 License: https://raw.githubusercontent.com/openlayers/ol-mapbox-style/master/LICENSE
 */
 
+import Color from '@openlayers/mapbox-gl-style-spec/Color';
 import GeoJSON from 'ol/format/GeoJSON.js';
 import MVT from 'ol/format/MVT.js';
 import Map from 'ol/Map.js';
@@ -21,7 +22,6 @@ import applyStyleFunction, {
 } from './stylefunction.js';
 import googleFonts from 'webfont-matcher/lib/fonts/google.js';
 import mb2css from 'mapbox-to-css-font';
-import {Color} from '@mapbox/mapbox-gl-style-spec';
 import {assign, defaultResolutions} from './util.js';
 import {createXYZ} from 'ol/tilegrid.js';
 import {fromLonLat} from 'ol/proj.js';
@@ -908,5 +908,11 @@ export function getSource(map, sourceId) {
     }
   }
 }
+
+export {
+  default as stylefunction,
+  recordStyleLayer,
+  renderTransparent,
+} from './stylefunction.js';
 
 export {finalizeLayer as _finalizeLayer, getFonts as _getFonts};

@@ -1,8 +1,9 @@
 /*eslint no-console: "off"*/
+import Color from '@openlayers/mapbox-gl-style-spec/Color';
 import Feature from 'ol/Feature.js';
 import Point from 'ol/geom/Point.js';
 import should from 'should';
-import {Color, latest as spec} from '@mapbox/mapbox-gl-style-spec';
+import spec from '@openlayers/mapbox-gl-style-spec/latest';
 
 import {
   _colorWithOpacity as colorWithOpacity,
