@@ -1,38 +1,3 @@
-import EventType from 'ol/events/EventType.js';
-import {labelCache} from 'ol/render/canvas.js';
-import {listen} from 'ol/events.js';
-
-/**
- * Polyfill for Object.assign().  Assigns enumerable and own properties from
- * one or more source objects to a target object.
- * See https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Object/assign.
- *
- * @param {!Object} target The target object.
- * @param {...Object} var_sources The source object(s).
- * @return {!Object} The modified target object.
- */
-export const assign =
-  typeof Object.assign === 'function'
-    ? Object.assign
-    : function (target, var_sources) {
-        if (target === undefined || target === null) {
-          throw new TypeError('Cannot convert undefined or null to object');
-        }
-
-        const output = Object(target);
-        for (let i = 1, ii = arguments.length; i < ii; ++i) {
-          const source = arguments[i];
-          if (source !== undefined && source !== null) {
-            for (const key in source) {
-              if (source.hasOwnProperty(key)) {
-                output[key] = source[key];
-              }
-            }
-          }
-        }
-        return output;
-      };
-
 export function deg2rad(degrees) {
   return (degrees * Math.PI) / 180;
 }
@@ -109,14 +74,7 @@ function measureText(text, letterSpacing) {
   );
 }
 
-let measureCache = {};
-if (labelCache) {
-  // Only available when using ES modules
-  //@ts-ignore
-  listen(labelCache, EventType.CLEAR, function () {
-    measureCache = {};
-  });
-}
+const measureCache = {};
 export function wrapText(text, font, em, letterSpacing) {
   if (text.indexOf('\n') !== -1) {
     const hardLines = text.split('\n');

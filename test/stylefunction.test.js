@@ -1,12 +1,12 @@
 import Feature from 'ol/Feature.js';
 import Polygon from 'ol/geom/Polygon.js';
 import VectorLayer from 'ol/layer/Vector.js';
-import applyStyleFunction, {
+import deepFreeze from 'deep-freeze';
+import olms, {
+  stylefunction as applyStyleFunction,
   recordStyleLayer,
   renderTransparent,
-} from '../src/stylefunction.js';
-import deepFreeze from 'deep-freeze';
-import olms from '../src/index.js';
+} from '../src/index.js';
 import should from 'should';
 import states from './fixtures/states.json';
 

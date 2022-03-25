@@ -22,8 +22,9 @@ import applyStyleFunction, {
 } from './stylefunction.js';
 import googleFonts from 'webfont-matcher/lib/fonts/google.js';
 import mb2css from 'mapbox-to-css-font';
-import {assign, defaultResolutions} from './util.js';
+import {assign} from 'ol/obj.js';
 import {createXYZ} from 'ol/tilegrid.js';
+import {defaultResolutions} from './util.js';
 import {fromLonLat} from 'ol/proj.js';
 import {unByKey} from 'ol/Observable.js';
 
