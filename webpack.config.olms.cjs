@@ -7,6 +7,7 @@ const externals = {
   'ol/style/Stroke.js': 'ol.style.Stroke',
   'ol/style/Fill.js': 'ol.style.Fill',
   'ol/style/Text.js': 'ol.style.Text',
+  'ol/obj.js': 'ol.obj',
   'ol/proj.js': 'ol.proj',
   'ol/render/Feature.js': 'ol.render.Feature',
   'ol/tilegrid.js': 'ol.tilegrid',
@@ -28,7 +29,7 @@ function createExternals() {
   const createdExternals = {};
   for (const key in externals) {
     createdExternals[key] = {
-      root: externals[key],
+      root: externals[key].split('.'),
       commonjs: key,
       commonjs2: key,
       amd: key,

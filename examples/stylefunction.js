@@ -5,7 +5,7 @@ import VectorLayer from 'ol/layer/Vector.js';
 import VectorSource from 'ol/source/Vector.js';
 import View from 'ol/View.js';
 
-import stylefunction from 'ol-mapbox-style/dist/stylefunction';
+import {stylefunction} from 'ol-mapbox-style';
 
 const layer = new VectorLayer({
   declutter: true,

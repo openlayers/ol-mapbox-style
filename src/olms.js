@@ -3,7 +3,7 @@ import stylefunction, {
   recordStyleLayer,
   renderTransparent,
 } from './stylefunction.js';
-import {assign} from './util.js';
+import {assign} from 'ol/obj.js';
 
 assign(olms, {
   apply,
