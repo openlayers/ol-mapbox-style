@@ -13,11 +13,30 @@ import styleInvalidSpriteURL from './fixtures/style-invalid-sprite-url.json';
 import styleInvalidVersion from './fixtures/style-invalid-version.json';
 import styleMissingSprite from './fixtures/style-missing-sprite.json';
 
+import VectorSource from 'ol/source/Vector.js';
 import {applyStyle} from '../src/index.js';
+
+describe('applyStyle with source creation', function () {
+  it('configures vector layer with source and style', function (done) {
+    const layer = new VectorLayer();
+    applyStyle(layer, '/fixtures/geojson.json').then(function () {
+      try {
+        should(layer.getSource()).be.an.instanceOf(VectorSource);
+        should(
+          new URL(layer.getSource().getUrl(), location.href).pathname
+        ).equal('/fixtures/states.geojson');
+        should(layer.getStyle()).be.an.instanceOf(Function);
+        done();
+      } catch (e) {
+        done(e);
+      }
+    });
+  });
+});
 
 describe('applyStyle style argument validation', function () {
   const source = 'openmaptiles';
-  const layer = new VectorLayer();
+  const layer = new VectorTileLayer();
 
   it('should handle valid style as JSON', function (done) {
     applyStyle(layer, glStyle, source, 'fixtures/osm-liberty/')
@@ -53,7 +72,7 @@ describe('applyStyle style argument validation', function () {
 
   it('should reject invalid ol layer source type', function (done) {
     applyStyle(
-      new VectorLayer(),
+      layer,
       glStyle,
       'natural_earth_shaded_relief',
       'fixtures/osm-liberty/'
@@ -69,7 +88,7 @@ describe('applyStyle style argument validation', function () {
 
 describe('applyStyle style validation', function () {
   const source = 'openmaptiles';
-  const layer = new VectorLayer();
+  const layer = new VectorTileLayer();
 
   it('should handle missing sprite', function (done) {
     applyStyle(layer, styleMissingSprite, source, 'fixtures/osm-liberty/')
@@ -96,7 +115,7 @@ describe('applyStyle style validation', function () {
 
 describe('applyStyle sprite retrieval', function () {
   const source = 'openmaptiles';
-  const layer = new VectorLayer();
+  const layer = new VectorTileLayer();
 
   let origDevicePixelRatio, spy;
   beforeEach(function () {
@@ -105,23 +124,15 @@ describe('applyStyle sprite retrieval', function () {
   });
 
   afterEach(function () {
-    self.devicePixelRatio = origDevicePixelRatio;
+    devicePixelRatio = origDevicePixelRatio;
     self.fetch.restore();
   });
 
   it('should retrieve hires sprite', function (done) {
-    const style = Object.assign({}, glStyle);
-    style.sprite =
-      window.location.protocol +
-      '//' +
-      window.location.host +
-      '/fixtures/osm-liberty/osm-liberty';
-
     devicePixelRatio = 2;
-
-    applyStyle(layer, style, source)
+    applyStyle(layer, glStyle, source, 'fixtures/osm-liberty/')
       .then(function () {
-        should(spy.getCall(0).args[0]).endWith('/osm-liberty@2x.json');
+        should(spy.getCall(0).args[0].url).endWith('/osm-liberty@2x.json');
         should(spy.callCount).be.exactly(1);
         done();
       })
@@ -131,18 +142,10 @@ describe('applyStyle sprite retrieval', function () {
   });
 
   it('should retrieve lores sprite', function (done) {
-    const style = Object.assign({}, glStyle);
-    style.sprite =
-      window.location.protocol +
-      '//' +
-      window.location.host +
-      '/fixtures/osm-liberty/osm-liberty';
-
     devicePixelRatio = 1;
-
-    applyStyle(layer, style, source)
+    applyStyle(layer, glStyle, source, 'fixtures/osm-liberty/')
       .then(function () {
-        should(spy.getCall(0).args[0]).endWith('/osm-liberty.json');
+        should(spy.getCall(0).args[0].url).endWith('/osm-liberty.json');
         should(spy.callCount).be.exactly(1);
         done();
       })

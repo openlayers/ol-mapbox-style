@@ -16,31 +16,37 @@ When installed this way, just import the ol-mapbox-style module, like in the usa
 
 ### Usage example
 
-The code below creates an OpenLayers map from Mapbox's Bright v9 style:
+The code below creates an OpenLayers map from Mapbox's Bright v9 style, using a `https://` url:
 
 ```js
 import olms from 'ol-mapbox-style';
 
-var key = 'Your Mapbox Access Token here';
-olms('map', 'https://api.mapbox.com/styles/v1/mapbox/bright-v9?access_token=' + key);
+olms('map', 'https://api.mapbox.com/styles/v1/mapbox/bright-v9?access_token=YOUR_MAPBOX_TOKEN');
+```
+
+To assign style and source to a layer only, use `applyStyle()`. `mapbox://` urls are also supported:
+
+```js
+import {applyStyle} from 'ol-mapbox-style';
+import VectorTileLayer from 'ol/layer/VectorTile.js'
+
+const layer = new VectorTileLayer({declutter: true});
+applyStyle(layer, 'mapbox://styles/mapbox/bright-v9', {accessToken: 'YOUR_MAPBOX_TOKEN'});
 ```
 
 Only commonly available system fonts and [Google Fonts](https://developers.google.com/fonts/) will automatically be available for any `text-font` defined in the Mapbox Style object. It is the responsibility of the application to load other fonts. Because `ol-mapbox-style` uses system and web fonts instead of PBF/SDF glyphs, the [font stack](https://www.mapbox.com/help/manage-fontstacks/) is treated a little different: style and weight are taken from the primary font (i.e. the first one in the font stack). Subsequent fonts in the font stack are only used if the primary font is not available/loaded, and they will be used with the style and weight of the primary font.
 
-To apply a subset of the layers defined in the Mapbox Style layer to a custom OpenLayers layer, use the `applyStyle()` function.
-
 To apply the properties of the Mapbox Style's `background` layer to the map or a `VectorTile` layer, use the `applyBackground()` function.
 
-To create a style function for individual OpenLayers vector or vector tile layers, use the `stylefunction` module:
+There is also a low-level API available. To create a style function for individual OpenLayers vector or vector tile layers, use the `stylefunction` module:
 
 ```js
-import stylefunction from 'ol-mapbox-style/dist/stylefunction';
-// OpenLayers imports from https://npmjs.com/package/ol
-import VectorLayer from 'ol/layer/Vector';
-import VectorSource from 'ol/source/Vector';
-import GeoJSON from 'ol/format/GeoJSON';
+import {stylefunction} from 'ol-mapbox-style';
+import VectorLayer from 'ol/layer/Vector.js';
+import VectorSource from 'ol/source/Vector.js';
+import GeoJSON from 'ol/format/GeoJSON.js';
 
-var layer = new VectorLayer({
+const layer = new VectorLayer({
   source: new VectorSource({
     format: new GeoJSON(),
     url: 'data/states.geojson'
@@ -53,6 +59,8 @@ fetch('data/states.json').then(function(response) {
   });
 });
 ```
+
+Note that this low-level API does not create a source for the layer, and extra work is required to set up sprite handling for styles that use icons.
 
 ## Compatibility notes
 
@@ -68,32 +76,42 @@ Internet Explorer (version 11) and other old browsers (Android 4.x) are supporte
 
 #### Table of Contents
 
+*   [Options](#options)
+    *   [Properties](#properties)
 *   [applyStyle](#applystyle)
     *   [Parameters](#parameters)
 *   [renderTransparent](#rendertransparent)
     *   [Parameters](#parameters-1)
-*   [renderTransparent](#rendertransparent-1)
-    *   [Parameters](#parameters-2)
 *   [recordStyleLayer](#recordstylelayer)
-    *   [Parameters](#parameters-3)
-*   [recordStyleLayer](#recordstylelayer-1)
-    *   [Parameters](#parameters-4)
+    *   [Parameters](#parameters-2)
 *   [stylefunction](#stylefunction)
-    *   [Parameters](#parameters-5)
-*   [stylefunction](#stylefunction-1)
-    *   [Parameters](#parameters-6)
+    *   [Parameters](#parameters-3)
 *   [applyBackground](#applybackground)
-    *   [Parameters](#parameters-7)
+    *   [Parameters](#parameters-4)
 *   [olms](#olms)
-    *   [Parameters](#parameters-8)
+    *   [Parameters](#parameters-5)
 *   [apply](#apply)
-    *   [Parameters](#parameters-9)
+    *   [Parameters](#parameters-6)
 *   [getLayer](#getlayer)
-    *   [Parameters](#parameters-10)
+    *   [Parameters](#parameters-7)
 *   [getLayers](#getlayers)
-    *   [Parameters](#parameters-11)
+    *   [Parameters](#parameters-8)
 *   [getSource](#getsource)
-    *   [Parameters](#parameters-12)
+    *   [Parameters](#parameters-9)
+
+### Options
+
+Type: [Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)
+
+#### Properties
+
+*   `accessToken` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** Access token for 'mapbox://' urls.
+*   `transformRequest` **function ([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)): [Request](https://developer.mozilla.org/Add-ons/SDK/High-Level_APIs/request)?** Function for controlling how `ol-mapbox-style` fetches resources. Can be used for modifying
+    the url, adding headers or setting credentials options. Called with the url and the resource
+    type as arguments, this function is supposed to return a `Request` object.
+*   `styleUrl` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** URL of the Mapbox GL style. Required for styles that were provided
+    as object, when they contain a relative sprite url.
+*   `accessTokenParam` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** Access token param. For internal use.
 
 ### applyStyle
 
@@ -101,11 +119,23 @@ Internet Explorer (version 11) and other old browsers (Android 4.x) are supporte
 import {applyStyle} from 'ol-mapbox-style';
 ```
 
-Applies a style function to an `ol.layer.VectorTile` or `ol.layer.Vector`
-with an `ol.source.VectorTile` or an `ol.source.Vector`. The style function
-will render all layers from the `glStyle` object that use the specified
-`source`, or a subset of layers from the same source. The source needs to be
-a `"type": "vector"` or `"type": "geojson"` source.
+Applies a style function to an `ol/layer/VectorTile` or `ol/layer/Vector`
+with an `ol/source/VectorTile` or an `ol/source/Vector`. If the layer does not have a source
+yet, it will be created and populated from the information in the `glStyle`.
+
+**Example:**
+
+```js
+import {applyStyle} from 'ol-mapbox-style';
+import {VectorTile} from 'ol/layer.js';
+
+const layer = new VectorTile({declutter: true});
+applyStyle(layer, 'https://api.maptiler.com/maps/basic/style.json?key=YOUR_OPENMAPTILES_TOKEN');
+```
+
+The style function will render all layers from the `glStyle` object that use the source
+of the first layer, the specified `source`, or a subset of layers from the same source. The
+source needs to be a `"type": "vector"` or `"type": "geojson"` source.
 
 Two additional properties will be set on the provided layer:
 
@@ -120,13 +150,15 @@ Two additional properties will be set on the provided layer:
 
 *   `layer` **(VectorTileLayer | VectorLayer)** OpenLayers layer.
 *   `glStyle` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object))** Mapbox Style object.
-*   `source` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>)** `source` key or an array of layer `id`s from the
+*   `sourceOrLayers` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>)?** `source` key or an array of layer `id`s from the
     Mapbox Style object. When a `source` key is provided, all layers for the
     specified source will be included in the style function. When layer `id`s
-    are provided, they must be from layers that use the same source.
-*   `path` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Path of the style file. Only required when
-    a relative path is used with the `"sprite"` property of the style. (optional, default `undefined`)
-*   `resolutions` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)>** Resolutions for mapping resolution to zoom level. (optional, default `undefined`)
+    are provided, they must be from layers that use the same source. When not provided, all
+    layers using the first layer's source will be rendered.
+*   `optionsOrPath` **([Options](#options) | [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String))** Options. Alternatively the path of the style file
+    (only required when a relative path is used for the `"sprite"` property of the style). (optional, default `{}`)
+*   `resolutions` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)>** Resolutions for mapping resolution to zoom level.
+    Only needed when working with non-standard tile grids or projections. (optional, default `undefined`)
 
 Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** Promise which will be resolved when the style can be used
 for rendering.
@@ -147,22 +179,6 @@ like transparent fills of polygons, using `ol/layer/Layer#getFeatures()` or
 *   `enabled` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Rendering of transparent elements is enabled.
     Default is `false`.
 
-### renderTransparent
-
-```js
-import {renderTransparent} from 'ol-mapbox-style';
-```
-
-Configure whether features with a transparent style should be rendered. When
-set to `true`, it will be possible to hit detect content that is not visible,
-like transparent fills of polygons, using `ol/layer/Layer#getFeatures()` or
-`ol/Map#getFeaturesAtPixel()`
-
-#### Parameters
-
-*   `enabled` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Rendering of transparent elements is enabled.
-    Default is `false`.
-
 ### recordStyleLayer
 
 ```js
@@ -176,90 +192,6 @@ the layer that a rendered feature belongs to will be set as the feature's
 #### Parameters
 
 *   `record` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Recording of the style layer is on. (optional, default `false`)
-
-### recordStyleLayer
-
-```js
-import {recordStyleLayer} from 'ol-mapbox-style';
-```
-
-Turns recording of the Mapbox Style's `layer` on and off. When turned on,
-the layer that a rendered feature belongs to will be set as the feature's
-`mapbox-layer` property.
-
-#### Parameters
-
-*   `record` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Recording of the style layer is on. (optional, default `false`)
-
-### stylefunction
-
-```js
-import stylefunction from 'ol-mapbox-style';
-```
-
-Creates a style function from the `glStyle` object for all layers that use
-the specified `source`, which needs to be a `"type": "vector"` or
-`"type": "geojson"` source and applies it to the specified OpenLayers layer.
-
-Two additional properties will be set on the provided layer:
-
-*   `mapbox-source`: The `id` of the Mapbox Style document's source that the
-    OpenLayers layer was created from. Usually `apply()` creates one
-    OpenLayers layer per Mapbox Style source, unless the layer stack has
-    layers from different sources in between.
-*   `mapbox-layers`: The `id`s of the Mapbox Style document's layers that are
-    included in the OpenLayers layer.
-
-This function also works in a web worker. In worker mode, the main thread needs
-to listen to messages from the worker and respond with another message to make
-sure that sprite image loading works:
-
-```js
- worker.addEventListener('message', event => {
-  if (event.data.action === 'loadImage') {
-    const image = new Image();
-    image.crossOrigin = 'anonymous';
-    image.addEventListener('load', function() {
-      createImageBitmap(image, 0, 0, image.width, image.height).then(imageBitmap => {
-        worker.postMessage({
-          action: 'imageLoaded',
-          image: imageBitmap,
-          src: event.data.src
-        }, [imageBitmap]);
-      });
-    });
-    image.src = event.data.src;
-  }
-});
-```
-
-#### Parameters
-
-*   `olLayer` **(VectorLayer | VectorTileLayer)** OpenLayers layer to
-    apply the style to. In addition to the style, the layer will get two
-    properties: `mapbox-source` will be the `id` of the `glStyle`'s source used
-    for the layer, and `mapbox-layers` will be an array of the `id`s of the
-    `glStyle`'s layers.
-*   `glStyle` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object))** Mapbox Style object.
-*   `source` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>)** `source` key or an array of layer `id`s
-    from the Mapbox Style object. When a `source` key is provided, all layers for
-    the specified source will be included in the style function. When layer `id`s
-    are provided, they must be from layers that use the same source.
-*   `resolutions` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)>** Resolutions for mapping resolution to zoom level. (optional, default `[78271.51696402048,39135.75848201024,19567.87924100512,9783.93962050256,4891.96981025128,2445.98490512564,1222.99245256282,611.49622628141,305.748113140705,152.8740565703525,76.43702828517625,38.21851414258813,19.109257071294063,9.554628535647032,4.777314267823516,2.388657133911758,1.194328566955879,0.5971642834779395,0.29858214173896974,0.14929107086948487,0.07464553543474244]`)
-*   `spriteData` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Sprite data from the url specified in
-    the Mapbox Style object's `sprite` property. Only required if a `sprite`
-    property is specified in the Mapbox Style object. (optional, default `undefined`)
-*   `spriteImageUrl` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Sprite image url for the sprite
-    specified in the Mapbox Style object's `sprite` property. Only required if a
-    `sprite` property is specified in the Mapbox Style object. (optional, default `undefined`)
-*   `getFonts` **function ([Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>): [Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>** Function that
-    receives a font stack as arguments, and returns a (modified) font stack that
-    is available. Font names are the names used in the Mapbox Style object. If
-    not provided, the font stack will be used as-is. This function can also be
-    used for loading web fonts. (optional, default `undefined`)
-
-Returns **StyleFunction** Style function for use in
-`ol.layer.Vector` or `ol.layer.VectorTile`.
 
 ### stylefunction
 
@@ -337,13 +269,26 @@ Returns **StyleFunction** Style function for use in
 import {applyBackground} from 'ol-mapbox-style';
 ```
 
+**Example:**
+
+```js
+import {applyBackground} from 'ol-mapbox-style';
+import {Map} from 'ol';
+
+const map = new Map({target: 'map'});
+applyBackground(map, 'https://api.maptiler.com/maps/basic/style.json?key=YOUR_OPENMAPTILES_TOKEN');
+```
+
 Applies properties of the Mapbox Style's first `background` layer to the
 provided map or VectorTile layer.
 
 #### Parameters
 
-*   `mapOrLayer` **(PluggableMap | VectorTileLayer)** OpenLayers Map or VectorTile layer.
-*   `glStyle` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Mapbox Style object.
+*   `mapOrLayer` **([Map](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map) | VectorTileLayer)** OpenLayers Map or VectorTile layer.
+*   `glStyle` **([Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object) | [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String))** Mapbox Style object or url.
+*   `options` **[Options](#options)?** Options. (optional, default `{}`)
+
+Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** Promise that resolves when the background is applied.
 
 ### olms
 
@@ -351,8 +296,16 @@ provided map or VectorTile layer.
 import olms from 'ol-mapbox-style';
 ```
 
-Loads and applies a Mapbox Style object to an OpenLayers Map. This includes
+Loads and applies a Mapbox Style object into an OpenLayers Map. This includes
 the map background, the layers, the center and the zoom.
+
+**Example:**
+
+```js
+import olms from 'ol-mapbox-style';
+
+olms('map', 'mapbox://styles/mapbox/bright-v9', {accessToken: 'YOUR_MAPBOX_TOKEN'});
+```
 
 The center and zoom will only be set if present in the Mapbox Style document,
 and if not already set on the OpenLayers map.
@@ -374,21 +327,22 @@ map instance, which holds the Mapbox Style object.
 
 #### Parameters
 
-*   `map` **(PluggableMap | [HTMLElement](https://developer.mozilla.org/docs/Web/HTML/Element) | [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String))** Either an existing OpenLayers Map
+*   `map` **([Map](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map) | [HTMLElement](https://developer.mozilla.org/docs/Web/HTML/Element) | [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String))** Either an existing OpenLayers Map
     instance, or a HTML element, or the id of a HTML element that will be the
     target of a new OpenLayers Map.
 *   `style` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object))** JSON style object or style url pointing to a
-    Mapbox Style object. When using Mapbox APIs, the url must contain an access
-    token and look like
-    `https://api.mapbox.com/styles/v1/mapbox/bright-v9?access_token=[your_access_token_here]`.
+    Mapbox Style object. When using Mapbox APIs, the url is the `styleUrl`
+    shown in Mapbox Studio's "share" panel. In addition, the `accessToken` option
+    (see below) must be set.
     When passed as JSON style object, all OpenLayers layers created by `apply()`
     will be immediately available, but they may not have a source yet (i.e. when
     they are defined by a TileJSON url in the Mapbox Style document). When passed
     as style url, layers will be added to the map when the Mapbox Style document
     is loaded and parsed.
+*   `options` **[Options](#options)?** Options. (optional, default `{}`)
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** A promise that resolves after all layers have been added to
-the OpenLayers Map instance, their sources set, and their styles applied. the
+Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)<[Map](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map)>** A promise that resolves after all layers have been added to
+the OpenLayers Map instance, their sources set, and their styles applied. The
 `resolve` callback will be called with the OpenLayers Map instance as
 argument.
 
@@ -402,20 +356,21 @@ Like `olms`, but returns an `ol/Map` instance instead of a `Promise`.
 
 #### Parameters
 
-*   `map` **(PluggableMap | [HTMLElement](https://developer.mozilla.org/docs/Web/HTML/Element) | [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String))** Either an existing OpenLayers Map
+*   `map` **([Map](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map) | [HTMLElement](https://developer.mozilla.org/docs/Web/HTML/Element) | [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String))** Either an existing OpenLayers Map
     instance, or a HTML element, or the id of a HTML element that will be the
     target of a new OpenLayers Map.
 *   `style` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object))** JSON style object or style url pointing to a
-    Mapbox Style object. When using Mapbox APIs, the url must contain an access
-    token and look like
-    `https://api.mapbox.com/styles/v1/mapbox/bright-v9?access_token=[your_access_token_here]`.
+    Mapbox Style object. When using Mapbox APIs, the url is the `styleUrl`
+    shown in Mapbox Studio's "share" panel. In addition, the `accessToken` option
+    (see below) must be set.
     When passed as JSON style object, all OpenLayers layers created by `apply()`
     will be immediately available, but they may not have a source yet (i.e. when
     they are defined by a TileJSON url in the Mapbox Style document). When passed
     as style url, layers will be added to the map when the Mapbox Style document
     is loaded and parsed.
+*   `options` **[Options](#options)?** Options.
 
-Returns **PluggableMap** The OpenLayers Map instance that will be populated with the
+Returns **[Map](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map)** The OpenLayers Map instance that will be populated with the
 contents described in the Mapbox Style object.
 
 ### getLayer
@@ -430,7 +385,7 @@ OpenLayers layer instance when they use the same Mapbox Style `source`.
 
 #### Parameters
 
-*   `map` **PluggableMap** OpenLayers Map.
+*   `map` **[Map](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map)** OpenLayers Map.
 *   `layerId` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Mapbox Style layer id.
 
 Returns **Layer** OpenLayers layer instance.
@@ -445,7 +400,7 @@ Get the OpenLayers layer instances for the provided Mapbox Style `source`.
 
 #### Parameters
 
-*   `map` **PluggableMap** OpenLayers Map.
+*   `map` **[Map](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map)** OpenLayers Map.
 *   `sourceId` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Mapbox Style source id.
 
 Returns **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)\<Layer>** OpenLayers layer instances.
@@ -460,7 +415,7 @@ Get the OpenLayers source instance for the provided Mapbox Style `source`.
 
 #### Parameters
 
-*   `map` **PluggableMap** OpenLayers Map.
+*   `map` **[Map](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map)** OpenLayers Map.
 *   `sourceId` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Mapbox Style source id.
 
 Returns **Source** OpenLayers source instance.

@@ -17,18 +17,17 @@ import createFilter from '@openlayers/mapbox-gl-style-spec/featureFilter';
 import derefLayers from '@openlayers/mapbox-gl-style-spec/derefLayers';
 import mb2css from 'mapbox-to-css-font';
 import spec from '@openlayers/mapbox-gl-style-spec/latest';
-import {
-  applyLetterSpacing,
-  createCanvas,
-  defaultResolutions,
-  deg2rad,
-  getZoomForResolution,
-  wrapText,
-} from './util.js';
+import {applyLetterSpacing, wrapText} from './text.js';
 import {
   convertFunction,
   isFunction,
 } from '@openlayers/mapbox-gl-style-spec/function';
+import {
+  createCanvas,
+  defaultResolutions,
+  deg2rad,
+  getZoomForResolution,
+} from './util.js';
 import {
   createPropertyExpression,
   isExpression,

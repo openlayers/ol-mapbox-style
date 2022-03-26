@@ -17,6 +17,7 @@ const externals = {
   'ol/Map.js': 'ol.Map',
   'ol/View.js': 'ol.View',
   'ol/Observable.js': 'ol.Observable',
+  'ol/layer/MapboxVector.js': 'ol.layer.MapboxVector',
   'ol/layer/Tile.js': 'ol.layer.Tile',
   'ol/layer/Vector.js': 'ol.layer.Vector',
   'ol/layer/VectorTile.js': 'ol.layer.VectorTile',
