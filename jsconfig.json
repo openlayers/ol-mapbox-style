@@ -1,19 +1,11 @@
 {
   "compilerOptions": {
     "checkJs": true,
-    "baseUrl": "./",
-    "paths": {
-      "ol": ["node_modules/ol/src"],
-      "ol/*": ["node_modules/ol/src/*"]
-    },
+    "resolveJsonModule": true,
     "lib": [
       "es2015",
       "dom",
       "webworker"
     ]
-  },
-  "include": [
-    "*.js",
-    "node_modules/ol/**/*.js"
-  ]
+  }
 }

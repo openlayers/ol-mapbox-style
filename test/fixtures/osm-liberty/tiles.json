@@ -865,7 +865,7 @@
       20037471.205137063
   ],
   "tiles": [
-      "https://api.maptiler.com/tiles/v3/{z}/{x}/{y}.pbf?key=lirfd6Fegsjkvs0lshxe"
+      "./tiles/v3/{z}/{x}/{y}.pbf"
   ],
   "logo": "https://api.maptiler.com/resources/logo.svg"
 }
