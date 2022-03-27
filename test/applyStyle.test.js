@@ -32,6 +32,51 @@ describe('applyStyle with source creation', function () {
       }
     });
   });
+  it('configures vector tile layer with source and style', function (done) {
+    const layer = new VectorTileLayer();
+    applyStyle(layer, '/fixtures/osm-liberty/style.json')
+      .then(function () {
+        try {
+          should(layer.getSource()).be.an.instanceOf(VectorTileSource);
+          should(layer.getSource().getUrls()[0]).equal(
+            'http://localhost:9876/fixtures/osm-liberty/tiles/v3/{z}/{x}/{y}.pbf'
+          );
+          should(layer.getStyle()).be.an.instanceOf(Function);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      })
+      .catch(function (e) {
+        done(e);
+      });
+  });
+  it('respects the transformRequest options', function (done) {
+    const layer = new VectorTileLayer();
+    applyStyle(layer, '/fixtures/osm-liberty/style.json', 'openmaptiles', {
+      transformRequest(url, type) {
+        if (type === 'Tile') {
+          url += '?foo=bar';
+        }
+        return new Request(url);
+      },
+    })
+      .then(function () {
+        try {
+          should(layer.getSource()).be.an.instanceOf(VectorTileSource);
+          should(layer.getSource().getUrls()[0]).equal(
+            'http://localhost:9876/fixtures/osm-liberty/tiles/v3/{z}/{x}/{y}.pbf?foo=bar'
+          );
+          should(layer.getStyle()).be.an.instanceOf(Function);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      })
+      .catch(function (e) {
+        done(e);
+      });
+  });
 });
 
 describe('applyStyle style argument validation', function () {

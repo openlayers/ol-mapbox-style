@@ -44,7 +44,7 @@ export function getZoomForResolution(resolution, resolutions) {
 
 const pendingRequests = {};
 /**
- * @param {'Style'|'Source'|'Sprite'} resourceType Type of resource to load.
+ * @param {'Style'|'Source'|'Sprite'|'Tile'} resourceType Type of resource to load.
  * @param {string} url Url of the resource.
  * @param {Options} [options={}] Options.
  * @return {Promise<Object|Response>} Promise that resolves with the loaded resource
@@ -93,10 +93,16 @@ export function getGlStyle(glStyleOrUrl, options) {
 }
 
 const tilejsonCache = {};
+/**
+ * @param {Object} glSource glStyle source object.
+ * @param {string} styleUrl Style URL.
+ * @param {Options} options Options.
+ * @return {Object} TileJson
+ */
 export function getTileJson(glSource, styleUrl, options = {}) {
   const cacheKey = [styleUrl, JSON.stringify(glSource)].toString();
   let promise = tilejsonCache[cacheKey];
-  if (!promise) {
+  if (!promise || options.transformRequest) {
     const url = glSource.url;
     if (url) {
       const normalizedUrl = normalizeSourceUrl(
@@ -113,7 +119,25 @@ export function getTileJson(glSource, styleUrl, options = {}) {
           })
         );
       } else {
-        promise = fetchResource('Source', normalizedUrl, options);
+        promise = fetchResource('Source', normalizedUrl, options).then(
+          function (tileJson) {
+            tileJson.tiles = tileJson.tiles.map(function (tileUrl) {
+              let normalizedTileUrl = normalizeSourceUrl(
+                tileUrl,
+                options.accessToken,
+                options.accessTokenParam || 'access_token',
+                normalizedUrl || location.href
+              );
+              if (options.transformRequest) {
+                normalizedTileUrl = decodeURI(
+                  options.transformRequest(normalizedTileUrl, 'Tile').url
+                );
+              }
+              return normalizedTileUrl;
+            });
+            return Promise.resolve(tileJson);
+          }
+        );
       }
     } else {
       glSource = assign({}, glSource, {
@@ -128,7 +152,9 @@ export function getTileJson(glSource, styleUrl, options = {}) {
       });
       promise = Promise.resolve(assign({}, glSource));
     }
-    tilejsonCache[cacheKey] = promise;
+    if (!options.transformRequest) {
+      tilejsonCache[cacheKey] = promise;
+    }
   }
   return promise;
 }

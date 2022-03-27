@@ -106,9 +106,10 @@ Type: [Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Globa
 #### Properties
 
 *   `accessToken` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** Access token for 'mapbox://' urls.
-*   `transformRequest` **function ([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)): [Request](https://developer.mozilla.org/Add-ons/SDK/High-Level_APIs/request)?** Function for controlling how `ol-mapbox-style` fetches resources. Can be used for modifying
+*   `transformRequest` **function ([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), ResourceType): [Request](https://developer.mozilla.org/Add-ons/SDK/High-Level_APIs/request)?** Function for controlling how `ol-mapbox-style` fetches resources. Can be used for modifying
     the url, adding headers or setting credentials options. Called with the url and the resource
-    type as arguments, this function is supposed to return a `Request` object.
+    type as arguments, this function is supposed to return a `Request` object. For `Tile` resources,
+    only the `url` of the returned request will be respected.
 *   `styleUrl` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** URL of the Mapbox GL style. Required for styles that were provided
     as object, when they contain a relative sprite url.
 *   `accessTokenParam` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** Access token param. For internal use.

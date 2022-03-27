@@ -55,12 +55,15 @@ function completeOptions(styleUrl, options) {
 }
 
 /**
+ * 
+ 
  * @typedef {Object} Options
  * @property {string} [accessToken] Access token for 'mapbox://' urls.
- * @property {function(string, string): Request} [transformRequest]
+ * @property {function(string, ResourceType): Request} [transformRequest]
  * Function for controlling how `ol-mapbox-style` fetches resources. Can be used for modifying
  * the url, adding headers or setting credentials options. Called with the url and the resource
- * type as arguments, this function is supposed to return a `Request` object.
+ * type as arguments, this function is supposed to return a `Request` object. For `Tile` resources,
+ * only the `url` of the returned request will be respected.
  * @property {string} [styleUrl] URL of the Mapbox GL style. Required for styles that were provided
  * as object, when they contain a relative sprite url.
  * @property {string} [accessTokenParam='access_token'] Access token param. For internal use.
@@ -414,17 +417,17 @@ function extentFromTileJSON(tileJSON) {
 export function setupVectorSource(glSource, styleUrl, options) {
   return new Promise(function (resolve, reject) {
     getTileJson(glSource, styleUrl, options)
-      .then(function (glSource) {
-        const tilejson = new TileJSON({tileJSON: glSource});
-        const tileJSONDoc = tilejson.getTileJSON();
-        const tileGrid = tilejson.getTileGrid();
+      .then(function (tileJSON) {
+        const tileJSONSource = new TileJSON({tileJSON: tileJSON});
+        const tileJSONDoc = tileJSONSource.getTileJSON();
+        const tileGrid = tileJSONSource.getTileGrid();
         const extent = extentFromTileJSON(tileJSONDoc);
         const minZoom = tileJSONDoc.minzoom || 0;
         const maxZoom = tileJSONDoc.maxzoom || 22;
-        let source = tilejson.get('ol-source');
+        let source = tileJSONSource.get('ol-source');
         if (source === undefined) {
           source = new VectorTileSource({
-            attributions: tilejson.getAttributions(),
+            attributions: tileJSONSource.getAttributions(),
             format: new MVT(),
             tileGrid: new TileGrid({
               origin: tileGrid.getOrigin(0),
@@ -440,7 +443,7 @@ export function setupVectorSource(glSource, styleUrl, options) {
               ? undefined
               : tileJSONDoc.tiles,
           });
-          tilejson.set('ol-source', source);
+          tileJSONSource.set('ol-source', source);
         }
         resolve(source);
       })
@@ -929,5 +932,6 @@ export {finalizeLayer as _finalizeLayer};
 /**
  * @typedef {import("ol/layer/Layer").default} Layer
  * @typedef {import("ol/source/Source").default} Source
+ * @typedef {'Style'|'Source'|'Sprite'|'Tile'} ResourceType
  * @private
  */
