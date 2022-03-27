@@ -20,116 +20,73 @@ import applyStyleFunction, {
   _colorWithOpacity,
   getValue,
 } from './stylefunction.js';
-import googleFonts from 'webfont-matcher/lib/fonts/google.js';
-import mb2css from 'mapbox-to-css-font';
 import {assign} from 'ol/obj.js';
 import {createXYZ} from 'ol/tilegrid.js';
-import {defaultResolutions} from './util.js';
+import {
+  defaultResolutions,
+  fetchResource,
+  getGlStyle,
+  getTileJson,
+} from './util.js';
 import {fromLonLat} from 'ol/proj.js';
-import {unByKey} from 'ol/Observable.js';
+import {getFonts} from './text.js';
+import {
+  normalizeSourceUrl,
+  normalizeSpriteUrl,
+  normalizeStyleUrl,
+} from 'ol/layer/MapboxVector.js';
 
 /**
- * @typedef {import("ol/Map").default} PluggableMap
- * @typedef {import("ol/layer/Layer").default} Layer
- * @typedef {import("ol/source/Source").default} Source
- * @private
+ * @param {string} styleUrl Style URL.
+ * @param {Options} options Options.
+ * @return {Options} Completed options with accessToken and accessTokenParam.
  */
-
-const tilejsonCache = {};
-
-const fontFamilyRegEx = /font-family: ?([^;]*);/;
-const stripQuotesRegEx = /("|')/g;
-let loadedFontFamilies;
-function hasFontFamily(family) {
-  if (!loadedFontFamilies) {
-    loadedFontFamilies = {};
-    const styleSheets = document.styleSheets;
-    for (let i = 0, ii = styleSheets.length; i < ii; ++i) {
-      const styleSheet = /** @type {CSSStyleSheet} */ (styleSheets[i]);
-      try {
-        const cssRules = styleSheet.rules || styleSheet.cssRules;
-        if (cssRules) {
-          for (let j = 0, jj = cssRules.length; j < jj; ++j) {
-            const cssRule = cssRules[j];
-            if (cssRule.type == 5) {
-              const match = cssRule.cssText.match(fontFamilyRegEx);
-              loadedFontFamilies[match[1].replace(stripQuotesRegEx, '')] = true;
-            }
-          }
-        }
-      } catch (e) {
-        // empty catch block
-      }
-    }
+function completeOptions(styleUrl, options) {
+  if (!options.accessToken) {
+    options = assign({}, options);
+    const searchParams = new URL(styleUrl).searchParams;
+    // The last search parameter is the access token
+    searchParams.forEach((value, key) => {
+      options.accessToken = value;
+      options.accessTokenParam = key;
+    });
   }
-  return family in loadedFontFamilies;
+  return options;
 }
-
-const processedFontFamilies = {};
-const googleFamilies = googleFonts.getNames();
 
 /**
- * @private
- * @param {Array} fonts Fonts.
- * @return {Array} Processed fonts.
+ * @typedef {Object} Options
+ * @property {string} [accessToken] Access token for 'mapbox://' urls.
+ * @property {function(string, string): Request} [transformRequest]
+ * Function for controlling how `ol-mapbox-style` fetches resources. Can be used for modifying
+ * the url, adding headers or setting credentials options. Called with the url and the resource
+ * type as arguments, this function is supposed to return a `Request` object.
+ * @property {string} [styleUrl] URL of the Mapbox GL style. Required for styles that were provided
+ * as object, when they contain a relative sprite url.
+ * @property {string} [accessTokenParam='access_token'] Access token param. For internal use.
  */
-function getFonts(fonts) {
-  const fontsKey = fonts.toString();
-  if (fontsKey in processedFontFamilies) {
-    return fonts;
-  }
-  const googleFontDescriptions = fonts.map(function (font) {
-    const parts = mb2css(font, 1).split(' ');
-    return [parts.slice(3).join(' ').replace(/"/g, ''), parts[1] + parts[0]];
-  });
-  for (let i = 0, ii = googleFontDescriptions.length; i < ii; ++i) {
-    const googleFontDescription = googleFontDescriptions[i];
-    const family = googleFontDescription[0];
-    if (!hasFontFamily(family) && googleFamilies.indexOf(family) !== -1) {
-      const fontUrl =
-        'https://fonts.googleapis.com/css?family=' +
-        family.replace(/ /g, '+') +
-        ':' +
-        googleFontDescription[1];
-      if (!document.querySelector('link[href="' + fontUrl + '"]')) {
-        const markup = document.createElement('link');
-        markup.href = fontUrl;
-        markup.rel = 'stylesheet';
-        document.head.appendChild(markup);
-      }
-    }
-  }
-  processedFontFamilies[fontsKey] = true;
-  return fonts;
-}
-
-const spriteRegEx = /^(.*)(\?.*)$/;
-
-function withPath(url, path) {
-  if (path && url.indexOf('.') === 0) {
-    url = path + url;
-  }
-  return url;
-}
-
-function toSpriteUrl(url, path, extension) {
-  url = withPath(url, path);
-  const parts = url.match(spriteRegEx);
-  return parts
-    ? parts[1] + extension + (parts.length > 2 ? parts[2] : '')
-    : url + extension;
-}
 
 /**
  * ```js
  * import {applyStyle} from 'ol-mapbox-style';
  * ```
  *
- * Applies a style function to an `ol.layer.VectorTile` or `ol.layer.Vector`
- * with an `ol.source.VectorTile` or an `ol.source.Vector`. The style function
- * will render all layers from the `glStyle` object that use the specified
- * `source`, or a subset of layers from the same source. The source needs to be
- * a `"type": "vector"` or `"type": "geojson"` source.
+ * Applies a style function to an `ol/layer/VectorTile` or `ol/layer/Vector`
+ * with an `ol/source/VectorTile` or an `ol/source/Vector`. If the layer does not have a source
+ * yet, it will be created and populated from the information in the `glStyle`.
+ *
+ * **Example:**
+ * ```js
+ * import {applyStyle} from 'ol-mapbox-style';
+ * import {VectorTile} from 'ol/layer.js';
+ *
+ * const layer = new VectorTile({declutter: true});
+ * applyStyle(layer, 'https://api.maptiler.com/maps/basic/style.json?key=YOUR_OPENMAPTILES_TOKEN');
+ * ```
+ *
+ * The style function will render all layers from the `glStyle` object that use the source
+ * of the first layer, the specified `source`, or a subset of layers from the same source. The
+ * source needs to be a `"type": "vector"` or `"type": "geojson"` source.
  *
  * Two additional properties will be set on the provided layer:
  *
@@ -142,103 +99,180 @@ function toSpriteUrl(url, path, extension) {
  *
  * @param {VectorTileLayer|VectorLayer} layer OpenLayers layer.
  * @param {string|Object} glStyle Mapbox Style object.
- * @param {string|Array<string>} source `source` key or an array of layer `id`s from the
+ * @param {string|Array<string>} [sourceOrLayers] `source` key or an array of layer `id`s from the
  * Mapbox Style object. When a `source` key is provided, all layers for the
  * specified source will be included in the style function. When layer `id`s
- * are provided, they must be from layers that use the same source.
- * @param {string} [path=undefined] Path of the style file. Only required when
- * a relative path is used with the `"sprite"` property of the style.
+ * are provided, they must be from layers that use the same source. When not provided, all
+ * layers using the first layer's source will be rendered.
+ * @param {Options|string} [optionsOrPath={}] Options. Alternatively the path of the style file
+ * (only required when a relative path is used for the `"sprite"` property of the style).
  * @param {Array<number>} [resolutions=undefined] Resolutions for mapping resolution to zoom level.
+ * Only needed when working with non-standard tile grids or projections.
  * @return {Promise} Promise which will be resolved when the style can be used
  * for rendering.
  */
-export function applyStyle(layer, glStyle, source, path, resolutions) {
+export function applyStyle(
+  layer,
+  glStyle,
+  sourceOrLayers,
+  optionsOrPath = {},
+  resolutions
+) {
+  let styleUrl, sourceId;
+  /** @type {Options} */
+  let options;
+  if (typeof optionsOrPath === 'string') {
+    styleUrl = optionsOrPath;
+    options = {};
+  } else {
+    styleUrl = optionsOrPath.styleUrl;
+    options = optionsOrPath;
+  }
+  if (
+    !styleUrl &&
+    typeof glStyle === 'string' &&
+    !glStyle.trim().startsWith('{')
+  ) {
+    styleUrl = glStyle;
+  }
+  if (styleUrl) {
+    styleUrl = normalizeStyleUrl(styleUrl, options.accessToken);
+    options = completeOptions(styleUrl, options);
+  }
+
   return new Promise(function (resolve, reject) {
     // TODO: figure out where best place to check source type is
     // Note that the source arg is an array of gl layer ids and each must be
     // dereferenced to get source type to validate
-    if (typeof glStyle != 'object') {
-      glStyle = JSON.parse(glStyle);
-    }
-    if (glStyle.version != 8) {
-      return reject(new Error('glStyle version 8 required.'));
-    }
-    if (!(layer instanceof VectorLayer || layer instanceof VectorTileLayer)) {
-      return reject(
-        new Error('Can only apply to VectorLayer or VectorTileLayer')
-      );
-    }
-
-    let spriteScale, spriteData, spriteImageUrl, style;
-    function onChange() {
-      if (!style && (!glStyle.sprite || spriteData)) {
-        style = applyStyleFunction(
-          layer,
-          glStyle,
-          source,
-          resolutions,
-          spriteData,
-          spriteImageUrl,
-          getFonts
-        );
-        if (!layer.getStyle()) {
-          reject(new Error(`Nothing to show for source [${source}]`));
-        } else {
-          resolve();
+    getGlStyle(glStyle, options)
+      .then(function (glStyle) {
+        if (glStyle.version != 8) {
+          return reject(new Error('glStyle version 8 required.'));
         }
-      } else if (style) {
-        layer.setStyle(style);
-        resolve();
-      } else {
-        reject(new Error('Something went wrong trying to apply style.'));
-      }
-    }
+        if (
+          !(layer instanceof VectorLayer || layer instanceof VectorTileLayer)
+        ) {
+          return reject(
+            new Error('Can only apply to VectorLayer or VectorTileLayer')
+          );
+        }
 
-    if (glStyle.sprite) {
-      spriteScale = window.devicePixelRatio >= 1.5 ? 0.5 : 1;
-      const sizeFactor = spriteScale == 0.5 ? '@2x' : '';
-      let spriteUrl = toSpriteUrl(glStyle.sprite, path, sizeFactor + '.json');
-
-      fetch(spriteUrl, {credentials: 'same-origin'})
-        .then(function (response) {
-          if (!response.ok && sizeFactor !== '') {
-            spriteUrl = toSpriteUrl(glStyle.sprite, path, '.json');
-            return fetch(spriteUrl, {credentials: 'same-origin'});
-          } else {
-            return response;
+        const type = layer instanceof VectorTileLayer ? 'vector' : 'geojson';
+        if (!sourceOrLayers) {
+          const glLayer = glStyle.layers.find(function (layer) {
+            return layer.source && glStyle.sources[layer.source].type === type;
+          });
+          if (!glLayer) {
+            return reject(new Error(`No ${type} source found in the glStyle.`));
           }
-        })
-        .then(function (response) {
-          if (response.ok) {
-            return response.json();
+          sourceId = glLayer.source;
+        } else if (Array.isArray(sourceOrLayers)) {
+          sourceId = glStyle.layers.find(function (layer) {
+            return layer.id === sourceOrLayers[0];
+          }).source;
+        } else {
+          sourceId = sourceOrLayers;
+        }
+
+        function assignSource() {
+          if (!layer.getSource()) {
+            if (layer instanceof VectorTileLayer) {
+              return setupVectorSource(
+                glStyle.sources[sourceId],
+                styleUrl,
+                options
+              ).then(function (source) {
+                layer.setSource(source);
+              });
+            } else {
+              layer.setSource(
+                setupGeoJSONSource(glStyle.sources[sourceId], styleUrl, options)
+              );
+              return Promise.resolve();
+            }
           } else {
-            reject(
-              new Error(
-                `Problem fetching sprite from ${spriteUrl}: ${response.statusText}`
-              )
+            return Promise.resolve();
+          }
+        }
+
+        let spriteScale, spriteData, spriteImageUrl, style;
+        function onChange() {
+          if (!style && (!glStyle.sprite || spriteData)) {
+            style = applyStyleFunction(
+              layer,
+              glStyle,
+              sourceId,
+              resolutions,
+              spriteData,
+              spriteImageUrl,
+              getFonts
             );
+            if (!layer.getStyle()) {
+              reject(new Error(`Nothing to show for source [${sourceId}]`));
+            } else {
+              assignSource().then(resolve).catch(reject);
+            }
+          } else if (style) {
+            layer.setStyle(style);
+            assignSource().then(resolve).catch(reject);
+          } else {
+            reject(new Error('Something went wrong trying to apply style.'));
           }
-        })
-        .then(function (spritesJson) {
-          if (spritesJson === undefined) {
-            return reject(new Error('No sprites found.'));
-          }
-          spriteData = spritesJson;
-          spriteImageUrl = toSpriteUrl(
-            glStyle.sprite,
-            path,
-            sizeFactor + '.png'
+        }
+
+        if (glStyle.sprite) {
+          const sprite = new URL(
+            normalizeSpriteUrl(
+              glStyle.sprite,
+              options.accessToken,
+              styleUrl || location.href
+            )
           );
+          spriteScale = window.devicePixelRatio >= 1.5 ? 0.5 : 1;
+          const sizeFactor = spriteScale == 0.5 ? '@2x' : '';
+          let spriteUrl =
+            sprite.origin +
+            sprite.pathname +
+            sizeFactor +
+            '.json' +
+            sprite.search;
+
+          new Promise(function (resolve, reject) {
+            fetchResource('Sprite', spriteUrl, options)
+              .then(resolve)
+              .catch(function (error) {
+                spriteUrl =
+                  sprite.origin + sprite.pathname + '.json' + sprite.search;
+                fetchResource('Sprite', spriteUrl, options)
+                  .then(resolve)
+                  .catch(reject);
+              });
+          })
+            .then(function (spritesJson) {
+              if (spritesJson === undefined) {
+                reject(new Error('No sprites found.'));
+              }
+              spriteData = spritesJson;
+              spriteImageUrl =
+                sprite.origin +
+                sprite.pathname +
+                sizeFactor +
+                '.png' +
+                sprite.search;
+              onChange();
+            })
+            .catch(function (err) {
+              reject(
+                new Error(
+                  `Sprites cannot be loaded: ${spriteUrl}: ${err.message}`
+                )
+              );
+            });
+        } else {
           onChange();
-        })
-        .catch(function (err) {
-          reject(
-            new Error(`Sprites cannot be loaded: ${spriteUrl}: ${err.message}`)
-          );
-        });
-    } else {
-      onChange();
-    }
+        }
+      })
+      .catch(reject);
   });
 }
 
@@ -310,21 +344,41 @@ function setBackground(mapOrLayer, layer) {
   }
 }
 
+function setFirstBackground(mapOrLayer, glStyle) {
+  glStyle.layers.some(function (layer) {
+    if (layer.type === 'background') {
+      setBackground(mapOrLayer, layer);
+      return true;
+    }
+  });
+}
+
 /**
  * ```js
  * import {applyBackground} from 'ol-mapbox-style';
  * ```
+ * **Example:**
+ * ```js
+ * import {applyBackground} from 'ol-mapbox-style';
+ * import {Map} from 'ol';
+ *
+ * const map = new Map({target: 'map'});
+ * applyBackground(map, 'https://api.maptiler.com/maps/basic/style.json?key=YOUR_OPENMAPTILES_TOKEN');
+ * ```
  * Applies properties of the Mapbox Style's first `background` layer to the
  * provided map or VectorTile layer.
- * @param {PluggableMap|VectorTileLayer} mapOrLayer OpenLayers Map or VectorTile layer.
- * @param {Object} glStyle Mapbox Style object.
+ * @param {Map|VectorTileLayer} mapOrLayer OpenLayers Map or VectorTile layer.
+ * @param {Object|string} glStyle Mapbox Style object or url.
+ * @param {Options} [options] Options.
+ * @return {Promise} Promise that resolves when the background is applied.
  */
-export function applyBackground(mapOrLayer, glStyle) {
-  glStyle.layers.some(function (l) {
-    if (l.type == 'background') {
-      setBackground(mapOrLayer, l);
-      return true;
-    }
+export function applyBackground(mapOrLayer, glStyle, options = {}) {
+  if (typeof glStyle === 'object') {
+    setFirstBackground(mapOrLayer, glStyle);
+    return Promise.resolve();
+  }
+  return getGlStyle(glStyle, options).then(function (glStyle) {
+    setFirstBackground(mapOrLayer, glStyle);
   });
 }
 
@@ -351,35 +405,18 @@ function extentFromTileJSON(tileJSON) {
 /**
  * Creates an OpenLayers VectorTile source for a gl source entry.
  * @param {Object} glSource "source" entry from a Mapbox Style object.
- * @param {string|undefined} url URL to use for the source. This is expected to be the complete http(s) url,
- * with access key applied.When not provided, `glSource.tiles` has to be set.
+ * @param {string|undefined} styleUrl URL to use for the source. This is expected to be the complete http(s) url,
+ * with access key applied.
+ * @param {Options} options Options.
  * @return {Promise<import("ol/source/VectorTile").default>} Promise resolving to a VectorTile source.
  * @private
  */
-export function setupVectorSource(glSource, url) {
-  glSource = assign({}, glSource);
-  const cacheKey = [url, JSON.stringify(glSource)].toString();
-  let tilejson = tilejsonCache[cacheKey];
-  if (!tilejson) {
-    tilejson = new TileJSON({
-      url: glSource.tiles ? undefined : url,
-      tileJSON: glSource.tiles ? glSource : undefined,
-    });
-    tilejsonCache[cacheKey] = tilejson;
-  }
-  return new Promise((resolve) => {
-    const key = tilejson.on('change', function () {
-      const state = tilejson.getState();
-      if (state === 'ready') {
+export function setupVectorSource(glSource, styleUrl, options) {
+  return new Promise(function (resolve, reject) {
+    getTileJson(glSource, styleUrl, options)
+      .then(function (glSource) {
+        const tilejson = new TileJSON({tileJSON: glSource});
         const tileJSONDoc = tilejson.getTileJSON();
-        const tiles = Array.isArray(tileJSONDoc.tiles)
-          ? tileJSONDoc.tiles
-          : [tileJSONDoc.tiles];
-        if (url) {
-          for (let i = 0, ii = tiles.length; i < ii; ++i) {
-            tiles[i] = decodeURI(new URL(tiles[i], url).href);
-          }
-        }
         const tileGrid = tilejson.getTileGrid();
         const extent = extentFromTileJSON(tileJSONDoc);
         const minZoom = tileJSONDoc.minzoom || 0;
@@ -396,53 +433,50 @@ export function setupVectorSource(glSource, url) {
               resolutions: defaultResolutions.slice(0, maxZoom + 1),
               tileSize: 512,
             }),
-            urls: tiles,
+            urls: Array.isArray(tileJSONDoc.tiles)
+              ? tileJSONDoc.tiles
+              : undefined,
+            url: Array.isArray(tileJSONDoc.tiles)
+              ? undefined
+              : tileJSONDoc.tiles,
           });
           tilejson.set('ol-source', source);
         }
-        unByKey(key);
         resolve(source);
-      } else if (state === 'error') {
-        tilejson.set('ol-source', null);
-        unByKey(key);
-        resolve(undefined);
-      }
-    });
-    if (tilejson.getState() === 'ready') {
-      tilejson.changed();
-    }
+      })
+      .catch(reject);
   });
 }
 
-function setupVectorLayer(glSource, url) {
+function setupVectorLayer(glSource, styleUrl, options) {
   const layer = new VectorTileLayer({
     declutter: true,
     visible: false,
   });
-  setupVectorSource(glSource, url).then((source) => {
-    layer.setSource(source);
-  });
+  setupVectorSource(glSource, styleUrl, options)
+    .then(function (source) {
+      layer.setSource(source);
+    })
+    .catch(function (error) {
+      layer.setSource(undefined);
+    });
   return layer;
 }
 
-function setupRasterLayer(glSource, url) {
+function setupRasterLayer(glSource, styleUrl, options) {
   const layer = new TileLayer();
-  const source = new TileJSON({
-    transition: 0,
-    url: glSource.tiles ? undefined : url,
-    tileJSON: glSource.tiles ? glSource : undefined,
-    crossOrigin: 'anonymous',
-  });
-  const key = source.on('change', function () {
-    const state = source.getState();
-    if (state === 'ready') {
-      unByKey(key);
-      const tileJSONDoc = /** @type {Object} */ (source.getTileJSON());
-      const extent = extentFromTileJSON(tileJSONDoc);
+  getTileJson(glSource, styleUrl, options)
+    .then(function (tileJson) {
+      const source = new TileJSON({
+        transition: 0,
+        crossOrigin: 'anonymous',
+        tileJSON: tileJson,
+      });
+      const extent = extentFromTileJSON(tileJson);
       const tileGrid = source.getTileGrid();
-      const tileSize = glSource.tileSize || tileJSONDoc.tileSize || 512;
-      const minZoom = tileJSONDoc.minzoom || 0;
-      const maxZoom = tileJSONDoc.maxzoom || 22;
+      const tileSize = glSource.tileSize || tileJson.tileSize || 512;
+      const minZoom = tileJson.minzoom || 0;
+      const maxZoom = tileJson.maxzoom || 22;
       // Only works when using ES modules
       //@ts-ignore
       source.tileGrid = new TileGrid({
@@ -455,42 +489,54 @@ function setupRasterLayer(glSource, url) {
         }).getResolutions(),
         tileSize: tileSize,
       });
+      source.setTileLoadFunction(function (tile, src) {
+        if (src.indexOf('{bbox-epsg-3857}') != -1) {
+          const bbox = source
+            .getTileGrid()
+            .getTileCoordExtent(tile.getTileCoord());
+          src = src.replace('{bbox-epsg-3857}', bbox.toString());
+        }
+        const img = /** @type {import("ol/ImageTile").default} */ (
+          tile
+        ).getImage();
+        /** @type {HTMLImageElement} */ (img).src = src;
+      });
       layer.setSource(source);
-    } else if (state === 'error') {
-      unByKey(key);
+    })
+    .catch(function (error) {
       layer.setSource(undefined);
-    }
-  });
-  source.setTileLoadFunction(function (tile, src) {
-    if (src.indexOf('{bbox-epsg-3857}') != -1) {
-      const bbox = source.getTileGrid().getTileCoordExtent(tile.getTileCoord());
-      src = src.replace('{bbox-epsg-3857}', bbox.toString());
-    }
-    const img = /** @type {import("ol/ImageTile").default} */ (tile).getImage();
-    /** @type {HTMLImageElement} */ (img).src = src;
-  });
+    });
   return layer;
 }
 
 const geoJsonFormat = new GeoJSON();
-function setupGeoJSONLayer(glSource, path) {
+function setupGeoJSONSource(glSource, styleUrl, options) {
   const data = glSource.data;
   let features, geoJsonUrl;
   if (typeof data == 'string') {
-    geoJsonUrl = withPath(data, path);
+    geoJsonUrl = normalizeSourceUrl(
+      data,
+      options.accessToken,
+      options.accessTokenParam || 'access_token',
+      styleUrl || location.href
+    );
   } else {
     features = geoJsonFormat.readFeatures(data, {
       featureProjection: 'EPSG:3857',
     });
   }
+  return new VectorSource({
+    attributions: glSource.attribution,
+    features: features,
+    format: geoJsonFormat,
+    url: geoJsonUrl,
+  });
+}
+
+function setupGeoJSONLayer(glSource, styleUrl, options) {
   return new VectorLayer({
     declutter: true,
-    source: new VectorSource({
-      attributions: glSource.attribution,
-      features: features,
-      format: geoJsonFormat,
-      url: geoJsonUrl,
-    }),
+    source: setupGeoJSONSource(glSource, styleUrl, options),
     visible: false,
   });
 }
@@ -508,7 +554,7 @@ function updateRasterLayerProperties(glLayer, layer, view, functionCache) {
   layer.setOpacity(opacity);
 }
 
-function processStyle(glStyle, map, baseUrl, host, path, accessToken = '') {
+function processStyle(glStyle, map, styleUrl, options) {
   const promises = [];
   let view = map.getView();
   if (!view.isDef() && !view.getRotation() && !view.getResolutions()) {
@@ -532,23 +578,17 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken = '') {
       size: map.getSize(),
     });
   }
-  if (glStyle.sprite) {
-    if (glStyle.sprite.indexOf('mapbox://') == 0) {
-      glStyle.sprite = baseUrl + '/sprite' + accessToken;
-    } else if (glStyle.sprite.indexOf('http') != 0) {
-      glStyle.sprite = (host ? host + path : '') + glStyle.sprite + accessToken;
-    }
-  }
 
   const glLayers = glStyle.layers;
   let layerIds = [];
 
-  let glLayer, glSource, glSourceId, id, layer, url;
+  let glLayer, glSource, glSourceId, id, layer;
   for (let i = 0, ii = glLayers.length; i < ii; ++i) {
     glLayer = glLayers[i];
     const type = glLayer.type;
     if (type == 'heatmap' || type == 'hillshade') {
       //FIXME Unsupported layer type
+      throw new Error(`${type} layers are not supported`);
     } else if (type == 'background') {
       setBackground(map, glLayer);
     } else {
@@ -556,38 +596,16 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken = '') {
       // this technique assumes gl layers will be in a particular order
       if (id != glSourceId) {
         if (layerIds.length) {
-          promises.push(finalizeLayer(layer, layerIds, glStyle, path, map));
+          promises.push(
+            finalizeLayer(layer, layerIds, glStyle, styleUrl, map, options)
+          );
           layerIds = [];
         }
         glSource = glStyle.sources[id];
-        url = glSource.url;
-        if (url) {
-          url = withPath(url, path);
-          if (url.indexOf('mapbox://') == 0) {
-            const mapid = url.replace('mapbox://', '');
-            glSource.tiles = ['a', 'b', 'c', 'd'].map(function (host) {
-              return (
-                'https://' +
-                host +
-                '.tiles.mapbox.com/v4/' +
-                mapid +
-                '/{z}/{x}/{y}.' +
-                (glSource.type == 'vector' ? 'vector.pbf' : 'png') +
-                accessToken
-              );
-            });
-          } else if (url.indexOf('/') === 0 && host.indexOf('http') === 0) {
-            url = host + url;
-          }
-        }
-        if (glSource.tiles) {
-          glSource.tiles = glSource.tiles.map((url) => withPath(url, path));
-        }
-
         if (glSource.type == 'vector') {
-          layer = setupVectorLayer(glSource, url);
+          layer = setupVectorLayer(glSource, styleUrl, options);
         } else if (glSource.type == 'raster') {
-          layer = setupRasterLayer(glSource, url);
+          layer = setupRasterLayer(glSource, styleUrl, options);
           layer.setVisible(
             glLayer.layout ? glLayer.layout.visibility !== 'none' : true
           );
@@ -604,7 +622,7 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken = '') {
           );
           updateRasterLayerProperties(glLayer, layer, view, functionCache);
         } else if (glSource.type == 'geojson') {
-          layer = setupGeoJSONLayer(glSource, path);
+          layer = setupGeoJSONLayer(glSource, styleUrl, options);
         }
         glSourceId = id;
         if (layer) {
@@ -614,7 +632,9 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken = '') {
       layerIds.push(glLayer.id);
     }
   }
-  promises.push(finalizeLayer(layer, layerIds, glStyle, path, map));
+  promises.push(
+    finalizeLayer(layer, layerIds, glStyle, styleUrl, map, options)
+  );
   map.set('mapbox-style', glStyle);
   return Promise.all(promises);
 }
@@ -624,8 +644,15 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken = '') {
  * import olms from 'ol-mapbox-style';
  * ```
  *
- * Loads and applies a Mapbox Style object to an OpenLayers Map. This includes
+ * Loads and applies a Mapbox Style object into an OpenLayers Map. This includes
  * the map background, the layers, the center and the zoom.
+ *
+ * **Example:**
+ * ```js
+ * import olms from 'ol-mapbox-style';
+ *
+ * olms('map', 'mapbox://styles/mapbox/bright-v9', {accessToken: 'YOUR_MAPBOX_TOKEN'});
+ * ```
  *
  * The center and zoom will only be set if present in the Mapbox Style document,
  * and if not already set on the OpenLayers map.
@@ -645,29 +672,26 @@ function processStyle(glStyle, map, baseUrl, host, path, accessToken = '') {
  * This function sets an additional `mapbox-style` property on the OpenLayers
  * map instance, which holds the Mapbox Style object.
  *
- * @param {PluggableMap|HTMLElement|string} map Either an existing OpenLayers Map
+ * @param {Map|HTMLElement|string} map Either an existing OpenLayers Map
  * instance, or a HTML element, or the id of a HTML element that will be the
  * target of a new OpenLayers Map.
  * @param {string|Object} style JSON style object or style url pointing to a
- * Mapbox Style object. When using Mapbox APIs, the url must contain an access
- * token and look like
- * `https://api.mapbox.com/styles/v1/mapbox/bright-v9?access_token=[your_access_token_here]`.
+ * Mapbox Style object. When using Mapbox APIs, the url is the `styleUrl`
+ * shown in Mapbox Studio's "share" panel. In addition, the `accessToken` option
+ * (see below) must be set.
  * When passed as JSON style object, all OpenLayers layers created by `apply()`
  * will be immediately available, but they may not have a source yet (i.e. when
  * they are defined by a TileJSON url in the Mapbox Style document). When passed
  * as style url, layers will be added to the map when the Mapbox Style document
  * is loaded and parsed.
- * @return {Promise} A promise that resolves after all layers have been added to
- * the OpenLayers Map instance, their sources set, and their styles applied. the
+ * @param {Options} [options] Options.
+ * @return {Promise<Map>} A promise that resolves after all layers have been added to
+ * the OpenLayers Map instance, their sources set, and their styles applied. The
  * `resolve` callback will be called with the OpenLayers Map instance as
  * argument.
  */
-export default function olms(map, style) {
-  let promise,
-    accessToken = '',
-    baseUrl = '',
-    host = '',
-    path = '';
+export default function olms(map, style, options = {}) {
+  let promise;
 
   if (typeof map === 'string' || map instanceof HTMLElement) {
     map = new Map({
@@ -676,28 +700,13 @@ export default function olms(map, style) {
   }
 
   if (typeof style === 'string') {
-    const parts = style.match(spriteRegEx);
-    if (parts) {
-      baseUrl = parts[1];
-      accessToken = parts.length > 2 ? parts[2] : '';
-    }
-    promise = new Promise(function (resolve, reject) {
-      fetch(style, {
-        credentials: 'same-origin',
-      })
-        .then(function (response) {
-          return response.json();
-        })
-        .then(function (glStyle) {
-          const a = /** @type {HTMLAnchorElement} */ (
-            document.createElement('A')
-          );
-          a.href = style;
-          const href = a.href;
-          path = a.pathname.split('/').slice(0, -1).join('/') + '/';
-          host = href.substr(0, href.indexOf(path));
+    const styleUrl = normalizeStyleUrl(style, options.accessToken);
+    options = completeOptions(styleUrl, options);
 
-          processStyle(glStyle, map, baseUrl, host, path, accessToken)
+    promise = new Promise(function (resolve, reject) {
+      getGlStyle(style, options)
+        .then(function (glStyle) {
+          processStyle(glStyle, map, styleUrl, options)
             .then(function () {
               resolve(map);
             })
@@ -709,7 +718,7 @@ export default function olms(map, style) {
     });
   } else {
     promise = new Promise(function (resolve, reject) {
-      processStyle(style, map)
+      processStyle(style, map, '', options)
         .then(function () {
           resolve(map);
         })
@@ -726,29 +735,30 @@ export default function olms(map, style) {
  * ```
  * Like `olms`, but returns an `ol/Map` instance instead of a `Promise`.
  *
- * @param {PluggableMap|HTMLElement|string} map Either an existing OpenLayers Map
+ * @param {Map|HTMLElement|string} map Either an existing OpenLayers Map
  * instance, or a HTML element, or the id of a HTML element that will be the
  * target of a new OpenLayers Map.
  * @param {string|Object} style JSON style object or style url pointing to a
- * Mapbox Style object. When using Mapbox APIs, the url must contain an access
- * token and look like
- * `https://api.mapbox.com/styles/v1/mapbox/bright-v9?access_token=[your_access_token_here]`.
+ * Mapbox Style object. When using Mapbox APIs, the url is the `styleUrl`
+ * shown in Mapbox Studio's "share" panel. In addition, the `accessToken` option
+ * (see below) must be set.
  * When passed as JSON style object, all OpenLayers layers created by `apply()`
  * will be immediately available, but they may not have a source yet (i.e. when
  * they are defined by a TileJSON url in the Mapbox Style document). When passed
  * as style url, layers will be added to the map when the Mapbox Style document
  * is loaded and parsed.
- * @return {PluggableMap} The OpenLayers Map instance that will be populated with the
+ * @param {Options} [options] Options.
+ * @return {Map} The OpenLayers Map instance that will be populated with the
  * contents described in the Mapbox Style object.
  */
-export function apply(map, style) {
+export function apply(map, style, options) {
   if (typeof map === 'string' || map instanceof HTMLElement) {
     map = new Map({
       target: map,
     });
   }
   setTimeout(function () {
-    olms(map, style);
+    olms(map, style, options);
   }, 0);
   return map;
 }
@@ -763,14 +773,15 @@ export function apply(map, style) {
  * @param {Layer} layer An OpenLayers layer instance.
  * @param {Array<string>} layerIds Array containing layer ids of already-processed layers.
  * @param {Object} glStyle Style as a JSON object.
- * @param {string|undefined} path The path part of the style URL. Only required
+ * @param {string|undefined} styleUrl The original style URL. Only required
  * when a relative path is used with the `"sprite"` property of the style.
- * @param {PluggableMap} map OpenLayers Map.
+ * @param {Map} map OpenLayers Map.
+ * @param {Options} [options] Options.
  * @return {Promise} Returns a promise that resolves after the source has
  * been set on the specified layer, and the style has been applied.
  * @private
  */
-function finalizeLayer(layer, layerIds, glStyle, path, map) {
+function finalizeLayer(layer, layerIds, glStyle, styleUrl, map, options = {}) {
   let minZoom = 24;
   let maxZoom = 0;
   const glLayers = glStyle.layers;
@@ -822,16 +833,13 @@ function finalizeLayer(layer, layerIds, glStyle, path, map) {
           ),
           glStyle,
           layerIds,
-          path
-        ).then(
-          function () {
+          assign({styleUrl: styleUrl}, options)
+        )
+          .then(function () {
             layer.setVisible(true);
             resolve();
-          },
-          function (e) {
-            reject(e);
-          }
-        );
+          })
+          .catch(reject);
       } else {
         resolve();
       }
@@ -857,7 +865,7 @@ function finalizeLayer(layer, layerIds, glStyle, path, map) {
  * Get the OpenLayers layer instance that contains the provided Mapbox Style
  * `layer`. Note that multiple Mapbox Style layers are combined in a single
  * OpenLayers layer instance when they use the same Mapbox Style `source`.
- * @param {PluggableMap} map OpenLayers Map.
+ * @param {Map} map OpenLayers Map.
  * @param {string} layerId Mapbox Style layer id.
  * @return {Layer} OpenLayers layer instance.
  */
@@ -876,7 +884,7 @@ export function getLayer(map, layerId) {
  * import {getLayers} from 'ol-mapbox-style';
  * ```
  * Get the OpenLayers layer instances for the provided Mapbox Style `source`.
- * @param {PluggableMap} map OpenLayers Map.
+ * @param {Map} map OpenLayers Map.
  * @param {string} sourceId Mapbox Style source id.
  * @return {Array<Layer>} OpenLayers layer instances.
  */
@@ -896,7 +904,7 @@ export function getLayers(map, sourceId) {
  * import {getSource} from 'ol-mapbox-style';
  * ```
  * Get the OpenLayers source instance for the provided Mapbox Style `source`.
- * @param {PluggableMap} map OpenLayers Map.
+ * @param {Map} map OpenLayers Map.
  * @param {string} sourceId Mapbox Style source id.
  * @return {Source} OpenLayers source instance.
  */
@@ -916,4 +924,10 @@ export {
   renderTransparent,
 } from './stylefunction.js';
 
-export {finalizeLayer as _finalizeLayer, getFonts as _getFonts};
+export {finalizeLayer as _finalizeLayer};
+
+/**
+ * @typedef {import("ol/layer/Layer").default} Layer
+ * @typedef {import("ol/source/Source").default} Source
+ * @private
+ */

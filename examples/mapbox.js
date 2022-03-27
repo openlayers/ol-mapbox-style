@@ -1,8 +1,6 @@
 import 'ol/ol.css';
 import olms from 'ol-mapbox-style';
 
-const baseUrl = 'https://api.mapbox.com/styles/v1/mapbox/bright-v9';
-
 let key = document.cookie.replace(
   /(?:(?:^|.*;\s*)mapbox_access_token\s*\=\s*([^;]*).*$)|^.*$/,
   '$1'
@@ -13,4 +11,4 @@ if (!key) {
     'mapbox_access_token=' + key + '; expires=Fri, 31 Dec 9999 23:59:59 GMT';
 }
 
-olms('map', baseUrl + '?access_token=' + key);
+olms('map', 'mapbox://styles/mapbox/bright-v9', {accessToken: key});

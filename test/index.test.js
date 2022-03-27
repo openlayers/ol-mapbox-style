@@ -10,7 +10,6 @@ import brightV9 from 'mapbox-gl-styles/styles/bright-v9.json';
 import olms, {
   apply,
   applyBackground,
-  _getFonts as getFonts,
   getLayer,
   getLayers,
   getSource,
@@ -109,6 +108,17 @@ describe('ol-mapbox-style', function () {
       }
       applyBackground(layer, backgroundNoneStyle);
       should(layer.getBackground()(1)).be.undefined();
+    });
+    it('works with a glStyle url', function (done) {
+      const target = document.createElement('div');
+      target.style.width = '100px';
+      target.style.height = '100px';
+      const map = new Map({target: target});
+      applyBackground(map, './fixtures/background.json').then(function () {
+        should(target.style.backgroundColor).be.exactly('rgb(248, 244, 240)');
+        should(target.style.opacity).be.eql('0.75');
+        done();
+      });
     });
   });
 
@@ -572,39 +582,6 @@ describe('ol-mapbox-style', function () {
         .catch(function (error) {
           done(error);
         });
-    });
-  });
-
-  describe('getFonts', function () {
-    it('does not loads standard fonts', function () {
-      getFonts(['monospace', 'sans-serif']);
-      const stylesheets = document.querySelectorAll('link[rel=stylesheet]');
-      should(stylesheets.length).eql(0);
-    });
-
-    it('loads fonts from fonts.google.com', function () {
-      let stylesheets;
-      getFonts([
-        'Noto Sans Bold',
-        'Noto Sans Regular Italic',
-        'Averia Sans Libre Bold',
-      ]);
-      stylesheets = document.querySelectorAll('link[rel=stylesheet]');
-      should(stylesheets.length).eql(3);
-      should(stylesheets.item(0).href).eql(
-        'https://fonts.googleapis.com/css?family=Noto+Sans:700normal'
-      );
-      should(stylesheets.item(1).href).eql(
-        'https://fonts.googleapis.com/css?family=Noto+Sans:400italic'
-      );
-      should(stylesheets.item(2).href).eql(
-        'https://fonts.googleapis.com/css?family=Averia+Sans+Libre:700normal'
-      );
-
-      // already loaded family, no additional link
-      getFonts(['Noto Sans Bold']);
-      stylesheets = document.querySelectorAll('link[rel=stylesheet]');
-      should(stylesheets.length).eql(3);
     });
   });
 });
