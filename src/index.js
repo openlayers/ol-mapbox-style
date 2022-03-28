@@ -28,7 +28,7 @@ import {
   getGlStyle,
   getTileJson,
 } from './util.js';
-import {fromLonLat} from 'ol/proj.js';
+import {fromLonLat, getUserProjection} from 'ol/proj.js';
 import {getFonts} from './text.js';
 import {
   normalizeSourceUrl,
@@ -55,15 +55,18 @@ function completeOptions(styleUrl, options) {
 }
 
 /**
- * 
- 
+ * @typedef {'Style'|'Source'|'Sprite'|'Tile'|'GeoJSON'} ResourceType
+ */
+
+/**
  * @typedef {Object} Options
  * @property {string} [accessToken] Access token for 'mapbox://' urls.
- * @property {function(string, ResourceType): Request} [transformRequest]
+ * @property {function(string, ResourceType): (Request|Object)} [transformRequest]
  * Function for controlling how `ol-mapbox-style` fetches resources. Can be used for modifying
  * the url, adding headers or setting credentials options. Called with the url and the resource
  * type as arguments, this function is supposed to return a `Request` object. For `Tile` resources,
- * only the `url` of the returned request will be respected.
+ * only the `url` of the returned request will be respected. For `GeoJSON` resources, options for
+ * an `ol/source/Vector` can be returned instead of a `Request'.
  * @property {string} [styleUrl] URL of the Mapbox GL style. Required for styles that were provided
  * as object, when they contain a relative sprite url.
  * @property {string} [accessTokenParam='access_token'] Access token param. For internal use.
@@ -513,27 +516,46 @@ function setupRasterLayer(glSource, styleUrl, options) {
 }
 
 const geoJsonFormat = new GeoJSON();
+/**
+ * @param {Object} glSource glStyle source.
+ * @param {string} styleUrl Style URL.
+ * @param {Options} options Options.
+ * @return {VectorSource} Configured vector source.
+ */
 function setupGeoJSONSource(glSource, styleUrl, options) {
   const data = glSource.data;
-  let features, geoJsonUrl;
+  const sourceOptions = {};
   if (typeof data == 'string') {
-    geoJsonUrl = normalizeSourceUrl(
+    let geoJsonUrl = normalizeSourceUrl(
       data,
       options.accessToken,
       options.accessTokenParam || 'access_token',
       styleUrl || location.href
     );
+    if (options.transformRequest) {
+      const transformed = options.transformRequest(geoJsonUrl, 'GeoJSON');
+      if (transformed instanceof Request) {
+        geoJsonUrl = encodeURI(transformed.url);
+      } else {
+        assign(sourceOptions, transformed);
+        geoJsonUrl = undefined;
+      }
+    }
+    sourceOptions.url = geoJsonUrl;
   } else {
-    features = geoJsonFormat.readFeatures(data, {
-      featureProjection: 'EPSG:3857',
+    sourceOptions.features = geoJsonFormat.readFeatures(data, {
+      featureProjection: getUserProjection() || 'EPSG:3857',
     });
   }
-  return new VectorSource({
-    attributions: glSource.attribution,
-    features: features,
-    format: geoJsonFormat,
-    url: geoJsonUrl,
-  });
+  return new VectorSource(
+    assign(
+      {
+        attributions: glSource.attribution,
+        format: geoJsonFormat,
+      },
+      sourceOptions
+    )
+  );
 }
 
 function setupGeoJSONLayer(glSource, styleUrl, options) {
@@ -932,6 +954,5 @@ export {finalizeLayer as _finalizeLayer};
 /**
  * @typedef {import("ol/layer/Layer").default} Layer
  * @typedef {import("ol/source/Source").default} Source
- * @typedef {'Style'|'Source'|'Sprite'|'Tile'} ResourceType
  * @private
  */

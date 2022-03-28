@@ -22,9 +22,69 @@ describe('applyStyle with source creation', function () {
     applyStyle(layer, '/fixtures/geojson.json').then(function () {
       try {
         should(layer.getSource()).be.an.instanceOf(VectorSource);
-        should(
-          new URL(layer.getSource().getUrl(), location.href).pathname
-        ).equal('/fixtures/states.geojson');
+        should(layer.getSource().getUrl()).equal(
+          'http://localhost:9876/fixtures/states.geojson'
+        );
+        should(layer.getStyle()).be.an.instanceOf(Function);
+        done();
+      } catch (e) {
+        done(e);
+      }
+    });
+  });
+  it('uses a Request object from the transformRequest option', function (done) {
+    const layer = new VectorLayer();
+    applyStyle(layer, '/fixtures/geojson.json', 'states', {
+      transformRequest: function (url, type) {
+        if (type === 'GeoJSON') {
+          url += '?foo=bar';
+        }
+        return new Request(url);
+      },
+    }).then(function () {
+      try {
+        should(layer.getSource()).be.an.instanceOf(VectorSource);
+        should(layer.getSource().getUrl()).equal(
+          'http://localhost:9876/fixtures/states.geojson?foo=bar'
+        );
+        should(layer.getStyle()).be.an.instanceOf(Function);
+        done();
+      } catch (e) {
+        done(e);
+      }
+    });
+  });
+  it('uses source options from the transformRequest option', function (done) {
+    const layer = new VectorLayer();
+    let loader;
+    applyStyle(layer, '/fixtures/geojson.json', 'states', {
+      transformRequest: function (url, type) {
+        if (type === 'GeoJSON') {
+          loader = function (extent, resolution, projection, success, failure) {
+            fetch(url)
+              .then((response) => {
+                response.json().then((json) => {
+                  const features = this.getFormat().readFeatures(json, {
+                    featureProjection: projection,
+                  });
+                  success(features);
+                });
+              })
+              .catch((error) => {
+                failure(error);
+              });
+          };
+          return {
+            loader: loader,
+          };
+        }
+        return new Request(url);
+      },
+    }).then(function () {
+      try {
+        should(layer.getSource()).be.an.instanceOf(VectorSource);
+        should(layer.getSource().getUrl()).equal(undefined);
+        should(layer.getSource().loader_).equal(loader);
         should(layer.getStyle()).be.an.instanceOf(Function);
         done();
       } catch (e) {

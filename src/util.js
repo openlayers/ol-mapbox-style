@@ -44,7 +44,7 @@ export function getZoomForResolution(resolution, resolutions) {
 
 const pendingRequests = {};
 /**
- * @param {'Style'|'Source'|'Sprite'|'Tile'} resourceType Type of resource to load.
+ * @param {ResourceType} resourceType Type of resource to load.
  * @param {string} url Url of the resource.
  * @param {Options} [options={}] Options.
  * @return {Promise<Object|Response>} Promise that resolves with the loaded resource
@@ -159,4 +159,8 @@ export function getTileJson(glSource, styleUrl, options = {}) {
   return promise;
 }
 
-/** @typedef {import("./index.js").Options} Options */
+/**
+ * @typedef {import("./index.js").Options} Options
+ * @typedef {import('./index.js').ResourceType} ResourceType
+ * @private
+ */
