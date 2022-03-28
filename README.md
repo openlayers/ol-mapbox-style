@@ -76,6 +76,7 @@ Internet Explorer (version 11) and other old browsers (Android 4.x) are supporte
 
 #### Table of Contents
 
+*   [ResourceType](#resourcetype)
 *   [Options](#options)
     *   [Properties](#properties)
 *   [applyStyle](#applystyle)
@@ -99,6 +100,10 @@ Internet Explorer (version 11) and other old browsers (Android 4.x) are supporte
 *   [getSource](#getsource)
     *   [Parameters](#parameters-9)
 
+### ResourceType
+
+Type: (`"Style"` | `"Source"` | `"Sprite"` | `"Tile"` | `"GeoJSON"`)
+
 ### Options
 
 Type: [Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)
@@ -106,10 +111,11 @@ Type: [Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Globa
 #### Properties
 
 *   `accessToken` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** Access token for 'mapbox://' urls.
-*   `transformRequest` **function ([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), ResourceType): [Request](https://developer.mozilla.org/Add-ons/SDK/High-Level_APIs/request)?** Function for controlling how `ol-mapbox-style` fetches resources. Can be used for modifying
+*   `transformRequest` **function ([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), [ResourceType](#resourcetype)): ([Request](https://developer.mozilla.org/Add-ons/SDK/High-Level_APIs/request) | [Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object))?** Function for controlling how `ol-mapbox-style` fetches resources. Can be used for modifying
     the url, adding headers or setting credentials options. Called with the url and the resource
     type as arguments, this function is supposed to return a `Request` object. For `Tile` resources,
-    only the `url` of the returned request will be respected.
+    only the `url` of the returned request will be respected. For `GeoJSON` resources, options for
+    an `ol/source/Vector` can be returned instead of a \`Request'.
 *   `styleUrl` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** URL of the Mapbox GL style. Required for styles that were provided
     as object, when they contain a relative sprite url.
 *   `accessTokenParam` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** Access token param. For internal use.
