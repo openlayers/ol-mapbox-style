@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "noEmit": true,
+    "allowJs": true,
+    "checkJs": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "lib": [
+      "es2015",
+      "dom",
+      "webworker"
+    ]
+  },
+  "include": [
+    "src/**/*.js",
+    "test/**/*.js",
+    "*.cjs"
+  ]
+}

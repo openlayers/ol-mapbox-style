@@ -102,7 +102,7 @@ Internet Explorer (version 11) and other old browsers (Android 4.x) are supporte
 
 ### ResourceType
 
-Type: (`"Style"` | `"Source"` | `"Sprite"` | `"Tile"` | `"GeoJSON"`)
+Type: (`"Style"` | `"Source"` | `"Sprite"` | `"Tiles"` | `"GeoJSON"`)
 
 ### Options
 
@@ -113,9 +113,10 @@ Type: [Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Globa
 *   `accessToken` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** Access token for 'mapbox://' urls.
 *   `transformRequest` **function ([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), [ResourceType](#resourcetype)): ([Request](https://developer.mozilla.org/Add-ons/SDK/High-Level_APIs/request) | [Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object))?** Function for controlling how `ol-mapbox-style` fetches resources. Can be used for modifying
     the url, adding headers or setting credentials options. Called with the url and the resource
-    type as arguments, this function is supposed to return a `Request` object. For `Tile` resources,
-    only the `url` of the returned request will be respected. For `GeoJSON` resources, options for
-    an `ol/source/Vector` can be returned instead of a \`Request'.
+    type as arguments, this function is supposed to return a `Request` object. For `Tiles` and `GeoJSON`
+    resources, only the `url` of the returned request will be respected. To make more complex transforms
+    for those, you can return options for an `ol/source/VectorTile` or `ol/source/XYZ` (`Tiles` resource)
+    an `ol/source/Vector` (`GeoJSON` resource) instead of a \`Request'.
 *   `styleUrl` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** URL of the Mapbox GL style. Required for styles that were provided
     as object, when they contain a relative sprite url.
 *   `accessTokenParam` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** Access token param. For internal use.

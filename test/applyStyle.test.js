@@ -111,11 +111,11 @@ describe('applyStyle with source creation', function () {
         done(e);
       });
   });
-  it('respects the transformRequest options', function (done) {
+  it('respects the transformRequest option', function (done) {
     const layer = new VectorTileLayer();
     applyStyle(layer, '/fixtures/osm-liberty/style.json', 'openmaptiles', {
       transformRequest(url, type) {
-        if (type === 'Tile') {
+        if (type === 'Tiles') {
           url += '?foo=bar';
         }
         return new Request(url);
@@ -126,6 +126,49 @@ describe('applyStyle with source creation', function () {
           should(layer.getSource()).be.an.instanceOf(VectorTileSource);
           should(layer.getSource().getUrls()[0]).equal(
             'http://localhost:9876/fixtures/osm-liberty/tiles/v3/{z}/{x}/{y}.pbf?foo=bar'
+          );
+          should(layer.getStyle()).be.an.instanceOf(Function);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      })
+      .catch(function (e) {
+        done(e);
+      });
+  });
+  it('uses source options from the transformRequest option', function (done) {
+    const layer = new VectorTileLayer();
+    let tileLoadFunction;
+    applyStyle(layer, '/fixtures/osm-liberty/style.json', 'openmaptiles', {
+      transformRequest(url, type) {
+        if (type === 'Tiles') {
+          tileLoadFunction = function (tile, url) {
+            tile.setLoader(function (extent, resolution, projection) {
+              fetch(url + '?foo=bar').then(function (response) {
+                response.arrayBuffer().then(function (data) {
+                  const format = tile.getFormat();
+                  const features = format.readFeatures(data, {
+                    extent: extent,
+                    featureProjection: projection,
+                  });
+                  tile.setFeatures(features);
+                });
+              });
+            });
+          };
+          return {
+            tileLoadFunction: tileLoadFunction,
+          };
+        }
+        return new Request(url);
+      },
+    })
+      .then(function () {
+        try {
+          should(layer.getSource()).be.an.instanceOf(VectorTileSource);
+          should(layer.getSource().getTileLoadFunction()).equal(
+            tileLoadFunction
           );
           should(layer.getStyle()).be.an.instanceOf(Function);
           done();

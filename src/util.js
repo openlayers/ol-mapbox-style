@@ -121,7 +121,8 @@ export function getTileJson(glSource, styleUrl, options = {}) {
       } else {
         promise = fetchResource('Source', normalizedUrl, options).then(
           function (tileJson) {
-            tileJson.tiles = tileJson.tiles.map(function (tileUrl) {
+            for (let i = 0, ii = tileJson.tiles.length; i < ii; ++i) {
+              const tileUrl = tileJson.tiles[i];
               let normalizedTileUrl = normalizeSourceUrl(
                 tileUrl,
                 options.accessToken,
@@ -129,12 +130,19 @@ export function getTileJson(glSource, styleUrl, options = {}) {
                 normalizedUrl || location.href
               );
               if (options.transformRequest) {
-                normalizedTileUrl = decodeURI(
-                  options.transformRequest(normalizedTileUrl, 'Tile').url
+                const transformedRequest = options.transformRequest(
+                  normalizedTileUrl,
+                  'Tiles'
                 );
+                if (transformedRequest instanceof Request) {
+                  normalizedTileUrl = decodeURI(transformedRequest.url);
+                } else {
+                  tileJson.olSourceOptions = transformedRequest;
+                  break;
+                }
               }
-              return normalizedTileUrl;
-            });
+              tileJson.tiles[i] = normalizedTileUrl;
+            }
             return Promise.resolve(tileJson);
           }
         );
