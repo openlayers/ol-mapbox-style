@@ -55,6 +55,12 @@ function completeOptions(styleUrl, options) {
 }
 
 /**
+ * @typedef {Object} FeatureIdentifier
+ * @property {string|number} id The feature id.
+ * @property {string} source The source id.
+ */
+
+/**
  * @typedef {'Style'|'Source'|'Sprite'|'Tiles'|'GeoJSON'} ResourceType
  */
 
@@ -919,7 +925,7 @@ export function getLayer(map, layerId) {
  */
 export function getLayers(map, sourceId) {
   const result = [];
-  const layers = map.getLayers().getArray();
+  const layers = map.getAllLayers();
   for (let i = 0, ii = layers.length; i < ii; ++i) {
     if (layers[i].get('mapbox-source') === sourceId) {
       result.push(/** @type {Layer} */ (layers[i]));
@@ -945,6 +951,61 @@ export function getSource(map, sourceId) {
       return source;
     }
   }
+}
+
+/**
+ * Sets or removes a feature state. The feature state is taken into account for styling,
+ * just like the feature's properties, and can be used e.g. to conditionally render selected
+ * features differently.
+ *
+ * The feature state will be stored on the OpenLayers layer matching feature identifier, in the
+ * `mapbox-featurestate` property.
+ * @param {Map|VectorLayer|VectorTileLayer} mapOrLayer OpenLayers Map or layer to set the feature
+ * state on.
+ * @param {FeatureIdentifier} feature Feature identifier.
+ * @param {Object|null} state Feature state. Set to `null` to remove the feature state.
+ */
+export function setFeatureState(mapOrLayer, feature, state) {
+  const layers =
+    'getLayers' in mapOrLayer
+      ? getLayers(mapOrLayer, feature.source)
+      : [mapOrLayer];
+  for (let i = 0, ii = layers.length; i < ii; ++i) {
+    const featureState = layers[i].get('mapbox-featurestate');
+    if (featureState) {
+      if (state) {
+        featureState[feature.id] = state;
+      } else {
+        delete featureState[feature.id];
+      }
+      layers[i].changed();
+    } else {
+      throw new Error(`Map or layer for source "${feature.source}" not found.`);
+    }
+  }
+}
+
+/**
+ * Sets or removes a feature state. The feature state is taken into account for styling,
+ * just like the feature's properties, and can be used e.g. to conditionally render selected
+ * features differently.
+ * @param {Map|VectorLayer|VectorTileLayer} mapOrLayer Map or layer to set the feature state on.
+ * @param {FeatureIdentifier} feature Feature identifier.
+ * @return {Object|null} Feature state or `null` when no feature state is set for the given
+ * feature identifier.
+ */
+export function getFeatureState(mapOrLayer, feature) {
+  const layers =
+    'getLayers' in mapOrLayer
+      ? getLayers(mapOrLayer, feature.source)
+      : [mapOrLayer];
+  for (let i = 0, ii = layers.length; i < ii; ++i) {
+    const featureState = layers[i].get('mapbox-featurestate');
+    if (featureState && featureState[feature.id]) {
+      return featureState[feature.id];
+    }
+  }
+  return null;
 }
 
 export {

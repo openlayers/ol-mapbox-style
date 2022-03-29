@@ -76,9 +76,11 @@ Internet Explorer (version 11) and other old browsers (Android 4.x) are supporte
 
 #### Table of Contents
 
+*   [FeatureIdentifier](#featureidentifier)
+    *   [Properties](#properties)
 *   [ResourceType](#resourcetype)
 *   [Options](#options)
-    *   [Properties](#properties)
+    *   [Properties](#properties-1)
 *   [applyStyle](#applystyle)
     *   [Parameters](#parameters)
 *   [renderTransparent](#rendertransparent)
@@ -99,6 +101,19 @@ Internet Explorer (version 11) and other old browsers (Android 4.x) are supporte
     *   [Parameters](#parameters-8)
 *   [getSource](#getsource)
     *   [Parameters](#parameters-9)
+*   [setFeatureState](#setfeaturestate)
+    *   [Parameters](#parameters-10)
+*   [getFeatureState](#getfeaturestate)
+    *   [Parameters](#parameters-11)
+
+### FeatureIdentifier
+
+Type: [Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)
+
+#### Properties
+
+*   `id` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number))** The feature id.
+*   `source` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** The source id.
 
 ### ResourceType
 
@@ -427,6 +442,36 @@ Get the OpenLayers source instance for the provided Mapbox Style `source`.
 *   `sourceId` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Mapbox Style source id.
 
 Returns **Source** OpenLayers source instance.
+
+### setFeatureState
+
+Sets or removes a feature state. The feature state is taken into account for styling,
+just like the feature's properties, and can be used e.g. to conditionally render selected
+features differently.
+
+The feature state will be stored on the OpenLayers layer matching feature identifier, in the
+`mapbox-featurestate` property.
+
+#### Parameters
+
+*   `mapOrLayer` **([Map](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map) | VectorLayer | VectorTileLayer)** OpenLayers Map or layer to set the feature
+    state on.
+*   `feature` **[FeatureIdentifier](#featureidentifier)** Feature identifier.
+*   `state` **([Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object) | null)** Feature state. Set to `null` to remove the feature state.
+
+### getFeatureState
+
+Sets or removes a feature state. The feature state is taken into account for styling,
+just like the feature's properties, and can be used e.g. to conditionally render selected
+features differently.
+
+#### Parameters
+
+*   `mapOrLayer` **([Map](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map) | VectorLayer | VectorTileLayer)** Map or layer to set the feature state on.
+*   `feature` **[FeatureIdentifier](#featureidentifier)** Feature identifier.
+
+Returns **([Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object) | null)** Feature state or `null` when no feature state is set for the given
+feature identifier.
 
 ## Building the library
 
