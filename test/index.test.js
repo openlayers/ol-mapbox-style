@@ -10,9 +10,11 @@ import brightV9 from 'mapbox-gl-styles/styles/bright-v9.json';
 import olms, {
   apply,
   applyBackground,
+  getFeatureState,
   getLayer,
   getLayers,
   getSource,
+  setFeatureState,
 } from '../src/index.js';
 import should from 'should';
 import {defaultResolutions} from '../src/util.js';
@@ -55,6 +57,17 @@ describe('ol-mapbox-style', function () {
               );
               done();
             });
+        });
+      });
+    });
+
+    it('supports feature-state (map)', function () {
+      return olms(target, './fixtures/hot-osm/hot-osm.json').then(function (
+        map
+      ) {
+        setFeatureState(map, {id: '1', source: 'osm'}, {hover: true});
+        should(getFeatureState(map, {id: '1', source: 'osm'})).be.eql({
+          hover: true,
         });
       });
     });

@@ -4,8 +4,10 @@ import VectorLayer from 'ol/layer/Vector.js';
 import deepFreeze from 'deep-freeze';
 import olms, {
   stylefunction as applyStyleFunction,
+  getFeatureState,
   recordStyleLayer,
   renderTransparent,
+  setFeatureState,
 } from '../src/index.js';
 import should from 'should';
 import states from './fixtures/states.json';
@@ -160,6 +162,37 @@ describe('stylefunction', function () {
       should(style).be.an.Array();
       should(style[0].getFill()).eql(null);
       should(style[0].getStroke().getColor()).eql('rgba(255,0,0,1)');
+    });
+
+    it('supports feature-state (layer)', function () {
+      feature.setId(1);
+      const styleObject = JSON.parse(JSON.stringify(states));
+      styleObject.layers.push({
+        'id': 'red_blue',
+        'type': 'fill',
+        'source': 'states',
+        'paint': {
+          'fill-color': [
+            'case',
+            ['boolean', ['feature-state', 'hover'], false],
+            'blue',
+            'red',
+          ],
+        },
+      });
+      const styleFn = applyStyleFunction(layer, styleObject, ['red_blue']);
+      let style = styleFn(feature, 1);
+      should(style).be.an.Array();
+      should(style[0].getFill().getColor()).eql('rgba(255,0,0,1)');
+      setFeatureState(layer, {source: 'states', id: 1}, {hover: true});
+      should(getFeatureState(layer, {source: 'states', id: 1})).eql({
+        hover: true,
+      });
+      style = styleFn(feature, 1);
+      should(style[0].getFill().getColor()).eql('rgba(0,0,255,1)');
+      setFeatureState(layer, {source: 'states', id: 1}, null);
+      style = styleFn(feature, 1);
+      should(style[0].getFill().getColor()).eql('rgba(255,0,0,1)');
     });
   });
 
