@@ -958,7 +958,7 @@ export function getSource(map, sourceId) {
  * just like the feature's properties, and can be used e.g. to conditionally render selected
  * features differently.
  *
- * The feature state will be stored on the OpenLayers layer matching feature identifier, in the
+ * The feature state will be stored on the OpenLayers layer matching the feature identifier, in the
  * `mapbox-featurestate` property.
  * @param {Map|VectorLayer|VectorTileLayer} mapOrLayer OpenLayers Map or layer to set the feature
  * state on.

@@ -1,4 +1,10 @@
-import olms, {apply, applyBackground, applyStyle} from './index.js';
+import olms, {
+  apply,
+  applyBackground,
+  applyStyle,
+  getFeatureState,
+  setFeatureState,
+} from './index.js';
 import stylefunction, {
   recordStyleLayer,
   renderTransparent,
@@ -9,6 +15,8 @@ assign(olms, {
   apply,
   applyBackground,
   applyStyle,
+  setFeatureState,
+  getFeatureState,
   stylefunction,
   recordStyleLayer,
   renderTransparent,
