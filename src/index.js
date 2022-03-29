@@ -55,7 +55,7 @@ function completeOptions(styleUrl, options) {
 }
 
 /**
- * @typedef {'Style'|'Source'|'Sprite'|'Tile'|'GeoJSON'} ResourceType
+ * @typedef {'Style'|'Source'|'Sprite'|'Tiles'|'GeoJSON'} ResourceType
  */
 
 /**
@@ -64,9 +64,10 @@ function completeOptions(styleUrl, options) {
  * @property {function(string, ResourceType): (Request|Object)} [transformRequest]
  * Function for controlling how `ol-mapbox-style` fetches resources. Can be used for modifying
  * the url, adding headers or setting credentials options. Called with the url and the resource
- * type as arguments, this function is supposed to return a `Request` object. For `Tile` resources,
- * only the `url` of the returned request will be respected. For `GeoJSON` resources, options for
- * an `ol/source/Vector` can be returned instead of a `Request'.
+ * type as arguments, this function is supposed to return a `Request` object. For `Tiles` and `GeoJSON`
+ * resources, only the `url` of the returned request will be respected. To make more complex transforms
+ * for those, you can return options for an `ol/source/VectorTile` or `ol/source/XYZ` (`Tiles` resource)
+ * an `ol/source/Vector` (`GeoJSON` resource) instead of a `Request'.
  * @property {string} [styleUrl] URL of the Mapbox GL style. Required for styles that were provided
  * as object, when they contain a relative sprite url.
  * @property {string} [accessTokenParam='access_token'] Access token param. For internal use.
@@ -429,7 +430,7 @@ export function setupVectorSource(glSource, styleUrl, options) {
         const maxZoom = tileJSONDoc.maxzoom || 22;
         let source = tileJSONSource.get('ol-source');
         if (source === undefined) {
-          source = new VectorTileSource({
+          const sourceOptions = {
             attributions: tileJSONSource.getAttributions(),
             format: new MVT(),
             tileGrid: new TileGrid({
@@ -439,13 +440,16 @@ export function setupVectorSource(glSource, styleUrl, options) {
               resolutions: defaultResolutions.slice(0, maxZoom + 1),
               tileSize: 512,
             }),
-            urls: Array.isArray(tileJSONDoc.tiles)
-              ? tileJSONDoc.tiles
-              : undefined,
-            url: Array.isArray(tileJSONDoc.tiles)
-              ? undefined
-              : tileJSONDoc.tiles,
-          });
+          };
+          if (Array.isArray(tileJSONDoc.tiles)) {
+            sourceOptions.urls = tileJSONDoc.tiles;
+          } else {
+            sourceOptions.url = tileJSONDoc.tiles;
+          }
+          if (tileJSON.olSourceOptions) {
+            Object.assign(sourceOptions, tileJSON.olSourceOptions);
+          }
+          source = new VectorTileSource(sourceOptions);
           tileJSONSource.set('ol-source', source);
         }
         resolve(source);
