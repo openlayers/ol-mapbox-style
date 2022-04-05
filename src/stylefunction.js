@@ -298,6 +298,8 @@ export function recordStyleLayer(record) {
  * is available. Font names are the names used in the Mapbox Style object. If
  * not provided, the font stack will be used as-is. This function can also be
  * used for loading web fonts.
+ * @param {function(string):HTMLImageElement|HTMLCanvasElement|undefined} [getImage=undefined]
+ * Function that returns an image for an image name argurment.
  * @return {StyleFunction} Style function for use in
  * `ol.layer.Vector` or `ol.layer.VectorTile`.
  */
@@ -308,7 +310,8 @@ export default function (
   resolutions = defaultResolutions,
   spriteData,
   spriteImageUrl,
-  getFonts
+  getFonts,
+  getImage
 ) {
   if (typeof glStyle == 'string') {
     glStyle = JSON.parse(glStyle);
@@ -663,7 +666,8 @@ export default function (
                 ? fromTemplate(iconImage, properties)
                 : iconImage.toString();
             let styleGeom = undefined;
-            if (spriteImage && spriteData && spriteData[icon]) {
+            const imageElement = getImage ? getImage(icon) : undefined;
+            if ((spriteImage && spriteData && spriteData[icon]) || imageElement) {
               const iconRotationAlignment = getValue(
                 layer,
                 'layout',
@@ -770,35 +774,56 @@ export default function (
                   }
                   iconImg = iconImageCache[icon_cache_key];
                   if (!iconImg) {
-                    const spriteImageData = spriteData[icon];
+                    const color = iconColor
+                      ? [
+                          iconColor.r * 255,
+                          iconColor.g * 255,
+                          iconColor.b * 255,
+                          iconColor.a,
+                        ]
+                      : undefined;
+                    if (imageElement) {
+                      iconImg = new Icon({
+                        color: color,
+                        img: imageElement,
+                        imgSize: [imageElement.width, imageElement.height],
+                        rotateWithView: iconRotationAlignment === 'map',
+                        displacement:
+                          'icon-offset' in layout
+                            ? getValue(
+                                layer,
+                                'layout',
+                                'icon-offset',
+                                zoom,
+                                f,
+                                functionCache
+                              ).map((v) => -v)
+                            : undefined,
+                      });
+                    } else {
+                      const spriteImageData = spriteData[icon];
 
-                    iconImg = new Icon({
-                      color: iconColor
-                        ? [
-                            iconColor.r * 255,
-                            iconColor.g * 255,
-                            iconColor.b * 255,
-                            iconColor.a,
-                          ]
-                        : undefined,
-                      img: spriteImage,
-                      imgSize: spriteImgSize,
-                      size: [spriteImageData.width, spriteImageData.height],
-                      offset: [spriteImageData.x, spriteImageData.y],
-                      rotateWithView: iconRotationAlignment === 'map',
-                      scale: iconSize / spriteImageData.pixelRatio,
-                      displacement:
-                        'icon-offset' in layout
-                          ? getValue(
-                              layer,
-                              'layout',
-                              'icon-offset',
-                              zoom,
-                              f,
-                              functionCache
-                            ).map((v) => -v * spriteImageData.pixelRatio)
-                          : undefined,
-                    });
+                      iconImg = new Icon({
+                        color: color,
+                        img: spriteImage,
+                        imgSize: spriteImgSize,
+                        size: [spriteImageData.width, spriteImageData.height],
+                        offset: [spriteImageData.x, spriteImageData.y],
+                        rotateWithView: iconRotationAlignment === 'map',
+                        scale: iconSize / spriteImageData.pixelRatio,
+                        displacement:
+                          'icon-offset' in layout
+                            ? getValue(
+                                layer,
+                                'layout',
+                                'icon-offset',
+                                zoom,
+                                f,
+                                functionCache
+                              ).map((v) => -v * spriteImageData.pixelRatio)
+                            : undefined,
+                      });
+                    }
                     iconImageCache[icon_cache_key] = iconImg;
                   }
                 }
