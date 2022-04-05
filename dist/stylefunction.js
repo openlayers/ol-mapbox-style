@@ -256,10 +256,12 @@ export function recordStyleLayer(record) {
  * is available. Font names are the names used in the Mapbox Style object. If
  * not provided, the font stack will be used as-is. This function can also be
  * used for loading web fonts.
+ * @param {function(string):HTMLImageElement|HTMLCanvasElement|undefined} [getImage=undefined]
+ * Function that returns an image for an image name argurment.
  * @return {StyleFunction} Style function for use in
  * `ol.layer.Vector` or `ol.layer.VectorTile`.
  */
-export default function (olLayer, glStyle, source, resolutions, spriteData, spriteImageUrl, getFonts) {
+export default function (olLayer, glStyle, source, resolutions, spriteData, spriteImageUrl, getFonts, getImage) {
     if (resolutions === void 0) { resolutions = defaultResolutions; }
     if (typeof glStyle == 'string') {
         glStyle = JSON.parse(glStyle);
@@ -487,7 +489,8 @@ export default function (olLayer, glStyle, source, resolutions, spriteData, spri
                                 ? fromTemplate(iconImage, properties)
                                 : iconImage.toString();
                         var styleGeom = undefined;
-                        if (spriteImage && spriteData && spriteData[icon]) {
+                        var imageElement = getImage ? getImage(icon) : undefined;
+                        if ((spriteImage && spriteData && spriteData[icon]) || imageElement) {
                             var iconRotationAlignment = getValue(layer, 'layout', 'icon-rotation-alignment', zoom, f, functionCache);
                             if (type == 2) {
                                 var geom = feature.getGeometry();
@@ -545,26 +548,40 @@ export default function (olLayer, glStyle, source, resolutions, spriteData, spri
                                     }
                                     iconImg = iconImageCache[icon_cache_key];
                                     if (!iconImg) {
-                                        var spriteImageData_1 = spriteData[icon];
-                                        iconImg = new Icon({
-                                            color: iconColor
-                                                ? [
-                                                    iconColor.r * 255,
-                                                    iconColor.g * 255,
-                                                    iconColor.b * 255,
-                                                    iconColor.a,
-                                                ]
-                                                : undefined,
-                                            img: spriteImage,
-                                            imgSize: spriteImgSize,
-                                            size: [spriteImageData_1.width, spriteImageData_1.height],
-                                            offset: [spriteImageData_1.x, spriteImageData_1.y],
-                                            rotateWithView: iconRotationAlignment === 'map',
-                                            scale: iconSize / spriteImageData_1.pixelRatio,
-                                            displacement: 'icon-offset' in layout
-                                                ? getValue(layer, 'layout', 'icon-offset', zoom, f, functionCache).map(function (v) { return -v * spriteImageData_1.pixelRatio; })
-                                                : undefined,
-                                        });
+                                        var color_1 = iconColor
+                                            ? [
+                                                iconColor.r * 255,
+                                                iconColor.g * 255,
+                                                iconColor.b * 255,
+                                                iconColor.a,
+                                            ]
+                                            : undefined;
+                                        if (imageElement) {
+                                            iconImg = new Icon({
+                                                color: color_1,
+                                                img: imageElement,
+                                                imgSize: [imageElement.width, imageElement.height],
+                                                rotateWithView: iconRotationAlignment === 'map',
+                                                displacement: 'icon-offset' in layout
+                                                    ? getValue(layer, 'layout', 'icon-offset', zoom, f, functionCache).map(function (v) { return -v; })
+                                                    : undefined,
+                                            });
+                                        }
+                                        else {
+                                            var spriteImageData_1 = spriteData[icon];
+                                            iconImg = new Icon({
+                                                color: color_1,
+                                                img: spriteImage,
+                                                imgSize: spriteImgSize,
+                                                size: [spriteImageData_1.width, spriteImageData_1.height],
+                                                offset: [spriteImageData_1.x, spriteImageData_1.y],
+                                                rotateWithView: iconRotationAlignment === 'map',
+                                                scale: iconSize / spriteImageData_1.pixelRatio,
+                                                displacement: 'icon-offset' in layout
+                                                    ? getValue(layer, 'layout', 'icon-offset', zoom, f, functionCache).map(function (v) { return -v * spriteImageData_1.pixelRatio; })
+                                                    : undefined,
+                                            });
+                                        }
                                         iconImageCache[icon_cache_key] = iconImg;
                                     }
                                 }
