@@ -7,6 +7,8 @@
     "moduleResolution": "node",
     "module": "ESNext",
     "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
     "baseUrl": "./",
     "lib": [
       "es2015",

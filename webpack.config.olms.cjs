@@ -1,3 +1,4 @@
+const {join} = require('path');
 const path = require('path');
 
 const externals = {
@@ -47,6 +48,29 @@ module.exports = {
     rules: [
       {
         test: /\.js$/,
+        enforce: 'pre',
+        use: ['remove-flow-types-loader'],
+        include: join(
+          __dirname,
+          'node_modules',
+          '@mapbox',
+          'mapbox-gl-style-spec'
+        ),
+      },
+      {
+        type: 'javascript/auto',
+        test: /\.json$/,
+        include: join(
+          __dirname,
+          'node_modules',
+          '@mapbox',
+          'mapbox-gl-style-spec',
+          'reference'
+        ),
+        use: ['json-strip-loader?keys[]=doc,keys[]=example'],
+      },
+      {
+        test: /\.js$/,
         include: [__dirname],
         use: {
           loader: 'buble-loader',
@@ -63,6 +87,11 @@ module.exports = {
     library: 'olms',
     libraryTarget: 'umd',
     libraryExport: 'default',
+  },
+  resolve: {
+    fallback: {
+      'assert': path.join(__dirname, 'node_modules', 'nanoassert'),
+    },
   },
   externals: createExternals(),
 };

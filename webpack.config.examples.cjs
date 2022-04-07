@@ -3,6 +3,7 @@ const fs = require('fs');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const {join} = require('path');
 
 /** Get the list of examples from the examples directory.
  *
@@ -96,6 +97,9 @@ module.exports = (env, argv) => {
         'ol-mapbox-style/dist': path.join(__dirname, 'src'),
         'ol-mapbox-style': path.join(__dirname, 'src'),
       },
+      fallback: {
+        'assert': path.join(__dirname, 'node_modules', 'nanoassert'),
+      },
     },
     devtool: 'source-map',
     module: {
@@ -109,10 +113,29 @@ module.exports = (env, argv) => {
         },
         {
           test: /\.js$/,
-          include: [
+          enforce: 'pre',
+          use: ['remove-flow-types-loader'],
+          include: join(
             __dirname,
-            /node_modules\/(?!(@mapbox\/mapbox-gl-style-spec)\/)/,
-          ],
+            'node_modules',
+            '@mapbox',
+            'mapbox-gl-style-spec'
+          ),
+        },
+        {
+          type: 'javascript/auto',
+          test: /\.json$/,
+          include: join(
+            __dirname,
+            'node_modules',
+            '@mapbox',
+            'mapbox-gl-style-spec',
+            'reference'
+          ),
+          use: ['json-strip-loader?keys[]=doc,keys[]=example'],
+        },
+        {
+          test: /\.js$/,
           use: {
             loader: 'buble-loader',
             options: {

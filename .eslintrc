@@ -11,11 +11,16 @@
     "import/resolver": {
       "alias": {
         "map": [
+          ["@mapbox/mapbox-gl-style-spec", "./node_modules/@mapbox/mapbox-gl-style-spec"],
           ["ol-mapbox-style", "./src"],
           ["ol-mapbox-style/dist/stylefunction", "./src"]
         ],
         "extensions": [".js", ".json"]
       }
     }
+  },
+  "rules": {
+    "import/default": "off",
+    "import/named": "off"
   }
 }

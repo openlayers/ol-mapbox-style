@@ -12,16 +12,13 @@ import Stroke from 'ol/style/Stroke.js';
 import Style from 'ol/style/Style.js';
 import Text from 'ol/style/Text.js';
 
-import Color from '@openlayers/mapbox-gl-style-spec/Color';
-import createFilter from '@openlayers/mapbox-gl-style-spec/featureFilter';
-import derefLayers from '@openlayers/mapbox-gl-style-spec/derefLayers';
+import Color from '@mapbox/mapbox-gl-style-spec/util/color.js';
+import convertFunction from '@mapbox/mapbox-gl-style-spec/function/convert.js';
+import createFilter from '@mapbox/mapbox-gl-style-spec/feature_filter/index.js';
+import derefLayers from '@mapbox/mapbox-gl-style-spec/deref.js';
 import mb2css from 'mapbox-to-css-font';
-import spec from '@openlayers/mapbox-gl-style-spec/latest';
+import spec from '@mapbox/mapbox-gl-style-spec/reference/v8.json';
 import {applyLetterSpacing, wrapText} from './text.js';
-import {
-  convertFunction,
-  isFunction,
-} from '@openlayers/mapbox-gl-style-spec/function';
 import {
   createCanvas,
   defaultResolutions,
@@ -31,7 +28,8 @@ import {
 import {
   createPropertyExpression,
   isExpression,
-} from '@openlayers/mapbox-gl-style-spec/expression';
+} from '@mapbox/mapbox-gl-style-spec/expression/index.js';
+import {isFunction} from '@mapbox/mapbox-gl-style-spec/function/index.js';
 
 /**
  * @typedef {import("ol/layer/Vector").default} VectorLayer
@@ -175,7 +173,7 @@ export function renderTransparent(enabled) {
 /**
  * @private
  * @param {?} color Color.
- * @param {number} opacity Opacity.
+ * @param {number} [opacity] Opacity.
  * @return {string} Color.
  */
 function colorWithOpacity(color, opacity) {
