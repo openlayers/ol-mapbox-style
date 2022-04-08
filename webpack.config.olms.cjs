@@ -35,12 +35,17 @@ function createExternals() {
       commonjs: key,
       commonjs2: key,
       amd: key,
+      module: key,
     };
   }
   return createdExternals;
 }
 
-module.exports = {
+/**
+ * @param {'js' | 'es.js'} type Type.
+ * @return {Object} Webpack config.
+ */
+const createConfig = (type) => ({
   entry: './src/olms.js',
   devtool: 'source-map',
   mode: 'production',
@@ -83,10 +88,11 @@ module.exports = {
   },
   output: {
     path: path.resolve('./dist'), // Path of output file
-    filename: 'olms.js',
-    library: 'olms',
-    libraryTarget: 'umd',
-    libraryExport: 'default',
+    filename: `olms.${type}`,
+    library: {
+      name: type === 'js' ? 'olms' : undefined,
+      type: type === 'js' ? 'umd' : 'module',
+    },
   },
   resolve: {
     fallback: {
@@ -94,4 +100,9 @@ module.exports = {
     },
   },
   externals: createExternals(),
-};
+  experiments: {
+    outputModule: type === 'es.js',
+  },
+});
+
+module.exports = [createConfig('js'), createConfig('es.js')];
