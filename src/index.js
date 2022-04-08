@@ -73,6 +73,8 @@ function completeOptions(styleUrl, options) {
  * type as arguments, this function is supposed to return a `Request` object. Without a return value,
  * the original request will not be modified. For `Tiles` and `GeoJSON` resources, only the `url` of
  * the returned request will be respected.
+ * @property {Array<number>} [resolutions] Resolutions for mapping resolution to zoom level.
+ * Only needed when working with non-standard tile grids or projections.
  * @property {string} [styleUrl] URL of the Mapbox GL style. Required for styles that were provided
  * as object, when they contain a relative sprite url.
  * @property {string} [accessTokenParam='access_token'] Access token param. For internal use.
@@ -117,11 +119,11 @@ function completeOptions(styleUrl, options) {
  * @param {string|Array<string>} [sourceOrLayers] `source` key or an array of layer `id`s from the
  * Mapbox Style object. When a `source` key is provided, all layers for the
  * specified source will be included in the style function. When layer `id`s
- * are provided, they must be from layers that use the same source. When not provided, all
- * layers using the first source specified in the glStyle will be rendered.
+ * are provided, they must be from layers that use the same source. When not provided or a falsey
+ * value, all layers using the first source specified in the glStyle will be rendered.
  * @param {Options|string} [optionsOrPath={}] Options. Alternatively the path of the style file
  * (only required when a relative path is used for the `"sprite"` property of the style).
- * @param {Array<number>} [resolutions=undefined] Resolutions for mapping resolution to zoom level.
+ * @param {Array<number>} [resolutions] Resolutions for mapping resolution to zoom level.
  * Only needed when working with non-standard tile grids or projections.
  * @return {Promise} Promise which will be resolved when the style can be used
  * for rendering.
