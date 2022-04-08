@@ -9,9 +9,9 @@ import stylefunction, {
   recordStyleLayer,
   renderTransparent,
 } from './stylefunction.js';
-import {assign} from 'ol/obj.js';
 
-assign(olms, {
+export {
+  olms as default,
   apply,
   applyBackground,
   applyStyle,
@@ -20,6 +20,4 @@ assign(olms, {
   stylefunction,
   recordStyleLayer,
   renderTransparent,
-});
-
-export default olms;
+};

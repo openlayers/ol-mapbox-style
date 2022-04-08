@@ -4,7 +4,7 @@ Copyright 2016-present ol-mapbox-style contributors
 License: https://raw.githubusercontent.com/openlayers/ol-mapbox-style/master/LICENSE
 */
 
-import Color from '@openlayers/mapbox-gl-style-spec/Color';
+import Color from '@mapbox/mapbox-gl-style-spec/util/color.js';
 import GeoJSON from 'ol/format/GeoJSON.js';
 import MVT from 'ol/format/MVT.js';
 import Map from 'ol/Map.js';

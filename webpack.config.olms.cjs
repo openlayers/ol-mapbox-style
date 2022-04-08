@@ -1,3 +1,4 @@
+const {join} = require('path');
 const path = require('path');
 
 const externals = {
@@ -34,17 +35,45 @@ function createExternals() {
       commonjs: key,
       commonjs2: key,
       amd: key,
+      module: key,
     };
   }
   return createdExternals;
 }
 
-module.exports = {
+/**
+ * @param {'js' | 'es.js'} type Type.
+ * @return {Object} Webpack config.
+ */
+const createConfig = (type) => ({
   entry: './src/olms.js',
   devtool: 'source-map',
   mode: 'production',
   module: {
     rules: [
+      {
+        test: /\.js$/,
+        enforce: 'pre',
+        use: ['remove-flow-types-loader'],
+        include: join(
+          __dirname,
+          'node_modules',
+          '@mapbox',
+          'mapbox-gl-style-spec'
+        ),
+      },
+      {
+        type: 'javascript/auto',
+        test: /\.json$/,
+        include: join(
+          __dirname,
+          'node_modules',
+          '@mapbox',
+          'mapbox-gl-style-spec',
+          'reference'
+        ),
+        use: ['json-strip-loader?keys[]=doc,keys[]=example'],
+      },
       {
         test: /\.js$/,
         include: [__dirname],
@@ -59,10 +88,21 @@ module.exports = {
   },
   output: {
     path: path.resolve('./dist'), // Path of output file
-    filename: 'olms.js',
-    library: 'olms',
-    libraryTarget: 'umd',
-    libraryExport: 'default',
+    filename: `olms.${type}`,
+    library: {
+      name: type === 'js' ? 'olms' : undefined,
+      type: type === 'js' ? 'umd' : 'module',
+    },
+  },
+  resolve: {
+    fallback: {
+      'assert': path.join(__dirname, 'node_modules', 'nanoassert'),
+    },
   },
   externals: createExternals(),
-};
+  experiments: {
+    outputModule: type === 'es.js',
+  },
+});
+
+module.exports = [createConfig('js'), createConfig('es.js')];

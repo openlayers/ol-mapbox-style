@@ -1,9 +1,9 @@
 /*eslint no-console: "off"*/
-import Color from '@openlayers/mapbox-gl-style-spec/Color';
+import Color from '@mapbox/mapbox-gl-style-spec/util/color.js';
 import Feature from 'ol/Feature.js';
 import Point from 'ol/geom/Point.js';
 import should from 'should';
-import spec from '@openlayers/mapbox-gl-style-spec/latest';
+import spec from '@mapbox/mapbox-gl-style-spec/reference/v8.json';
 
 import {
   _colorWithOpacity as colorWithOpacity,
@@ -41,7 +41,7 @@ describe('utility functions currently in stylefunction.js', function () {
       should(filterCache).not.have.key(glLayerId);
       should(evaluateFilter(glLayerId, filter, feature, zoom, filterCache)).be
         .true;
-      should(filterCache, filterCache).have.key(glLayerId);
+      should(filterCache).have.key(glLayerId);
     });
 
     it('should be false with LineString filter and Point geom', function () {
