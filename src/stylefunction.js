@@ -279,7 +279,7 @@ export function recordStyleLayer(record) {
  * for the layer, and `mapbox-layers` will be an array of the `id`s of the
  * `glStyle`'s layers.
  * @param {string|Object} glStyle Mapbox Style object.
- * @param {string|Array<string>} source `source` key or an array of layer `id`s
+ * @param {string|Array<string>} sourceOrLayers `source` key or an array of layer `id`s
  * from the Mapbox Style object. When a `source` key is provided, all layers for
  * the specified source will be included in the style function. When layer `id`s
  * are provided, they must be from layers that use the same source.
@@ -302,7 +302,7 @@ export function recordStyleLayer(record) {
 export default function (
   olLayer,
   glStyle,
-  source,
+  sourceOrLayers,
   resolutions = defaultResolutions,
   spriteData,
   spriteImageUrl,
@@ -361,8 +361,8 @@ export default function (
     const layer = allLayers[i];
     const layerId = layer.id;
     if (
-      (typeof source == 'string' && layer.source == source) ||
-      source.indexOf(layerId) !== -1
+      (typeof sourceOrLayers == 'string' && layer.source == sourceOrLayers) ||
+      sourceOrLayers.indexOf(layerId) !== -1
     ) {
       const sourceLayer = layer['source-layer'];
       if (!mapboxSource) {
@@ -377,6 +377,10 @@ export default function (
             `Source "${mapboxSource}" is not of type "vector" or "geojson", but "${type}"`
           );
         }
+      } else if (layer.source !== mapboxSource) {
+        throw new Error(
+          `Layer "${layerId}" does not use source "${mapboxSource}`
+        );
       }
       let layers = layersBySourceLayer[sourceLayer];
       if (!layers) {

@@ -1,5 +1,5 @@
 import {assign} from 'ol/obj.js';
-import {normalizeSourceUrl, normalizeStyleUrl} from 'ol/layer/MapboxVector.js';
+import {normalizeSourceUrl, normalizeStyleUrl} from './mapbox.js';
 
 export function deg2rad(degrees) {
   return (degrees * Math.PI) / 180;
