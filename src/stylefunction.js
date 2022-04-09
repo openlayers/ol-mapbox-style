@@ -156,9 +156,6 @@ function evaluateFilter(layerId, filter, feature, zoom, filterCache) {
 let renderTransparentEnabled = false;
 
 /**
- * ```js
- * import {renderTransparent} from 'ol-mapbox-style';
- * ```
  * Configure whether features with a transparent style should be rendered. When
  * set to `true`, it will be possible to hit detect content that is not visible,
  * like transparent fills of polygons, using `ol/layer/Layer#getFeatures()` or
@@ -221,9 +218,6 @@ function fromTemplate(text, properties) {
 let recordLayer = false;
 
 /**
- * ```js
- * import {recordStyleLayer} from 'ol-mapbox-style';
- * ```
  * Turns recording of the Mapbox Style's `layer` on and off. When turned on,
  * the layer that a rendered feature belongs to will be set as the feature's
  * `mapbox-layer` property.
@@ -234,9 +228,6 @@ export function recordStyleLayer(record) {
 }
 
 /**
- * ```js
- * import stylefunction from 'ol-mapbox-style';
- * ```
  * Creates a style function from the `glStyle` object for all layers that use
  * the specified `source`, which needs to be a `"type": "vector"` or
  * `"type": "geojson"` source and applies it to the specified OpenLayers layer.
@@ -299,7 +290,7 @@ export function recordStyleLayer(record) {
  * @return {StyleFunction} Style function for use in
  * `ol.layer.Vector` or `ol.layer.VectorTile`.
  */
-export default function (
+export function stylefunction(
   olLayer,
   glStyle,
   sourceOrLayers,

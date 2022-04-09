@@ -9,7 +9,7 @@ import glStyle from './fixtures/osm-liberty/style.json';
 import invalidStyle from './fixtures/style-invalid-version.json';
 
 import VectorTileLayer from 'ol/layer/VectorTile.js';
-import {_finalizeLayer as finalizeLayer} from '../src/index.js';
+import {_finalizeLayer as finalizeLayer} from '../src/apply.js';
 
 describe('finalizeLayer promise', function () {
   it('should resolve with valid input and vector layer source', function (done) {

@@ -165,7 +165,7 @@ export function getTileJson(glSource, styleUrl, options = {}) {
 }
 
 /**
- * @typedef {import("./index.js").Options} Options
- * @typedef {import('./index.js').ResourceType} ResourceType
+ * @typedef {import("./apply.js").Options} Options
+ * @typedef {import('./apply.js').ResourceType} ResourceType
  * @private
  */

@@ -4,11 +4,11 @@
   "description": "Create OpenLayers maps from Mapbox Style objects",
   "type": "module",
   "main": "dist/olms.js",
-  "module": "dist/olms.es.js",
-  "types": "dist/olms.d.ts",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "module": "./dist/olms.es.js",
+      "module": "./dist/index.js",
       "require": "./dist/olms.js"
     }
   },
@@ -29,7 +29,7 @@
     "start": "webpack serve --config ./webpack.config.examples.cjs",
     "prepare": "npm run doc && npm run build",
     "build": "tsc --project tsconfig-build.json && webpack-cli --mode=production --config ./webpack.config.olms.cjs && webpack-cli --mode=production --config ./webpack.config.examples.cjs",
-    "doc": "documentation readme -s API src/index.js --document-exported true",
+    "doc": "typedoc --plugin typedoc-plugin-markdown --plugin typedoc-plugin-missing-exports src/index.js --readme none --excludeExternals --internalNamespace 'types' --tsconfig tsconfig-typecheck.json",
     "karma": "karma start test/karma.conf.cjs",
     "lint": "eslint test examples src",
     "typecheck": "tsc --project tsconfig-typecheck.json",
@@ -43,9 +43,7 @@
   },
   "devDependencies": {
     "@types/arcgis-rest-api": "^10.4.4",
-    "@types/geojson": "^7946.0.7",
     "@types/mocha": "^9.1.0",
-    "@types/node": "^17.0.1",
     "@types/offscreencanvas": "^2019.6.4",
     "@types/topojson-specification": "^1.0.1",
     "babel-loader": "^8.0.6",
@@ -55,7 +53,6 @@
     "coverage-istanbul-loader": "^3.0.5",
     "css-loader": "^6.5.1",
     "deep-freeze": "0.0.1",
-    "documentation": "^13.2.5",
     "eslint": "^8.2.0",
     "eslint-config-openlayers": "^16.0.1",
     "eslint-import-resolver-alias": "^1.1.2",
@@ -77,6 +74,9 @@
     "should": "^13.2.3",
     "sinon": "^13.0.0",
     "style-loader": "^3.3.1",
+    "typedoc": "^0.22.14",
+    "typedoc-plugin-markdown": "^3.11.14",
+    "typedoc-plugin-missing-exports": "^0.22.6",
     "typescript": "^4.6.0-beta",
     "webpack": "^5.62.1",
     "webpack-cli": "^4.9.1",

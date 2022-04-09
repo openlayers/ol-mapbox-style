@@ -1,14 +1,19 @@
 {
   "compilerOptions": {
-    "outDir": "./dist",
     "target": "ES5",
     "module": "es2015",
-    "sourceMap": true,
     "allowJs": true,
-    "importHelpers": false,
     "declaration": true,
-    "declarationMap": false,
     "emitDeclarationOnly": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "importHelpers": false,
+    "strict": false,
+    "strictNullChecks": true,
+    "moduleResolution": "node",
+    "esModuleInterop": false,
+    "inlineSources": false,
+    "skipLibCheck": true
   },
   "include": [
     "./src/**/*.js"

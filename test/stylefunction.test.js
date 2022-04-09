@@ -2,15 +2,16 @@ import Feature from 'ol/Feature.js';
 import Polygon from 'ol/geom/Polygon.js';
 import VectorLayer from 'ol/layer/Vector.js';
 import deepFreeze from 'deep-freeze';
-import olms, {
+import should from 'should';
+import states from './fixtures/states.json';
+import {
+  apply,
   stylefunction as applyStyleFunction,
   getFeatureState,
   recordStyleLayer,
   renderTransparent,
   setFeatureState,
 } from '../src/index.js';
-import should from 'should';
-import states from './fixtures/states.json';
 
 describe('stylefunction', function () {
   describe('OpenLayers Style object creation', function () {
@@ -246,7 +247,7 @@ describe('stylefunction', function () {
     });
 
     it('calculates correct offsetY', function (done) {
-      olms(document.createElement('div'), style)
+      apply(document.createElement('div'), style)
         .then(function (map) {
           const layer = map.getLayers().item(0);
           const styleFunction = layer.getStyle();
@@ -268,7 +269,7 @@ describe('stylefunction', function () {
     });
 
     it('trims the label-field', function (done) {
-      olms(document.createElement('div'), style)
+      apply(document.createElement('div'), style)
         .then(function (map) {
           const layer = map.getLayers().item(0);
           const styleFunction = layer.getStyle();
@@ -336,7 +337,7 @@ describe('stylefunction', function () {
     });
 
     it('does not create an image style when iconColor opacity is 0', function (done) {
-      olms(document.createElement('div'), style)
+      apply(document.createElement('div'), style)
         .then(function (map) {
           const layer = map.getLayers().item(0);
           layer.once('change', () => {
@@ -401,7 +402,7 @@ describe('stylefunction', function () {
 
     it('should set max angle when exists', function (done) {
       style.layers[0].layout['text-max-angle'] = 0;
-      olms(document.createElement('div'), style)
+      apply(document.createElement('div'), style)
         .then(function (map) {
           const layer = map.getLayers().item(0);
           const styleFunction = layer.getStyle();
@@ -417,7 +418,7 @@ describe('stylefunction', function () {
     });
 
     it('should not set max angle when it doesnt exist', function (done) {
-      olms(document.createElement('div'), style)
+      apply(document.createElement('div'), style)
         .then(function (map) {
           const layer = map.getLayers().item(0);
           const styleFunction = layer.getStyle();
@@ -483,8 +484,8 @@ describe('stylefunction', function () {
       style2.layers[0].paint['fill-color'] = '#B2DF8A';
 
       Promise.all([
-        olms(document.createElement('div'), style1),
-        olms(document.createElement('div'), style2),
+        apply(document.createElement('div'), style1),
+        apply(document.createElement('div'), style2),
       ])
         .then(function (maps) {
           const layer1 = maps[0].getLayers().item(0);

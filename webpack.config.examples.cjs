@@ -94,7 +94,6 @@ module.exports = (env, argv) => {
     },
     resolve: {
       alias: {
-        'ol-mapbox-style/dist': path.join(__dirname, 'src'),
         'ol-mapbox-style': path.join(__dirname, 'src'),
       },
       fallback: {
