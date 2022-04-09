@@ -1,5 +1,9 @@
 # Changelog
 
+## 8.0.1
+
+* Display API docs correctly on npmjs.com
+
 ## 8.0.0
 
 ### Breaking changes

@@ -181,7 +181,7 @@ argument.
 
 #### Defined in
 
-[apply.js:769](https://github.com/openlayers/ol-mapbox-style/blob/10ed2a8/src/apply.js#L769)
+[apply.js:769](https://github.com/openlayers/ol-mapbox-style/blob/5ca3c3a/src/apply.js#L769)
 
 ___
 
@@ -217,7 +217,7 @@ Promise that resolves when the background is applied.
 
 #### Defined in
 
-[apply.js:440](https://github.com/openlayers/ol-mapbox-style/blob/10ed2a8/src/apply.js#L440)
+[apply.js:440](https://github.com/openlayers/ol-mapbox-style/blob/5ca3c3a/src/apply.js#L440)
 
 ___
 
@@ -270,7 +270,7 @@ for rendering.
 
 #### Defined in
 
-[apply.js:128](https://github.com/openlayers/ol-mapbox-style/blob/10ed2a8/src/apply.js#L128)
+[apply.js:128](https://github.com/openlayers/ol-mapbox-style/blob/5ca3c3a/src/apply.js#L128)
 
 ___
 
@@ -298,7 +298,7 @@ feature identifier.
 
 #### Defined in
 
-[apply.js:997](https://github.com/openlayers/ol-mapbox-style/blob/10ed2a8/src/apply.js#L997)
+[apply.js:997](https://github.com/openlayers/ol-mapbox-style/blob/5ca3c3a/src/apply.js#L997)
 
 ___
 
@@ -325,7 +325,7 @@ OpenLayers layer instance.
 
 #### Defined in
 
-[apply.js:913](https://github.com/openlayers/ol-mapbox-style/blob/10ed2a8/src/apply.js#L913)
+[apply.js:913](https://github.com/openlayers/ol-mapbox-style/blob/5ca3c3a/src/apply.js#L913)
 
 ___
 
@@ -350,7 +350,7 @@ OpenLayers layer instances.
 
 #### Defined in
 
-[apply.js:929](https://github.com/openlayers/ol-mapbox-style/blob/10ed2a8/src/apply.js#L929)
+[apply.js:929](https://github.com/openlayers/ol-mapbox-style/blob/5ca3c3a/src/apply.js#L929)
 
 ___
 
@@ -375,7 +375,7 @@ OpenLayers source instance.
 
 #### Defined in
 
-[apply.js:946](https://github.com/openlayers/ol-mapbox-style/blob/10ed2a8/src/apply.js#L946)
+[apply.js:946](https://github.com/openlayers/ol-mapbox-style/blob/5ca3c3a/src/apply.js#L946)
 
 ___
 
@@ -399,7 +399,7 @@ the layer that a rendered feature belongs to will be set as the feature's
 
 #### Defined in
 
-[stylefunction.js:226](https://github.com/openlayers/ol-mapbox-style/blob/10ed2a8/src/stylefunction.js#L226)
+[stylefunction.js:226](https://github.com/openlayers/ol-mapbox-style/blob/5ca3c3a/src/stylefunction.js#L226)
 
 ___
 
@@ -424,7 +424,7 @@ like transparent fills of polygons, using `ol/layer/Layer#getFeatures()` or
 
 #### Defined in
 
-[stylefunction.js:166](https://github.com/openlayers/ol-mapbox-style/blob/10ed2a8/src/stylefunction.js#L166)
+[stylefunction.js:166](https://github.com/openlayers/ol-mapbox-style/blob/5ca3c3a/src/stylefunction.js#L166)
 
 ___
 
@@ -453,7 +453,7 @@ The feature state will be stored on the OpenLayers layer matching the feature id
 
 #### Defined in
 
-[apply.js:968](https://github.com/openlayers/ol-mapbox-style/blob/10ed2a8/src/apply.js#L968)
+[apply.js:968](https://github.com/openlayers/ol-mapbox-style/blob/5ca3c3a/src/apply.js#L968)
 
 ___
 
@@ -518,7 +518,7 @@ Style function for use in
 
 #### Defined in
 
-[stylefunction.js:293](https://github.com/openlayers/ol-mapbox-style/blob/10ed2a8/src/stylefunction.js#L293)
+[stylefunction.js:293](https://github.com/openlayers/ol-mapbox-style/blob/5ca3c3a/src/stylefunction.js#L293)
 
 
 <a name="interfacestypesfeatureidentifiermd"></a>
@@ -544,7 +544,7 @@ The feature id.
 
 #### Defined in
 
-[apply.js:42](https://github.com/openlayers/ol-mapbox-style/blob/10ed2a8/src/apply.js#L42)
+[apply.js:42](https://github.com/openlayers/ol-mapbox-style/blob/5ca3c3a/src/apply.js#L42)
 
 ___
 
@@ -556,7 +556,7 @@ The source id.
 
 #### Defined in
 
-[apply.js:43](https://github.com/openlayers/ol-mapbox-style/blob/10ed2a8/src/apply.js#L43)
+[apply.js:43](https://github.com/openlayers/ol-mapbox-style/blob/5ca3c3a/src/apply.js#L43)
 
 
 <a name="interfacestypesoptionsmd"></a>
@@ -585,7 +585,7 @@ Access token for 'mapbox://' urls.
 
 #### Defined in
 
-[apply.js:48](https://github.com/openlayers/ol-mapbox-style/blob/10ed2a8/src/apply.js#L48)
+[apply.js:48](https://github.com/openlayers/ol-mapbox-style/blob/5ca3c3a/src/apply.js#L48)
 
 ___
 
@@ -597,7 +597,7 @@ Access token param. For internal use.
 
 #### Defined in
 
-[apply.js:59](https://github.com/openlayers/ol-mapbox-style/blob/10ed2a8/src/apply.js#L59)
+[apply.js:59](https://github.com/openlayers/ol-mapbox-style/blob/5ca3c3a/src/apply.js#L59)
 
 ___
 
@@ -610,7 +610,7 @@ Only needed when working with non-standard tile grids or projections.
 
 #### Defined in
 
-[apply.js:55](https://github.com/openlayers/ol-mapbox-style/blob/10ed2a8/src/apply.js#L55)
+[apply.js:55](https://github.com/openlayers/ol-mapbox-style/blob/5ca3c3a/src/apply.js#L55)
 
 ___
 
@@ -623,7 +623,7 @@ as object, when they contain a relative sprite url.
 
 #### Defined in
 
-[apply.js:57](https://github.com/openlayers/ol-mapbox-style/blob/10ed2a8/src/apply.js#L57)
+[apply.js:57](https://github.com/openlayers/ol-mapbox-style/blob/5ca3c3a/src/apply.js#L57)
 
 ___
 
@@ -654,7 +654,7 @@ the returned request will be respected.
 
 #### Defined in
 
-[apply.js:49](https://github.com/openlayers/ol-mapbox-style/blob/10ed2a8/src/apply.js#L49)
+[apply.js:49](https://github.com/openlayers/ol-mapbox-style/blob/5ca3c3a/src/apply.js#L49)
 
 
 <a name="modulestypesmd"></a>
@@ -680,6 +680,6 @@ the returned request will be respected.
 
 #### Defined in
 
-[apply.js:62](https://github.com/openlayers/ol-mapbox-style/blob/10ed2a8/src/apply.js#L62)
+[apply.js:62](https://github.com/openlayers/ol-mapbox-style/blob/5ca3c3a/src/apply.js#L62)
 
 <!--apidoc end-->
