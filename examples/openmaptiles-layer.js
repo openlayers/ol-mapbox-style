@@ -1,6 +1,6 @@
 import 'ol/ol.css';
+import VectorTileLayer from 'ol/layer/VectorTile.js';
 import {Map, View} from 'ol';
-import {VectorTile} from 'ol/layer.js';
 import {applyBackground, applyStyle} from 'ol-mapbox-style';
 
 const baseUrl = 'https://api.maptiler.com/maps/basic/style.json';
@@ -18,7 +18,7 @@ if (!key) {
 }
 const styleUrl = baseUrl + '?key=' + key;
 
-const layer = new VectorTile({
+const layer = new VectorTileLayer({
   declutter: true,
 });
 applyStyle(layer, styleUrl);
