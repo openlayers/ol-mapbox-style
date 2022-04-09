@@ -87,7 +87,7 @@ const createConfig = (type) => ({
   },
   output: {
     path: path.resolve('./dist'), // Path of output file
-    filename: `olms.${type}`,
+    filename: type === 'js' ? 'olms.js' : 'index.js',
     library: {
       name: type === 'js' ? 'olms' : undefined,
       type: type === 'js' ? 'umd' : 'module',

@@ -299,7 +299,7 @@ export function recordStyleLayer(record) {
  * @return {StyleFunction} Style function for use in
  * `ol.layer.Vector` or `ol.layer.VectorTile`.
  */
-export default function (
+export function stylefunction(
   olLayer,
   glStyle,
   sourceOrLayers,

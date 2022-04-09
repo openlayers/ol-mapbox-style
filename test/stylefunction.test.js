@@ -11,7 +11,7 @@ import {
   recordStyleLayer,
   renderTransparent,
   setFeatureState,
-} from '../src/apply.js';
+} from '../src/index.js';
 
 describe('stylefunction', function () {
   describe('OpenLayers Style object creation', function () {

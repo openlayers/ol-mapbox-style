@@ -1,23 +1,16 @@
-import stylefunction, {
+export {
+  stylefunction,
   recordStyleLayer,
   renderTransparent,
 } from './stylefunction.js';
-import {
-  apply,
-  applyBackground,
-  applyStyle,
-  getFeatureState,
-  setFeatureState,
-} from './apply.js';
-
 export {
   apply as default,
   apply,
   applyBackground,
   applyStyle,
-  setFeatureState,
   getFeatureState,
-  stylefunction,
-  recordStyleLayer,
-  renderTransparent,
-};
+  setFeatureState,
+  getLayer,
+  getLayers,
+  getSource,
+} from './apply.js';

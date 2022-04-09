@@ -16,8 +16,9 @@ import VectorSource from 'ol/source/Vector.js';
 import VectorTileLayer from 'ol/layer/VectorTile.js';
 import VectorTileSource, {defaultLoadFunction} from 'ol/source/VectorTile.js';
 import View from 'ol/View.js';
-import applyStyleFunction, {
+import {
   _colorWithOpacity,
+  stylefunction as applyStyleFunction,
   getValue,
 } from './stylefunction.js';
 import {assign} from 'ol/obj.js';
@@ -37,31 +38,9 @@ import {
 } from './mapbox.js';
 
 /**
- * @param {string} styleUrl Style URL.
- * @param {Options} options Options.
- * @return {Options} Completed options with accessToken and accessTokenParam.
- */
-function completeOptions(styleUrl, options) {
-  if (!options.accessToken) {
-    options = assign({}, options);
-    const searchParams = new URL(styleUrl).searchParams;
-    // The last search parameter is the access token
-    searchParams.forEach((value, key) => {
-      options.accessToken = value;
-      options.accessTokenParam = key;
-    });
-  }
-  return options;
-}
-
-/**
  * @typedef {Object} FeatureIdentifier
  * @property {string|number} id The feature id.
  * @property {string} source The source id.
- */
-
-/**
- * @typedef {'Style'|'Source'|'Sprite'|'Tiles'|'GeoJSON'} ResourceType
  */
 
 /**
@@ -79,6 +58,28 @@ function completeOptions(styleUrl, options) {
  * as object, when they contain a relative sprite url.
  * @property {string} [accessTokenParam='access_token'] Access token param. For internal use.
  */
+
+/** @typedef {'Style'|'Source'|'Sprite'|'Tiles'|'GeoJSON'} ResourceType */
+/** @typedef {import("ol/layer/Layer").default} Layer */
+/** @typedef {import("ol/source/Source").default} Source */
+
+/**
+ * @param {string} styleUrl Style URL.
+ * @param {Options} options Options.
+ * @return {Options} Completed options with accessToken and accessTokenParam.
+ */
+function completeOptions(styleUrl, options) {
+  if (!options.accessToken) {
+    options = assign({}, options);
+    const searchParams = new URL(styleUrl).searchParams;
+    // The last search parameter is the access token
+    searchParams.forEach((value, key) => {
+      options.accessToken = value;
+      options.accessTokenParam = key;
+    });
+  }
+  return options;
+}
 
 /**
  * ```js
@@ -1026,16 +1027,4 @@ export function getFeatureState(mapOrLayer, feature) {
   return null;
 }
 
-export {
-  default as stylefunction,
-  recordStyleLayer,
-  renderTransparent,
-} from './stylefunction.js';
-
 export {finalizeLayer as _finalizeLayer};
-
-/**
- * @typedef {import("ol/layer/Layer").default} Layer
- * @typedef {import("ol/source/Source").default} Source
- * @private
- */
