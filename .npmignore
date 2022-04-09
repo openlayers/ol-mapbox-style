@@ -2,6 +2,7 @@
 .git/
 .github/
 coverage/
+docs/
 examples/
 test/
 .editorconfig
