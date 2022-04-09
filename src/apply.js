@@ -82,10 +82,6 @@ function completeOptions(styleUrl, options) {
 }
 
 /**
- * ```js
- * import {applyStyle} from 'ol-mapbox-style';
- * ```
- *
  * Applies a style function to an `ol/layer/VectorTile` or `ol/layer/Vector`
  * with an `ol/source/VectorTile` or an `ol/source/Vector`. If the layer does not have a source
  * yet, it will be created and populated from the information in the `glStyle`.
@@ -425,9 +421,9 @@ function setFirstBackground(mapOrLayer, glStyle) {
 }
 
 /**
- * ```js
- * import {applyBackground} from 'ol-mapbox-style';
- * ```
+ * Applies properties of the Mapbox Style's first `background` layer to the
+ * provided map or VectorTile layer.
+ *
  * **Example:**
  * ```js
  * import {applyBackground} from 'ol-mapbox-style';
@@ -436,8 +432,6 @@ function setFirstBackground(mapOrLayer, glStyle) {
  * const map = new Map({target: 'map'});
  * applyBackground(map, 'https://api.maptiler.com/maps/basic/style.json?key=YOUR_OPENMAPTILES_TOKEN');
  * ```
- * Applies properties of the Mapbox Style's first `background` layer to the
- * provided map or VectorTile layer.
  * @param {Map|VectorTileLayer} mapOrLayer OpenLayers Map or VectorTile layer.
  * @param {Object|string} glStyle Mapbox Style object or url.
  * @param {Options} [options] Options.
@@ -726,10 +720,6 @@ function processStyle(glStyle, map, styleUrl, options) {
 }
 
 /**
- * ```js
- * import apply from 'ol-mapbox-style';
- * ```
- *
  * Loads and applies a Mapbox Style object into an OpenLayers Map. This includes
  * the map background, the layers, the center and the zoom.
  *
@@ -913,9 +903,6 @@ function finalizeLayer(layer, layerIds, glStyle, styleUrl, map, options = {}) {
 }
 
 /**
- * ```js
- * import {getLayer} from 'ol-mapbox-style';
- * ```
  * Get the OpenLayers layer instance that contains the provided Mapbox Style
  * `layer`. Note that multiple Mapbox Style layers are combined in a single
  * OpenLayers layer instance when they use the same Mapbox Style `source`.
@@ -934,9 +921,6 @@ export function getLayer(map, layerId) {
 }
 
 /**
- * ```js
- * import {getLayers} from 'ol-mapbox-style';
- * ```
  * Get the OpenLayers layer instances for the provided Mapbox Style `source`.
  * @param {Map} map OpenLayers Map.
  * @param {string} sourceId Mapbox Style source id.
@@ -954,9 +938,6 @@ export function getLayers(map, sourceId) {
 }
 
 /**
- * ```js
- * import {getSource} from 'ol-mapbox-style';
- * ```
  * Get the OpenLayers source instance for the provided Mapbox Style `source`.
  * @param {Map} map OpenLayers Map.
  * @param {string} sourceId Mapbox Style source id.
