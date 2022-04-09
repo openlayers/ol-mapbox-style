@@ -131,6 +131,8 @@ Type: [Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Globa
     type as arguments, this function is supposed to return a `Request` object. Without a return value,
     the original request will not be modified. For `Tiles` and `GeoJSON` resources, only the `url` of
     the returned request will be respected.
+*   `resolutions` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)>?** Resolutions for mapping resolution to zoom level.
+    Only needed when working with non-standard tile grids or projections.
 *   `styleUrl` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** URL of the Mapbox GL style. Required for styles that were provided
     as object, when they contain a relative sprite url.
 *   `accessTokenParam` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** Access token param. For internal use.
@@ -178,12 +180,12 @@ Two additional properties will be set on the provided layer:
 *   `sourceOrLayers` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>)?** `source` key or an array of layer `id`s from the
     Mapbox Style object. When a `source` key is provided, all layers for the
     specified source will be included in the style function. When layer `id`s
-    are provided, they must be from layers that use the same source. When not provided, all
-    layers using the first source specified in the glStyle will be rendered.
+    are provided, they must be from layers that use the same source. When not provided or a falsey
+    value, all layers using the first source specified in the glStyle will be rendered.
 *   `optionsOrPath` **([Options](#options) | [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String))** Options. Alternatively the path of the style file
     (only required when a relative path is used for the `"sprite"` property of the style). (optional, default `{}`)
-*   `resolutions` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)>** Resolutions for mapping resolution to zoom level.
-    Only needed when working with non-standard tile grids or projections. (optional, default `undefined`)
+*   `resolutions` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)>?** Resolutions for mapping resolution to zoom level.
+    Only needed when working with non-standard tile grids or projections.
 
 Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** Promise which will be resolved when the style can be used
 for rendering.

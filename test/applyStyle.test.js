@@ -174,6 +174,48 @@ describe('applyStyle with source creation', function () {
   });
 });
 
+describe('maxResolution', function () {
+  const glStyle = {
+    version: 8,
+    sources: {
+      'foo': {
+        tiles: ['/fixtures/{z}-{x}-{y}.vector.pbf'],
+        type: 'vector',
+        minzoom: 6,
+      },
+    },
+    layers: [],
+  };
+
+  it('accepts minZoom from configuration', function (done) {
+    const layer = new VectorTileLayer({
+      minZoom: 5,
+    });
+    applyStyle(layer, glStyle)
+      .then(function () {
+        should(layer.getMaxResolution()).equal(Infinity);
+        done();
+      })
+      .catch(function (e) {
+        done(e);
+      });
+  });
+
+  it('uses minZoom from source', function (done) {
+    const layer = new VectorTileLayer();
+    applyStyle(layer, glStyle)
+      .then(function () {
+        should(layer.getMaxResolution()).equal(
+          layer.getSource().getTileGrid().getResolution(6)
+        );
+        done();
+      })
+      .catch(function (e) {
+        done(e);
+      });
+  });
+});
+
 describe('applyStyle style argument validation', function () {
   const source = 'openmaptiles';
   const layer = new VectorTileLayer();

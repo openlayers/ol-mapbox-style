@@ -225,8 +225,17 @@ export function applyStyle(
                     source.getProjection()
                   )
                 ) {
-                  targetSource.tileGrid = source.tileGrid;
+                  targetSource.tileGrid = source.getTileGrid();
                 }
+              }
+              if (
+                !isFinite(layer.getMaxResolution()) &&
+                !isFinite(layer.getMinZoom())
+              ) {
+                const tileGrid = layer.getSource().getTileGrid();
+                layer.setMaxResolution(
+                  tileGrid.getResolution(tileGrid.getMinZoom())
+                );
               }
             });
           } else {
