@@ -23,7 +23,7 @@ describe('applyStyle with source creation', function () {
       try {
         should(layer.getSource()).be.an.instanceOf(VectorSource);
         should(layer.getSource().getUrl()).equal(
-          'http://localhost:9876/fixtures/states.geojson'
+          `${location.origin}/fixtures/states.geojson`
         );
         should(layer.getStyle()).be.an.instanceOf(Function);
         done();
@@ -45,7 +45,7 @@ describe('applyStyle with source creation', function () {
       try {
         should(layer.getSource()).be.an.instanceOf(VectorSource);
         should(layer.getSource().getUrl()).equal(
-          'http://localhost:9876/fixtures/states.geojson?foo=bar'
+          `${location.origin}/fixtures/states.geojson?foo=bar`
         );
         should(layer.getStyle()).be.an.instanceOf(Function);
         done();
@@ -54,36 +54,36 @@ describe('applyStyle with source creation', function () {
       }
     });
   });
-  it('uses source options from the transformRequest option', function (done) {
-    const layer = new VectorLayer();
-    let loader;
-    applyStyle(layer, '/fixtures/geojson.json', 'states', {
-      transformRequest: function (url, type) {
-        if (type === 'GeoJSON') {
-          loader = function (extent, resolution, projection, success, failure) {
-            fetch(url)
-              .then((response) => {
-                response.json().then((json) => {
-                  const features = this.getFormat().readFeatures(json, {
-                    featureProjection: projection,
-                  });
-                  success(features);
-                });
-              })
-              .catch((error) => {
-                failure(error);
-              });
-          };
-          return {
-            loader: loader,
-          };
-        }
-        return new Request(url);
-      },
-    }).then(function () {
+  it('respects source options from layer config', function (done) {
+    const source = new VectorSource();
+    const layer = new VectorLayer({
+      source: source,
+    });
+    const loader = function (extent, resolution, projection, success, failure) {
+      fetch(/** @type {string} */ (layer.getSource().getUrl()))
+        .then((response) => {
+          response.json().then((json) => {
+            const features = this.getFormat().readFeatures(json, {
+              featureProjection: projection,
+            });
+            success(
+              /** @type {Array<import("ol/Feature").default>} */ (features)
+            );
+          });
+        })
+        .catch((error) => {
+          failure();
+        });
+    };
+    layer.getSource().setLoader(loader);
+
+    applyStyle(layer, '/fixtures/geojson.json', 'states').then(function () {
       try {
-        should(layer.getSource()).be.an.instanceOf(VectorSource);
-        should(layer.getSource().getUrl()).equal(undefined);
+        should(layer.getSource()).equal(source);
+        should(layer.getSource().getUrl()).equal(
+          `${location.origin}/fixtures/states.geojson`
+        );
+        //@ts-ignore
         should(layer.getSource().loader_).equal(loader);
         should(layer.getStyle()).be.an.instanceOf(Function);
         done();
@@ -99,7 +99,7 @@ describe('applyStyle with source creation', function () {
         try {
           should(layer.getSource()).be.an.instanceOf(VectorTileSource);
           should(layer.getSource().getUrls()[0]).equal(
-            'http://localhost:9876/fixtures/osm-liberty/tiles/v3/{z}/{x}/{y}.pbf'
+            `${location.origin}/fixtures/osm-liberty/tiles/v3/{z}/{x}/{y}.pbf`
           );
           should(layer.getStyle()).be.an.instanceOf(Function);
           done();
@@ -125,7 +125,7 @@ describe('applyStyle with source creation', function () {
         try {
           should(layer.getSource()).be.an.instanceOf(VectorTileSource);
           should(layer.getSource().getUrls()[0]).equal(
-            'http://localhost:9876/fixtures/osm-liberty/tiles/v3/{z}/{x}/{y}.pbf?foo=bar'
+            `${location.origin}/fixtures/osm-liberty/tiles/v3/{z}/{x}/{y}.pbf?foo=bar`
           );
           should(layer.getStyle()).be.an.instanceOf(Function);
           done();
@@ -137,44 +137,78 @@ describe('applyStyle with source creation', function () {
         done(e);
       });
   });
-  it('uses source options from the transformRequest option', function (done) {
-    const layer = new VectorTileLayer();
-    let tileLoadFunction;
-    applyStyle(layer, '/fixtures/osm-liberty/style.json', 'openmaptiles', {
-      transformRequest(url, type) {
-        if (type === 'Tiles') {
-          tileLoadFunction = function (tile, url) {
-            tile.setLoader(function (extent, resolution, projection) {
-              fetch(url + '?foo=bar').then(function (response) {
-                response.arrayBuffer().then(function (data) {
-                  const format = tile.getFormat();
-                  const features = format.readFeatures(data, {
-                    extent: extent,
-                    featureProjection: projection,
-                  });
-                  tile.setFeatures(features);
-                });
-              });
+  it('respects source options from layer config', function (done) {
+    const source = new VectorTileSource({});
+    const layer = new VectorTileLayer({
+      source: source,
+    });
+    const loader = function (tile, url) {
+      tile.setLoader(function (extent, resolution, projection) {
+        fetch(url + '?foo=bar').then(function (response) {
+          response.arrayBuffer().then(function (data) {
+            const format = tile.getFormat();
+            const features = format.readFeatures(data, {
+              extent: extent,
+              featureProjection: projection,
             });
-          };
-          return {
-            tileLoadFunction: tileLoadFunction,
-          };
-        }
-        return new Request(url);
-      },
-    })
+            tile.setFeatures(features);
+          });
+        });
+      });
+    };
+    layer.getSource().setTileLoadFunction(loader);
+    applyStyle(layer, '/fixtures/osm-liberty/style.json', 'openmaptiles')
       .then(function () {
         try {
-          should(layer.getSource()).be.an.instanceOf(VectorTileSource);
-          should(layer.getSource().getTileLoadFunction()).equal(
-            tileLoadFunction
-          );
+          should(layer.getSource()).equal(source);
+          should(layer.getSource().getTileLoadFunction()).equal(loader);
           should(layer.getStyle()).be.an.instanceOf(Function);
           done();
         } catch (e) {
           done(e);
         }
+      })
+      .catch(function (e) {
+        done(e);
+      });
+  });
+});
+
+describe('maxResolution', function () {
+  const glStyle = {
+    version: 8,
+    sources: {
+      'foo': {
+        tiles: ['/fixtures/{z}-{x}-{y}.vector.pbf'],
+        type: 'vector',
+        minzoom: 6,
+      },
+    },
+    layers: [],
+  };
+
+  it('accepts minZoom from configuration', function (done) {
+    const layer = new VectorTileLayer({
+      minZoom: 5,
+    });
+    applyStyle(layer, glStyle)
+      .then(function () {
+        should(layer.getMaxResolution()).equal(Infinity);
+        done();
+      })
+      .catch(function (e) {
+        done(e);
+      });
+  });
+
+  it('uses minZoom from source', function (done) {
+    const layer = new VectorTileLayer();
+    applyStyle(layer, glStyle)
+      .then(function () {
+        should(layer.getMaxResolution()).equal(
+          layer.getSource().getTileGrid().getResolution(6)
+        );
+        done();
       })
       .catch(function (e) {
         done(e);

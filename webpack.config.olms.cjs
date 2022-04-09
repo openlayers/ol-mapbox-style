@@ -18,7 +18,6 @@ const externals = {
   'ol/Map.js': 'ol.Map',
   'ol/View.js': 'ol.View',
   'ol/Observable.js': 'ol.Observable',
-  'ol/layer/MapboxVector.js': 'ol.layer.MapboxVector',
   'ol/layer/Tile.js': 'ol.layer.Tile',
   'ol/layer/Vector.js': 'ol.layer.Vector',
   'ol/layer/VectorTile.js': 'ol.layer.VectorTile',
@@ -100,9 +99,12 @@ const createConfig = (type) => ({
     },
   },
   externals: createExternals(),
-  experiments: {
-    outputModule: type === 'es.js',
-  },
 });
 
-module.exports = [createConfig('js'), createConfig('es.js')];
+module.exports = [
+  createConfig('js'),
+  Object.assign(createConfig('es.js'), {
+    experiments: {outputModule: true},
+    optimization: {minimize: false},
+  }),
+];

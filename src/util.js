@@ -1,5 +1,5 @@
 import {assign} from 'ol/obj.js';
-import {normalizeSourceUrl, normalizeStyleUrl} from 'ol/layer/MapboxVector.js';
+import {normalizeSourceUrl, normalizeStyleUrl} from './mapbox.js';
 
 export function deg2rad(degrees) {
   return (degrees * Math.PI) / 180;
@@ -56,7 +56,7 @@ export function fetchResource(resourceType, url, options = {}) {
     return pendingRequests[url];
   } else {
     const request = options.transformRequest
-      ? options.transformRequest(url, resourceType)
+      ? options.transformRequest(url, resourceType) || new Request(url)
       : new Request(url);
     const pendingRequest = fetch(request)
       .then(function (response) {
@@ -136,9 +136,6 @@ export function getTileJson(glSource, styleUrl, options = {}) {
                 );
                 if (transformedRequest instanceof Request) {
                   normalizedTileUrl = decodeURI(transformedRequest.url);
-                } else {
-                  tileJson.olSourceOptions = transformedRequest;
-                  break;
                 }
               }
               tileJson.tiles[i] = normalizedTileUrl;

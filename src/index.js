@@ -14,7 +14,7 @@ import TileLayer from 'ol/layer/Tile.js';
 import VectorLayer from 'ol/layer/Vector.js';
 import VectorSource from 'ol/source/Vector.js';
 import VectorTileLayer from 'ol/layer/VectorTile.js';
-import VectorTileSource from 'ol/source/VectorTile.js';
+import VectorTileSource, {defaultLoadFunction} from 'ol/source/VectorTile.js';
 import View from 'ol/View.js';
 import applyStyleFunction, {
   _colorWithOpacity,
@@ -28,13 +28,13 @@ import {
   getGlStyle,
   getTileJson,
 } from './util.js';
-import {fromLonLat, getUserProjection} from 'ol/proj.js';
+import {equivalent, fromLonLat, getUserProjection} from 'ol/proj.js';
 import {getFonts} from './text.js';
 import {
   normalizeSourceUrl,
   normalizeSpriteUrl,
   normalizeStyleUrl,
-} from 'ol/layer/MapboxVector.js';
+} from './mapbox.js';
 
 /**
  * @param {string} styleUrl Style URL.
@@ -67,13 +67,14 @@ function completeOptions(styleUrl, options) {
 /**
  * @typedef {Object} Options
  * @property {string} [accessToken] Access token for 'mapbox://' urls.
- * @property {function(string, ResourceType): (Request|Object)} [transformRequest]
+ * @property {function(string, ResourceType): (Request|void)} [transformRequest]
  * Function for controlling how `ol-mapbox-style` fetches resources. Can be used for modifying
  * the url, adding headers or setting credentials options. Called with the url and the resource
- * type as arguments, this function is supposed to return a `Request` object. For `Tiles` and `GeoJSON`
- * resources, only the `url` of the returned request will be respected. To make more complex transforms
- * for those, you can return options for an `ol/source/VectorTile` or `ol/source/XYZ` (`Tiles` resource)
- * an `ol/source/Vector` (`GeoJSON` resource) instead of a `Request'.
+ * type as arguments, this function is supposed to return a `Request` object. Without a return value,
+ * the original request will not be modified. For `Tiles` and `GeoJSON` resources, only the `url` of
+ * the returned request will be respected.
+ * @property {Array<number>} [resolutions] Resolutions for mapping resolution to zoom level.
+ * Only needed when working with non-standard tile grids or projections.
  * @property {string} [styleUrl] URL of the Mapbox GL style. Required for styles that were provided
  * as object, when they contain a relative sprite url.
  * @property {string} [accessTokenParam='access_token'] Access token param. For internal use.
@@ -110,16 +111,19 @@ function completeOptions(styleUrl, options) {
  *  * `mapbox-layers`: The `id`s of the Mapbox Style document's layers that are
  *    included in the OpenLayers layer.
  *
- * @param {VectorTileLayer|VectorLayer} layer OpenLayers layer.
+ * @param {VectorTileLayer|VectorLayer} layer OpenLayers layer. When the layer has a source configured,
+ * it will be modified to use the configuration from the glStyle's `source`. Options specified on the
+ * layer's source will override those from the glStyle's `source`, except for `url`,
+ * `tileUrlFunction` and `tileGrid` (exception: when the source projection is not `EPSG:3857`).
  * @param {string|Object} glStyle Mapbox Style object.
  * @param {string|Array<string>} [sourceOrLayers] `source` key or an array of layer `id`s from the
  * Mapbox Style object. When a `source` key is provided, all layers for the
  * specified source will be included in the style function. When layer `id`s
- * are provided, they must be from layers that use the same source. When not provided, all
- * layers using the first layer's source will be rendered.
+ * are provided, they must be from layers that use the same source. When not provided or a falsey
+ * value, all layers using the first source specified in the glStyle will be rendered.
  * @param {Options|string} [optionsOrPath={}] Options. Alternatively the path of the style file
  * (only required when a relative path is used for the `"sprite"` property of the style).
- * @param {Array<number>} [resolutions=undefined] Resolutions for mapping resolution to zoom level.
+ * @param {Array<number>} [resolutions] Resolutions for mapping resolution to zoom level.
  * Only needed when working with non-standard tile grids or projections.
  * @return {Promise} Promise which will be resolved when the style can be used
  * for rendering.
@@ -149,7 +153,9 @@ export function applyStyle(
     styleUrl = glStyle;
   }
   if (styleUrl) {
-    styleUrl = normalizeStyleUrl(styleUrl, options.accessToken);
+    styleUrl = styleUrl.startsWith('data:')
+      ? location.href
+      : normalizeStyleUrl(styleUrl, options.accessToken);
     options = completeOptions(styleUrl, options);
   }
 
@@ -172,13 +178,12 @@ export function applyStyle(
 
         const type = layer instanceof VectorTileLayer ? 'vector' : 'geojson';
         if (!sourceOrLayers) {
-          const glLayer = glStyle.layers.find(function (layer) {
-            return layer.source && glStyle.sources[layer.source].type === type;
+          sourceId = Object.keys(glStyle.sources).find(function (key) {
+            return glStyle.sources[key].type === type;
           });
-          if (!glLayer) {
+          if (!sourceId) {
             return reject(new Error(`No ${type} source found in the glStyle.`));
           }
-          sourceId = glLayer.source;
         } else if (Array.isArray(sourceOrLayers)) {
           sourceId = glStyle.layers.find(function (layer) {
             return layer.id === sourceOrLayers[0];
@@ -188,22 +193,74 @@ export function applyStyle(
         }
 
         function assignSource() {
-          if (!layer.getSource()) {
-            if (layer instanceof VectorTileLayer) {
-              return setupVectorSource(
-                glStyle.sources[sourceId],
-                styleUrl,
-                options
-              ).then(function (source) {
+          if (layer instanceof VectorTileLayer) {
+            return setupVectorSource(
+              glStyle.sources[sourceId],
+              styleUrl,
+              options
+            ).then(function (source) {
+              const targetSource = layer.getSource();
+              if (!targetSource) {
                 layer.setSource(source);
-              });
-            } else {
-              layer.setSource(
-                setupGeoJSONSource(glStyle.sources[sourceId], styleUrl, options)
-              );
-              return Promise.resolve();
-            }
+              } else if (source !== targetSource) {
+                targetSource.setTileUrlFunction(source.getTileUrlFunction());
+                //@ts-ignore
+                if (!targetSource.format_) {
+                  //@ts-ignore
+                  targetSource.format_ = source.format_;
+                }
+                if (!targetSource.getAttributions()) {
+                  targetSource.setAttributions(source.getAttributions());
+                }
+                if (
+                  targetSource.getTileLoadFunction() === defaultLoadFunction
+                ) {
+                  targetSource.setTileLoadFunction(
+                    source.getTileLoadFunction()
+                  );
+                }
+                if (
+                  equivalent(
+                    targetSource.getProjection(),
+                    source.getProjection()
+                  )
+                ) {
+                  targetSource.tileGrid = source.getTileGrid();
+                }
+              }
+              if (
+                !isFinite(layer.getMaxResolution()) &&
+                !isFinite(layer.getMinZoom())
+              ) {
+                const tileGrid = layer.getSource().getTileGrid();
+                layer.setMaxResolution(
+                  tileGrid.getResolution(tileGrid.getMinZoom())
+                );
+              }
+            });
           } else {
+            const source = setupGeoJSONSource(
+              glStyle.sources[sourceId],
+              styleUrl,
+              options
+            );
+            const targetSource = /** @type {VectorSource} */ (
+              layer.getSource()
+            );
+            if (!targetSource) {
+              layer.setSource(source);
+            } else if (source !== targetSource) {
+              if (!targetSource.getAttributions()) {
+                targetSource.setAttributions(source.getAttributions());
+              }
+              //@ts-ignore
+              if (!targetSource.format_) {
+                //@ts-ignore
+                targetSource.format_ = source.getFormat();
+              }
+              //@ts-ignore
+              targetSource.url_ = source.getUrl();
+            }
             return Promise.resolve();
           }
         }
@@ -493,7 +550,6 @@ function setupRasterLayer(glSource, styleUrl, options) {
       const tileSize = glSource.tileSize || tileJson.tileSize || 512;
       const minZoom = tileJson.minzoom || 0;
       const maxZoom = tileJson.maxzoom || 22;
-      // Only works when using ES modules
       //@ts-ignore
       source.tileGrid = new TileGrid({
         origin: tileGrid.getOrigin(0),
@@ -505,17 +561,14 @@ function setupRasterLayer(glSource, styleUrl, options) {
         }).getResolutions(),
         tileSize: tileSize,
       });
-      source.setTileLoadFunction(function (tile, src) {
+      const getTileUrl = source.getTileUrlFunction();
+      source.setTileUrlFunction(function (tileCoord, pixelRatio, projection) {
+        let src = getTileUrl(tileCoord, pixelRatio, projection);
         if (src.indexOf('{bbox-epsg-3857}') != -1) {
-          const bbox = source
-            .getTileGrid()
-            .getTileCoordExtent(tile.getTileCoord());
+          const bbox = source.getTileGrid().getTileCoordExtent(tileCoord);
           src = src.replace('{bbox-epsg-3857}', bbox.toString());
         }
-        const img = /** @type {import("ol/ImageTile").default} */ (
-          tile
-        ).getImage();
-        /** @type {HTMLImageElement} */ (img).src = src;
+        return src;
       });
       layer.setSource(source);
     })
@@ -546,9 +599,6 @@ function setupGeoJSONSource(glSource, styleUrl, options) {
       const transformed = options.transformRequest(geoJsonUrl, 'GeoJSON');
       if (transformed instanceof Request) {
         geoJsonUrl = encodeURI(transformed.url);
-      } else {
-        assign(sourceOptions, transformed);
-        geoJsonUrl = undefined;
       }
     }
     sourceOptions.url = geoJsonUrl;
@@ -735,7 +785,9 @@ export default function olms(map, style, options = {}) {
   }
 
   if (typeof style === 'string') {
-    const styleUrl = normalizeStyleUrl(style, options.accessToken);
+    const styleUrl = style.startsWith('data:')
+      ? location.href
+      : normalizeStyleUrl(style, options.accessToken);
     options = completeOptions(styleUrl, options);
 
     promise = new Promise(function (resolve, reject) {

@@ -126,12 +126,13 @@ Type: [Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Globa
 #### Properties
 
 *   `accessToken` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** Access token for 'mapbox://' urls.
-*   `transformRequest` **function ([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), [ResourceType](#resourcetype)): ([Request](https://developer.mozilla.org/Add-ons/SDK/High-Level_APIs/request) | [Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object))?** Function for controlling how `ol-mapbox-style` fetches resources. Can be used for modifying
+*   `transformRequest` **function ([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), [ResourceType](#resourcetype)): ([Request](https://developer.mozilla.org/Add-ons/SDK/High-Level_APIs/request) | void)?** Function for controlling how `ol-mapbox-style` fetches resources. Can be used for modifying
     the url, adding headers or setting credentials options. Called with the url and the resource
-    type as arguments, this function is supposed to return a `Request` object. For `Tiles` and `GeoJSON`
-    resources, only the `url` of the returned request will be respected. To make more complex transforms
-    for those, you can return options for an `ol/source/VectorTile` or `ol/source/XYZ` (`Tiles` resource)
-    an `ol/source/Vector` (`GeoJSON` resource) instead of a \`Request'.
+    type as arguments, this function is supposed to return a `Request` object. Without a return value,
+    the original request will not be modified. For `Tiles` and `GeoJSON` resources, only the `url` of
+    the returned request will be respected.
+*   `resolutions` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)>?** Resolutions for mapping resolution to zoom level.
+    Only needed when working with non-standard tile grids or projections.
 *   `styleUrl` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** URL of the Mapbox GL style. Required for styles that were provided
     as object, when they contain a relative sprite url.
 *   `accessTokenParam` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** Access token param. For internal use.
@@ -171,17 +172,20 @@ Two additional properties will be set on the provided layer:
 
 #### Parameters
 
-*   `layer` **(VectorTileLayer | VectorLayer)** OpenLayers layer.
+*   `layer` **(VectorTileLayer | VectorLayer)** OpenLayers layer. When the layer has a source configured,
+    it will be modified to use the configuration from the glStyle's `source`. Options specified on the
+    layer's source will override those from the glStyle's `source`, except for `url`,
+    `tileUrlFunction` and `tileGrid` (exception: when the source projection is not `EPSG:3857`).
 *   `glStyle` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object))** Mapbox Style object.
 *   `sourceOrLayers` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>)?** `source` key or an array of layer `id`s from the
     Mapbox Style object. When a `source` key is provided, all layers for the
     specified source will be included in the style function. When layer `id`s
-    are provided, they must be from layers that use the same source. When not provided, all
-    layers using the first layer's source will be rendered.
+    are provided, they must be from layers that use the same source. When not provided or a falsey
+    value, all layers using the first source specified in the glStyle will be rendered.
 *   `optionsOrPath` **([Options](#options) | [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String))** Options. Alternatively the path of the style file
     (only required when a relative path is used for the `"sprite"` property of the style). (optional, default `{}`)
-*   `resolutions` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)>** Resolutions for mapping resolution to zoom level.
-    Only needed when working with non-standard tile grids or projections. (optional, default `undefined`)
+*   `resolutions` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)>?** Resolutions for mapping resolution to zoom level.
+    Only needed when working with non-standard tile grids or projections.
 
 Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** Promise which will be resolved when the style can be used
 for rendering.
@@ -266,7 +270,7 @@ sure that sprite image loading works:
     for the layer, and `mapbox-layers` will be an array of the `id`s of the
     `glStyle`'s layers.
 *   `glStyle` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object))** Mapbox Style object.
-*   `source` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>)** `source` key or an array of layer `id`s
+*   `sourceOrLayers` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>)** `source` key or an array of layer `id`s
     from the Mapbox Style object. When a `source` key is provided, all layers for
     the specified source will be included in the style function. When layer `id`s
     are provided, they must be from layers that use the same source.
