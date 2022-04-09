@@ -99,9 +99,12 @@ const createConfig = (type) => ({
     },
   },
   externals: createExternals(),
-  experiments: {
-    outputModule: type === 'es.js',
-  },
 });
 
-module.exports = [createConfig('js'), createConfig('es.js')];
+module.exports = [
+  createConfig('js'),
+  Object.assign(createConfig('es.js'), {
+    experiments: {outputModule: true},
+    optimization: {minimize: false},
+  }),
+];
