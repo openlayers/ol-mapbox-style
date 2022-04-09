@@ -45,7 +45,7 @@ function createExternals() {
  * @return {Object} Webpack config.
  */
 const createConfig = (type) => ({
-  entry: './src/olms.js',
+  entry: './src/index.js',
   devtool: 'source-map',
   mode: 'production',
   module: {

@@ -14,7 +14,7 @@ import styleInvalidVersion from './fixtures/style-invalid-version.json';
 import styleMissingSprite from './fixtures/style-missing-sprite.json';
 
 import VectorSource from 'ol/source/Vector.js';
-import {applyStyle} from '../src/index.js';
+import {applyStyle} from '../src/apply.js';
 
 describe('applyStyle with source creation', function () {
   it('configures vector layer with source and style', function (done) {
@@ -83,7 +83,6 @@ describe('applyStyle with source creation', function () {
         should(layer.getSource().getUrl()).equal(
           `${location.origin}/fixtures/states.geojson`
         );
-        //@ts-ignore
         should(layer.getSource().loader_).equal(loader);
         should(layer.getStyle()).be.an.instanceOf(Function);
         done();

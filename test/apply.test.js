@@ -7,7 +7,8 @@ import View from 'ol/View.js';
 import backgroundNoneStyle from './fixtures/background-none.json';
 import backgroundStyle from './fixtures/background.json';
 import brightV9 from 'mapbox-gl-styles/styles/bright-v9.json';
-import olms, {
+import should from 'should';
+import {
   apply,
   applyBackground,
   getFeatureState,
@@ -15,14 +16,13 @@ import olms, {
   getLayers,
   getSource,
   setFeatureState,
-} from '../src/index.js';
-import should from 'should';
+} from '../src/apply.js';
 import {defaultResolutions} from '../src/util.js';
 import {toLonLat} from 'ol/proj.js';
 delete brightV9.sprite;
 
 describe('ol-mapbox-style', function () {
-  describe('olms', function () {
+  describe('apply', function () {
     let target;
 
     beforeEach(function () {
@@ -30,7 +30,7 @@ describe('ol-mapbox-style', function () {
     });
 
     it('called with a url, returns a promise which resolves with an ol.Map as argument', function (done) {
-      olms(target, './fixtures/hot-osm/hot-osm.json')
+      apply(target, './fixtures/hot-osm/hot-osm.json')
         .then(function (map) {
           should(map).be.instanceof(Map);
           map.setTarget(undefined);
@@ -46,7 +46,7 @@ describe('ol-mapbox-style', function () {
         response.json().then(function (json) {
           json.sources.osm.url = 'invalid';
 
-          olms(target, json)
+          apply(target, json)
             .then(function (map) {
               should(map).be.instanceof(Map);
               done(new Error('Should not resolve'));
@@ -62,7 +62,7 @@ describe('ol-mapbox-style', function () {
     });
 
     it('supports feature-state (map)', function () {
-      return olms(target, './fixtures/hot-osm/hot-osm.json').then(function (
+      return apply(target, './fixtures/hot-osm/hot-osm.json').then(function (
         map
       ) {
         setFeatureState(map, {id: '1', source: 'osm'}, {hover: true});
@@ -71,88 +71,19 @@ describe('ol-mapbox-style', function () {
         });
       });
     });
-  });
 
-  describe('applyBackground', function () {
-    it('applies a background to a map container', function () {
-      const target = document.createElement('div');
-      target.style.width = '100px';
-      target.style.height = '100px';
-      const map = new Map({target: target});
-      applyBackground(map, backgroundStyle);
-      should(target.style.backgroundColor).be.exactly('rgb(248, 244, 240)');
-      should(target.style.opacity).be.eql('0.75');
-    });
-    it('applies a background to a layer', function () {
-      const layer = new VectorTileLayer({
-        source: new VectorTileSource({}),
-      });
-      if (typeof layer.setBackground !== 'function') {
-        layer.setBackground = function (background) {
-          layer.background = background;
-        };
-        layer.getBackground = function () {
-          return layer.background;
-        };
-      }
-      applyBackground(layer, backgroundStyle);
-      should(layer.getBackground()(1)).be.exactly('rgba(248,244,240,0.75)');
-    });
-    it('ignores background if layout: none (with map container)', function () {
-      const target = document.createElement('div');
-      target.style.width = '100px';
-      target.style.height = '100px';
-      const map = new Map({target: target});
-      applyBackground(map, backgroundNoneStyle);
-      should(target.style.backgroundColor).be.exactly('');
-      should(target.style.opacity).be.eql('');
-    });
-    it('ignores background if layout: none (with a layer)', function () {
-      const layer = new VectorTileLayer({
-        source: new VectorTileSource({}),
-      });
-      if (typeof layer.setBackground !== 'function') {
-        layer.setBackground = function (background) {
-          layer.background = background;
-        };
-        layer.getBackground = function () {
-          return layer.background;
-        };
-      }
-      applyBackground(layer, backgroundNoneStyle);
-      should(layer.getBackground()(1)).be.undefined();
-    });
-    it('works with a glStyle url', function (done) {
-      const target = document.createElement('div');
-      target.style.width = '100px';
-      target.style.height = '100px';
-      const map = new Map({target: target});
-      applyBackground(map, './fixtures/background.json').then(function () {
-        should(target.style.backgroundColor).be.exactly('rgb(248, 244, 240)');
-        should(target.style.opacity).be.eql('0.75');
-        done();
-      });
-    });
-  });
-
-  describe('apply', function () {
-    let target;
-    beforeEach(function () {
-      target = document.createElement('div');
-    });
-
-    it('returns a map instance and adds a layer with a style function', function (done) {
-      const map = apply(target, brightV9);
-      should(map).be.instanceof(Map);
-
-      map.getLayers().once('add', function () {
-        should(map.getLayers().item(0).getStyle()).be.a.Function();
+    it('adds a layer with a style function', function (done) {
+      apply(target, brightV9).then(function (map) {
+        should(map).be.instanceof(Map);
+        const layer = map.getLayers().item(0);
+        should(layer).be.instanceof(VectorTileLayer);
+        should(layer.getStyle()).be.a.Function();
         done();
       });
     });
 
     it('handles raster sources', function (done) {
-      olms(target, './fixtures/wms.json')
+      apply(target, './fixtures/wms.json')
         .then(function (map) {
           const osm = map.getLayers().item(0);
           const wms = map.getLayers().item(1);
@@ -184,9 +115,8 @@ describe('ol-mapbox-style', function () {
     });
 
     it('handles geojson sources', function (done) {
-      const map = apply(target, './fixtures/geojson.json');
-      map.getLayers().once('add', function (e) {
-        const layer = e.element;
+      apply(target, './fixtures/geojson.json').then(function (map) {
+        const layer = map.getAllLayers()[0];
         const source = layer.getSource();
         should(source).be.instanceof(VectorSource);
         should(layer.getStyle()).be.a.Function();
@@ -209,7 +139,7 @@ describe('ol-mapbox-style', function () {
     });
 
     it('handles raster sources from TileJSON', function (done) {
-      olms(target, './fixtures/tilejson.json')
+      apply(target, './fixtures/tilejson.json')
         .then(function (map) {
           const source = map.getLayers().item(0).getSource();
           should(source).be.instanceof(TileSource);
@@ -223,7 +153,7 @@ describe('ol-mapbox-style', function () {
     });
 
     it('handles vector sources from TileJSON', function (done) {
-      olms(target, './fixtures/hot-osm/hot-osm.json')
+      apply(target, './fixtures/hot-osm/hot-osm.json')
         .then(function (map) {
           const center = toLonLat(map.getView().getCenter());
           should(center[0]).be.approximately(8.54806714892635, 1e-8);
@@ -244,7 +174,7 @@ describe('ol-mapbox-style', function () {
     });
 
     it('creates a view with default resolutions', function (done) {
-      olms(target, './fixtures/hot-osm/hot-osm.json')
+      apply(target, './fixtures/hot-osm/hot-osm.json')
         .then(function (map) {
           should(map.getView().getMaxResolution()).eql(defaultResolutions[0]);
           done();
@@ -255,7 +185,7 @@ describe('ol-mapbox-style', function () {
     });
 
     it('creates a view with default resolutions for a map with an undefined view', function (done) {
-      olms(
+      apply(
         new Map({
           target: target,
         }),
@@ -271,7 +201,7 @@ describe('ol-mapbox-style', function () {
     });
 
     it('maintains incomplete view config when configured with a map', function (done) {
-      olms(
+      apply(
         new Map({
           target: target,
           view: new View({
@@ -330,7 +260,7 @@ describe('ol-mapbox-style', function () {
       });
 
       it('creates the correct tile grid for raster sources', function (done) {
-        olms(target, context)
+        apply(target, context)
           .then(function (map) {
             const statesSource = map.getLayers().item(0).getSource();
             const statesTileGrid = statesSource.getTileGrid();
@@ -360,7 +290,7 @@ describe('ol-mapbox-style', function () {
 
       it('limits layer minzoom to source minzoom', function (done) {
         context.sources.states.minzoom = 10;
-        olms(target, context)
+        apply(target, context)
           .then(function (map) {
             should(map.getLayers().item(0).getMaxResolution()).eql(
               defaultResolutions[9] + 1e-9
@@ -375,7 +305,7 @@ describe('ol-mapbox-style', function () {
       it('respects layer minzoom and maxzoom', function (done) {
         context.layers[0].minzoom = 10;
         context.layers[0].maxzoom = 12;
-        olms(target, context)
+        apply(target, context)
           .then(function (map) {
             should(map.getLayers().item(0).getMaxResolution()).eql(
               defaultResolutions[10] + 1e-9
@@ -391,7 +321,7 @@ describe('ol-mapbox-style', function () {
       });
 
       it('handles visibility', function (done) {
-        olms(target, context)
+        apply(target, context)
           .then(function (map) {
             should(map.getLayers().item(0).get('visible')).be.false();
             should(map.getLayers().item(1).get('visible')).be.true();
@@ -460,7 +390,7 @@ describe('ol-mapbox-style', function () {
       });
 
       it('creates the correct tile grid for vector sources', function (done) {
-        olms(target, context)
+        apply(target, context)
           .then(function (map) {
             const source = map.getLayers().item(0).getSource();
             const tileGrid = source.getTileGrid();
@@ -483,7 +413,7 @@ describe('ol-mapbox-style', function () {
 
       it('limits layer minzoom to source minzoom', function (done) {
         context.sources.osm.minzoom = 8;
-        olms(target, context)
+        apply(target, context)
           .then(function (map) {
             should(map.getLayers().item(0).getMaxResolution()).eql(
               defaultResolutions[8] + 1e-9
@@ -502,7 +432,7 @@ describe('ol-mapbox-style', function () {
           type: 'vector',
           url: 'data:text/plain;charset=UTF-8,' + JSON.stringify(osm),
         };
-        olms(target, context)
+        apply(target, context)
           .then(function (map) {
             should(map.getLayers().item(0).getMaxResolution()).eql(
               defaultResolutions[8] + 1e-9
@@ -515,7 +445,7 @@ describe('ol-mapbox-style', function () {
       });
 
       it('respects layer minzoom and maxzoom', function (done) {
-        olms(target, context)
+        apply(target, context)
           .then(function (map) {
             should(map.getLayers().item(0).getMaxResolution()).eql(
               defaultResolutions[7] + 1e-9
@@ -532,6 +462,68 @@ describe('ol-mapbox-style', function () {
     });
   });
 
+  describe('applyBackground', function () {
+    it('applies a background to a map container', function () {
+      const target = document.createElement('div');
+      target.style.width = '100px';
+      target.style.height = '100px';
+      const map = new Map({target: target});
+      applyBackground(map, backgroundStyle);
+      should(target.style.backgroundColor).be.exactly('rgb(248, 244, 240)');
+      should(target.style.opacity).be.eql('0.75');
+    });
+    it('applies a background to a layer', function () {
+      const layer = new VectorTileLayer({
+        source: new VectorTileSource({}),
+      });
+      if (typeof layer.setBackground !== 'function') {
+        layer.setBackground = function (background) {
+          layer.background = background;
+        };
+        layer.getBackground = function () {
+          return layer.background;
+        };
+      }
+      applyBackground(layer, backgroundStyle);
+      should(layer.getBackground()(1)).be.exactly('rgba(248,244,240,0.75)');
+    });
+    it('ignores background if layout: none (with map container)', function () {
+      const target = document.createElement('div');
+      target.style.width = '100px';
+      target.style.height = '100px';
+      const map = new Map({target: target});
+      applyBackground(map, backgroundNoneStyle);
+      should(target.style.backgroundColor).be.exactly('');
+      should(target.style.opacity).be.eql('');
+    });
+    it('ignores background if layout: none (with a layer)', function () {
+      const layer = new VectorTileLayer({
+        source: new VectorTileSource({}),
+      });
+      if (typeof layer.setBackground !== 'function') {
+        layer.setBackground = function (background) {
+          layer.background = background;
+        };
+        layer.getBackground = function () {
+          return layer.background;
+        };
+      }
+      applyBackground(layer, backgroundNoneStyle);
+      should(layer.getBackground()(1)).be.undefined();
+    });
+    it('works with a glStyle url', function (done) {
+      const target = document.createElement('div');
+      target.style.width = '100px';
+      target.style.height = '100px';
+      const map = new Map({target: target});
+      applyBackground(map, './fixtures/background.json').then(function () {
+        should(target.style.backgroundColor).be.exactly('rgb(248, 244, 240)');
+        should(target.style.opacity).be.eql('0.75');
+        done();
+      });
+    });
+  });
+
   describe('getLayer', function () {
     let target;
     beforeEach(function () {
@@ -539,7 +531,7 @@ describe('ol-mapbox-style', function () {
     });
 
     it('returns a layer', function (done) {
-      olms(target, brightV9)
+      apply(target, brightV9)
         .then(function (map) {
           // add another layer that has no 'mapbox-layers' set
           map.addLayer(new VectorTileLayer());
@@ -561,7 +553,7 @@ describe('ol-mapbox-style', function () {
     });
 
     it('returns an array of layers', function (done) {
-      olms(target, brightV9)
+      apply(target, brightV9)
         .then(function (map) {
           // add another layer that has no 'mapbox-layers' set
           map.addLayer(new VectorTileLayer());
@@ -584,7 +576,7 @@ describe('ol-mapbox-style', function () {
     });
 
     it('returns a source', function (done) {
-      olms(target, brightV9)
+      apply(target, brightV9)
         .then(function (map) {
           // add another layer that has no 'mapbox-source' set
           map.addLayer(new VectorTileLayer());
