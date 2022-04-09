@@ -1,8 +1,10 @@
 .circleci/
 .git/
+.github/
+coverage/
 examples/
 test/
 .editorconfig
 .eslintrc
-webpack.*.js
-tsconfig.*.json
+webpack.*.cjs
+tsconfig*.json

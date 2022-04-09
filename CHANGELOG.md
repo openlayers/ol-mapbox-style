@@ -1,5 +1,24 @@
 # Changelog
 
+## 8.0.0
+
+### Breaking changes
+
+* The package now provides two separate bundles for umd and ejs. `dist/olms.js` is the umd bundle, `dist/index.js` the ejs bundle. No other JavaScript files are provided in the `dist/` folder any more.
+* Imports from the `dist/` folder are no longer supported. They need to be replaced with imports from the package, e.g. `import {stylefunction} from "ol-mapbox-style"` instead of `import stylefunction from "ol-mapbox-style/dist/stylefunction"`.
+* The `apply()` function has been replaced with an alias of the default export. This means that `apply()` now returns a `Promise<Map>` instead of a `Map`.
+* The auto-generated types are now stricter, because they reference OpenLayers types correctly, instead of using `any`.
+
+### Other changes
+
+* `apply()`, `applyStyle()` and `applyBackground()` now take an `options` argument, which can contain a `transformRequest` option. With that function, urls and requests for styles, sprites, tiles and data can be modified. This can be useful e.g. to fix relative urls or to add credentials.
+* Another available option is `accessToken`. In combination with the new support for `mapbox://` urls, it has become much easier to use maps and styles from Mapbox.
+* Finally, a set of resolutions can be configured in the `options`. This makes it much easier to work with layers or maps in projections other than Web Mercator.
+* The `applyStyle()` function has become more powerful and can now create and populate the source of the provided layer.
+* [`feature-state`](https://docs.mapbox.com/mapbox-gl-js/style-spec/expressions/#feature-state) is now supported. The new functions `setFeatureState()` and `getFeatureState()` can be used to set and get the feature state.
+* The build size is now at least 80 kB smaller because of pre-processing of the style specification from the `@mapbox/mapbox-gl-style-spec` package. The umd bundle no longer contains the OpenLayers code that has been there by accident for a few releases, which had unnecessarily increased the build size by almost 400 kB.
+* The API docs are now generated with typedoc instead of documentation.js
+
 ## 7.1.1
 
 * Do not use overflow for line labels
