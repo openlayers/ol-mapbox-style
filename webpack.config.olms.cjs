@@ -71,7 +71,7 @@ const createConfig = (type) => ({
           'mapbox-gl-style-spec',
           'reference'
         ),
-        use: ['json-strip-loader?keys[]=doc,keys[]=example'],
+        use: ['json-strip-loader?keys[]=doc,keys[]=example,keys[]=sdk-support'],
       },
       {
         test: /\.js$/,
