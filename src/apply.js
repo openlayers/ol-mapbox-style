@@ -113,14 +113,14 @@ function completeOptions(styleUrl, options) {
  * layer's source will override those from the glStyle's `source`, except for `url`,
  * `tileUrlFunction` and `tileGrid` (exception: when the source projection is not `EPSG:3857`).
  * @param {string|Object} glStyle Mapbox Style object.
- * @param {string|Array<string>} [sourceOrLayers] `source` key or an array of layer `id`s from the
+ * @param {string|Array<string>} sourceOrLayers `source` key or an array of layer `id`s from the
  * Mapbox Style object. When a `source` key is provided, all layers for the
  * specified source will be included in the style function. When layer `id`s
  * are provided, they must be from layers that use the same source. When not provided or a falsey
  * value, all layers using the first source specified in the glStyle will be rendered.
- * @param {Options|string} [optionsOrPath={}] Options. Alternatively the path of the style file
+ * @param {Options|string} optionsOrPath Options. Alternatively the path of the style file
  * (only required when a relative path is used for the `"sprite"` property of the style).
- * @param {Array<number>} [resolutions] Resolutions for mapping resolution to zoom level.
+ * @param {Array<number>} resolutions Resolutions for mapping resolution to zoom level.
  * Only needed when working with non-standard tile grids or projections.
  * @return {Promise} Promise which will be resolved when the style can be used
  * for rendering.
@@ -128,9 +128,9 @@ function completeOptions(styleUrl, options) {
 export function applyStyle(
   layer,
   glStyle,
-  sourceOrLayers,
+  sourceOrLayers = '',
   optionsOrPath = {},
-  resolutions
+  resolutions = undefined
 ) {
   let styleUrl, sourceId;
   /** @type {Options} */
@@ -141,6 +141,9 @@ export function applyStyle(
   } else {
     styleUrl = optionsOrPath.styleUrl;
     options = optionsOrPath;
+  }
+  if (!resolutions) {
+    resolutions = options.resolutions;
   }
   if (
     !styleUrl &&
@@ -434,7 +437,7 @@ function setFirstBackground(mapOrLayer, glStyle) {
  * ```
  * @param {Map|VectorTileLayer} mapOrLayer OpenLayers Map or VectorTile layer.
  * @param {Object|string} glStyle Mapbox Style object or url.
- * @param {Options} [options] Options.
+ * @param {Options} options Options.
  * @return {Promise} Promise that resolves when the background is applied.
  */
 export function applyBackground(mapOrLayer, glStyle, options = {}) {
@@ -760,7 +763,7 @@ function processStyle(glStyle, map, styleUrl, options) {
  * they are defined by a TileJSON url in the Mapbox Style document). When passed
  * as style url, layers will be added to the map when the Mapbox Style document
  * is loaded and parsed.
- * @param {Options} [options] Options.
+ * @param {Options} options Options.
  * @return {Promise<Map>} A promise that resolves after all layers have been added to
  * the OpenLayers Map instance, their sources set, and their styles applied. The
  * `resolve` callback will be called with the OpenLayers Map instance as
@@ -820,7 +823,7 @@ export function apply(map, style, options = {}) {
  * @param {string|undefined} styleUrl The original style URL. Only required
  * when a relative path is used with the `"sprite"` property of the style.
  * @param {Map} map OpenLayers Map.
- * @param {Options} [options] Options.
+ * @param {Options} options Options.
  * @return {Promise} Returns a promise that resolves after the source has
  * been set on the specified layer, and the style has been applied.
  * @private
