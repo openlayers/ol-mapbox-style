@@ -181,6 +181,7 @@ export function applyStyle(
           sourceId = Object.keys(glStyle.sources).find(function (key) {
             return glStyle.sources[key].type === type;
           });
+          sourceOrLayers = sourceId;
         } else if (Array.isArray(sourceOrLayers)) {
           sourceId = glStyle.layers.find(function (layer) {
             return layer.id === sourceOrLayers[0];

@@ -1,5 +1,9 @@
 # Changelog
 
+## 8.0.3
+
+* Fix `applyStyle()` regression that broke the function when no `sourceOrLayer` was provided
+
 ## 8.0.2
 
 * Fix display of optional arguments in API docs

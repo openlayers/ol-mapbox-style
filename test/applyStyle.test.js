@@ -101,6 +101,8 @@ describe('applyStyle with source creation', function () {
             `${location.origin}/fixtures/osm-liberty/tiles/v3/{z}/{x}/{y}.pbf`
           );
           should(layer.getStyle()).be.an.instanceOf(Function);
+          should(layer.get('mapbox-source')).equal('openmaptiles');
+          should(layer.get('mapbox-layers').length).equal(94);
           done();
         } catch (e) {
           done(e);
