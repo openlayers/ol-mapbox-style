@@ -1,5 +1,10 @@
 # Changelog
 
+## 8.0.2
+
+* Fix display of optional arguments in API docs
+* Fix layer stack regression when layers from one source are spread across multiple OpenLayers layers
+
 ## 8.0.1
 
 * Display API docs correctly on npmjs.com
