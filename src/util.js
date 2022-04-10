@@ -58,6 +58,9 @@ export function fetchResource(resourceType, url, options = {}) {
     const request = options.transformRequest
       ? options.transformRequest(url, resourceType) || new Request(url)
       : new Request(url);
+    if (!request.headers.get('Accept')) {
+      request.headers.set('Accept', 'application/json');
+    }
     const pendingRequest = fetch(request)
       .then(function (response) {
         delete pendingRequests[url];
