@@ -1,5 +1,10 @@
 # Changelog
 
+## 8.0.4
+
+* Add `Accept: application/json` header to requests for jsons. This avoids e.g. problems with Esri servers returning HTML instead of JSON
+* Reduce build size by stripping more fields from the style spec json.
+
 ## 8.0.3
 
 * Fix `applyStyle()` regression that broke the function when no `sourceOrLayer` was provided
