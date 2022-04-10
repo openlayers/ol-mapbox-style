@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test of the standalone build</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.14.1/css/ol.css">
+</head>
+<body>
+<div id="map" style="height: 300px; width:300px;"></div>
+<script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.14.1/build/ol.js"></script>
+<script src="../dist/olms.js"></script>
+<script>
+  olms.apply('map', ' https://demo.tegola.io/styles/hot-osm.json');
+</script>
+</body>
+</html>
