@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkol_mapbox_style=self.webpackChunkol_mapbox_style||[]).push([[945],{5569:(e,s,t)=>{t(9789),(0,t(5955).ZP)("map","https://www.arcgis.com/sharing/rest/content/items/2afe5b807fa74006be6363fd243ffb30/resources/styles/root.json",{transformRequest:function(e,s){return"Tiles"===s&&(e=e.replace("World_Basemap_v2/tile/","World_Basemap_v2/VectorTileServer/tile/")),new Request(e)}})}},e=>{e(e.s=5569)}]);
+//# sourceMappingURL=esri-transformrequest.js.map
