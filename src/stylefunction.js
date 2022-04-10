@@ -221,9 +221,9 @@ let recordLayer = false;
  * Turns recording of the Mapbox Style's `layer` on and off. When turned on,
  * the layer that a rendered feature belongs to will be set as the feature's
  * `mapbox-layer` property.
- * @param {boolean} [record=false] Recording of the style layer is on.
+ * @param {boolean} record Recording of the style layer is on.
  */
-export function recordStyleLayer(record) {
+export function recordStyleLayer(record = false) {
   recordLayer = record;
 }
 
@@ -274,15 +274,15 @@ export function recordStyleLayer(record) {
  * from the Mapbox Style object. When a `source` key is provided, all layers for
  * the specified source will be included in the style function. When layer `id`s
  * are provided, they must be from layers that use the same source.
- * @param {Array<number>} [resolutions=[78271.51696402048, 39135.75848201024, 19567.87924100512, 9783.93962050256, 4891.96981025128, 2445.98490512564, 1222.99245256282, 611.49622628141, 305.748113140705, 152.8740565703525, 76.43702828517625, 38.21851414258813, 19.109257071294063, 9.554628535647032, 4.777314267823516, 2.388657133911758, 1.194328566955879, 0.5971642834779395, 0.29858214173896974, 0.14929107086948487, 0.07464553543474244]]
+ * @param {Array<number>} resolutions
  * Resolutions for mapping resolution to zoom level.
- * @param {Object} [spriteData=undefined] Sprite data from the url specified in
+ * @param {Object} spriteData Sprite data from the url specified in
  * the Mapbox Style object's `sprite` property. Only required if a `sprite`
  * property is specified in the Mapbox Style object.
- * @param {string} [spriteImageUrl=undefined] Sprite image url for the sprite
+ * @param {string} spriteImageUrl Sprite image url for the sprite
  * specified in the Mapbox Style object's `sprite` property. Only required if a
  * `sprite` property is specified in the Mapbox Style object.
- * @param {function(Array<string>):Array<string>} [getFonts=undefined] Function that
+ * @param {function(Array<string>):Array<string>} getFonts Function that
  * receives a font stack as arguments, and returns a (modified) font stack that
  * is available. Font names are the names used in the Mapbox Style object. If
  * not provided, the font stack will be used as-is. This function can also be
@@ -295,9 +295,9 @@ export function stylefunction(
   glStyle,
   sourceOrLayers,
   resolutions = defaultResolutions,
-  spriteData,
-  spriteImageUrl,
-  getFonts
+  spriteData = undefined,
+  spriteImageUrl = undefined,
+  getFonts = undefined
 ) {
   if (typeof glStyle == 'string') {
     glStyle = JSON.parse(glStyle);
