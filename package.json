@@ -29,7 +29,7 @@
     "start": "webpack serve --config ./webpack.config.examples.cjs",
     "prepare": "npm run doc && npm run build",
     "build": "tsc --project tsconfig-build.json && webpack-cli --mode=production --config ./webpack.config.olms.cjs && webpack-cli --mode=production --config ./webpack.config.examples.cjs",
-    "doc": "typedoc --plugin typedoc-plugin-markdown --plugin typedoc-plugin-missing-exports src/index.js --readme none --excludeExternals --internalNamespace 'types' --name API --hideBreadcrumbs --tsconfig tsconfig-typecheck.json && npx concat-md docs --hide-anchor-links=false | npx md-insert README.md -i --region apidoc",
+    "doc": "typedoc --plugin typedoc-plugin-markdown --plugin typedoc-plugin-missing-exports src/index.js --readme none --excludeExternals --internalNamespace 'types' --name API --hideBreadcrumbs --disableSources --tsconfig tsconfig-typecheck.json && npx concat-md docs --hide-anchor-links=false | npx md-insert README.md -i --region apidoc",
     "karma": "karma start test/karma.conf.cjs",
     "lint": "eslint test examples src",
     "typecheck": "tsc --project tsconfig-typecheck.json",

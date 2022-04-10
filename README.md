@@ -179,10 +179,6 @@ the OpenLayers Map instance, their sources set, and their styles applied. The
 `resolve` callback will be called with the OpenLayers Map instance as
 argument.
 
-#### Defined in
-
-[apply.js:772](https://github.com/openlayers/ol-mapbox-style/blob/eabde33/src/apply.js#L772)
-
 ___
 
 ### applyBackground
@@ -214,10 +210,6 @@ applyBackground(map, 'https://api.maptiler.com/maps/basic/style.json?key=YOUR_OP
 `Promise`<`any`\>
 
 Promise that resolves when the background is applied.
-
-#### Defined in
-
-[apply.js:443](https://github.com/openlayers/ol-mapbox-style/blob/eabde33/src/apply.js#L443)
 
 ___
 
@@ -268,10 +260,6 @@ Two additional properties will be set on the provided layer:
 Promise which will be resolved when the style can be used
 for rendering.
 
-#### Defined in
-
-[apply.js:128](https://github.com/openlayers/ol-mapbox-style/blob/eabde33/src/apply.js#L128)
-
 ___
 
 ### getFeatureState
@@ -296,10 +284,6 @@ features differently.
 Feature state or `null` when no feature state is set for the given
 feature identifier.
 
-#### Defined in
-
-[apply.js:1000](https://github.com/openlayers/ol-mapbox-style/blob/eabde33/src/apply.js#L1000)
-
 ___
 
 ### getLayer
@@ -323,10 +307,6 @@ OpenLayers layer instance when they use the same Mapbox Style `source`.
 
 OpenLayers layer instance.
 
-#### Defined in
-
-[apply.js:916](https://github.com/openlayers/ol-mapbox-style/blob/eabde33/src/apply.js#L916)
-
 ___
 
 ### getLayers
@@ -347,10 +327,6 @@ Get the OpenLayers layer instances for the provided Mapbox Style `source`.
 `Layer`<`Source`, `LayerRenderer`<`any`\>\>[]
 
 OpenLayers layer instances.
-
-#### Defined in
-
-[apply.js:932](https://github.com/openlayers/ol-mapbox-style/blob/eabde33/src/apply.js#L932)
 
 ___
 
@@ -373,10 +349,6 @@ Get the OpenLayers source instance for the provided Mapbox Style `source`.
 
 OpenLayers source instance.
 
-#### Defined in
-
-[apply.js:949](https://github.com/openlayers/ol-mapbox-style/blob/eabde33/src/apply.js#L949)
-
 ___
 
 ### recordStyleLayer
@@ -396,10 +368,6 @@ the layer that a rendered feature belongs to will be set as the feature's
 #### Returns
 
 `void`
-
-#### Defined in
-
-[stylefunction.js:226](https://github.com/openlayers/ol-mapbox-style/blob/eabde33/src/stylefunction.js#L226)
 
 ___
 
@@ -421,10 +389,6 @@ like transparent fills of polygons, using `ol/layer/Layer#getFeatures()` or
 #### Returns
 
 `void`
-
-#### Defined in
-
-[stylefunction.js:166](https://github.com/openlayers/ol-mapbox-style/blob/eabde33/src/stylefunction.js#L166)
 
 ___
 
@@ -450,10 +414,6 @@ The feature state will be stored on the OpenLayers layer matching the feature id
 #### Returns
 
 `void`
-
-#### Defined in
-
-[apply.js:971](https://github.com/openlayers/ol-mapbox-style/blob/eabde33/src/apply.js#L971)
 
 ___
 
@@ -516,10 +476,6 @@ sure that sprite image loading works:
 Style function for use in
 `ol.layer.Vector` or `ol.layer.VectorTile`.
 
-#### Defined in
-
-[stylefunction.js:293](https://github.com/openlayers/ol-mapbox-style/blob/eabde33/src/stylefunction.js#L293)
-
 
 <a name="interfacestypesfeatureidentifiermd"></a>
 
@@ -542,10 +498,6 @@ Style function for use in
 
 The feature id.
 
-#### Defined in
-
-[apply.js:42](https://github.com/openlayers/ol-mapbox-style/blob/eabde33/src/apply.js#L42)
-
 ___
 
 ### source
@@ -553,10 +505,6 @@ ___
 • **source**: `string`
 
 The source id.
-
-#### Defined in
-
-[apply.js:43](https://github.com/openlayers/ol-mapbox-style/blob/eabde33/src/apply.js#L43)
 
 
 <a name="interfacestypesoptionsmd"></a>
@@ -583,10 +531,6 @@ The source id.
 
 Access token for 'mapbox://' urls.
 
-#### Defined in
-
-[apply.js:48](https://github.com/openlayers/ol-mapbox-style/blob/eabde33/src/apply.js#L48)
-
 ___
 
 ### accessTokenParam
@@ -594,10 +538,6 @@ ___
 • **accessTokenParam**: `string`
 
 Access token param. For internal use.
-
-#### Defined in
-
-[apply.js:59](https://github.com/openlayers/ol-mapbox-style/blob/eabde33/src/apply.js#L59)
 
 ___
 
@@ -608,10 +548,6 @@ ___
 Resolutions for mapping resolution to zoom level.
 Only needed when working with non-standard tile grids or projections.
 
-#### Defined in
-
-[apply.js:55](https://github.com/openlayers/ol-mapbox-style/blob/eabde33/src/apply.js#L55)
-
 ___
 
 ### styleUrl
@@ -620,10 +556,6 @@ ___
 
 URL of the Mapbox GL style. Required for styles that were provided
 as object, when they contain a relative sprite url.
-
-#### Defined in
-
-[apply.js:57](https://github.com/openlayers/ol-mapbox-style/blob/eabde33/src/apply.js#L57)
 
 ___
 
@@ -652,10 +584,6 @@ the returned request will be respected.
 
 `void` \| `Request`
 
-#### Defined in
-
-[apply.js:49](https://github.com/openlayers/ol-mapbox-style/blob/eabde33/src/apply.js#L49)
-
 
 <a name="modulestypesmd"></a>
 
@@ -677,9 +605,5 @@ the returned request will be respected.
 ### ResourceType
 
 Ƭ **ResourceType**<\>: ``"Style"`` \| ``"Source"`` \| ``"Sprite"`` \| ``"Tiles"`` \| ``"GeoJSON"``
-
-#### Defined in
-
-[apply.js:62](https://github.com/openlayers/ol-mapbox-style/blob/eabde33/src/apply.js#L62)
 
 <!--apidoc end-->
