@@ -460,6 +460,89 @@ describe('ol-mapbox-style', function () {
           });
       });
     });
+
+    describe('layer stacking', function () {
+      let context;
+
+      beforeEach(function () {
+        context = {
+          'version': 8,
+          'name': 'osm',
+          'sources': {
+            'osm': {
+              'type': 'vector',
+              'bounds': [-180, -85.0511, 180, 85.0511],
+              'minzoom': 0,
+              'maxzoom': 20,
+              'tiles': [
+                'https://osm-lambda.tegola.io/v1/maps/osm/{z}/{x}/{y}.pbf',
+              ],
+            },
+            'hillshading': {
+              'type': 'raster',
+              'tileSize': 1024,
+              'url': 'fixtures/tilejson.raster.json',
+            },
+          },
+          'layers': [
+            {
+              'id': 'airports',
+              'type': 'fill',
+              'source': 'osm',
+              'source-layer': 'transport_areas',
+              'minzoom': 12,
+              'maxzoom': 23,
+              'filter': ['all', ['==', 'type', 'apron']],
+              'layout': {
+                'visibility': 'visible',
+              },
+              'paint': {
+                'fill-color': 'rgba(221, 221, 221, 1)',
+              },
+            },
+            {
+              'id': 'hillshading',
+              'type': 'raster',
+              'source': 'hillshading',
+            },
+            {
+              'id': 'landuse_areas_z7',
+              'type': 'fill',
+              'source': 'osm',
+              'source-layer': 'landuse_areas',
+              'minzoom': 7,
+              'maxzoom': 10,
+              'filter': [
+                'all',
+                ['in', 'type', 'forest', 'wood', 'nature_reserve'],
+              ],
+              'layout': {
+                'visibility': 'visible',
+              },
+              'paint': {
+                'fill-color': 'rgba(178, 194, 157, 1)',
+              },
+            },
+          ],
+        };
+      });
+
+      it('creates the correct layer stack', function (done) {
+        apply(target, context)
+          .then(function (map) {
+            const stack = map.getAllLayers().map(function (layer) {
+              return layer.get('mapbox-layers');
+            });
+            should(stack[0]).eql(['airports']);
+            should(stack[1]).eql(['hillshading']);
+            should(stack[2]).eql(['landuse_areas_z7']);
+            done();
+          })
+          .catch(function (err) {
+            done(err);
+          });
+      });
+    });
   });
 
   describe('applyBackground', function () {

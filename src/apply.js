@@ -181,15 +181,15 @@ export function applyStyle(
           sourceId = Object.keys(glStyle.sources).find(function (key) {
             return glStyle.sources[key].type === type;
           });
-          if (!sourceId) {
-            return reject(new Error(`No ${type} source found in the glStyle.`));
-          }
         } else if (Array.isArray(sourceOrLayers)) {
           sourceId = glStyle.layers.find(function (layer) {
             return layer.id === sourceOrLayers[0];
           }).source;
         } else {
           sourceId = sourceOrLayers;
+        }
+        if (!sourceId) {
+          return reject(new Error(`No ${type} source found in the glStyle.`));
         }
 
         function assignSource() {
@@ -271,7 +271,7 @@ export function applyStyle(
             style = applyStyleFunction(
               layer,
               glStyle,
-              sourceId,
+              sourceOrLayers,
               resolutions,
               spriteData,
               spriteImageUrl,
