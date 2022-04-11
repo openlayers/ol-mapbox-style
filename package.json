@@ -1,15 +1,14 @@
 {
   "name": "ol-mapbox-style",
-  "version": "8.0.4",
+  "version": "8.0.5",
   "description": "Create OpenLayers maps from Mapbox Style objects",
   "type": "module",
-  "main": "dist/olms.js",
+  "browser": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "module": "./dist/index.js",
-      "require": "./dist/olms.js"
+      "import": "./dist/index.js"
     }
   },
   "repository": {

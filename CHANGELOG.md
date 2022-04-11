@@ -1,5 +1,9 @@
 # Changelog
 
+## 8.0.5
+
+* Do not advertise the `dist/olms.js` cjs bundle in `package.json`, because its imports from `ol` are not cjs compliant. This should resolve problems with old bundlers that pick the cjs bundle instead of the ejs bundle.
+
 ## 8.0.4
 
 * Add `Accept: application/json` header to requests for jsons. This avoids e.g. problems with Esri servers returning HTML instead of JSON
