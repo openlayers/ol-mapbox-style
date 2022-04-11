@@ -135,6 +135,39 @@ export function getValue(
   return functions[property](zoomObj, feature);
 }
 
+function getDeclutterMode(
+  layer,
+  allowOverlapProperty,
+  ignorePlacementProperty,
+  zoom,
+  feature,
+  functionCache
+) {
+  const allowOverlap = getValue(
+    layer,
+    'layout',
+    allowOverlapProperty,
+    zoom,
+    feature,
+    functionCache
+  );
+  if (!allowOverlap) {
+    return 'declutter';
+  }
+  const ignorePlacement = getValue(
+    layer,
+    'layout',
+    ignorePlacementProperty,
+    zoom,
+    feature,
+    functionCache
+  );
+  if (!ignorePlacement) {
+    return 'obstacle';
+  }
+  return 'none';
+}
+
 /**
  * @private
  * @param {string} layerId Layer id.
@@ -667,7 +700,10 @@ export default function (
                 : iconImage.toString();
             let styleGeom = undefined;
             const imageElement = getImage ? getImage(icon) : undefined;
-            if ((spriteImage && spriteData && spriteData[icon]) || imageElement) {
+            if (
+              (spriteImage && spriteData && spriteData[icon]) ||
+              imageElement
+            ) {
               const iconRotationAlignment = getValue(
                 layer,
                 'layout',
@@ -772,6 +808,14 @@ export default function (
                   if (iconColor !== null) {
                     icon_cache_key += '.' + iconColor;
                   }
+                  const declutterMode = getDeclutterMode(
+                    layer,
+                    'icon-allow-overlap',
+                    'icon-ignore-placement',
+                    zoom,
+                    f,
+                    functionCache
+                  );
                   iconImg = iconImageCache[icon_cache_key];
                   if (!iconImg) {
                     const color = iconColor
@@ -799,6 +843,7 @@ export default function (
                                 functionCache
                               ).map((v) => -v)
                             : undefined,
+                        declutterMode: declutterMode,
                       });
                     } else {
                       const spriteImageData = spriteData[icon];
@@ -822,6 +867,7 @@ export default function (
                                 functionCache
                               ).map((v) => -v * spriteImageData.pixelRatio)
                             : undefined,
+                        declutterMode: declutterMode,
                       });
                     }
                     iconImageCache[icon_cache_key] = iconImg;
@@ -952,6 +998,14 @@ export default function (
             circleStrokeWidth;
           iconImg = iconImageCache[cache_key];
           if (!iconImg) {
+            const declutterMode = getDeclutterMode(
+              layer,
+              'icon-allow-overlap',
+              'icon-ignore-placement',
+              zoom,
+              f,
+              functionCache
+            );
             iconImg = new Circle({
               radius: circleRadius,
               stroke:
@@ -966,6 +1020,7 @@ export default function (
                     color: circleColor,
                   })
                 : undefined,
+              declutterMode: declutterMode,
             });
             iconImageCache[cache_key] = iconImg;
           }
