@@ -1,2 +1,2 @@
-"use strict";(self.webpackChunkol_mapbox_style=self.webpackChunkol_mapbox_style||[]).push([[346],{3370:(s,e,a)=>{a(9789),(0,a(2697).nn)("map","data/geojson.json")}},s=>{s(s.s=3370)}]);
+"use strict";(self.webpackChunkol_mapbox_style=self.webpackChunkol_mapbox_style||[]).push([[346],{3370:(s,e,a)=>{a(6969),(0,a(6081).nn)("map","data/geojson.json")}},s=>{s(s.s=3370)}]);
 //# sourceMappingURL=geojson.js.map

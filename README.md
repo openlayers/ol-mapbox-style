@@ -221,6 +221,7 @@ sure that sprite image loading works:
     is available. Font names are the names used in the Mapbox Style object. If
     not provided, the font stack will be used as-is. This function can also be
     used for loading web fonts. (optional, default `undefined`)
+*   `getImage` **(function ([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)): [HTMLImageElement](https://developer.mozilla.org/docs/Web/API/HTMLImageElement) | [HTMLCanvasElement](https://developer.mozilla.org/docs/Web/API/HTMLCanvasElement) | [undefined](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined))** Function that returns an image for an image name argurment. (optional, default `undefined`)
 
 Returns **StyleFunction** Style function for use in
 `ol.layer.Vector` or `ol.layer.VectorTile`.

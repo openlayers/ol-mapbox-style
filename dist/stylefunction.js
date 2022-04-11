@@ -101,6 +101,17 @@ export function getValue(layer, layoutOrPaint, property, zoom, feature, function
     zoomObj.zoom = zoom;
     return functions[property](zoomObj, feature);
 }
+function getDeclutterMode(layer, allowOverlapProperty, ignorePlacementProperty, zoom, feature, functionCache) {
+    var allowOverlap = getValue(layer, 'layout', allowOverlapProperty, zoom, feature, functionCache);
+    if (!allowOverlap) {
+        return 'declutter';
+    }
+    var ignorePlacement = getValue(layer, 'layout', ignorePlacementProperty, zoom, feature, functionCache);
+    if (!ignorePlacement) {
+        return 'obstacle';
+    }
+    return 'none';
+}
 /**
  * @private
  * @param {string} layerId Layer id.
@@ -490,7 +501,8 @@ export default function (olLayer, glStyle, source, resolutions, spriteData, spri
                                 : iconImage.toString();
                         var styleGeom = undefined;
                         var imageElement = getImage ? getImage(icon) : undefined;
-                        if ((spriteImage && spriteData && spriteData[icon]) || imageElement) {
+                        if ((spriteImage && spriteData && spriteData[icon]) ||
+                            imageElement) {
                             var iconRotationAlignment = getValue(layer, 'layout', 'icon-rotation-alignment', zoom, f, functionCache);
                             if (type == 2) {
                                 var geom = feature.getGeometry();
@@ -546,6 +558,7 @@ export default function (olLayer, glStyle, source, resolutions, spriteData, spri
                                     if (iconColor !== null) {
                                         icon_cache_key += '.' + iconColor;
                                     }
+                                    var declutterMode = getDeclutterMode(layer, 'icon-allow-overlap', 'icon-ignore-placement', zoom, f, functionCache);
                                     iconImg = iconImageCache[icon_cache_key];
                                     if (!iconImg) {
                                         var color_1 = iconColor
@@ -565,6 +578,7 @@ export default function (olLayer, glStyle, source, resolutions, spriteData, spri
                                                 displacement: 'icon-offset' in layout
                                                     ? getValue(layer, 'layout', 'icon-offset', zoom, f, functionCache).map(function (v) { return -v; })
                                                     : undefined,
+                                                declutterMode: declutterMode,
                                             });
                                         }
                                         else {
@@ -580,6 +594,7 @@ export default function (olLayer, glStyle, source, resolutions, spriteData, spri
                                                 displacement: 'icon-offset' in layout
                                                     ? getValue(layer, 'layout', 'icon-offset', zoom, f, functionCache).map(function (v) { return -v * spriteImageData_1.pixelRatio; })
                                                     : undefined,
+                                                declutterMode: declutterMode,
                                             });
                                         }
                                         iconImageCache[icon_cache_key] = iconImg;
