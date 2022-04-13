@@ -654,6 +654,7 @@ export default function (olLayer, glStyle, source, resolutions, spriteData, spri
                         circleStrokeWidth;
                     iconImg = iconImageCache[cache_key];
                     if (!iconImg) {
+                        var declutterMode = getDeclutterMode(layer, 'icon-allow-overlap', 'icon-ignore-placement', zoom, f, functionCache);
                         iconImg = new Circle({
                             radius: circleRadius,
                             stroke: circleStrokeColor && circleStrokeWidth > 0
@@ -667,6 +668,7 @@ export default function (olLayer, glStyle, source, resolutions, spriteData, spri
                                     color: circleColor,
                                 })
                                 : undefined,
+                            declutterMode: declutterMode,
                         });
                         iconImageCache[cache_key] = iconImg;
                     }

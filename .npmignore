@@ -6,3 +6,6 @@ test/
 .eslintrc
 webpack.*.js
 tsconfig.*.json
+/.idea/
+/.github/
+/*.tgz

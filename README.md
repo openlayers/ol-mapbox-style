@@ -74,9 +74,9 @@ Internet Explorer (version 11) and other old browsers (Android 4.x) are supporte
     *   [Parameters](#parameters-1)
 *   [recordStyleLayer](#recordstylelayer)
     *   [Parameters](#parameters-2)
-*   [stylefunction](#stylefunction)
-    *   [Parameters](#parameters-3)
 *   [applyBackground](#applybackground)
+    *   [Parameters](#parameters-3)
+*   [stylefunction](#stylefunction)
     *   [Parameters](#parameters-4)
 *   [olms](#olms)
     *   [Parameters](#parameters-5)
@@ -155,6 +155,20 @@ the layer that a rendered feature belongs to will be set as the feature's
 
 *   `record` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Recording of the style layer is on. (optional, default `false`)
 
+### applyBackground
+
+```js
+import {applyBackground} from 'ol-mapbox-style';
+```
+
+Applies properties of the Mapbox Style's first `background` layer to the
+provided map or VectorTile layer.
+
+#### Parameters
+
+*   `mapOrLayer` **(PluggableMap | VectorTileLayer)** OpenLayers Map or VectorTile layer.
+*   `glStyle` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Mapbox Style object.
+
 ### stylefunction
 
 ```js
@@ -225,20 +239,6 @@ sure that sprite image loading works:
 
 Returns **StyleFunction** Style function for use in
 `ol.layer.Vector` or `ol.layer.VectorTile`.
-
-### applyBackground
-
-```js
-import {applyBackground} from 'ol-mapbox-style';
-```
-
-Applies properties of the Mapbox Style's first `background` layer to the
-provided map or VectorTile layer.
-
-#### Parameters
-
-*   `mapOrLayer` **(PluggableMap | VectorTileLayer)** OpenLayers Map or VectorTile layer.
-*   `glStyle` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Mapbox Style object.
 
 ### olms
 
