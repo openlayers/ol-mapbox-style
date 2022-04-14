@@ -143,6 +143,9 @@ function getDeclutterMode(
   feature,
   functionCache
 ) {
+  if (layer.type !== 'symbol') {
+    return 'none';
+  }
   const allowOverlap = getValue(
     layer,
     'layout',

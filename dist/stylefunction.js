@@ -102,6 +102,9 @@ export function getValue(layer, layoutOrPaint, property, zoom, feature, function
     return functions[property](zoomObj, feature);
 }
 function getDeclutterMode(layer, allowOverlapProperty, ignorePlacementProperty, zoom, feature, functionCache) {
+    if (layer.type !== 'symbol') {
+        return 'none';
+    }
     var allowOverlap = getValue(layer, 'layout', allowOverlapProperty, zoom, feature, functionCache);
     if (!allowOverlap) {
         return 'declutter';
