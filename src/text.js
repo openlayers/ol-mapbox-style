@@ -1,5 +1,5 @@
-import googleFonts from 'webfont-matcher/lib/fonts/google.js';
 import mb2css from 'mapbox-to-css-font';
+import {checkedFonts, registerFont} from 'ol/render/canvas.js';
 import {createCanvas} from './util.js';
 
 const hairSpacePool = Array(256).join('\u200A');
@@ -148,7 +148,6 @@ function hasFontFamily(family) {
 }
 
 const processedFontFamilies = {};
-const googleFamilies = googleFonts.getNames();
 
 /**
  * @param {Array} fonts Fonts.
@@ -161,23 +160,32 @@ export function getFonts(fonts) {
     return fonts;
   }
   const googleFontDescriptions = fonts.map(function (font) {
-    const parts = mb2css(font, 1).split(' ');
-    return [parts.slice(3).join(' ').replace(/"/g, ''), parts[1] + parts[0]];
+    const cssFont = mb2css(font, 1);
+    registerFont(cssFont);
+    const parts = cssFont.split(' ');
+    return [parts.slice(3).join(' ').replace(/"/g, ''), parts[1], parts[0]];
   });
   for (let i = 0, ii = googleFontDescriptions.length; i < ii; ++i) {
     const googleFontDescription = googleFontDescriptions[i];
     const family = googleFontDescription[0];
-    if (!hasFontFamily(family) && googleFamilies.indexOf(family) !== -1) {
-      const fontUrl =
-        'https://fonts.googleapis.com/css?family=' +
-        family.replace(/ /g, '+') +
-        ':' +
-        googleFontDescription[1];
-      if (!document.querySelector('link[href="' + fontUrl + '"]')) {
-        const markup = document.createElement('link');
-        markup.href = fontUrl;
-        markup.rel = 'stylesheet';
-        document.head.appendChild(markup);
+    if (!hasFontFamily(family)) {
+      if (
+        checkedFonts.get(
+          `${googleFontDescription[2]}\n${googleFontDescription[1]} \n${family}`
+        ) !== 100
+      ) {
+        const fontUrl =
+          'https://fonts.googleapis.com/css?family=' +
+          family.replace(/ /g, '+') +
+          ':' +
+          googleFontDescription[1] +
+          googleFontDescription[2];
+        if (!document.querySelector('link[href="' + fontUrl + '"]')) {
+          const markup = document.createElement('link');
+          markup.href = fontUrl;
+          markup.rel = 'stylesheet';
+          document.head.appendChild(markup);
+        }
       }
     }
   }
