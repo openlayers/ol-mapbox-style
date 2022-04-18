@@ -618,9 +618,11 @@ describe('ol-mapbox-style', function () {
         .then(function (map) {
           // add another layer that has no 'mapbox-layers' set
           map.addLayer(new VectorTileLayer());
-          should(getLayer(map, 'landuse_park')).be.an.instanceOf(
-            VectorTileLayer
-          );
+          should(
+            getLayer(map, 'landuse_park')
+              .get('mapbox-layers')
+              .indexOf('landuse_park')
+          ).equal(1);
           done();
         })
         .catch(function (error) {
