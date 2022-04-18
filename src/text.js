@@ -157,14 +157,21 @@ const processedFontFamilies = {};
 export function getFonts(fonts) {
   const fontsKey = fonts.toString();
   if (fontsKey in processedFontFamilies) {
-    return fonts;
+    return processedFontFamilies[fontsKey];
   }
-  const googleFontDescriptions = fonts.map(function (font) {
+  const googleFontDescriptions = [];
+  for (let i = 0, ii = fonts.length; i < ii; ++i) {
+    fonts[i] = fonts[i].replace('Arial Unicode MS', 'Arial');
+    const font = fonts[i];
     const cssFont = mb2css(font, 1);
     registerFont(cssFont);
     const parts = cssFont.split(' ');
-    return [parts.slice(3).join(' ').replace(/"/g, ''), parts[1], parts[0]];
-  });
+    googleFontDescriptions.push([
+      parts.slice(3).join(' ').replace(/"/g, ''),
+      parts[1],
+      parts[0],
+    ]);
+  }
   for (let i = 0, ii = googleFontDescriptions.length; i < ii; ++i) {
     const googleFontDescription = googleFontDescriptions[i];
     const family = googleFontDescription[0];
@@ -189,6 +196,6 @@ export function getFonts(fonts) {
       }
     }
   }
-  processedFontFamilies[fontsKey] = true;
+  processedFontFamilies[fontsKey] = fonts;
   return fonts;
 }
