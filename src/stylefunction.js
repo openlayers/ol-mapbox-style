@@ -1036,6 +1036,9 @@ export function stylefunction(
             textSize,
             textLineHeight
           );
+          if (!font.includes('sans-serif')) {
+            font += ',sans-serif';
+          }
           letterSpacing = getValue(
             layer,
             'layout',
