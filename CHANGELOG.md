@@ -1,5 +1,9 @@
 # Changelog
 
+## 8.0.7
+
+* Use rollup instead of webpack for creating bundles
+
 ## 8.0.6
 
 * Remove `webfont-matcher` dependency. Instead, load Google fonts only when they are not available already.
