@@ -8,4 +8,5 @@ test/
 .editorconfig
 .eslintrc
 webpack.*.cjs
+rollup.config.js
 tsconfig*.json
