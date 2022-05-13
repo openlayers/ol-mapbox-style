@@ -1,5 +1,10 @@
 # Changelog
 
+## 8.0.8
+
+* Fix relative source url handling for GeoJSON sources
+* Fix website examples
+
 ## 8.0.7
 
 * Use rollup instead of webpack for creating bundles
