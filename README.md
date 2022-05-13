@@ -555,7 +555,7 @@ ___
 • **styleUrl**: `string`
 
 URL of the Mapbox GL style. Required for styles that were provided
-as object, when they contain a relative sprite url.
+as object, when they contain a relative sprite url, or sources referencing data by relative url.
 
 ___
 

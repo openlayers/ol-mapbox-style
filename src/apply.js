@@ -55,7 +55,7 @@ import {
  * @property {Array<number>} [resolutions] Resolutions for mapping resolution to zoom level.
  * Only needed when working with non-standard tile grids or projections.
  * @property {string} [styleUrl] URL of the Mapbox GL style. Required for styles that were provided
- * as object, when they contain a relative sprite url.
+ * as object, when they contain a relative sprite url, or sources referencing data by relative url.
  * @property {string} [accessTokenParam='access_token'] Access token param. For internal use.
  */
 
