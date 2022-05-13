@@ -800,7 +800,14 @@ export function apply(map, style, options = {}) {
     });
   } else {
     promise = new Promise(function (resolve, reject) {
-      processStyle(style, map, '', options)
+      processStyle(
+        style,
+        map,
+        !options.styleUrl || options.styleUrl.startsWith('data:')
+          ? location.href
+          : normalizeStyleUrl(options.styleUrl, options.accessToken),
+        options
+      )
         .then(function () {
           resolve(map);
         })

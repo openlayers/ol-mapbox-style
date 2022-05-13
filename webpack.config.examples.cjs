@@ -91,6 +91,7 @@ module.exports = (env, argv) => {
     output: {
       filename: '[name].js',
       path: path.join(__dirname, 'dist', 'examples'),
+      publicPath: 'auto',
     },
     resolve: {
       alias: {

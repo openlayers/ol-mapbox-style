@@ -1,7 +1,9 @@
 import 'ol/ol.css';
 import olms, {setFeatureState} from 'ol-mapbox-style';
 
-fetch('data/geojson.json')
+const styleUrl = 'data/geojson.json';
+
+fetch(styleUrl)
   .then((response) => response.json())
   .then((glStyle) => {
     glStyle.layers.push({
@@ -18,7 +20,7 @@ fetch('data/geojson.json')
         ],
       },
     });
-    return olms('map', glStyle);
+    return olms('map', glStyle, {styleUrl: styleUrl});
   })
   .then((map) => {
     let hoveredStateId = null;

@@ -7,7 +7,7 @@
   "sources": {
     "states": {
       "type": "geojson",
-      "data": "/data/states.geojson"
+      "data": "./states.geojson"
     }
   },
   "layers": [
