@@ -42,7 +42,7 @@
   "devDependencies": {
     "@mapbox/flow-remove-types": "^2.0.0",
     "@rollup/plugin-buble": "^0.21.3",
-    "@rollup/plugin-commonjs": "^21.1.0",
+    "@rollup/plugin-commonjs": "^22.0.0",
     "@rollup/plugin-node-resolve": "^13.2.1",
     "@types/arcgis-rest-api": "^10.4.4",
     "@types/mocha": "^9.1.0",
