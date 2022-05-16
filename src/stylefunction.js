@@ -135,6 +135,49 @@ export function getValue(
 
 /**
  * @private
+ * @param {Object} layer Gl object layer.
+ * @param {string} allowOverlapProperty the allow-overlap property
+ * @param {string} ignorePlacementProperty the ignore-placement property
+ * @param {number} zoom Zoom.
+ * @param {Object} feature Gl feature.
+ * @param {Object} [functionCache] Function cache.
+ * @return {"declutter"|"obstacle"|"none"} Value.
+ */
+function getDeclutterMode(
+  layer,
+  allowOverlapProperty,
+  ignorePlacementProperty,
+  zoom,
+  feature,
+  functionCache
+) {
+  const allowOverlap = getValue(
+    layer,
+    'layout',
+    allowOverlapProperty,
+    zoom,
+    feature,
+    functionCache
+  );
+  if (!allowOverlap) {
+    return 'declutter';
+  }
+  const ignorePlacement = getValue(
+    layer,
+    'layout',
+    ignorePlacementProperty,
+    zoom,
+    feature,
+    functionCache
+  );
+  if (!ignorePlacement) {
+    return 'obstacle';
+  }
+  return 'none';
+}
+
+/**
+ * @private
  * @param {string} layerId Layer id.
  * @param {?} filter Filter.
  * @param {Object} feature Feature.
@@ -796,6 +839,14 @@ export function stylefunction(
                   if (!iconImg) {
                     const spriteImageData = spriteData[icon];
 
+                    const declutterMode = getDeclutterMode(
+                      layer,
+                      'icon-allow-overlap',
+                      'icon-ignore-placement',
+                      zoom,
+                      f,
+                      functionCache
+                    );
                     iconImg = new Icon({
                       color: iconColor
                         ? [
@@ -823,6 +874,7 @@ export function stylefunction(
                               featureState
                             ).map((v) => -v * spriteImageData.pixelRatio)
                           : undefined,
+                      declutterMode: declutterMode,
                     });
                     iconImageCache[icon_cache_key] = iconImg;
                   }
@@ -975,6 +1027,16 @@ export function stylefunction(
             circleStrokeWidth;
           iconImg = iconImageCache[cache_key];
           if (!iconImg) {
+            // the mapbox style spec does not support decluttering circles.
+            // but as openlayers does, we can support it as "extension"
+            const declutterMode = getDeclutterMode(
+              layer,
+              'circle-allow-overlap',
+              'circle-ignore-placement',
+              zoom,
+              f,
+              functionCache
+            );
             iconImg = new Circle({
               radius: circleRadius,
               stroke:
@@ -989,6 +1051,7 @@ export function stylefunction(
                     color: circleColor,
                   })
                 : undefined,
+              declutterMode: declutterMode,
             });
             iconImageCache[cache_key] = iconImg;
           }
