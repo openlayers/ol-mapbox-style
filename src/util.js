@@ -108,7 +108,7 @@ export function getTileJson(glSource, styleUrl, options = {}) {
   if (!promise || options.transformRequest) {
     const url = glSource.url;
     if (url) {
-      const normalizedUrl = normalizeSourceUrl(
+      let normalizedSourceUrl = normalizeSourceUrl(
         url,
         options.accessToken,
         options.accessTokenParam || 'access_token',
@@ -118,19 +118,28 @@ export function getTileJson(glSource, styleUrl, options = {}) {
         promise = Promise.resolve(
           assign({}, glSource, {
             url: undefined,
-            tiles: normalizedUrl,
+            tiles: normalizedSourceUrl,
           })
         );
       } else {
-        promise = fetchResource('Source', normalizedUrl, options).then(
+        promise = fetchResource('Source', normalizedSourceUrl, options).then(
           function (tileJson) {
             for (let i = 0, ii = tileJson.tiles.length; i < ii; ++i) {
               const tileUrl = tileJson.tiles[i];
+              if (options.transformRequest) {
+                const request = options.transformRequest(
+                  normalizedSourceUrl,
+                  'Source'
+                );
+                if (request) {
+                  normalizedSourceUrl = request.url;
+                }
+              }
               let normalizedTileUrl = normalizeSourceUrl(
                 tileUrl,
                 options.accessToken,
                 options.accessTokenParam || 'access_token',
-                normalizedUrl || location.href
+                normalizedSourceUrl
               );
               if (options.transformRequest) {
                 const transformedRequest = options.transformRequest(
@@ -160,9 +169,7 @@ export function getTileJson(glSource, styleUrl, options = {}) {
       });
       promise = Promise.resolve(assign({}, glSource));
     }
-    if (!options.transformRequest) {
-      tilejsonCache[cacheKey] = promise;
-    }
+    tilejsonCache[cacheKey] = promise;
   }
   return promise;
 }
