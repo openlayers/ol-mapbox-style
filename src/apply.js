@@ -240,11 +240,11 @@ export function applyStyle(
               }
             });
           } else {
-            const source = setupGeoJSONSource(
-              glStyle.sources[sourceId],
-              styleUrl,
-              options
-            );
+            const glSource = glStyle.sources[sourceId];
+            let source = layer.getSource();
+            if (!source || source.get('mapbox-source') !== glSource) {
+              source = setupGeoJSONSource(glSource, styleUrl, options);
+            }
             const targetSource = /** @type {VectorSource} */ (
               layer.getSource()
             );
@@ -490,31 +490,26 @@ export function setupVectorSource(glSource, styleUrl, options) {
         const extent = extentFromTileJSON(tileJSONDoc);
         const minZoom = tileJSONDoc.minzoom || 0;
         const maxZoom = tileJSONDoc.maxzoom || 22;
-        let source = tileJSONSource.get('ol-source');
-        if (source === undefined) {
-          const sourceOptions = {
-            attributions: tileJSONSource.getAttributions(),
-            format: new MVT(),
-            tileGrid: new TileGrid({
-              origin: tileGrid.getOrigin(0),
-              extent: extent || tileGrid.getExtent(),
-              minZoom: minZoom,
-              resolutions: defaultResolutions.slice(0, maxZoom + 1),
-              tileSize: 512,
-            }),
-          };
-          if (Array.isArray(tileJSONDoc.tiles)) {
-            sourceOptions.urls = tileJSONDoc.tiles;
-          } else {
-            sourceOptions.url = tileJSONDoc.tiles;
-          }
-          if (tileJSON.olSourceOptions) {
-            Object.assign(sourceOptions, tileJSON.olSourceOptions);
-          }
-          source = new VectorTileSource(sourceOptions);
-          tileJSONSource.set('ol-source', source);
+        const sourceOptions = {
+          attributions: tileJSONSource.getAttributions(),
+          format: new MVT(),
+          tileGrid: new TileGrid({
+            origin: tileGrid.getOrigin(0),
+            extent: extent || tileGrid.getExtent(),
+            minZoom: minZoom,
+            resolutions: defaultResolutions.slice(0, maxZoom + 1),
+            tileSize: 512,
+          }),
+        };
+        if (Array.isArray(tileJSONDoc.tiles)) {
+          sourceOptions.urls = tileJSONDoc.tiles;
+        } else {
+          sourceOptions.url = tileJSONDoc.tiles;
         }
-        resolve(source);
+        if (tileJSON.olSourceOptions) {
+          Object.assign(sourceOptions, tileJSON.olSourceOptions);
+        }
+        resolve(new VectorTileSource(sourceOptions));
       })
       .catch(reject);
   });
@@ -527,6 +522,7 @@ function setupVectorLayer(glSource, styleUrl, options) {
   });
   setupVectorSource(glSource, styleUrl, options)
     .then(function (source) {
+      source.set('mapbox-source', glSource);
       layer.setSource(source);
     })
     .catch(function (error) {
@@ -569,6 +565,7 @@ function setupRasterLayer(glSource, styleUrl, options) {
         }
         return src;
       });
+      source.set('mapbox-source', glSource);
       layer.setSource(source);
     })
     .catch(function (error) {
@@ -606,7 +603,7 @@ function setupGeoJSONSource(glSource, styleUrl, options) {
       featureProjection: getUserProjection() || 'EPSG:3857',
     });
   }
-  return new VectorSource(
+  const source = new VectorSource(
     assign(
       {
         attributions: glSource.attribution,
@@ -615,6 +612,8 @@ function setupGeoJSONSource(glSource, styleUrl, options) {
       sourceOptions
     )
   );
+  source.set('mapbox-source', glSource);
+  return source;
 }
 
 function setupGeoJSONLayer(glSource, styleUrl, options) {
