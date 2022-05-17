@@ -1016,8 +1016,6 @@ export function stylefunction(
             circleStrokeWidth;
           iconImg = iconImageCache[cache_key];
           if (!iconImg) {
-            // the mapbox style spec does not support decluttering circles.
-            const declutterMode = 'none';
             iconImg = new Circle({
               radius: circleRadius,
               stroke:
@@ -1032,7 +1030,7 @@ export function stylefunction(
                     color: circleColor,
                   })
                 : undefined,
-              declutterMode: declutterMode,
+              declutterMode: 'none',
             });
             iconImageCache[cache_key] = iconImg;
           }
