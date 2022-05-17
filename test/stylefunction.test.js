@@ -285,6 +285,138 @@ describe('stylefunction', function () {
     });
   });
 
+  describe('Declutter mode', function () {
+    let style;
+    beforeEach(function () {
+      style = {
+        version: '8',
+        name: 'test',
+        sprite: '/fixtures/sprites',
+        sources: {
+          'geojson': {
+            type: 'geojson',
+            data: {
+              type: 'FeatureCollection',
+              features: [
+                {
+                  type: 'Feature',
+                  geometry: {
+                    type: 'Point',
+                    coordinates: [0, 0],
+                  },
+                  properties: {
+                    'name': 'test',
+                  },
+                },
+              ],
+            },
+          },
+        },
+        layers: [
+          {
+            id: 'test',
+            type: 'symbol',
+            source: 'geojson',
+            layout: {
+              'symbol-placement': 'point',
+              'icon-image': 'amenity_firestation',
+              'text-anchor': 'bottom',
+              'text-line-height': 1.2,
+              'text-field': '{name}\n',
+              'text-font': ['sans-serif'],
+              'text-size': 12,
+              'text-justify': 'center',
+            },
+            paint: {
+              'text-halo-width': 2,
+              'icon-color': 'rgba(255,255,255,1)',
+            },
+          },
+        ],
+      };
+    });
+
+    it('sets the declutter-mode "declutter" if not allow-overlap', function (done) {
+      style.layers[0].layout['icon-allow-overlap'] = false;
+      style.layers[0].layout['icon-ignore-placement'] = false;
+      apply(document.createElement('div'), style)
+        .then(function (map) {
+          const layer = map.getLayers().item(0);
+          layer.once('change', () => {
+            const styleFunction = layer.getStyle();
+            const feature = layer.getSource().getFeatures()[0];
+            const styles = styleFunction(feature, 1);
+            const image = styles[0].getImage();
+            should(image.getDeclutterMode()).eql('declutter');
+            done();
+          });
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+
+    it('sets the declutter-mode "declutter" if not allow-overlap even if ignore-placement', function (done) {
+      style.layers[0].layout['icon-allow-overlap'] = false;
+      style.layers[0].layout['icon-ignore-placement'] = true;
+      apply(document.createElement('div'), style)
+        .then(function (map) {
+          const layer = map.getLayers().item(0);
+          layer.once('change', () => {
+            const styleFunction = layer.getStyle();
+            const feature = layer.getSource().getFeatures()[0];
+            const styles = styleFunction(feature, 1);
+            const image = styles[0].getImage();
+            should(image.getDeclutterMode()).eql('declutter');
+            done();
+          });
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+
+    it('sets the declutter-mode "obstacle" if allow-overlap and not ignore-placement', function (done) {
+      style.layers[0].layout['icon-allow-overlap'] = true;
+      style.layers[0].layout['icon-ignore-placement'] = false;
+      apply(document.createElement('div'), style)
+        .then(function (map) {
+          const layer = map.getLayers().item(0);
+          layer.once('change', () => {
+            const styleFunction = layer.getStyle();
+            const feature = layer.getSource().getFeatures()[0];
+            const styles = styleFunction(feature, 1);
+            const image = styles[0].getImage();
+            should(image.getDeclutterMode()).eql('obstacle');
+            done();
+          });
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+
+    it('sets the declutter-mode "none" if allow-overlap and ignore-placement', function (done) {
+      style.layers[0].layout['icon-allow-overlap'] = true;
+      style.layers[0].layout['icon-ignore-placement'] = true;
+      apply(document.createElement('div'), style)
+        .then(function (map) {
+          const layer = map.getLayers().item(0);
+          layer.once('change', () => {
+            const styleFunction = layer.getStyle();
+            const feature = layer.getSource().getFeatures()[0];
+            const styles = styleFunction(feature, 1);
+            const image = styles[0].getImage();
+            should(image.getDeclutterMode()).eql('none');
+            done();
+          });
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+  });
+
   describe('Icon color with zero opacity', function () {
     let style;
     beforeEach(function () {

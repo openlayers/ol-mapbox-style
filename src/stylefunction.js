@@ -135,6 +135,40 @@ export function getValue(
 
 /**
  * @private
+ * @param {Object} layer Gl object layer.
+ * @param {number} zoom Zoom.
+ * @param {Object} feature Gl feature.
+ * @param {Object} [functionCache] Function cache.
+ * @return {"declutter"|"obstacle"|"none"} Value.
+ */
+function getIconDeclutterMode(layer, zoom, feature, functionCache) {
+  const allowOverlap = getValue(
+    layer,
+    'layout',
+    'icon-allow-overlap',
+    zoom,
+    feature,
+    functionCache
+  );
+  if (!allowOverlap) {
+    return 'declutter';
+  }
+  const ignorePlacement = getValue(
+    layer,
+    'layout',
+    'icon-ignore-placement',
+    zoom,
+    feature,
+    functionCache
+  );
+  if (!ignorePlacement) {
+    return 'obstacle';
+  }
+  return 'none';
+}
+
+/**
+ * @private
  * @param {string} layerId Layer id.
  * @param {?} filter Filter.
  * @param {Object} feature Feature.
@@ -796,6 +830,12 @@ export function stylefunction(
                   if (!iconImg) {
                     const spriteImageData = spriteData[icon];
 
+                    const declutterMode = getIconDeclutterMode(
+                      layer,
+                      zoom,
+                      f,
+                      functionCache
+                    );
                     iconImg = new Icon({
                       color: iconColor
                         ? [
@@ -823,6 +863,7 @@ export function stylefunction(
                               featureState
                             ).map((v) => -v * spriteImageData.pixelRatio)
                           : undefined,
+                      declutterMode: declutterMode,
                     });
                     iconImageCache[icon_cache_key] = iconImg;
                   }
@@ -989,6 +1030,7 @@ export function stylefunction(
                     color: circleColor,
                   })
                 : undefined,
+              declutterMode: 'none',
             });
             iconImageCache[cache_key] = iconImg;
           }
