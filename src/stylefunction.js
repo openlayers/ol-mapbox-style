@@ -136,25 +136,16 @@ export function getValue(
 /**
  * @private
  * @param {Object} layer Gl object layer.
- * @param {string} allowOverlapProperty the allow-overlap property
- * @param {string} ignorePlacementProperty the ignore-placement property
  * @param {number} zoom Zoom.
  * @param {Object} feature Gl feature.
  * @param {Object} [functionCache] Function cache.
  * @return {"declutter"|"obstacle"|"none"} Value.
  */
-function getDeclutterMode(
-  layer,
-  allowOverlapProperty,
-  ignorePlacementProperty,
-  zoom,
-  feature,
-  functionCache
-) {
+function getIconDeclutterMode(layer, zoom, feature, functionCache) {
   const allowOverlap = getValue(
     layer,
     'layout',
-    allowOverlapProperty,
+    'icon-allow-overlap',
     zoom,
     feature,
     functionCache
@@ -165,7 +156,7 @@ function getDeclutterMode(
   const ignorePlacement = getValue(
     layer,
     'layout',
-    ignorePlacementProperty,
+    'icon-ignore-placement',
     zoom,
     feature,
     functionCache
@@ -839,10 +830,8 @@ export function stylefunction(
                   if (!iconImg) {
                     const spriteImageData = spriteData[icon];
 
-                    const declutterMode = getDeclutterMode(
+                    const declutterMode = getIconDeclutterMode(
                       layer,
-                      'icon-allow-overlap',
-                      'icon-ignore-placement',
                       zoom,
                       f,
                       functionCache
@@ -1028,15 +1017,7 @@ export function stylefunction(
           iconImg = iconImageCache[cache_key];
           if (!iconImg) {
             // the mapbox style spec does not support decluttering circles.
-            // but as openlayers does, we can support it as "extension"
-            const declutterMode = getDeclutterMode(
-              layer,
-              'circle-allow-overlap',
-              'circle-ignore-placement',
-              zoom,
-              f,
-              functionCache
-            );
+            const declutterMode = 'none';
             iconImg = new Circle({
               radius: circleRadius,
               stroke:
