@@ -4,6 +4,7 @@
   "description": "Create OpenLayers maps from Mapbox Style objects",
   "type": "module",
   "browser": "dist/index.js",
+  "main": "dist/olms.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
