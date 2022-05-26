@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkol_mapbox_style=self.webpackChunkol_mapbox_style||[]).push([[862],{7018:(e,o,s)=>{s(9789);var c=s(5955),a=document.cookie.replace(/(?:(?:^|.*;\s*)mapbox_access_token\s*\=\s*([^;]*).*$)|^.*$/,"$1");a||(a=window.prompt("Enter your Mapbox API access token:"),document.cookie="mapbox_access_token="+a+"; expires=Fri, 31 Dec 9999 23:59:59 GMT"),(0,c.ZP)("map","mapbox://styles/mapbox/bright-v9",{accessToken:a})}},e=>{e(e.s=7018)}]);
+//# sourceMappingURL=mapbox.js.map
