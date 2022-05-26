@@ -1,5 +1,10 @@
 # Changelog
 
+## 8.1.0
+
+* Add support for `icon-ignore-placement` and `icon-allow-overlap`
+* Add main field to package.json to avoid ESLint complaints
+
 ## 8.0.8
 
 * Fix relative source url handling for GeoJSON sources
