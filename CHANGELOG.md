@@ -1,5 +1,9 @@
 # Changelog
 
+## 8.1.1
+
+* Add main field to package.json to avoid ESLint complaints (was meant to go into 8.1.0 already)
+
 ## 8.1.0
 
 * Add support for `icon-ignore-placement` and `icon-allow-overlap`

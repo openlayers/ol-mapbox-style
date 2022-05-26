@@ -166,7 +166,7 @@ map instance, which holds the Mapbox Style object.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `map` | `string` \| `Map` \| `HTMLElement` | Either an existing OpenLayers Map instance, or a HTML element, or the id of a HTML element that will be the target of a new OpenLayers Map. |
+| `map` | `string` \| `HTMLElement` \| `Map` | Either an existing OpenLayers Map instance, or a HTML element, or the id of a HTML element that will be the target of a new OpenLayers Map. |
 | `style` | `any` | JSON style object or style url pointing to a Mapbox Style object. When using Mapbox APIs, the url is the `styleUrl` shown in Mapbox Studio's "share" panel. In addition, the `accessToken` option (see below) must be set. When passed as JSON style object, all OpenLayers layers created by `apply()` will be immediately available, but they may not have a source yet (i.e. when they are defined by a TileJSON url in the Mapbox Style document). When passed as style url, layers will be added to the map when the Mapbox Style document is loaded and parsed. |
 | `options` | [`Options`](#interfacestypesoptionsmd) | Options. |
 
