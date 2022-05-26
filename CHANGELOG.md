@@ -1,5 +1,9 @@
 # Changelog
 
+## 8.1.2
+
+* Add require field to package.json's exports to avoid ESLint complaints
+
 ## 8.1.1
 
 * Add main field to package.json to avoid ESLint complaints (was meant to go into 8.1.0 already)
