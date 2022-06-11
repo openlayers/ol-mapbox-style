@@ -229,7 +229,7 @@ function colorWithOpacity(color, opacity) {
   return color;
 }
 
-const templateRegEx = /^([^]*)\{(.*)\}([^]*)$/;
+const templateRegEx = /\{[^{}}]*\}/g;
 
 /**
  * @private
@@ -238,15 +238,9 @@ const templateRegEx = /^([^]*)\{(.*)\}([^]*)$/;
  * @return {string} Text.
  */
 function fromTemplate(text, properties) {
-  let parts;
-  do {
-    parts = text.match(templateRegEx);
-    if (parts) {
-      const value = properties[parts[2]] || '';
-      text = parts[1] + value + parts[3];
-    }
-  } while (parts);
-  return text;
+  return text.replace(templateRegEx, function (match) {
+    return properties[match.slice(1, -1)] || '';
+  });
 }
 
 let recordLayer = false;
