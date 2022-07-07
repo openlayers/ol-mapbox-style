@@ -107,7 +107,7 @@ export function getTileJson(glSource, styleUrl, options = {}) {
   let promise = tilejsonCache[cacheKey];
   if (!promise || options.transformRequest) {
     const url = glSource.url;
-    if (url) {
+    if (url && !glSource.tiles) {
       let normalizedSourceUrl = normalizeSourceUrl(
         url,
         options.accessToken,
