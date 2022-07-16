@@ -386,3 +386,38 @@ describe('applyStyle functionality', function () {
     );
   });
 });
+
+describe('applyStyle supports transformRequest object', function () {
+  it('applies transformRequest to all request types', function (done) {
+    const layer = new VectorTileLayer();
+    const expectedRequestTypes = new Set([
+      'Style',
+      'Sprite',
+      'SpriteImage',
+      'Source',
+      'Tiles',
+    ]);
+    const seenRequestTypes = new Set();
+    applyStyle(layer, '/fixtures/hot-osm/hot-osm.json', '', {
+      transformRequest: function (url, type) {
+        seenRequestTypes.add(type);
+        return new Request(url);
+      },
+    })
+      .then(function () {
+        should.deepEqual(
+          expectedRequestTypes,
+          seenRequestTypes,
+          `Request types seen by transformRequest: ${Array.from(
+            seenRequestTypes
+          )} do not match those expected for a Vector Tile style: ${Array.from(
+            expectedRequestTypes
+          )}`
+        );
+        done();
+      })
+      .catch(function (error) {
+        done(error);
+      });
+  });
+});
