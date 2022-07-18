@@ -1,6 +1,6 @@
 {
   "name": "ol-mapbox-style",
-  "version": "8.1.2",
+  "version": "8.2.0",
   "description": "Create OpenLayers maps from Mapbox Style objects",
   "type": "module",
   "browser": "dist/index.js",
@@ -83,7 +83,7 @@
     "should": "^13.2.3",
     "sinon": "^14.0.0",
     "style-loader": "^3.3.1",
-    "typedoc": "^0.23.8",
+    "typedoc": "0.22.18",
     "typedoc-plugin-markdown": "^3.11.14",
     "typedoc-plugin-missing-exports": "^0.23.0",
     "typescript": "^4.6.0-beta",

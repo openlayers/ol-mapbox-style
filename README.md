@@ -596,14 +596,14 @@ the returned request will be respected.
 - [FeatureIdentifier](#interfacestypesfeatureidentifiermd)
 - [Options](#interfacestypesoptionsmd)
 
-### Type aliases
+### Type Aliases
 
 - [ResourceType](#resourcetype)
 
-## Type aliases
+## Type Aliases
 
 ### ResourceType
 
-Ƭ **ResourceType**<\>: ``"Style"`` \| ``"Source"`` \| ``"Sprite"`` \| ``"Tiles"`` \| ``"GeoJSON"``
+Ƭ **ResourceType**<\>: ``"Style"`` \| ``"Source"`` \| ``"Sprite"`` \| ``"SpriteImage"`` \| ``"Tiles"`` \| ``"GeoJSON"``
 
 <!--apidoc end-->
