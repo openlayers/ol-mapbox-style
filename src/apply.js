@@ -59,7 +59,7 @@ import {
  * @property {string} [accessTokenParam='access_token'] Access token param. For internal use.
  */
 
-/** @typedef {'Style'|'Source'|'Sprite'|'Tiles'|'GeoJSON'} ResourceType */
+/** @typedef {'Style'|'Source'|'Sprite'|'SpriteImage'|'Tiles'|'GeoJSON'} ResourceType */
 /** @typedef {import("ol/layer/Layer").default} Layer */
 /** @typedef {import("ol/source/Source").default} Source */
 
@@ -330,6 +330,15 @@ export function applyStyle(
                 sizeFactor +
                 '.png' +
                 sprite.search;
+              if (options.transformRequest) {
+                const transformed = options.transformRequest(
+                  spriteImageUrl,
+                  'SpriteImage'
+                );
+                if (transformed instanceof Request) {
+                  spriteImageUrl = encodeURI(transformed.url);
+                }
+              }
               onChange();
             })
             .catch(function (err) {

@@ -386,3 +386,64 @@ describe('applyStyle functionality', function () {
     );
   });
 });
+
+describe('applyStyle supports transformRequest object', function () {
+  it('applies transformRequest to all Vector Tile request types', function (done) {
+    const layer = new VectorTileLayer();
+    const expectedRequestTypes = new Set([
+      'Style',
+      'Sprite',
+      'SpriteImage',
+      'Source',
+      'Tiles',
+    ]);
+    const seenRequestTypes = new Set();
+    applyStyle(layer, '/fixtures/hot-osm/hot-osm.json', '', {
+      transformRequest: function (url, type) {
+        seenRequestTypes.add(type);
+        return new Request(url);
+      },
+    })
+      .then(function () {
+        should.deepEqual(
+          expectedRequestTypes,
+          seenRequestTypes,
+          `Request types seen by transformRequest: ${Array.from(
+            seenRequestTypes
+          )} do not match those expected for a Vector Tile style: ${Array.from(
+            expectedRequestTypes
+          )}`
+        );
+        done();
+      })
+      .catch(function (error) {
+        done(error);
+      });
+  });
+  it('applies transformRequest to GeoJSON request types', function (done) {
+    const layer = new VectorLayer();
+    const expectedRequestTypes = new Set(['Style', 'GeoJSON']);
+    const seenRequestTypes = new Set();
+    applyStyle(layer, '/fixtures/geojson.json', '', {
+      transformRequest: function (url, type) {
+        seenRequestTypes.add(type);
+        return new Request(url);
+      },
+    })
+      .then(function () {
+        should.deepEqual(
+          expectedRequestTypes,
+          seenRequestTypes,
+          `Request types seen by transformRequest: ${Array.from(
+            seenRequestTypes
+          )} do not match those expected for a GeoJSON style: ${Array.from(
+            expectedRequestTypes
+          )}`
+        );
+        done();
+      })
+      .catch(function (error) {
+        done(error);
+      });
+  });
+});
