@@ -1,5 +1,11 @@
 # Changelog
 
+## 8.2.0
+
+* More secure regular expression for property templates; simplified template handling
+* Avoid unnecessary TileJSON fetches
+* New `SpriteImage` type for the `transformRequest` option
+
 ## 8.1.2
 
 * Add require field to package.json's exports to avoid ESLint complaints
