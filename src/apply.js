@@ -21,7 +21,6 @@ import {
   stylefunction as applyStyleFunction,
   getValue,
 } from './stylefunction.js';
-import {assign} from 'ol/obj.js';
 import {createXYZ} from 'ol/tilegrid.js';
 import {
   defaultResolutions,
@@ -70,7 +69,7 @@ import {
  */
 function completeOptions(styleUrl, options) {
   if (!options.accessToken) {
-    options = assign({}, options);
+    options = Object.assign({}, options);
     const searchParams = new URL(styleUrl).searchParams;
     // The last search parameter is the access token
     searchParams.forEach((value, key) => {
@@ -613,7 +612,7 @@ function setupGeoJSONSource(glSource, styleUrl, options) {
     });
   }
   const source = new VectorSource(
-    assign(
+    Object.assign(
       {
         attributions: glSource.attribution,
         format: geoJsonFormat,
@@ -651,7 +650,7 @@ function processStyle(glStyle, map, styleUrl, options) {
   let view = map.getView();
   if (!view.isDef() && !view.getRotation() && !view.getResolutions()) {
     view = new View(
-      assign(view.getProperties(), {
+      Object.assign(view.getProperties(), {
         maxResolution: defaultResolutions[0],
       })
     );
@@ -896,7 +895,7 @@ function finalizeLayer(layer, layerIds, glStyle, styleUrl, map, options = {}) {
           ),
           glStyle,
           layerIds,
-          assign({styleUrl: styleUrl}, options)
+          Object.assign({styleUrl: styleUrl}, options)
         )
           .then(function () {
             layer.setVisible(true);

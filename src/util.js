@@ -1,4 +1,3 @@
-import {assign} from 'ol/obj.js';
 import {normalizeSourceUrl, normalizeStyleUrl} from './mapbox.js';
 
 export function deg2rad(degrees) {
@@ -116,7 +115,7 @@ export function getTileJson(glSource, styleUrl, options = {}) {
       );
       if (url.startsWith('mapbox://')) {
         promise = Promise.resolve(
-          assign({}, glSource, {
+          Object.assign({}, glSource, {
             url: undefined,
             tiles: normalizedSourceUrl,
           })
@@ -157,7 +156,7 @@ export function getTileJson(glSource, styleUrl, options = {}) {
         );
       }
     } else {
-      glSource = assign({}, glSource, {
+      glSource = Object.assign({}, glSource, {
         tiles: glSource.tiles.map(function (tileUrl) {
           return normalizeSourceUrl(
             tileUrl,
@@ -167,7 +166,7 @@ export function getTileJson(glSource, styleUrl, options = {}) {
           );
         }),
       });
-      promise = Promise.resolve(assign({}, glSource));
+      promise = Promise.resolve(Object.assign({}, glSource));
     }
     tilejsonCache[cacheKey] = promise;
   }
