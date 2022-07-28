@@ -90,7 +90,7 @@ For debugging tests in the browser, run
 
 and open a browser on the host and port indicated in the console output (usually <http://localhost:9876/>) and click the 'DEBUG' button to go to the debug environment.
 
-[![Node.js CI](https://github.com/openlayers/ol-mapbox-style/actions/workflows/node.js.yml/badge.svg)](https://github.com/openlayers/ol-mapbox-style/actions/workflows/node.js.yml)
+[![Test Job](https://github.com/openlayers/ol-mapbox-style/actions/workflows/test.yml/badge.svg)](https://github.com/openlayers/ol-mapbox-style/actions/workflows/test.yml)
 
 <!--apidoc start-->
 
