@@ -1,5 +1,10 @@
 # Changelog
 
+## 8.2.1
+
+* Updated dependencies
+* CI changes
+
 ## 8.2.0
 
 * More secure regular expression for property templates; simplified template handling
