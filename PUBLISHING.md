@@ -35,12 +35,13 @@ Create a pull request and merge the release branch. This allows for any final re
 
 ### Publish to npm
 
+Create build artifacts in the `dist` directory (ignored in git, but included in the npm package):
+
+    npm run build
+
+Publish the package:
+
     npm publish
-
-### Commit release artifacts
-
-    git add -f dist
-    git commit -m "Add dist for v2.11.0"
 
 ### Create and push a tag
 
