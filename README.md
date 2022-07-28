@@ -90,7 +90,7 @@ For debugging tests in the browser, run
 
 and open a browser on the host and port indicated in the console output (usually <http://localhost:9876/>) and click the 'DEBUG' button to go to the debug environment.
 
-[![CircleCI](https://circleci.com/gh/openlayers/ol-mapbox-style.svg?style=svg)](https://circleci.com/gh/openlayers/ol-mapbox-style)
+[![Node.js CI](https://github.com/openlayers/ol-mapbox-style/actions/workflows/node.js.yml/badge.svg)](https://github.com/openlayers/ol-mapbox-style/actions/workflows/node.js.yml)
 
 <!--apidoc start-->
 
