@@ -4,9 +4,7 @@ Copyright 2016-present ol-mapbox-style contributors
 License: https://raw.githubusercontent.com/openlayers/ol-mapbox-style/master/LICENSE
 */
 
-import Color from '@mapbox/mapbox-gl-style-spec/util/color.js';
 import GeoJSON from 'ol/format/GeoJSON.js';
-import LayerGroup from 'ol/layer/Group.js';
 import MVT from 'ol/format/MVT.js';
 import Map from 'ol/Map.js';
 import TileGrid from 'ol/tilegrid/TileGrid.js';
@@ -28,6 +26,7 @@ import {
   fetchResource,
   getGlStyle,
   getTileJson,
+  getZoomForResolution,
 } from './util.js';
 import {equivalent, fromLonLat, getUserProjection} from 'ol/proj.js';
 import {getFonts} from './text.js';
@@ -36,6 +35,8 @@ import {
   normalizeSpriteUrl,
   normalizeStyleUrl,
 } from './mapbox.js';
+
+/** @typedef {import("ol/layer/Group.js").default} LayerGroup */
 
 /**
  * @typedef {Object} FeatureIdentifier
@@ -358,30 +359,21 @@ export function applyStyle(
 
 const emptyObj = {};
 
-function setBackground(mapOrLayer, layer) {
+function setBackground(mapOrLayer, layer, options) {
   const background = {
     id: layer.id,
     type: layer.type,
   };
   const functionCache = {};
-  function updateStyle(resolution) {
-    // when re-applying the background on the first vector layor
-    // allow context to override original layer group mapOrLayer
-    if (this && mapOrLayer !== this) {
-      mapOrLayer = this;
-    }
+
+  function getBackgroundColor(resolution) {
     const layout = layer.layout || {};
     const paint = layer.paint || {};
     background['paint'] = paint;
-    // ??? does not allow for vector source (only vector tile source)
-    const zoom =
-      typeof mapOrLayer.getSource === 'function'
-        ? mapOrLayer.getSource().getTileGrid().getZForResolution(resolution)
-        : mapOrLayer.getView().getZoom();
-    const element =
-      typeof mapOrLayer.getTargetElement === 'function'
-        ? mapOrLayer.getTargetElement()
-        : undefined;
+    const zoom = getZoomForResolution(
+      resolution,
+      options.resolutions || defaultResolutions
+    );
     let bg, opacity;
     if (paint['background-color'] !== undefined) {
       bg = getValue(
@@ -392,9 +384,6 @@ function setBackground(mapOrLayer, layer) {
         emptyObj,
         functionCache
       );
-      if (element) {
-        element.style.background = Color.parse(bg).toString();
-      }
     }
     if (paint['background-opacity'] !== undefined) {
       opacity = getValue(
@@ -405,48 +394,62 @@ function setBackground(mapOrLayer, layer) {
         emptyObj,
         functionCache
       );
-      if (element) {
-        element.style.opacity = opacity;
-      }
     }
-    if (layout.visibility == 'none') {
-      if (element) {
-        element.style.backgroundColor = '';
-        element.style.opacity = '';
-      }
-      return undefined;
-    }
-    return _colorWithOpacity(bg, opacity);
+    return layout.visibility == 'none'
+      ? undefined
+      : _colorWithOpacity(bg, opacity);
   }
-  if (typeof mapOrLayer.getTargetElement === 'function') {
-    // map object
-    if (mapOrLayer.getTargetElement()) {
-      updateStyle();
+
+  let lastRenderTime = 0;
+  let backgroundRendered = false;
+  /**
+   * @param {import("ol/render/Event.js").default} e Render event
+   */
+  function renderBackground(e) {
+    if (e.frameState.time !== lastRenderTime) {
+      lastRenderTime = e.frameState.time;
+      backgroundRendered = false;
     }
-    mapOrLayer.on(['change:resolution', 'change:target'], updateStyle);
-  } else if (mapOrLayer instanceof LayerGroup) {
-    // group object
-    if (
-      mapOrLayer.getLayers().getLength() > 0 &&
-      mapOrLayer.getLayers().item(0) instanceof VectorTileLayer
-    ) {
-      mapOrLayer.getLayers().item(0).setBackground(updateStyle);
-    } else {
-      // capture it for the first vector layer added to layer group
-      mapOrLayer.set('mapbox-background', updateStyle);
+    if (backgroundRendered) {
+      return;
     }
-  } else if (typeof mapOrLayer.setBackground === 'function') {
-    // layer object
-    mapOrLayer.setBackground(updateStyle);
+    if (!(e.context instanceof CanvasRenderingContext2D)) {
+      throw new Error('Cannot apply background to WebGL context');
+    }
+    const resolution = e.frameState.viewState.resolution;
+    const color = getBackgroundColor(resolution);
+    if (color) {
+      const context = e.context;
+      const alpha = context.globalAlpha;
+      context.globalAlpha = 1;
+      context.fillStyle = color;
+      context.fillRect(0, 0, e.context.canvas.width, e.context.canvas.height);
+      context.globalAlpha = alpha;
+    }
+    backgroundRendered = true;
+  }
+
+  if (typeof mapOrLayer.getLayers === 'function') {
+    // map or layer group
+    const layers = mapOrLayer.getLayers();
+    layers.forEach(function (layer) {
+      layer.on('prerender', renderBackground);
+    });
+    layers.on('add', function (e) {
+      e.element.on('prerender', renderBackground);
+    });
+    layers.on('remove', function (e) {
+      e.element.un('prerender', renderBackground);
+    });
   } else {
-    throw new Error('Unable to apply background.');
+    mapOrLayer.on('prerender', renderBackground);
   }
 }
 
-function setFirstBackground(mapOrLayer, glStyle) {
+function setFirstBackground(mapOrLayer, glStyle, options) {
   glStyle.layers.some(function (layer) {
     if (layer.type === 'background') {
-      setBackground(mapOrLayer, layer);
+      setBackground(mapOrLayer, layer, options);
       return true;
     }
   });
@@ -471,11 +474,11 @@ function setFirstBackground(mapOrLayer, glStyle) {
  */
 export function applyBackground(mapOrLayer, glStyle, options = {}) {
   if (typeof glStyle === 'object') {
-    setFirstBackground(mapOrLayer, glStyle);
+    setFirstBackground(mapOrLayer, glStyle, options);
     return Promise.resolve();
   }
   return getGlStyle(glStyle, options).then(function (glStyle) {
-    setFirstBackground(mapOrLayer, glStyle);
+    setFirstBackground(mapOrLayer, glStyle, options);
   });
 }
 
@@ -714,7 +717,7 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
       //FIXME Unsupported layer type
       throw new Error(`${type} layers are not supported`);
     } else if (type == 'background') {
-      setBackground(mapOrGroup, glLayer);
+      setBackground(mapOrGroup, glLayer, options);
     } else {
       id = glLayer.source || getSourceIdByRef(glLayers, glLayer.ref);
       // this technique assumes gl layers will be in a particular order
@@ -735,18 +738,6 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
         glSource = glStyle.sources[id];
         if (glSource.type == 'vector') {
           layer = setupVectorLayer(glSource, styleUrl, options);
-          // if a background style was captured for a vector tile layer (typically for a layer group)
-          if (mapOrGroup.get('mapbox-background')) {
-            layer.on(
-              'change:source',
-              applyCapturedBackground.call(
-                this,
-                layer,
-                mapOrGroup.get('mapbox-background')
-              )
-            );
-            mapOrGroup.unset('mapbox-background');
-          }
         } else if (glSource.type == 'raster') {
           layer = setupRasterLayer(glSource, styleUrl, options);
           layer.setVisible(
@@ -773,23 +764,6 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
   );
   mapOrGroup.set('mapbox-style', glStyle);
   return Promise.all(promises);
-}
-
-/**
- * Apply the background to a vector layer when captured by a layer group
- * @param {VectorTileLayer} layer The vector tile layer to apply background style to
- * @param {Function} updateStyle The background style function defined by setBackground
- * @return {Function} The event callback when the source is ready
- */
-function applyCapturedBackground(layer, updateStyle) {
-  return function (event) {
-    // only apply once
-    if (!event || (event && event.oldValue === null)) {
-      // change the context of updateStyle from layer group to vector layer
-      // before applying it to the layer
-      layer.setBackground(updateStyle.call(layer));
-    }
-  };
 }
 
 /**
@@ -978,12 +952,9 @@ function finalizeLayer(
     };
 
     layer.set('mapbox-layers', layerIds);
-    if (mapOrGroup.getLayers().getArray().indexOf(layer) === -1) {
-      if (mapOrGroup instanceof Map && mapOrGroup.addLayer) {
-        mapOrGroup.addLayer(layer);
-      } else {
-        mapOrGroup.getLayers().getArray().push(layer);
-      }
+    const layers = mapOrGroup.getLayers();
+    if (layers.getArray().indexOf(layer) === -1) {
+      layers.push(layer);
     }
 
     if (layer.getSource()) {
