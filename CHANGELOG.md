@@ -1,5 +1,7 @@
 # Changelog
 
+## Next version
+
 ## 9.0.0
 
 ### Breaking changes
@@ -8,6 +10,8 @@
 * `icon-offset` has been fixed. If you previously worked around the x-value moving left instead of right with increasing offset, you have to remove this workaround now.
 
 ### Other changes
+
+* Added support for `text-justify`
 
 ## 8.2.1
 
