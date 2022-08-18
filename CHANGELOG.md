@@ -1,5 +1,14 @@
 # Changelog
 
+## 9.0.0
+
+### Breaking changes
+
+* ol-mapbox-style now requires OpenLayers 7
+* `icon-offset` has been fixed. If you previously worked around the x-value moving left instead of right with increasing offset, you have to remove this workaround now.
+
+### Other changes
+
 ## 8.2.1
 
 * Updated dependencies
