@@ -1,0 +1,72 @@
+{
+  "version": 8,
+  "name": "states",
+  "center": [-122.19952899999998, 51.920367528011525],
+  "zoom": 3,
+  "glyphs": "{fontstack}/{range}",
+  "sources": {
+    "states": {
+      "type": "geojson",
+      "data": "./states.geojson"
+    },
+    "osm": {
+      "type": "raster",
+      "attribution": "&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors.",
+      "tileSize": 256,
+      "tiles": [
+        "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "https://b.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      ]
+    },
+    "esri": {
+      "type": "vector",
+      "url": "https://basemaps-api.arcgis.com/arcgis/rest/services/World_Basemap_v2/VectorTileServer?token=AAPK1dd93729edc54e84ade1ea5dc0f4f9d3EPexfd5qirlO3QtHGBj5JQL7iUYHQOb4yLjfKEYFLcyN9PlMd87lMjjv8D3DxDsQ",
+      "minzoom": 0,
+      "maxzoom": 16,
+      "tiles": [
+        "https://basemaps-api.arcgis.com/arcgis/rest/services/World_Basemap_v2/VectorTileServer/tile/{z}/{y}/{x}.pbf?token=AAPK1dd93729edc54e84ade1ea5dc0f4f9d3EPexfd5qirlO3QtHGBj5JQL7iUYHQOb4yLjfKEYFLcyN9PlMd87lMjjv8D3DxDsQ"
+      ],
+      "copyrightText": "Sources: Esri, HERE, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors, and the GIS User Community",
+      "attribution": "Sources: Esri, HERE, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors, and the GIS User Community"
+    },
+    "spatial-org-osm": {
+      "type": "vector",
+      "url": "https://tegola-osm-demo.go-spatial.org/v1/capabilities/osm.json"
+    }    
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "rgba(255,255,0,0.2)"
+      }
+    },
+    {
+      "id": "osm",
+      "type": "raster",
+      "source": "osm"
+    },
+    {
+      "id": "land",
+      "type": "fill",
+      "source": "spatial-org-osm",
+      "source-layer": "land",
+      "minzoom": 0,
+      "maxzoom": 24,
+      "paint": {
+        "fill-color": "rgba(247, 246, 241, 0.6)"
+      }
+    },
+    {
+      "id": "states",
+      "type": "fill",
+      "source": "states",
+      "paint": {
+        "fill-color": "#A6CEE3",
+        "fill-opacity": 0.4
+      }
+    }
+  ]
+}

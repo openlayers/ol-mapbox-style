@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkol_mapbox_style=self.webpackChunkol_mapbox_style||[]).push([[468],{8753:(e,o,n)=>{n(9789);var s=n(5955),a=n(944),t=n(6148),r=n(8615),l=new a.Z;new t.Z({target:"map",view:new r.ZP({center:[-10203186.115192635,4475744.563386],zoom:4}),layers:[l]}),l.on("propertychange",(function(){console.info(l.getLayers().getArray())})),(0,s.ZP)(l,"data/geojson-wms.json")}},e=>{e(e.s=8753)}]);
+//# sourceMappingURL=olms-group.js.map
