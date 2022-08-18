@@ -104,7 +104,7 @@ and open a browser on the host and port indicated in the console output (usually
 
 - [default](#default)
 
-### Namespaces
+### Modules
 
 - [types](#modulestypesmd)
 
@@ -587,7 +587,7 @@ the returned request will be respected.
 
 <a name="modulestypesmd"></a>
 
-# Namespace: types
+# Module: types
 
 ## Table of contents
 
