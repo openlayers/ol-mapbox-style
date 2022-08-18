@@ -1,5 +1,9 @@
+import Feature from 'ol/Feature.js';
+import LayerGroup from 'ol/layer/Group.js';
 import Map from 'ol/Map.js';
+import Point from 'ol/geom/Point.js';
 import TileSource from 'ol/source/Tile.js';
+import VectorLayer from 'ol/layer/Vector.js';
 import VectorSource from 'ol/source/Vector.js';
 import VectorTileLayer from 'ol/layer/VectorTile.js';
 import VectorTileSource from 'ol/source/VectorTile.js';
@@ -546,64 +550,120 @@ describe('ol-mapbox-style', function () {
   });
 
   describe('applyBackground', function () {
-    it('applies a background to a map container', function () {
-      const target = document.createElement('div');
-      target.style.width = '100px';
-      target.style.height = '100px';
-      const map = new Map({target: target});
+    let map;
+    beforeEach(function () {
+      map = new Map({
+        target: document.createElement('div'),
+        view: new View({
+          center: [0, 0],
+          zoom: 0,
+        }),
+      });
+      map.setSize([100, 100]);
+    });
+    afterEach(function () {
+      map.setTarget(null);
+    });
+
+    it('applies a background for a map', function () {
       applyBackground(map, backgroundStyle);
-      should(target.style.backgroundColor).be.exactly('rgb(248, 244, 240)');
-      should(target.style.opacity).be.eql('0.75');
+      const layer = new VectorLayer({
+        opacity: 0.5,
+        source: new VectorSource({
+          features: [new Feature(new Point([0, 0]))],
+        }),
+      });
+      let backgroundColor;
+      map.addLayer(layer);
+      layer.on('prerender', function (e) {
+        backgroundColor = Array.from(e.context.getImageData(0, 0, 1, 1).data);
+      });
+      map.renderSync();
+      should(backgroundColor).eql([248, 244, 240, Math.floor(0.75 * 255)]);
+    });
+    it('applies a background for a layer group', function () {
+      const layerGroup = new LayerGroup({
+        layers: [
+          new VectorLayer({
+            opacity: 0.5,
+            source: new VectorSource({
+              features: [new Feature(new Point([0, 0]))],
+            }),
+          }),
+        ],
+      });
+      applyBackground(layerGroup, backgroundStyle);
+      map.addLayer(layerGroup);
+      let backgroundColor;
+      layerGroup
+        .getLayers()
+        .item(0)
+        .on('prerender', function (e) {
+          backgroundColor = Array.from(e.context.getImageData(0, 0, 1, 1).data);
+        });
+      map.renderSync();
+      should(backgroundColor).eql([248, 244, 240, Math.floor(0.75 * 255)]);
     });
     it('applies a background to a layer', function () {
       const layer = new VectorTileLayer({
         source: new VectorTileSource({}),
       });
-      if (typeof layer.setBackground !== 'function') {
-        layer.setBackground = function (background) {
-          layer.background = background;
-        };
-        layer.getBackground = function () {
-          return layer.background;
-        };
-      }
+      map.addLayer(layer);
       applyBackground(layer, backgroundStyle);
-      should(layer.getBackground()(1)).be.exactly('rgba(248,244,240,0.75)');
+      let backgroundColor;
+      layer.on('prerender', function (e) {
+        backgroundColor = Array.from(e.context.getImageData(0, 0, 1, 1).data);
+      });
+      map.renderSync();
+      should(backgroundColor).eql([248, 244, 240, Math.floor(0.75 * 255)]);
     });
-    it('ignores background if layout: none (with map container)', function () {
-      const target = document.createElement('div');
-      target.style.width = '100px';
-      target.style.height = '100px';
-      const map = new Map({target: target});
+    it('ignores background if layout: {visibility: "none"} (with map)', function () {
       applyBackground(map, backgroundNoneStyle);
-      should(target.style.backgroundColor).be.exactly('');
-      should(target.style.opacity).be.eql('');
+      const layer = new VectorLayer({
+        opacity: 0.5,
+        source: new VectorSource({
+          features: [new Feature(new Point([0, 0]))],
+        }),
+      });
+      map.addLayer(layer);
+      let backgroundColor;
+      layer.on('prerender', function (e) {
+        backgroundColor = Array.from(e.context.getImageData(0, 0, 1, 1).data);
+      });
+      map.renderSync();
+      should(backgroundColor).eql([0, 0, 0, 0]);
     });
-    it('ignores background if layout: none (with a layer)', function () {
+    it('ignores background if layout: {visibility: "none"} (with a layer)', function () {
       const layer = new VectorTileLayer({
         source: new VectorTileSource({}),
       });
-      if (typeof layer.setBackground !== 'function') {
-        layer.setBackground = function (background) {
-          layer.background = background;
-        };
-        layer.getBackground = function () {
-          return layer.background;
-        };
-      }
+      map.addLayer(layer);
       applyBackground(layer, backgroundNoneStyle);
-      should(layer.getBackground()(1)).be.undefined();
+      let backgroundColor;
+      layer.on('prerender', function (e) {
+        backgroundColor = Array.from(e.context.getImageData(0, 0, 1, 1).data);
+      });
+      map.renderSync();
+      should(backgroundColor).eql([0, 0, 0, 0]);
     });
     it('works with a glStyle url', function (done) {
-      const target = document.createElement('div');
-      target.style.width = '100px';
-      target.style.height = '100px';
-      const map = new Map({target: target});
-      applyBackground(map, './fixtures/background.json').then(function () {
-        should(target.style.backgroundColor).be.exactly('rgb(248, 244, 240)');
-        should(target.style.opacity).be.eql('0.75');
-        done();
-      });
+      applyBackground(map, './fixtures/background.json')
+        .then(function () {
+          const layer = new VectorTileLayer({
+            source: new VectorTileSource({}),
+          });
+          map.addLayer(layer);
+          let backgroundColor;
+          layer.on('prerender', function (e) {
+            backgroundColor = Array.from(
+              e.context.getImageData(0, 0, 1, 1).data
+            );
+          });
+          map.renderSync();
+          should(backgroundColor).eql([248, 244, 240, Math.floor(0.75 * 255)]);
+          done();
+        })
+        .catch(done);
     });
   });
 

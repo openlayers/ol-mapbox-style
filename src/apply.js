@@ -4,7 +4,6 @@ Copyright 2016-present ol-mapbox-style contributors
 License: https://raw.githubusercontent.com/openlayers/ol-mapbox-style/master/LICENSE
 */
 
-import Color from '@mapbox/mapbox-gl-style-spec/util/color.js';
 import GeoJSON from 'ol/format/GeoJSON.js';
 import MVT from 'ol/format/MVT.js';
 import Map from 'ol/Map.js';
@@ -27,6 +26,7 @@ import {
   fetchResource,
   getGlStyle,
   getTileJson,
+  getZoomForResolution,
 } from './util.js';
 import {equivalent, fromLonLat, getUserProjection} from 'ol/proj.js';
 import {getFonts} from './text.js';
@@ -35,6 +35,8 @@ import {
   normalizeSpriteUrl,
   normalizeStyleUrl,
 } from './mapbox.js';
+
+/** @typedef {import("ol/layer/Group.js").default} LayerGroup */
 
 /**
  * @typedef {Object} FeatureIdentifier
@@ -357,24 +359,21 @@ export function applyStyle(
 
 const emptyObj = {};
 
-function setBackground(mapOrLayer, layer) {
+function setBackground(mapOrLayer, layer, options) {
   const background = {
     id: layer.id,
     type: layer.type,
   };
   const functionCache = {};
-  function updateStyle(resolution) {
+
+  function getBackgroundColor(resolution) {
     const layout = layer.layout || {};
     const paint = layer.paint || {};
     background['paint'] = paint;
-    const zoom =
-      typeof mapOrLayer.getSource === 'function'
-        ? mapOrLayer.getSource().getTileGrid().getZForResolution(resolution)
-        : mapOrLayer.getView().getZoom();
-    const element =
-      typeof mapOrLayer.getTargetElement === 'function'
-        ? mapOrLayer.getTargetElement()
-        : undefined;
+    const zoom = getZoomForResolution(
+      resolution,
+      options.resolutions || defaultResolutions
+    );
     let bg, opacity;
     if (paint['background-color'] !== undefined) {
       bg = getValue(
@@ -385,9 +384,6 @@ function setBackground(mapOrLayer, layer) {
         emptyObj,
         functionCache
       );
-      if (element) {
-        element.style.background = Color.parse(bg).toString();
-      }
     }
     if (paint['background-opacity'] !== undefined) {
       opacity = getValue(
@@ -398,35 +394,62 @@ function setBackground(mapOrLayer, layer) {
         emptyObj,
         functionCache
       );
-      if (element) {
-        element.style.opacity = opacity;
-      }
     }
-    if (layout.visibility == 'none') {
-      if (element) {
-        element.style.backgroundColor = '';
-        element.style.opacity = '';
-      }
-      return undefined;
-    }
-    return _colorWithOpacity(bg, opacity);
+    return layout.visibility == 'none'
+      ? undefined
+      : _colorWithOpacity(bg, opacity);
   }
-  if (typeof mapOrLayer.getTargetElement === 'function') {
-    if (mapOrLayer.getTargetElement()) {
-      updateStyle();
+
+  let lastRenderTime = 0;
+  let backgroundRendered = false;
+  /**
+   * @param {import("ol/render/Event.js").default} e Render event
+   */
+  function renderBackground(e) {
+    if (e.frameState.time !== lastRenderTime) {
+      lastRenderTime = e.frameState.time;
+      backgroundRendered = false;
     }
-    mapOrLayer.on(['change:resolution', 'change:target'], updateStyle);
-  } else if (typeof mapOrLayer.setBackground === 'function') {
-    mapOrLayer.setBackground(updateStyle);
+    if (backgroundRendered) {
+      return;
+    }
+    if (!(e.context instanceof CanvasRenderingContext2D)) {
+      throw new Error('Cannot apply background to WebGL context');
+    }
+    const resolution = e.frameState.viewState.resolution;
+    const color = getBackgroundColor(resolution);
+    if (color) {
+      const context = e.context;
+      const alpha = context.globalAlpha;
+      context.globalAlpha = 1;
+      context.fillStyle = color;
+      context.fillRect(0, 0, e.context.canvas.width, e.context.canvas.height);
+      context.globalAlpha = alpha;
+    }
+    backgroundRendered = true;
+  }
+
+  if (typeof mapOrLayer.getLayers === 'function') {
+    // map or layer group
+    const layers = mapOrLayer.getLayers();
+    layers.forEach(function (layer) {
+      layer.on('prerender', renderBackground);
+    });
+    layers.on('add', function (e) {
+      e.element.on('prerender', renderBackground);
+    });
+    layers.on('remove', function (e) {
+      e.element.un('prerender', renderBackground);
+    });
   } else {
-    throw new Error('Unable to apply background.');
+    mapOrLayer.on('prerender', renderBackground);
   }
 }
 
-function setFirstBackground(mapOrLayer, glStyle) {
+function setFirstBackground(mapOrLayer, glStyle, options) {
   glStyle.layers.some(function (layer) {
     if (layer.type === 'background') {
-      setBackground(mapOrLayer, layer);
+      setBackground(mapOrLayer, layer, options);
       return true;
     }
   });
@@ -451,11 +474,11 @@ function setFirstBackground(mapOrLayer, glStyle) {
  */
 export function applyBackground(mapOrLayer, glStyle, options = {}) {
   if (typeof glStyle === 'object') {
-    setFirstBackground(mapOrLayer, glStyle);
+    setFirstBackground(mapOrLayer, glStyle, options);
     return Promise.resolve();
   }
   return getGlStyle(glStyle, options).then(function (glStyle) {
-    setFirstBackground(mapOrLayer, glStyle);
+    setFirstBackground(mapOrLayer, glStyle, options);
   });
 }
 
@@ -632,8 +655,17 @@ function setupGeoJSONLayer(glSource, styleUrl, options) {
   });
 }
 
-function updateRasterLayerProperties(glLayer, layer, view, functionCache) {
-  const zoom = view.getZoom();
+function prerenderRasterLayer(glLayer, layer, functionCache) {
+  let zoom = null;
+  return function (event) {
+    if (event.frameState.viewState.zoom !== zoom) {
+      zoom = event.frameState.viewState.zoom;
+      updateRasterLayerProperties(glLayer, layer, zoom, functionCache);
+    }
+  };
+}
+
+function updateRasterLayerProperties(glLayer, layer, zoom, functionCache) {
   const opacity = getValue(
     glLayer,
     'paint',
@@ -645,29 +677,33 @@ function updateRasterLayerProperties(glLayer, layer, view, functionCache) {
   layer.setOpacity(opacity);
 }
 
-function processStyle(glStyle, map, styleUrl, options) {
+function processStyle(glStyle, mapOrGroup, styleUrl, options) {
   const promises = [];
-  let view = map.getView();
-  if (!view.isDef() && !view.getRotation() && !view.getResolutions()) {
-    view = new View(
-      Object.assign(view.getProperties(), {
-        maxResolution: defaultResolutions[0],
-      })
-    );
-    map.setView(view);
-  }
 
-  if ('center' in glStyle && !view.getCenter()) {
-    view.setCenter(fromLonLat(glStyle.center));
-  }
-  if ('zoom' in glStyle && view.getZoom() === undefined) {
-    view.setResolution(defaultResolutions[0] / Math.pow(2, glStyle.zoom));
-  }
-  if (!view.getCenter() || view.getZoom() === undefined) {
-    view.fit(view.getProjection().getExtent(), {
-      nearest: true,
-      size: map.getSize(),
-    });
+  let view = null;
+  if (mapOrGroup instanceof Map) {
+    view = mapOrGroup.getView();
+    if (!view.isDef() && !view.getRotation() && !view.getResolutions()) {
+      view = new View(
+        Object.assign(view.getProperties(), {
+          maxResolution: defaultResolutions[0],
+        })
+      );
+      mapOrGroup.setView(view);
+    }
+
+    if ('center' in glStyle && !view.getCenter()) {
+      view.setCenter(fromLonLat(glStyle.center));
+    }
+    if ('zoom' in glStyle && view.getZoom() === undefined) {
+      view.setResolution(defaultResolutions[0] / Math.pow(2, glStyle.zoom));
+    }
+    if (!view.getCenter() || view.getZoom() === undefined) {
+      view.fit(view.getProjection().getExtent(), {
+        nearest: true,
+        size: mapOrGroup.getSize(),
+      });
+    }
   }
 
   const glLayers = glStyle.layers;
@@ -681,14 +717,21 @@ function processStyle(glStyle, map, styleUrl, options) {
       //FIXME Unsupported layer type
       throw new Error(`${type} layers are not supported`);
     } else if (type == 'background') {
-      setBackground(map, glLayer);
+      setBackground(mapOrGroup, glLayer, options);
     } else {
       id = glLayer.source || getSourceIdByRef(glLayers, glLayer.ref);
       // this technique assumes gl layers will be in a particular order
       if (id != glSourceId) {
         if (layerIds.length) {
           promises.push(
-            finalizeLayer(layer, layerIds, glStyle, styleUrl, map, options)
+            finalizeLayer(
+              layer,
+              layerIds,
+              glStyle,
+              styleUrl,
+              mapOrGroup,
+              options
+            )
           );
           layerIds = [];
         }
@@ -701,17 +744,10 @@ function processStyle(glStyle, map, styleUrl, options) {
             glLayer.layout ? glLayer.layout.visibility !== 'none' : true
           );
           const functionCache = {};
-          view.on(
-            'change:resolution',
-            updateRasterLayerProperties.bind(
-              this,
-              glLayer,
-              layer,
-              view,
-              functionCache
-            )
+          layer.on(
+            'prerender',
+            prerenderRasterLayer(glLayer, layer, functionCache)
           );
-          updateRasterLayerProperties(glLayer, layer, view, functionCache);
         } else if (glSource.type == 'geojson') {
           layer = setupGeoJSONLayer(glSource, styleUrl, options);
         }
@@ -724,15 +760,16 @@ function processStyle(glStyle, map, styleUrl, options) {
     }
   }
   promises.push(
-    finalizeLayer(layer, layerIds, glStyle, styleUrl, map, options)
+    finalizeLayer(layer, layerIds, glStyle, styleUrl, mapOrGroup, options)
   );
-  map.set('mapbox-style', glStyle);
+  mapOrGroup.set('mapbox-style', glStyle);
   return Promise.all(promises);
 }
 
 /**
- * Loads and applies a Mapbox Style object into an OpenLayers Map. This includes
- * the map background, the layers, the center and the zoom.
+ * Loads and applies a Mapbox Style object into an OpenLayers Map or LayerGroup.
+ * This includes the map background, the layers, and for Map instances that did not
+ * have a View defined yet also the center and the zoom.
  *
  * **Example:**
  * ```js
@@ -757,11 +794,12 @@ function processStyle(glStyle, map, styleUrl, options) {
  *    included in the OpenLayers layer.
  *
  * This function sets an additional `mapbox-style` property on the OpenLayers
- * map instance, which holds the Mapbox Style object.
+ * Map or LayerGroup instance, which holds the Mapbox Style object.
  *
- * @param {Map|HTMLElement|string} map Either an existing OpenLayers Map
+ * @param {Map|HTMLElement|string|LayerGroup} mapOrGroup Either an existing OpenLayers Map
  * instance, or a HTML element, or the id of a HTML element that will be the
- * target of a new OpenLayers Map.
+ * target of a new OpenLayers Map, or a layer group. If layer group, styles
+ * releated to the map and view will be ignored.
  * @param {string|Object} style JSON style object or style url pointing to a
  * Mapbox Style object. When using Mapbox APIs, the url is the `styleUrl`
  * shown in Mapbox Studio's "share" panel. In addition, the `accessToken` option
@@ -772,17 +810,17 @@ function processStyle(glStyle, map, styleUrl, options) {
  * as style url, layers will be added to the map when the Mapbox Style document
  * is loaded and parsed.
  * @param {Options} options Options.
- * @return {Promise<Map>} A promise that resolves after all layers have been added to
- * the OpenLayers Map instance, their sources set, and their styles applied. The
- * `resolve` callback will be called with the OpenLayers Map instance as
+ * @return {Promise<Map|LayerGroup>} A promise that resolves after all layers have been added to
+ * the OpenLayers Map instance or LayerGroup, their sources set, and their styles applied. The
+ * `resolve` callback will be called with the OpenLayers Map instance or LayerGroup as
  * argument.
  */
-export function apply(map, style, options = {}) {
+export function apply(mapOrGroup, style, options = {}) {
   let promise;
 
-  if (typeof map === 'string' || map instanceof HTMLElement) {
-    map = new Map({
-      target: map,
+  if (typeof mapOrGroup === 'string' || mapOrGroup instanceof HTMLElement) {
+    mapOrGroup = new Map({
+      target: mapOrGroup,
     });
   }
 
@@ -795,9 +833,9 @@ export function apply(map, style, options = {}) {
     promise = new Promise(function (resolve, reject) {
       getGlStyle(style, options)
         .then(function (glStyle) {
-          processStyle(glStyle, map, styleUrl, options)
+          processStyle(glStyle, mapOrGroup, styleUrl, options)
             .then(function () {
-              resolve(map);
+              resolve(mapOrGroup);
             })
             .catch(reject);
         })
@@ -809,14 +847,14 @@ export function apply(map, style, options = {}) {
     promise = new Promise(function (resolve, reject) {
       processStyle(
         style,
-        map,
+        mapOrGroup,
         !options.styleUrl || options.styleUrl.startsWith('data:')
           ? location.href
           : normalizeStyleUrl(options.styleUrl, options.accessToken),
         options
       )
         .then(function () {
-          resolve(map);
+          resolve(mapOrGroup);
         })
         .catch(reject);
     });
@@ -837,13 +875,20 @@ export function apply(map, style, options = {}) {
  * @param {Object} glStyle Style as a JSON object.
  * @param {string|undefined} styleUrl The original style URL. Only required
  * when a relative path is used with the `"sprite"` property of the style.
- * @param {Map} map OpenLayers Map.
+ * @param {Map|LayerGroup} mapOrGroup OpenLayers Map.
  * @param {Options} options Options.
  * @return {Promise} Returns a promise that resolves after the source has
  * been set on the specified layer, and the style has been applied.
  * @private
  */
-function finalizeLayer(layer, layerIds, glStyle, styleUrl, map, options = {}) {
+function finalizeLayer(
+  layer,
+  layerIds,
+  glStyle,
+  styleUrl,
+  mapOrGroup,
+  options = {}
+) {
   let minZoom = 24;
   let maxZoom = 0;
   const glLayers = glStyle.layers;
@@ -908,8 +953,9 @@ function finalizeLayer(layer, layerIds, glStyle, styleUrl, map, options = {}) {
     };
 
     layer.set('mapbox-layers', layerIds);
-    if (map.getLayers().getArray().indexOf(layer) === -1) {
-      map.addLayer(layer);
+    const layers = mapOrGroup.getLayers();
+    if (layers.getArray().indexOf(layer) === -1) {
+      layers.push(layer);
     }
 
     if (layer.getSource()) {
