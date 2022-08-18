@@ -830,6 +830,19 @@ export function stylefunction(
                       f,
                       functionCache
                     );
+                    let displacement;
+                    if ('icon-offset' in layout) {
+                      displacement = getValue(
+                        layer,
+                        'layout',
+                        'icon-offset',
+                        zoom,
+                        f,
+                        functionCache,
+                        featureState
+                      );
+                      displacement[1] *= -1;
+                    }
                     iconImg = new Icon({
                       color: iconColor
                         ? [
@@ -845,18 +858,7 @@ export function stylefunction(
                       offset: [spriteImageData.x, spriteImageData.y],
                       rotateWithView: iconRotationAlignment === 'map',
                       scale: iconSize / spriteImageData.pixelRatio,
-                      displacement:
-                        'icon-offset' in layout
-                          ? getValue(
-                              layer,
-                              'layout',
-                              'icon-offset',
-                              zoom,
-                              f,
-                              functionCache,
-                              featureState
-                            ).map((v) => -v * spriteImageData.pixelRatio)
-                          : undefined,
+                      displacement: displacement,
                       declutterMode: declutterMode,
                     });
                     iconImageCache[icon_cache_key] = iconImg;
