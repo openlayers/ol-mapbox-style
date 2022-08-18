@@ -767,8 +767,9 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
 }
 
 /**
- * Loads and applies a Mapbox Style object into an OpenLayers Map. This includes
- * the map background, the layers, the center and the zoom.
+ * Loads and applies a Mapbox Style object into an OpenLayers Map or LayerGroup.
+ * This includes the map background, the layers, and for Map instances that did not
+ * have a View defined yet also the center and the zoom.
  *
  * **Example:**
  * ```js
@@ -793,7 +794,7 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
  *    included in the OpenLayers layer.
  *
  * This function sets an additional `mapbox-style` property on the OpenLayers
- * map instance, which holds the Mapbox Style object.
+ * Map or LayerGroup instance, which holds the Mapbox Style object.
  *
  * @param {Map|HTMLElement|string|LayerGroup} mapOrGroup Either an existing OpenLayers Map
  * instance, or a HTML element, or the id of a HTML element that will be the
@@ -809,9 +810,9 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
  * as style url, layers will be added to the map when the Mapbox Style document
  * is loaded and parsed.
  * @param {Options} options Options.
- * @return {Promise<Map>} A promise that resolves after all layers have been added to
- * the OpenLayers Map instance, their sources set, and their styles applied. The
- * `resolve` callback will be called with the OpenLayers Map instance as
+ * @return {Promise<Map|LayerGroup>} A promise that resolves after all layers have been added to
+ * the OpenLayers Map instance or LayerGroup, their sources set, and their styles applied. The
+ * `resolve` callback will be called with the OpenLayers Map instance or LayerGroup as
  * argument.
  */
 export function apply(mapOrGroup, style, options = {}) {
