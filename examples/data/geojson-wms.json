@@ -19,17 +19,6 @@
         "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
       ]
     },
-    "esri": {
-      "type": "vector",
-      "url": "https://basemaps-api.arcgis.com/arcgis/rest/services/World_Basemap_v2/VectorTileServer?token=AAPK1dd93729edc54e84ade1ea5dc0f4f9d3EPexfd5qirlO3QtHGBj5JQL7iUYHQOb4yLjfKEYFLcyN9PlMd87lMjjv8D3DxDsQ",
-      "minzoom": 0,
-      "maxzoom": 16,
-      "tiles": [
-        "https://basemaps-api.arcgis.com/arcgis/rest/services/World_Basemap_v2/VectorTileServer/tile/{z}/{y}/{x}.pbf?token=AAPK1dd93729edc54e84ade1ea5dc0f4f9d3EPexfd5qirlO3QtHGBj5JQL7iUYHQOb4yLjfKEYFLcyN9PlMd87lMjjv8D3DxDsQ"
-      ],
-      "copyrightText": "Sources: Esri, HERE, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors, and the GIS User Community",
-      "attribution": "Sources: Esri, HERE, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors, and the GIS User Community"
-    },
     "spatial-org-osm": {
       "type": "vector",
       "url": "https://tegola-osm-demo.go-spatial.org/v1/capabilities/osm.json"
