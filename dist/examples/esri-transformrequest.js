@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkol_mapbox_style=self.webpackChunkol_mapbox_style||[]).push([[945],{5569:(e,s,r)=>{r(9789),(0,r(8031).ZP)("map","https://www.arcgis.com/sharing/rest/content/items/2afe5b807fa74006be6363fd243ffb30/resources/styles/root.json",{transformRequest:function(e,s){if("Source"===s)return new Request(e.replace("/VectorTileServer","/VectorTileServer/"))}})}},e=>{e(e.s=5569)}]);
+//# sourceMappingURL=esri-transformrequest.js.map
