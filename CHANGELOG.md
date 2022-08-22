@@ -2,6 +2,10 @@
 
 ## Next version
 
+## 9.1.0
+
+* `apply()` can now also apply to an `ol/layer/Group`.
+
 ## 9.0.0
 
 ### Breaking changes
