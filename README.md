@@ -23,7 +23,7 @@ When installed this way, just import the ol-mapbox-style module, like in the usa
 The code below creates an OpenLayers map from Mapbox's Bright v9 style, using a `https://` url:
 
 ```js
-import apply from 'ol-mapbox-style';
+import { apply } from 'ol-mapbox-style';
 
 apply('map', 'https://api.mapbox.com/styles/v1/mapbox/bright-v9?access_token=YOUR_MAPBOX_TOKEN');
 ```
