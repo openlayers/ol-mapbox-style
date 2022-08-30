@@ -60,6 +60,14 @@ import {
  * @property {string} [accessTokenParam='access_token'] Access token param. For internal use.
  */
 
+/**
+ * @typedef {Object} ApplyStyleOptions
+ * @property {string} [source=''] Source. Default is `''`, which causes the first source in the
+ * style to be used.
+ * @property {Array<string>} [layers] Layers. If no source is provided, the layers with the
+ * provided ids will be used from the style's `layers` array. All layers need to use the same source.
+ */
+
 /** @typedef {'Style'|'Source'|'Sprite'|'SpriteImage'|'Tiles'|'GeoJSON'} ResourceType */
 /** @typedef {import("ol/layer/Layer").default} Layer */
 /** @typedef {import("ol/source/Source").default} Source */
@@ -114,14 +122,14 @@ function completeOptions(styleUrl, options) {
  * layer's source will override those from the glStyle's `source`, except for `url`,
  * `tileUrlFunction` and `tileGrid` (exception: when the source projection is not `EPSG:3857`).
  * @param {string|Object} glStyle Mapbox Style object.
- * @param {string|Array<string>} sourceOrLayers `source` key or an array of layer `id`s from the
- * Mapbox Style object. When a `source` key is provided, all layers for the
- * specified source will be included in the style function. When layer `id`s
- * are provided, they must be from layers that use the same source. When not provided or a falsey
+ * @param {string|Array<string>|Options&ApplyStyleOptions} [sourceOrLayersOrOptions=''] Options or
+ * `source` key or an array of layer `id`s from the Mapbox Style object. When a `source` key is
+ * provided, all layers for the specified source will be included in the style function. When layer
+ * `id`s are provided, they must be from layers that use the same source. When not provided or a falsey
  * value, all layers using the first source specified in the glStyle will be rendered.
- * @param {Options|string} optionsOrPath Options. Alternatively the path of the style file
+ * @param {Options|string} [optionsOrPath={}] Options. Alternatively the path of the style file
  * (only required when a relative path is used for the `"sprite"` property of the style).
- * @param {Array<number>} resolutions Resolutions for mapping resolution to zoom level.
+ * @param {Array<number>} [resolutions] Resolutions for mapping resolution to zoom level.
  * Only needed when working with non-standard tile grids or projections.
  * @return {Promise} Promise which will be resolved when the style can be used
  * for rendering.
@@ -129,13 +137,23 @@ function completeOptions(styleUrl, options) {
 export function applyStyle(
   layer,
   glStyle,
-  sourceOrLayers = '',
+  sourceOrLayersOrOptions = '',
   optionsOrPath = {},
   resolutions = undefined
 ) {
   let styleUrl, sourceId;
-  /** @type {Options} */
+  /** @type {Options&ApplyStyleOptions} */
   let options;
+  let sourceOrLayers;
+  if (
+    typeof sourceOrLayersOrOptions !== 'string' &&
+    !Array.isArray(sourceOrLayersOrOptions)
+  ) {
+    options = sourceOrLayersOrOptions;
+    sourceOrLayers = options.source || options.layers;
+  } else {
+    sourceOrLayers = sourceOrLayersOrOptions;
+  }
   if (typeof optionsOrPath === 'string') {
     styleUrl = optionsOrPath;
     options = {};

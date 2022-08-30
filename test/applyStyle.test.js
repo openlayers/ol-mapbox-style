@@ -17,6 +17,26 @@ import VectorSource from 'ol/source/Vector.js';
 import {applyStyle} from '../src/apply.js';
 
 describe('applyStyle with source creation', function () {
+  it('accepts incorrect source with simple 3-parameter configuration', function (done) {
+    const layer = new VectorLayer();
+    applyStyle(layer, '/fixtures/geojson.json', {
+      source: 'not_in_style',
+    })
+      .then(() => {
+        done(new Error('Expected to reject'));
+      })
+      .catch((e) => done());
+  });
+  it('accepts correct source with simple 3-parameter configuration', function (done) {
+    const layer = new VectorLayer();
+    applyStyle(layer, '/fixtures/geojson.json', {
+      source: 'states',
+    })
+      .then(() => {
+        done();
+      })
+      .catch((e) => done(e));
+  });
   it('configures vector layer with source and style', function (done) {
     const layer = new VectorLayer();
     applyStyle(layer, '/fixtures/geojson.json').then(function () {
