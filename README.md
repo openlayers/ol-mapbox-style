@@ -4,13 +4,15 @@ Create [OpenLayers](https://openlayers.org/) maps from [Mapbox Style Specificati
 
 ## Getting started
 
+Get an impression of what this library does by exploring the [live examples](https://unpkg.com/ol-mapbox-style/dist/examples/index.html). 
+
 ### Installation
 
 To use the library in an application with an npm based dev environment, install it with
 
     npm install ol-mapbox-style
 
-When installed this way, just import the ol-mapbox-style module, like in the usage example below. To use a standalone build of ol-mapbox-style, just include 'dist/olms.js' on your HTML page, and access the exported functions from the global `olms` object (e.g. `olms.apply()`, `olms.applyBackground()`). Note that the standalone build depends on the legacy build of OpenLayers.
+When installed this way, just import the ol-mapbox-style module, like in the usage example below. To use a standalone build of ol-mapbox-style, just include 'dist/olms.js' on your HTML page, and access the exported functions from the global `olms` object (e.g. `olms.apply()`, `olms.applyBackground()`). Note that the standalone build depends on the full build of OpenLayers.
 
 **ol-mapbox-style v9 requires [OpenLayers](https://npmjs.com/package/ol) version >= 7 &lt; 8**.
 
