@@ -575,7 +575,7 @@ describe('ol-mapbox-style', function () {
       });
       let backgroundColor;
       map.addLayer(layer);
-      layer.on('prerender', function (e) {
+      layer.on('postrender', function (e) {
         backgroundColor = Array.from(e.context.getImageData(0, 0, 1, 1).data);
       });
       map.renderSync();
@@ -598,7 +598,7 @@ describe('ol-mapbox-style', function () {
       layerGroup
         .getLayers()
         .item(0)
-        .on('prerender', function (e) {
+        .on('postrender', function (e) {
           backgroundColor = Array.from(e.context.getImageData(0, 0, 1, 1).data);
         });
       map.renderSync();
@@ -611,7 +611,7 @@ describe('ol-mapbox-style', function () {
       map.addLayer(layer);
       applyBackground(layer, backgroundStyle);
       let backgroundColor;
-      layer.on('prerender', function (e) {
+      layer.on('postrender', function (e) {
         backgroundColor = Array.from(e.context.getImageData(0, 0, 1, 1).data);
       });
       map.renderSync();
@@ -627,7 +627,7 @@ describe('ol-mapbox-style', function () {
       });
       map.addLayer(layer);
       let backgroundColor;
-      layer.on('prerender', function (e) {
+      layer.on('postrender', function (e) {
         backgroundColor = Array.from(e.context.getImageData(0, 0, 1, 1).data);
       });
       map.renderSync();
@@ -640,7 +640,7 @@ describe('ol-mapbox-style', function () {
       map.addLayer(layer);
       applyBackground(layer, backgroundNoneStyle);
       let backgroundColor;
-      layer.on('prerender', function (e) {
+      layer.on('postrender', function (e) {
         backgroundColor = Array.from(e.context.getImageData(0, 0, 1, 1).data);
       });
       map.renderSync();
@@ -654,7 +654,7 @@ describe('ol-mapbox-style', function () {
           });
           map.addLayer(layer);
           let backgroundColor;
-          layer.on('prerender', function (e) {
+          layer.on('postrender', function (e) {
             backgroundColor = Array.from(
               e.context.getImageData(0, 0, 1, 1).data
             );
