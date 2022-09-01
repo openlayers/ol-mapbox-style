@@ -315,6 +315,10 @@ export function recordStyleLayer(record = false) {
  * is available. Font names are the names used in the Mapbox Style object. If
  * not provided, the font stack will be used as-is. This function can also be
  * used for loading web fonts.
+ * @param {function(VectorLayer|VectorTileLayer, string):HTMLImageElement|HTMLCanvasElement|string|undefined} [getImage=undefined]
+ * Function that returns an image or a URL for an image name. If the result is an HTMLImageElement, it must already be
+ * loaded. The layer can be used to call layer.changed() when the loading and processing of the image has finished.
+ * This function can be used for icons not in the sprite or to override sprite icons.
  * @return {StyleFunction} Style function for use in
  * `ol.layer.Vector` or `ol.layer.VectorTile`.
  */
@@ -325,7 +329,8 @@ export function stylefunction(
   resolutions = defaultResolutions,
   spriteData = undefined,
   spriteImageUrl = undefined,
-  getFonts = undefined
+  getFonts = undefined,
+  getImage = undefined
 ) {
   if (typeof glStyle == 'string') {
     glStyle = JSON.parse(glStyle);
@@ -334,14 +339,14 @@ export function stylefunction(
     throw new Error('glStyle version 8 required.');
   }
 
-  let spriteImage, spriteImgSize;
+  let spriteImage, spriteImageSize;
   if (spriteImageUrl) {
     if (typeof Image !== 'undefined') {
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = function () {
         spriteImage = img;
-        spriteImgSize = [img.width, img.height];
+        spriteImageSize = [img.width, img.height];
         olLayer.changed();
         img.onload = null;
       };
@@ -359,7 +364,7 @@ export function stylefunction(
           event.data.src === spriteImageUrl
         ) {
           spriteImage = event.data.image;
-          spriteImgSize = [spriteImage.width, spriteImage.height];
+          spriteImageSize = [spriteImage.width, spriteImage.height];
         }
       });
     }
@@ -711,7 +716,11 @@ export function stylefunction(
                 ? fromTemplate(iconImage, properties)
                 : iconImage.toString();
             let styleGeom = undefined;
-            if (spriteImage && spriteData && spriteData[icon]) {
+            const imageElement = getImage ? getImage(olLayer, icon) : undefined;
+            if (
+              (spriteImage && spriteData && spriteData[icon]) ||
+              imageElement
+            ) {
               const iconRotationAlignment = getValue(
                 layer,
                 'layout',
@@ -822,8 +831,6 @@ export function stylefunction(
                   }
                   iconImg = iconImageCache[icon_cache_key];
                   if (!iconImg) {
-                    const spriteImageData = spriteData[icon];
-
                     const declutterMode = getIconDeclutterMode(
                       layer,
                       zoom,
@@ -843,24 +850,49 @@ export function stylefunction(
                       );
                       displacement[1] *= -1;
                     }
-                    iconImg = new Icon({
-                      color: iconColor
-                        ? [
-                            iconColor.r * 255,
-                            iconColor.g * 255,
-                            iconColor.b * 255,
-                            iconColor.a,
-                          ]
-                        : undefined,
-                      img: spriteImage,
-                      imgSize: spriteImgSize,
-                      size: [spriteImageData.width, spriteImageData.height],
-                      offset: [spriteImageData.x, spriteImageData.y],
-                      rotateWithView: iconRotationAlignment === 'map',
-                      scale: iconSize / spriteImageData.pixelRatio,
-                      displacement: displacement,
-                      declutterMode: declutterMode,
-                    });
+                    const color = iconColor
+                      ? [
+                          iconColor.r * 255,
+                          iconColor.g * 255,
+                          iconColor.b * 255,
+                          iconColor.a,
+                        ]
+                      : undefined;
+                    if (imageElement) {
+                      if (typeof imageElement === 'string') {
+                        // it is a src URL
+                        iconImg = new Icon({
+                          color: color,
+                          src: imageElement,
+                          rotateWithView: iconRotationAlignment === 'map',
+                          displacement: displacement,
+                          declutterMode: declutterMode,
+                        });
+                      } else {
+                        iconImg = new Icon({
+                          color: color,
+                          img: imageElement,
+                          imgSize: [imageElement.width, imageElement.height],
+                          rotateWithView: iconRotationAlignment === 'map',
+                          displacement: displacement,
+                          declutterMode: declutterMode,
+                        });
+                      }
+                    } else {
+                      const spriteImageData = spriteData[icon];
+
+                      iconImg = new Icon({
+                        color: color,
+                        img: spriteImage,
+                        imgSize: spriteImageSize,
+                        size: [spriteImageData.width, spriteImageData.height],
+                        offset: [spriteImageData.x, spriteImageData.y],
+                        rotateWithView: iconRotationAlignment === 'map',
+                        scale: iconSize / spriteImageData.pixelRatio,
+                        displacement: displacement,
+                        declutterMode: declutterMode,
+                      });
+                    }
                     iconImageCache[icon_cache_key] = iconImg;
                   }
                 }

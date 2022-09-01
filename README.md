@@ -421,7 +421,7 @@ The feature state will be stored on the OpenLayers layer matching the feature id
 
 #### stylefunction
 
-▸ **stylefunction**(`olLayer`, `glStyle`, `sourceOrLayers`, `resolutions?`, `spriteData?`, `spriteImageUrl?`, `getFonts?`): `StyleFunction`
+▸ **stylefunction**(`olLayer`, `glStyle`, `sourceOrLayers`, `resolutions?`, `spriteData?`, `spriteImageUrl?`, `getFonts?`, `getImage?`): `StyleFunction`
 
 Creates a style function from the `glStyle` object for all layers that use
 the specified `source`, which needs to be a `"type": "vector"` or
@@ -461,15 +461,16 @@ sure that sprite image loading works:
 
 ##### Parameters
 
-| Name             | Type                                         | Default value        | Description                                                                                                                                                                                                                                                                  |
-| :--------------- | :------------------------------------------- | :------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `olLayer`        | `VectorLayer`&lt;`any`> \| `VectorTileLayer` | `undefined`          | OpenLayers layer to apply the style to. In addition to the style, the layer will get two properties: `mapbox-source` will be the `id` of the `glStyle`'s source used for the layer, and `mapbox-layers` will be an array of the `id`s of the `glStyle`'s layers.             |
-| `glStyle`        | `any`                                        | `undefined`          | Mapbox Style object.                                                                                                                                                                                                                                                         |
-| `sourceOrLayers` | `string` \| `string`\[]                      | `undefined`          | `source` key or an array of layer `id`s from the Mapbox Style object. When a `source` key is provided, all layers for the specified source will be included in the style function. When layer `id`s are provided, they must be from layers that use the same source.         |
-| `resolutions`    | `number`\[]                                  | `defaultResolutions` | Resolutions for mapping resolution to zoom level.                                                                                                                                                                                                                            |
-| `spriteData`     | `any`                                        | `undefined`          | Sprite data from the url specified in the Mapbox Style object's `sprite` property. Only required if a `sprite` property is specified in the Mapbox Style object.                                                                                                             |
-| `spriteImageUrl` | `string`                                     | `undefined`          | Sprite image url for the sprite specified in the Mapbox Style object's `sprite` property. Only required if a `sprite` property is specified in the Mapbox Style object.                                                                                                      |
-| `getFonts`       | (`arg0`: `string`\[]) => `string`\[]         | `undefined`          | Function that receives a font stack as arguments, and returns a (modified) font stack that is available. Font names are the names used in the Mapbox Style object. If not provided, the font stack will be used as-is. This function can also be used for loading web fonts. |
+| Name             | Type                                                                                                                              | Default value        | Description                                                                                                                                                                                                                                                                                                             |
+| :--------------- | :-------------------------------------------------------------------------------------------------------------------------------- | :------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `olLayer`        | `VectorLayer`&lt;`any`> \| `VectorTileLayer`                                                                                      | `undefined`          | OpenLayers layer to apply the style to. In addition to the style, the layer will get two properties: `mapbox-source` will be the `id` of the `glStyle`'s source used for the layer, and `mapbox-layers` will be an array of the `id`s of the `glStyle`'s layers.                                                        |
+| `glStyle`        | `any`                                                                                                                             | `undefined`          | Mapbox Style object.                                                                                                                                                                                                                                                                                                    |
+| `sourceOrLayers` | `string` \| `string`\[]                                                                                                           | `undefined`          | `source` key or an array of layer `id`s from the Mapbox Style object. When a `source` key is provided, all layers for the specified source will be included in the style function. When layer `id`s are provided, they must be from layers that use the same source.                                                    |
+| `resolutions`    | `number`\[]                                                                                                                       | `defaultResolutions` | Resolutions for mapping resolution to zoom level.                                                                                                                                                                                                                                                                       |
+| `spriteData`     | `any`                                                                                                                             | `undefined`          | Sprite data from the url specified in the Mapbox Style object's `sprite` property. Only required if a `sprite` property is specified in the Mapbox Style object.                                                                                                                                                        |
+| `spriteImageUrl` | `string`                                                                                                                          | `undefined`          | Sprite image url for the sprite specified in the Mapbox Style object's `sprite` property. Only required if a `sprite` property is specified in the Mapbox Style object.                                                                                                                                                 |
+| `getFonts`       | (`arg0`: `string`\[]) => `string`\[]                                                                                              | `undefined`          | Function that receives a font stack as arguments, and returns a (modified) font stack that is available. Font names are the names used in the Mapbox Style object. If not provided, the font stack will be used as-is. This function can also be used for loading web fonts.                                            |
+| `getImage?`      | (`arg0`: `VectorLayer`&lt;`any`> \| `VectorTileLayer`, `arg1`: `string`) => `string` \| `HTMLCanvasElement` \| `HTMLImageElement` | `undefined`          | Function that returns an image or a URL for an image name. If the result is an HTMLImageElement, it must already be loaded. The layer can be used to call layer.changed() when the loading and processing of the image has finished. This function can be used for icons not in the sprite or to override sprite icons. |
 
 ##### Returns
 
@@ -519,6 +520,7 @@ The source id.
 
 - [accessToken](#accessToken)
 - [accessTokenParam](#accessTokenParam)
+- [getImage](#getImage)
 - [resolutions](#resolutions)
 - [styleUrl](#styleUrl)
 - [transformRequest](#transformRequest)
@@ -538,6 +540,31 @@ Access token for 'mapbox://' urls.
 • **accessTokenParam**: `string`
 
 Access token param. For internal use.
+
+* * *
+
+#### getImage
+
+• **getImage**: (`arg0`: `VectorLayer`&lt;`any`> \| `VectorTileLayer`, `arg1`: `string`) => `string` \| `HTMLCanvasElement` \| `HTMLImageElement`
+
+##### Type declaration
+
+▸ (`arg0`, `arg1`): `string` \| `HTMLCanvasElement` \| `HTMLImageElement`
+
+Function that returns an image for an icon name. If the result is an HTMLImageElement, it must already be
+loaded. The layer can be used to call layer.changed() when the loading and processing of the image has finished.
+This function be used for icons not in the sprite or to override sprite icons.
+
+###### Parameters
+
+| Name   | Type                                         |
+| :----- | :------------------------------------------- |
+| `arg0` | `VectorLayer`&lt;`any`> \| `VectorTileLayer` |
+| `arg1` | `string`                                     |
+
+###### Returns
+
+`string` \| `HTMLCanvasElement` \| `HTMLImageElement`
 
 * * *
 
