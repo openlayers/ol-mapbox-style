@@ -216,7 +216,7 @@ Promise that resolves when the background is applied.
 
 #### applyStyle
 
-▸ **applyStyle**(`layer`, `glStyle`, `sourceOrLayers?`, `optionsOrPath?`, `resolutions?`): `Promise`&lt;`any`>
+▸ **applyStyle**(`layer`, `glStyle`, `sourceOrLayersOrOptions?`, `optionsOrPath?`, `resolutions?`): `Promise`&lt;`any`>
 
 Applies a style function to an `ol/layer/VectorTile` or `ol/layer/Vector`
 with an `ol/source/VectorTile` or an `ol/source/Vector`. If the layer does not have a source
@@ -247,13 +247,13 @@ Two additional properties will be set on the provided layer:
 
 ##### Parameters
 
-| Name             | Type                                                   | Default value | Description                                                                                                                                                                                                                                                                                                                                                                            |
-| :--------------- | :----------------------------------------------------- | :------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `layer`          | `VectorLayer`&lt;`any`> \| `VectorTileLayer`           | `undefined`   | OpenLayers layer. When the layer has a source configured, it will be modified to use the configuration from the glStyle's `source`. Options specified on the layer's source will override those from the glStyle's `source`, except for `url`, `tileUrlFunction` and `tileGrid` (exception: when the source projection is not `EPSG:3857`).                                            |
-| `glStyle`        | `any`                                                  | `undefined`   | Mapbox Style object.                                                                                                                                                                                                                                                                                                                                                                   |
-| `sourceOrLayers` | `string` \| `string`\[]                                | `''`          | `source` key or an array of layer `id`s from the Mapbox Style object. When a `source` key is provided, all layers for the specified source will be included in the style function. When layer `id`s are provided, they must be from layers that use the same source. When not provided or a falsey value, all layers using the first source specified in the glStyle will be rendered. |
-| `optionsOrPath`  | `string` \| [`Options`](#interfacesinternal_optionsmd) | `{}`          | Options. Alternatively the path of the style file (only required when a relative path is used for the `"sprite"` property of the style).                                                                                                                                                                                                                                               |
-| `resolutions`    | `number`\[]                                            | `undefined`   | Resolutions for mapping resolution to zoom level. Only needed when working with non-standard tile grids or projections.                                                                                                                                                                                                                                                                |
+| Name                       | Type                                                                                                                                   | Default value | Description                                                                                                                                                                                                                                                                                                                                                                                       |
+| :------------------------- | :------------------------------------------------------------------------------------------------------------------------------------- | :------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `layer`                    | `VectorLayer`&lt;`any`> \| `VectorTileLayer`                                                                                           | `undefined`   | OpenLayers layer. When the layer has a source configured, it will be modified to use the configuration from the glStyle's `source`. Options specified on the layer's source will override those from the glStyle's `source`, except for `url`, `tileUrlFunction` and `tileGrid` (exception: when the source projection is not `EPSG:3857`).                                                       |
+| `glStyle`                  | `any`                                                                                                                                  | `undefined`   | Mapbox Style object.                                                                                                                                                                                                                                                                                                                                                                              |
+| `sourceOrLayersOrOptions?` | `string` \| `string`\[] \| [`Options`](#interfacesinternal_optionsmd) & [`ApplyStyleOptions`](#interfacesinternal_applystyleoptionsmd) | `''`          | Options or `source` key or an array of layer `id`s from the Mapbox Style object. When a `source` key is provided, all layers for the specified source will be included in the style function. When layer `id`s are provided, they must be from layers that use the same source. When not provided or a falsey value, all layers using the first source specified in the glStyle will be rendered. |
+| `optionsOrPath?`           | `string` \| [`Options`](#interfacesinternal_optionsmd)                                                                                 | `{}`          | **Deprecated**. Options. Alternatively the path of the style file (only required when a relative path is used for the `"sprite"` property of the style).                                                                                                                                                                                                                                          |
+| `resolutions?`             | `number`\[]                                                                                                                            | `undefined`   | **Deprecated**. Resolutions for mapping resolution to zoom level. Only needed when working with non-standard tile grids or projections, can also be supplied with options.                                                                                                                                                                                                                        |
 
 ##### Returns
 
@@ -479,6 +479,37 @@ sure that sprite image loading works:
 Style function for use in
 `ol.layer.Vector` or `ol.layer.VectorTile`.
 
+<a name="interfacesinternal_applystyleoptionsmd"></a>
+
+## Interface: ApplyStyleOptions&lt;>
+
+[<internal>](#modulesinternal_md).ApplyStyleOptions
+
+### Table of contents
+
+#### Properties
+
+- [layers](#layers)
+- [source](#source)
+
+### Properties
+
+#### layers
+
+• **layers**: `string`\[]
+
+Layers. If no source is provided, the layers with the
+provided ids will be used from the style's `layers` array. All layers need to use the same source.
+
+* * *
+
+#### source
+
+• **source**: `string`
+
+Source. Default is `''`, which causes the first source in the
+style to be used.
+
 <a name="interfacesinternal_featureidentifiermd"></a>
 
 ## Interface: FeatureIdentifier&lt;>
@@ -619,6 +650,7 @@ the returned request will be respected.
 
 #### Interfaces
 
+- [ApplyStyleOptions](#interfacesinternal_applystyleoptionsmd)
 - [FeatureIdentifier](#interfacesinternal_featureidentifiermd)
 - [Options](#interfacesinternal_optionsmd)
 
