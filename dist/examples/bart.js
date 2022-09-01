@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkol_mapbox_style=self.webpackChunkol_mapbox_style||[]).push([[211],{6634:(e,s,a)=>{a(9789);var n=a(8031);document.getElementById("map").style.background="red",(0,n.nn)("map","data/bart.json",{accessToken:"pk.eyJ1IjoibWF0dXJhOTAiLCJhIjoiY2pzeGp1OGg0MG80NzN5cDZhbnJ1YndudyJ9.P_H10ES1FjCTsqhKyciFRg"})}},e=>{e(e.s=6634)}]);
+//# sourceMappingURL=bart.js.map

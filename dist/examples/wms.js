@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkol_mapbox_style=self.webpackChunkol_mapbox_style||[]).push([[840],{2516:(s,a,e)=>{e(9789),(0,e(8031).ZP)("map","data/wms.json")}},s=>{s(s.s=2516)}]);
+//# sourceMappingURL=wms.js.map
