@@ -126,15 +126,16 @@ function completeOptions(styleUrl, options) {
  * layer's source will override those from the glStyle's `source`, except for `url`,
  * `tileUrlFunction` and `tileGrid` (exception: when the source projection is not `EPSG:3857`).
  * @param {string|Object} glStyle Mapbox Style object.
- * @param {string|Array<string>|Options&ApplyStyleOptions} [sourceOrLayersOrOptions=''] Options or
+ * @param {string|Array<string>|Options&ApplyStyleOptions} [sourceOrLayersOrOptions] Options or
  * `source` key or an array of layer `id`s from the Mapbox Style object. When a `source` key is
  * provided, all layers for the specified source will be included in the style function. When layer
  * `id`s are provided, they must be from layers that use the same source. When not provided or a falsey
  * value, all layers using the first source specified in the glStyle will be rendered.
- * @param {Options|string} [optionsOrPath={}] Options. Alternatively the path of the style file
+ * @param {Options|string} [optionsOrPath] **Deprecated**. Options. Alternatively the path of the style file
  * (only required when a relative path is used for the `"sprite"` property of the style).
- * @param {Array<number>} [resolutions] Resolutions for mapping resolution to zoom level.
- * Only needed when working with non-standard tile grids or projections.
+ * @param {Array<number>} [resolutions] **Deprecated**. Resolutions for mapping resolution to zoom level.
+ * Only needed when working with non-standard tile grids or projections, can also be supplied with
+ * options.
  * @return {Promise} Promise which will be resolved when the style can be used
  * for rendering.
  */

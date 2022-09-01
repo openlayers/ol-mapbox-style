@@ -2,9 +2,16 @@
 
 ## Next version
 
+## 9.2.0
+
+* New hook for supplying images without project sprite spritesheet
+* Fix issue with new background handling, which is now done in a postrender function rather than prerender
+* Simplified 3-argument signature of `applyStyle()`. The longer signatures continue to work, but are deprecated.
+
 ## 9.1.0
 
 * `apply()` can now also apply to an `ol/layer/Group`.
+* Backgrounds are no longer applied using OpenLayers's `setBackground()`, but with a prerender function for the first layer
 
 ## 9.0.0
 
