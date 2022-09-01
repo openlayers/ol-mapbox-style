@@ -444,10 +444,13 @@ function setBackground(mapOrLayer, layer, options) {
     if (color) {
       const context = e.context;
       const alpha = context.globalAlpha;
+      const gobalCompositeOperation = context.globalCompositeOperation;
       context.globalAlpha = 1;
+      context.globalCompositeOperation = 'destination-over';
       context.fillStyle = color;
       context.fillRect(0, 0, e.context.canvas.width, e.context.canvas.height);
       context.globalAlpha = alpha;
+      context.globalCompositeOperation = gobalCompositeOperation;
     }
     backgroundRendered = true;
   }
@@ -456,16 +459,16 @@ function setBackground(mapOrLayer, layer, options) {
     // map or layer group
     const layers = mapOrLayer.getLayers();
     layers.forEach(function (layer) {
-      layer.on('prerender', renderBackground);
+      layer.on('postrender', renderBackground);
     });
     layers.on('add', function (e) {
-      e.element.on('prerender', renderBackground);
+      e.element.on('postrender', renderBackground);
     });
     layers.on('remove', function (e) {
-      e.element.un('prerender', renderBackground);
+      e.element.un('postrender', renderBackground);
     });
   } else {
-    mapOrLayer.on('prerender', renderBackground);
+    mapOrLayer.on('postrender', renderBackground);
   }
 }
 
