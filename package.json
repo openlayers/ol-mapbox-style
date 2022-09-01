@@ -29,7 +29,7 @@
   "scripts": {
     "start": "webpack serve --config ./webpack.config.examples.cjs",
     "prepare": "npm run doc && npm run build",
-    "build": "tsc --project tsconfig-build.json && rollup -c && esm=true rollup -c && webpack-cli --mode=production --config ./webpack.config.examples.cjs",
+    "build": "tsc --project tsconfig-build.json && rollup -c && cross-env esm=true rollup -c && webpack-cli --mode=production --config ./webpack.config.examples.cjs",
     "doc": "typedoc --plugin typedoc-plugin-markdown --plugin typedoc-plugin-missing-exports src/index.js --readme none --excludeExternals --preserveAnchorCasing --hideBreadcrumbs --disableSources --tsconfig tsconfig-typecheck.json && npx concat-md docs --hide-anchor-links=false | npx add-text-to-markdown README.md --section \"API\" --write",
     "karma": "karma start test/karma.conf.cjs",
     "lint": "eslint test examples src",
@@ -57,6 +57,7 @@
     "concat-md": "^0.5.0",
     "copy-webpack-plugin": "^11.0.0",
     "coverage-istanbul-loader": "^3.0.5",
+    "cross-env": "^7.0.3",
     "css-loader": "^6.5.1",
     "deep-freeze": "0.0.1",
     "eslint": "^8.2.0",
