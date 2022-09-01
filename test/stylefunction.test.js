@@ -553,9 +553,9 @@ describe('stylefunction', function () {
         });
     });
 
-    it('should not create an image style, if dynamic HTML image has no src', function (done) {
+    it('should create an image style, if a URL string is returned', function (done) {
       function getImage(layer, name) {
-        return new Image();
+        return '/fixtures/hospital.png';
       }
       apply(document.createElement('div'), style, {getImage: getImage})
         .then(function (map) {
@@ -564,38 +564,9 @@ describe('stylefunction', function () {
             const styleFunction = layer.getStyle();
             const feature = layer.getSource().getFeatures()[0];
             const styles = styleFunction(feature, 1);
-            should(styles).be.undefined();
-            done();
-          });
-        })
-        .catch(function (err) {
-          done(err);
-        });
-    });
-
-    it('should create an image style, if dynamic HTML image is not yet loaded, but has a src', function (done) {
-      const elem = new Image();
-      function getImage(layer, name) {
-        elem.src = '/fixtures/hospital.png';
-        return elem;
-      }
-      apply(document.createElement('div'), style, {getImage: getImage})
-        .then(function (map) {
-          const layer = map.getLayers().item(0);
-          layer.once('change', () => {
-            const styleFunction = layer.getStyle();
-            const feature = layer.getSource().getFeatures()[0];
-            let image = undefined;
-            layer.once('change', () => {
-              // change is automatically called, when image finished loading
-              const newstyles = styleFunction(feature, 1);
-              const newimage = newstyles[0].getImage();
-              should(newimage).equal(image);
-              done();
-            });
-            const styles = styleFunction(feature, 1);
-            image = styles[0].getImage();
+            const image = styles[0].getImage();
             should(image.getSrc()).endWith('/fixtures/hospital.png');
+            done();
           });
         })
         .catch(function (err) {
@@ -633,7 +604,7 @@ describe('stylefunction', function () {
         });
     });
 
-    it('should create an image style, if dynamic HTML image is already loaded', function (done) {
+    it('should create an image style, if dynamic HTML image is returned', function (done) {
       const elem = new Image();
       elem.src = '/fixtures/hospital.png';
       function getImage(layer, name) {
@@ -647,7 +618,6 @@ describe('stylefunction', function () {
               const styleFunction = layer.getStyle();
               const feature = layer.getSource().getFeatures()[0];
               const styles = styleFunction(feature, 1);
-              should(styles).not.be.undefined();
               const image = styles[0].getImage();
               should(image).not.be.undefined();
               done();
@@ -657,6 +627,30 @@ describe('stylefunction', function () {
             done(err);
           });
       });
+    });
+
+    it('should create an image style, if canvas is returned', function (done) {
+      function getImage(layer, name) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 20;
+        canvas.height = 20;
+        return canvas;
+      }
+      apply(document.createElement('div'), style, {getImage: getImage})
+        .then(function (map) {
+          const layer = map.getLayers().item(0);
+          layer.once('change', () => {
+            const styleFunction = layer.getStyle();
+            const feature = layer.getSource().getFeatures()[0];
+            const styles = styleFunction(feature, 1);
+            const image = styles[0].getImage();
+            should(image).not.be.undefined();
+            done();
+          });
+        })
+        .catch(function (err) {
+          done(err);
+        });
     });
   });
 

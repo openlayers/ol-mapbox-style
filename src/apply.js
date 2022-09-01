@@ -58,9 +58,10 @@ import {
  * @property {string} [styleUrl] URL of the Mapbox GL style. Required for styles that were provided
  * as object, when they contain a relative sprite url, or sources referencing data by relative url.
  * @property {string} [accessTokenParam='access_token'] Access token param. For internal use.
- * @property {function(VectorLayer|VectorTileLayer, string):HTMLImageElement|HTMLCanvasElement|undefined} [getImage=undefined]
- * Function that returns an image for an icon name.
- * Can be used for icons not in the sprite or to override sprite icons.
+ * @property {function(VectorLayer|VectorTileLayer, string):HTMLImageElement|HTMLCanvasElement|string|undefined} [getImage=undefined]
+ * Function that returns an image for an icon name. If the result is an HTMLImageElement, it must already be
+ * loaded. The layer can be used to call layer.changed() when the loading and processing of the image has finished.
+ * This function be used for icons not in the sprite or to override sprite icons.
  */
 
 /** @typedef {'Style'|'Source'|'Sprite'|'SpriteImage'|'Tiles'|'GeoJSON'} ResourceType */

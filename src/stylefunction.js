@@ -315,9 +315,10 @@ export function recordStyleLayer(record = false) {
  * is available. Font names are the names used in the Mapbox Style object. If
  * not provided, the font stack will be used as-is. This function can also be
  * used for loading web fonts.
- * @param {function(VectorLayer|VectorTileLayer, string):HTMLImageElement|HTMLCanvasElement|undefined} [getImage=undefined]
- * Function that returns an image for an image name. The layer can be used to call layer.changed() when the loading
- * and processing of the image has finished.
+ * @param {function(VectorLayer|VectorTileLayer, string):HTMLImageElement|HTMLCanvasElement|string|undefined} [getImage=undefined]
+ * Function that returns an image or a URL for an image name. If the result is an HTMLImageElement, it must already be
+ * loaded. The layer can be used to call layer.changed() when the loading and processing of the image has finished.
+ * This function can be used for icons not in the sprite or to override sprite icons.
  * @return {StyleFunction} Style function for use in
  * `ol.layer.Vector` or `ol.layer.VectorTile`.
  */
@@ -715,22 +716,7 @@ export function stylefunction(
                 ? fromTemplate(iconImage, properties)
                 : iconImage.toString();
             let styleGeom = undefined;
-            let imageElement = getImage ? getImage(olLayer, icon) : undefined;
-            if (
-              imageElement instanceof HTMLImageElement &&
-              (!imageElement.complete || !imageElement.src)
-            ) {
-              // in the case of a not yet loaded HTML image, we can trigger the layer change, when loaded
-              const htmlImageElement = imageElement;
-              htmlImageElement.addEventListener('load', function load() {
-                htmlImageElement.removeEventListener('load', load);
-                olLayer.changed();
-              });
-              if (!htmlImageElement.src) {
-                // can only draw image if already loaded (and width/height are known)
-                imageElement = undefined;
-              }
-            }
+            const imageElement = getImage ? getImage(olLayer, icon) : undefined;
             if (
               (spriteImage && spriteData && spriteData[icon]) ||
               imageElement
@@ -873,14 +859,11 @@ export function stylefunction(
                         ]
                       : undefined;
                     if (imageElement) {
-                      if (
-                        imageElement instanceof HTMLImageElement &&
-                        imageElement.src &&
-                        !imageElement.complete
-                      ) {
+                      if (typeof imageElement === 'string') {
+                        // it is a src URL
                         iconImg = new Icon({
                           color: color,
-                          src: imageElement.src,
+                          src: imageElement,
                           rotateWithView: iconRotationAlignment === 'map',
                           displacement: displacement,
                           declutterMode: declutterMode,
