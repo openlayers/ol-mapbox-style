@@ -685,8 +685,13 @@ function setupGeoJSONLayer(glSource, styleUrl, options) {
 function prerenderRasterLayer(glLayer, layer, functionCache) {
   let zoom = null;
   return function (event) {
-    if (event.frameState.viewState.zoom !== zoom) {
+    if (
+      glLayer.paint &&
+      'raster-opacity' in glLayer.paint &&
+      event.frameState.viewState.zoom !== zoom
+    ) {
       zoom = event.frameState.viewState.zoom;
+      delete functionCache[glLayer.id];
       updateRasterLayerProperties(glLayer, layer, zoom, functionCache);
     }
   };

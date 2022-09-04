@@ -86,36 +86,56 @@ describe('ol-mapbox-style', function () {
       });
     });
 
-    it('handles raster sources', function (done) {
-      apply(target, './fixtures/wms.json')
-        .then(function (map) {
-          const osm = map.getLayers().item(0);
-          const wms = map.getLayers().item(1);
-          should(osm.get('mapbox-layers')).eql(['osm']);
-          should(wms.get('mapbox-layers')).eql(['states-wms']);
-          const tileGrid = osm.getSource().getTileGrid();
-          const tileUrlFunction = osm.getSource().getTileUrlFunction();
-          const extent = [-1e7, -1e7, 1e7, 1e7];
-          const urls = [];
-          tileGrid.forEachTileCoord(extent, 1, function (tileCoord) {
-            urls.push(tileUrlFunction(tileCoord));
-          });
-          should(urls).eql([
-            'https://a.tile.openstreetmap.org/1/0/0.png',
-            'https://b.tile.openstreetmap.org/1/0/1.png',
-            'https://c.tile.openstreetmap.org/1/1/0.png',
-            'https://a.tile.openstreetmap.org/1/1/1.png',
-          ]);
-          should(osm.getSource().getAttributions()({extent: extent})[0]).equal(
-            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors.'
-          );
-          should(wms.getSource().getTileGrid().getTileSize()).eql(256);
-          should(wms.getSource().getTileGrid().getMaxZoom()).eql(12);
+    describe('raster sources', function () {
+      let map;
+      this.beforeEach(function (done) {
+        apply(target, './fixtures/wms.json').then((olMap) => {
+          map = olMap;
           done();
-        })
-        .catch(function (err) {
-          done(err);
         });
+      });
+
+      it('handles raster sources', function () {
+        const osm = map.getLayers().item(0);
+        const wms = map.getLayers().item(1);
+        should(osm.get('mapbox-layers')).eql(['osm']);
+        should(wms.get('mapbox-layers')).eql(['states-wms']);
+        const tileGrid = osm.getSource().getTileGrid();
+        const tileUrlFunction = osm.getSource().getTileUrlFunction();
+        const extent = [-1e7, -1e7, 1e7, 1e7];
+        const urls = [];
+        tileGrid.forEachTileCoord(extent, 1, function (tileCoord) {
+          urls.push(tileUrlFunction(tileCoord));
+        });
+        should(urls).eql([
+          'https://a.tile.openstreetmap.org/1/0/0.png',
+          'https://b.tile.openstreetmap.org/1/0/1.png',
+          'https://c.tile.openstreetmap.org/1/1/0.png',
+          'https://a.tile.openstreetmap.org/1/1/1.png',
+        ]);
+        should(osm.getSource().getAttributions()({extent: extent})[0]).equal(
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors.'
+        );
+        should(wms.getSource().getTileGrid().getTileSize()).eql(256);
+        should(wms.getSource().getTileGrid().getMaxZoom()).eql(12);
+      });
+
+      it('handles raster layer opacity when raster-opacity is set', function () {
+        const wms = map.getLayers().item(1);
+        const wmsLayer = map
+          .get('mapbox-style')
+          .layers.find((l) => l.id === 'states-wms');
+        wmsLayer.paint['raster-opacity'] = 0.5;
+        wms.dispatchEvent({type: 'prerender', frameState: {viewState: {}}});
+        should(wms.getOpacity()).eql(0.5);
+      });
+
+      it('lets OpenLayers handle raster opacity when raster-opacity is not set', function () {
+        const osm = map.getLayers().item(0);
+        osm.setOpacity(0.5);
+        osm.dispatchEvent({type: 'prerender', frameState: {viewState: {}}});
+        should(osm.getOpacity()).eql(0.5);
+      });
     });
 
     it('handles geojson sources', function (done) {

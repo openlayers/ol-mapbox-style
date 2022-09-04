@@ -37,7 +37,10 @@
     {
       "id": "states-wms",
       "type": "raster",
-      "source": "states"
+      "source": "states",
+      "paint": {
+        "raster-opacity": 1
+      }
     }
   ]
 }
