@@ -117,7 +117,10 @@ export function getTileJson(glSource, styleUrl, options = {}) {
         promise = Promise.resolve(
           Object.assign({}, glSource, {
             url: undefined,
-            tiles: glSource.type === 'raster' ? [normalizedSourceUrl] : normalizedSourceUrl,
+            tiles:
+              glSource.type === 'raster'
+                ? [normalizedSourceUrl]
+                : normalizedSourceUrl,
           })
         );
       } else {
