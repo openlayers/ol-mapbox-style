@@ -76,5 +76,12 @@ export function normalizeSourceUrl(url, token, tokenParam, styleUrl) {
     urlObject.searchParams.set(tokenParam, token);
     return decodeURI(urlObject.href);
   }
-  return `https://{a-d}.tiles.mapbox.com/v4/${mapboxPath}/{z}/{x}/{y}.vector.pbf?access_token=${token}`;
+
+  if(mapboxPath === 'mapbox.satellite'){
+    return `https://api.mapbox.com/v4/${mapboxPath}/{z}/{x}/{y}@2x.webp?access_token=${token}`;
+
+  }
+
+  return `https://api.mapbox.com/v4/${mapboxPath}/{z}/{x}/{y}.vector.pbf?access_token=${token}`;
 }
+

@@ -117,7 +117,7 @@ export function getTileJson(glSource, styleUrl, options = {}) {
         promise = Promise.resolve(
           Object.assign({}, glSource, {
             url: undefined,
-            tiles: normalizedSourceUrl,
+            tiles: [normalizedSourceUrl],
           })
         );
       } else {
