@@ -78,7 +78,8 @@ export function normalizeSourceUrl(url, token, tokenParam, styleUrl) {
   }
 
   if(mapboxPath === 'mapbox.satellite'){
-    return `https://api.mapbox.com/v4/${mapboxPath}/{z}/{x}/{y}@2x.webp?access_token=${token}`;
+    const sizeFactor = window.devicePixelRatio >= 1.5 ? '@2x' : '';
+    return `https://api.mapbox.com/v4/${mapboxPath}/{z}/{x}/{y}${sizeFactor}.webp?access_token=${token}`;
 
   }
 
