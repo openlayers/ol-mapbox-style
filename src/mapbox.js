@@ -82,7 +82,6 @@ export function normalizeSourceUrl(url, token, tokenParam, styleUrl) {
     return `https://api.mapbox.com/v4/${mapboxPath}/{z}/{x}/{y}${sizeFactor}.webp?access_token=${token}`;
 
   }
-
-  return `https://api.mapbox.com/v4/${mapboxPath}/{z}/{x}/{y}.vector.pbf?access_token=${token}`;
+  return `https://{a-d}.tiles.mapbox.com/v4/${mapboxPath}/{z}/{x}/{y}.vector.pbf?access_token=${token}`;
 }
 
