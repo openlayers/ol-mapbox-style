@@ -1,13 +1,13 @@
 {
     "version": 8,
     "name": "wfs",
-    "center": [-83.057769, 42.328815],
-    "zoom": 8,
+    "center": [-79.882797, 43.513489],
+    "zoom": 11,
     "glyphs": "{fontstack}/{range}",
     "sources": {
-      "states": {
+      "water_areas": {
         "type": "geojson",
-        "data": "./states.geojson"
+        "data": "https://ahocevar.com/geoserver/wfs?service=WFS&version=1.1.0&request=GetFeature&typename=osm:water_areas&outputFormat=application/json&srsname=EPSG:4326&bbox=-8948615.422847113,5370452.51819444,-8869159.13194467,5393383.626679991,EPSG:3857"
       },
       "osm": {
         "type": "raster",
@@ -34,12 +34,20 @@
         "source": "osm"
       },
       {
-        "id": "states",
+        "id": "water_areas_fill",
         "type": "fill",
-        "source": "states",
+        "source": "water_areas",
         "paint": {
-          "fill-color": "#A6CEE3",
-          "fill-opacity": 0.4
+          "fill-color": "#020E5D",
+          "fill-opacity": 0.8
+        }
+      },
+      {
+        "id": "water_areas_line",
+        "type": "line",
+        "source": "water_areas",
+        "paint": {
+          "fill-color": "white"
         }
       }
     ]
