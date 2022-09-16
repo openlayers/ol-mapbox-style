@@ -1,0 +1,47 @@
+{
+    "version": 8,
+    "name": "wfs",
+    "center": [-83.057769, 42.328815],
+    "zoom": 8,
+    "glyphs": "{fontstack}/{range}",
+    "sources": {
+      "states": {
+        "type": "geojson",
+        "data": "./states.geojson"
+      },
+      "osm": {
+        "type": "raster",
+        "attribution": "&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors.",
+        "tileSize": 256,
+        "tiles": [
+          "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png",
+          "https://b.tile.openstreetmap.org/{z}/{x}/{y}.png",
+          "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        ]
+      }
+    },
+    "layers": [
+      {
+        "id": "background",
+        "type": "background",
+        "paint": {
+          "background-color": "rgba(255,255,0,0.2)"
+        }
+      },
+      {
+        "id": "osm",
+        "type": "raster",
+        "source": "osm"
+      },
+      {
+        "id": "states",
+        "type": "fill",
+        "source": "states",
+        "paint": {
+          "fill-color": "#A6CEE3",
+          "fill-opacity": 0.4
+        }
+      }
+    ]
+  }
+  
