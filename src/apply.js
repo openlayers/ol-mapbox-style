@@ -35,6 +35,7 @@ import {
   normalizeSpriteUrl,
   normalizeStyleUrl,
 } from './mapbox.js';
+import {bbox as bboxStrategy} from 'ol/loadingstrategy.js';
 
 /** @typedef {import("ol/layer/Group.js").default} LayerGroup */
 
@@ -655,7 +656,22 @@ function setupGeoJSONSource(glSource, styleUrl, options) {
         geoJsonUrl = encodeURI(transformed.url);
       }
     }
-    sourceOptions.url = geoJsonUrl;
+    if (geoJsonUrl.indexOf('{bbox-epsg-3857}') != -1) {
+      sourceOptions.url = (extent)=>{
+        return (
+          'https://ahocevar.com/geoserver/wfs?service=WFS&' +
+          'version=1.1.0&request=GetFeature&typename=osm:water_areas&' +
+          'outputFormat=application/json&srsname=EPSG:4326&' +
+          'bbox=' +
+          extent.join(',') +
+          ',EPSG:3857'
+        )
+      }
+      sourceOptions.strategy = bboxStrategy
+      console.log('{bbox-epsg-3857}: ',sourceOptions)
+    }else{
+      sourceOptions.url = ()=> geoJsonUrl;
+    }
   } else {
     sourceOptions.features = geoJsonFormat.readFeatures(data, {
       featureProjection: getUserProjection() || 'EPSG:3857',
