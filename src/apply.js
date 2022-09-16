@@ -658,17 +658,9 @@ function setupGeoJSONSource(glSource, styleUrl, options) {
     }
     if (geoJsonUrl.indexOf('{bbox-epsg-3857}') != -1) {
       sourceOptions.url = (extent)=>{
-        return (
-          'https://ahocevar.com/geoserver/wfs?service=WFS&' +
-          'version=1.1.0&request=GetFeature&typename=osm:water_areas&' +
-          'outputFormat=application/json&srsname=EPSG:4326&' +
-          'bbox=' +
-          extent.join(',') +
-          ',EPSG:3857'
-        )
+       return geoJsonUrl.replace('{bbox-epsg-3857}',  `${extent.join(',')},EPSG:3857`)
       }
-      sourceOptions.strategy = bboxStrategy
-      console.log('{bbox-epsg-3857}: ',sourceOptions)
+      sourceOptions.strategy = bboxStrategy 
     }else{
       sourceOptions.url = ()=> geoJsonUrl;
     }
