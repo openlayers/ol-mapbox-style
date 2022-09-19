@@ -657,15 +657,26 @@ function setupGeoJSONSource(glSource, styleUrl, options) {
       }
     }
     if (geoJsonUrl.indexOf('{bbox-epsg-3857}') != -1) {
-      sourceOptions.url = (extent) => {
+      const extentUrl = (extent) => {
         return geoJsonUrl.replace(
           '{bbox-epsg-3857}',
           `${extent.join(',')},EPSG:3857`
         );
       };
-      sourceOptions.strategy = bboxStrategy;
+      const source = new VectorSource({
+        attributions: glSource.attribution,
+        format: geoJsonFormat,
+        url: extentUrl,
+        strategy: bboxStrategy,
+      });
+      source.set('mapbox-source', glSource);
+      return source;
     } else {
-      sourceOptions.url = () => geoJsonUrl;
+      return new VectorSource({
+        attributions: glSource.attribution,
+        format: geoJsonFormat,
+        url: geoJsonUrl,
+      });
     }
   } else {
     sourceOptions.features = geoJsonFormat.readFeatures(data, {
