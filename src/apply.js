@@ -20,6 +20,7 @@ import {
   stylefunction as applyStyleFunction,
   getValue,
 } from './stylefunction.js';
+import {bbox as bboxStrategy} from 'ol/loadingstrategy.js';
 import {createXYZ} from 'ol/tilegrid.js';
 import {
   defaultResolutions,
@@ -655,7 +656,28 @@ function setupGeoJSONSource(glSource, styleUrl, options) {
         geoJsonUrl = encodeURI(transformed.url);
       }
     }
-    sourceOptions.url = geoJsonUrl;
+    if (geoJsonUrl.indexOf('{bbox-epsg-3857}') != -1) {
+      const extentUrl = (extent) => {
+        return geoJsonUrl.replace(
+          '{bbox-epsg-3857}',
+          `${extent.join(',')},EPSG:3857`
+        );
+      };
+      const source = new VectorSource({
+        attributions: glSource.attribution,
+        format: geoJsonFormat,
+        url: extentUrl,
+        strategy: bboxStrategy,
+      });
+      source.set('mapbox-source', glSource);
+      return source;
+    } else {
+      return new VectorSource({
+        attributions: glSource.attribution,
+        format: geoJsonFormat,
+        url: geoJsonUrl,
+      });
+    }
   } else {
     sourceOptions.features = geoJsonFormat.readFeatures(data, {
       featureProjection: getUserProjection() || 'EPSG:3857',

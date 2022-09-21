@@ -148,6 +148,16 @@ describe('ol-mapbox-style', function () {
       });
     });
 
+    it('handles geojson wfs sources', function (done) {
+      apply(target, './fixtures/geojson-wfs.json').then(function (map) {
+        const layer = map.getAllLayers()[0];
+        const source = layer.getSource();
+        should(source).be.instanceof(VectorSource);
+        should(layer.getStyle()).be.a.Function();
+        done();
+      });
+    });
+
     it('handles geojson sources with inline GeoJSON', function (done) {
       const map = new Map({target: target});
       map.getLayers().once('add', function (e) {
