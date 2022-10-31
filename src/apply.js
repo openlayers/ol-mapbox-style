@@ -157,6 +157,7 @@ export function applyStyle(
   ) {
     options = sourceOrLayersOrOptions;
     sourceOrLayers = options.source || options.layers;
+    optionsOrPath = options;
   } else {
     sourceOrLayers = sourceOrLayersOrOptions;
   }
