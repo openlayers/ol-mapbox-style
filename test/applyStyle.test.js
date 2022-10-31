@@ -193,6 +193,17 @@ describe('applyStyle with source creation', function () {
         done(e);
       });
   });
+  it('accepts options as 3rd argument', function (done) {
+    const accessToken = "mytoken";
+    const mapboxLayer = new VectorLayer();
+    applyStyle(mapboxLayer, 'mapbox://styles/my/style', {
+      accessToken: accessToken,
+      transformRequest(url, type) {
+        should(url).endWith(accessToken);
+        done();
+      }
+    });
+  });
 });
 
 describe('maxResolution', function () {
