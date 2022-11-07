@@ -265,31 +265,28 @@ export function applyStyle(
                 );
               }
             });
-          } else {
-            const glSource = glStyle.sources[sourceId];
-            let source = layer.getSource();
-            if (!source || source.get('mapbox-source') !== glSource) {
-              source = setupGeoJSONSource(glSource, styleUrl, options);
-            }
-            const targetSource = /** @type {VectorSource} */ (
-              layer.getSource()
-            );
-            if (!targetSource) {
-              layer.setSource(source);
-            } else if (source !== targetSource) {
-              if (!targetSource.getAttributions()) {
-                targetSource.setAttributions(source.getAttributions());
-              }
-              //@ts-ignore
-              if (!targetSource.format_) {
-                //@ts-ignore
-                targetSource.format_ = source.getFormat();
-              }
-              //@ts-ignore
-              targetSource.url_ = source.getUrl();
-            }
-            return Promise.resolve();
           }
+          const glSource = glStyle.sources[sourceId];
+          let source = layer.getSource();
+          if (!source || source.get('mapbox-source') !== glSource) {
+            source = setupGeoJSONSource(glSource, styleUrl, options);
+          }
+          const targetSource = /** @type {VectorSource} */ (layer.getSource());
+          if (!targetSource) {
+            layer.setSource(source);
+          } else if (source !== targetSource) {
+            if (!targetSource.getAttributions()) {
+              targetSource.setAttributions(source.getAttributions());
+            }
+            //@ts-ignore
+            if (!targetSource.format_) {
+              //@ts-ignore
+              targetSource.format_ = source.getFormat();
+            }
+            //@ts-ignore
+            targetSource.url_ = source.getUrl();
+          }
+          return Promise.resolve();
         }
 
         let spriteScale, spriteData, spriteImageUrl, style;

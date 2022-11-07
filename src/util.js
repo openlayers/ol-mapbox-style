@@ -20,12 +20,11 @@ export const defaultResolutions = (function () {
 export function createCanvas(width, height) {
   if (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope && typeof OffscreenCanvas !== 'undefined') { // eslint-disable-line
     return /** @type {?} */ (new OffscreenCanvas(width, height));
-  } else {
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    return canvas;
   }
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  return canvas;
 }
 
 export function getZoomForResolution(resolution, resolutions) {
@@ -53,27 +52,26 @@ const pendingRequests = {};
 export function fetchResource(resourceType, url, options = {}) {
   if (url in pendingRequests) {
     return pendingRequests[url];
-  } else {
-    const request = options.transformRequest
-      ? options.transformRequest(url, resourceType) || new Request(url)
-      : new Request(url);
-    if (!request.headers.get('Accept')) {
-      request.headers.set('Accept', 'application/json');
-    }
-    const pendingRequest = fetch(request)
-      .then(function (response) {
-        delete pendingRequests[url];
-        return response.ok
-          ? response.json()
-          : Promise.reject(new Error('Error fetching source ' + url));
-      })
-      .catch(function (error) {
-        delete pendingRequests[url];
-        return Promise.reject(new Error('Error fetching source ' + url));
-      });
-    pendingRequests[url] = pendingRequest;
-    return pendingRequest;
   }
+  const request = options.transformRequest
+    ? options.transformRequest(url, resourceType) || new Request(url)
+    : new Request(url);
+  if (!request.headers.get('Accept')) {
+    request.headers.set('Accept', 'application/json');
+  }
+  const pendingRequest = fetch(request)
+    .then(function (response) {
+      delete pendingRequests[url];
+      return response.ok
+        ? response.json()
+        : Promise.reject(new Error('Error fetching source ' + url));
+    })
+    .catch(function (error) {
+      delete pendingRequests[url];
+      return Promise.reject(new Error('Error fetching source ' + url));
+    });
+  pendingRequests[url] = pendingRequest;
+  return pendingRequest;
 }
 
 export function getGlStyle(glStyleOrUrl, options) {
