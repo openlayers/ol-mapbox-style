@@ -669,18 +669,17 @@ function setupGeoJSONSource(glSource, styleUrl, options) {
       });
       source.set('mapbox-source', glSource);
       return source;
-    } else {
-      return new VectorSource({
-        attributions: glSource.attribution,
-        format: geoJsonFormat,
-        url: geoJsonUrl,
-      });
     }
-  } else {
-    sourceOptions.features = geoJsonFormat.readFeatures(data, {
-      featureProjection: getUserProjection() || 'EPSG:3857',
+    return new VectorSource({
+      attributions: glSource.attribution,
+      format: geoJsonFormat,
+      url: geoJsonUrl,
     });
   }
+  sourceOptions.features = geoJsonFormat.readFeatures(data, {
+    featureProjection: getUserProjection() || 'EPSG:3857',
+  });
+
   const source = new VectorSource(
     Object.assign(
       {
