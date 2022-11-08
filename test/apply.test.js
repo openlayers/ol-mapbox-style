@@ -2,6 +2,7 @@ import Feature from 'ol/Feature.js';
 import LayerGroup from 'ol/layer/Group.js';
 import Map from 'ol/Map.js';
 import Point from 'ol/geom/Point.js';
+import RasterSource from 'ol/source/Raster.js';
 import TileSource from 'ol/source/Tile.js';
 import VectorLayer from 'ol/layer/Vector.js';
 import VectorSource from 'ol/source/Vector.js';
@@ -135,6 +136,22 @@ describe('ol-mapbox-style', function () {
         osm.setOpacity(0.5);
         osm.dispatchEvent({type: 'prerender', frameState: {viewState: {}}});
         should(osm.getOpacity()).eql(0.5);
+      });
+    });
+
+    describe('raster-dem sources', function () {
+      let map;
+      this.beforeEach(function (done) {
+        apply(target, './fixtures/raster-dem.json').then((olMap) => {
+          map = olMap;
+          done();
+        });
+      });
+
+      it('handles raster-dem sources', function () {
+        const rasterDem = map.getLayers().item(0);
+        should(rasterDem.get('mapbox-layers')).eql(['hillshading']);
+        should(rasterDem.getSource()).be.instanceof(RasterSource);
       });
     });
 

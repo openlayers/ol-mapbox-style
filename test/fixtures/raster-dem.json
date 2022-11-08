@@ -1,0 +1,25 @@
+{
+  "version": 8,
+  "name": "raster-dem",
+  "center": [-98.78906130124426, 37.92686191312036],
+  "zoom": 4,
+  "sources": {
+    "dem": {
+      "type": "raster-dem",
+      "tiles": [
+        "{z}/{x}/{y}.png"
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "hillshading",
+      "type": "hillshade",
+      "source": "dem",
+      "paint": {
+        "hillshade-exaggeration": 0.5,
+        "hillshade-light-direction": 45
+      }
+    }
+  ]
+}
