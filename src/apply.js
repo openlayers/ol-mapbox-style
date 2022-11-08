@@ -5,8 +5,10 @@ License: https://raw.githubusercontent.com/openlayers/ol-mapbox-style/master/LIC
 */
 
 import GeoJSON from 'ol/format/GeoJSON.js';
+import ImageLayer from 'ol/layer/Image.js';
 import MVT from 'ol/format/MVT.js';
 import Map from 'ol/Map.js';
+import Raster from 'ol/source/Raster.js';
 import TileGrid from 'ol/tilegrid/TileGrid.js';
 import TileJSON from 'ol/source/TileJSON.js';
 import TileLayer from 'ol/layer/Tile.js';
@@ -31,6 +33,7 @@ import {
 } from './util.js';
 import {equivalent, fromLonLat, getUserProjection} from 'ol/proj.js';
 import {getFonts} from './text.js';
+import {hillshade} from './shaders.js';
 import {
   normalizeSourceUrl,
   normalizeSpriteUrl,
@@ -593,6 +596,8 @@ function setupRasterLayer(glSource, styleUrl, options) {
   getTileJson(glSource, styleUrl, options)
     .then(function (tileJson) {
       const source = new TileJSON({
+        interpolate:
+          options.interpolate === undefined ? true : options.interpolate,
         transition: 0,
         crossOrigin: 'anonymous',
         tileJSON: tileJson,
@@ -628,6 +633,30 @@ function setupRasterLayer(glSource, styleUrl, options) {
     .catch(function (error) {
       layer.setSource(undefined);
     });
+  return layer;
+}
+
+/**
+ *
+ * @param {Object} glSource "source" entry from a Mapbox Style object.
+ * @param {string} styleUrl Style url
+ * @param {Options} options ol-mapbox-style options.
+ * @return {ImageLayer<Raster>} The raster layer
+ */
+function setupHillshadeLayer(glSource, styleUrl, options) {
+  const tileLayer = setupRasterLayer(
+    glSource,
+    styleUrl,
+    Object.assign({}, options, {interpolate: false})
+  );
+  /** @type {ImageLayer<Raster>} */
+  const layer = new ImageLayer({
+    source: new Raster({
+      operationType: 'image',
+      operation: hillshade,
+      sources: [tileLayer],
+    }),
+  });
   return layer;
 }
 
@@ -760,11 +789,11 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
   const glLayers = glStyle.layers;
   let layerIds = [];
 
-  let glLayer, glSource, glSourceId, id, layer;
+  let layer, glSource, glSourceId, id;
   for (let i = 0, ii = glLayers.length; i < ii; ++i) {
-    glLayer = glLayers[i];
+    const glLayer = glLayers[i];
     const type = glLayer.type;
-    if (type == 'heatmap' || type == 'hillshade') {
+    if (type == 'heatmap') {
       //FIXME Unsupported layer type
       throw new Error(`${type} layers are not supported`);
     } else if (type == 'background') {
@@ -787,6 +816,7 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
           layerIds = [];
         }
         glSource = glStyle.sources[id];
+        const functionCache = {};
         if (glSource.type == 'vector') {
           layer = setupVectorLayer(glSource, styleUrl, options);
         } else if (glSource.type == 'raster') {
@@ -794,13 +824,53 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
           layer.setVisible(
             glLayer.layout ? glLayer.layout.visibility !== 'none' : true
           );
-          const functionCache = {};
           layer.on(
             'prerender',
             prerenderRasterLayer(glLayer, layer, functionCache)
           );
         } else if (glSource.type == 'geojson') {
           layer = setupGeoJSONLayer(glSource, styleUrl, options);
+        } else if (
+          glSource.type == 'raster-dem' &&
+          glLayer.type == 'hillshade'
+        ) {
+          const hillshadeLayer = setupHillshadeLayer(
+            glSource,
+            styleUrl,
+            options
+          );
+          layer = hillshadeLayer;
+          hillshadeLayer.getSource().on('beforeoperations', function (event) {
+            const data = event.data;
+            data.resolution = event.resolution;
+            const zoom = getZoomForResolution(
+              event.resolution,
+              options.resolutions || defaultResolutions
+            );
+            data.vert =
+              5 *
+              getValue(
+                glLayer,
+                'paint',
+                'hillshade-exaggeration',
+                zoom,
+                emptyObj,
+                functionCache
+              );
+            data.sunAz = getValue(
+              glLayer,
+              'paint',
+              'hillshade-illumination-direction',
+              zoom,
+              emptyObj,
+              functionCache
+            );
+            data.sunEl = 35;
+            data.opacity = 0.15;
+          });
+          layer.setVisible(
+            glLayer.layout ? glLayer.layout.visibility !== 'none' : true
+          );
         }
         glSourceId = id;
         if (layer) {
