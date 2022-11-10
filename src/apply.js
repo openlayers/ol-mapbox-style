@@ -644,11 +644,7 @@ function setupRasterLayer(glSource, styleUrl, options) {
  * @return {ImageLayer<Raster>} The raster layer
  */
 function setupHillshadeLayer(glSource, styleUrl, options) {
-  const tileLayer = setupRasterLayer(
-    glSource,
-    styleUrl,
-    Object.assign({}, options, {interpolate: false})
-  );
+  const tileLayer = setupRasterLayer(glSource, styleUrl, options);
   /** @type {ImageLayer<Raster>} */
   const layer = new ImageLayer({
     source: new Raster({

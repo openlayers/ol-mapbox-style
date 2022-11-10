@@ -75,7 +75,7 @@
     "mini-css-extract-plugin": "^2.4.4",
     "mocha": "^10.0.0",
     "nanoassert": "^2.0.0",
-    "ol": "^7.0.0-dev.1660829860979",
+    "ol": "^7.1.1-dev.1668111618807",
     "puppeteer": "^19.2.2",
     "remove-flow-types-loader": "^1.1.0",
     "rollup": "^2.70.2",
