@@ -2,6 +2,14 @@
 
 ## Next version
 
+## 9.2.1
+
+* Allow setting OpenLayers layer opacity when no `raster-opacity` is set
+* Use high resolution tiles for mapbox.satellite when browser supports it
+* Support bounding box requests for `geojson` sources
+* Fix 3-argument signature for `applyStyle()`
+* Add support for raster-dem sources with hillshade layers
+
 ## 9.2.0
 
 * New hook for supplying images without project sprite spritesheet
