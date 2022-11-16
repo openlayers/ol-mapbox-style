@@ -123,20 +123,6 @@ module.exports = (env, argv) => {
           ),
         },
         {
-          type: 'javascript/auto',
-          test: /\.json$/,
-          include: join(
-            __dirname,
-            'node_modules',
-            '@mapbox',
-            'mapbox-gl-style-spec',
-            'reference'
-          ),
-          use: [
-            'json-strip-loader?keys[]=doc,keys[]=example,keys[]=sdk-support',
-          ],
-        },
-        {
           test: /\.js$/,
           use: {
             loader: 'buble-loader',
