@@ -1046,6 +1046,10 @@ function finalizeLayer(
             layer.setMinResolution(defaultResolutions[maxZoom] + 1e-9);
           }
         }
+      } else {
+        if (minZoom > 0) {
+          layer.setMaxResolution(defaultResolutions[minZoom] + 1e-9);
+        }
       }
       if (
         source instanceof VectorSource ||
