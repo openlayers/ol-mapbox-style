@@ -2,6 +2,10 @@
 
 ## Next version
 
+## 9.2.2
+
+* Avoid excessive data downloads for geojson layers below minzoom
+
 ## 9.2.1
 
 * Allow setting OpenLayers layer opacity when no `raster-opacity` is set
