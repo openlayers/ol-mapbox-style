@@ -25,7 +25,8 @@
         "paint": {
           "fill-color": "#020E5D",
           "fill-opacity": 0.8
-        }
+        },
+        "minzoom": 5
       },
       {
         "id": "water_areas_line",
@@ -33,7 +34,8 @@
         "source": "water_areas",
         "paint": {
           "fill-color": "white"
-        }
+        },
+        "minzoom": 6
       }
     ]
   }

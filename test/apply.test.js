@@ -371,6 +371,18 @@ describe('ol-mapbox-style', function () {
           });
       });
 
+      it('limits layer minzoom for geojson sources', function (done) {
+        apply(target, './fixtures/geojson-wfs.json')
+          .then(function (map) {
+            const layer = map.getAllLayers()[0];
+            should(layer.getMaxResolution()).eql(defaultResolutions[5] + 1e-9);
+            done();
+          })
+          .catch(function (err) {
+            done(err);
+          });
+      });
+
       it('handles visibility', function (done) {
         apply(target, context)
           .then(function (map) {
