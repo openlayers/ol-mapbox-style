@@ -1,3 +1,4 @@
+import {expandUrl} from 'ol/tileurlfunction.js';
 import {normalizeSourceUrl, normalizeStyleUrl} from './mapbox.js';
 
 export function deg2rad(degrees) {
@@ -115,7 +116,7 @@ export function getTileJson(glSource, styleUrl, options = {}) {
         promise = Promise.resolve(
           Object.assign({}, glSource, {
             url: undefined,
-            tiles: [normalizedSourceUrl],
+            tiles: expandUrl(normalizedSourceUrl),
           })
         );
       } else {
