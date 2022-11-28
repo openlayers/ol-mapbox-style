@@ -2,6 +2,10 @@
 
 ## Next version
 
+## 9.2.3
+
+* Fix a regression that prevented mapbox:// tiles from getting loaded
+
 ## 9.2.2
 
 * Avoid excessive data downloads for geojson layers below minzoom
