@@ -47,7 +47,7 @@
     "@rollup/plugin-commonjs": "^23.0.2",
     "@rollup/plugin-node-resolve": "^15.0.1",
     "@types/arcgis-rest-api": "^10.4.4",
-    "@types/mocha": "^9.1.0",
+    "@types/mocha": "^10.0.0",
     "@types/offscreencanvas": "^2019.6.4",
     "@types/topojson-specification": "^1.0.1",
     "add-text-to-markdown": "^2.0.0",
