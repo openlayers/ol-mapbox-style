@@ -2,6 +2,12 @@
 
 ## Next version
 
+## 9.2.4
+
+* Update documentation for `getLayer()` and `getSource()` for `LayerGroup` support
+* Update `getLayers()` to work with `LayerGroup`s
+* Make `transformRequest` option work for raster sources with inlint TileJSON definition 
+
 ## 9.2.3
 
 * Fix a regression that prevented mapbox:// tiles from getting loaded
