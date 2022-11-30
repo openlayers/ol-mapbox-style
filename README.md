@@ -298,10 +298,10 @@ OpenLayers layer instance when they use the same Mapbox Style `source`.
 
 ##### Parameters
 
-| Name      | Type     | Description            |
-| :-------- | :------- | :--------------------- |
-| `map`     | `Map`    | OpenLayers Map.        |
-| `layerId` | `string` | Mapbox Style layer id. |
+| Name      | Type                  | Description                   |
+| :-------- | :-------------------- | :---------------------------- |
+| `map`     | `LayerGroup` \| `Map` | OpenLayers Map or LayerGroup. |
+| `layerId` | `string`              | Mapbox Style layer id.        |
 
 ##### Returns
 
@@ -319,10 +319,10 @@ Get the OpenLayers layer instances for the provided Mapbox Style `source`.
 
 ##### Parameters
 
-| Name       | Type     | Description             |
-| :--------- | :------- | :---------------------- |
-| `map`      | `Map`    | OpenLayers Map.         |
-| `sourceId` | `string` | Mapbox Style source id. |
+| Name       | Type                  | Description                   |
+| :--------- | :-------------------- | :---------------------------- |
+| `map`      | `LayerGroup` \| `Map` | OpenLayers Map or LayerGroup. |
+| `sourceId` | `string`              | Mapbox Style source id.       |
 
 ##### Returns
 
@@ -340,10 +340,10 @@ Get the OpenLayers source instance for the provided Mapbox Style `source`.
 
 ##### Parameters
 
-| Name       | Type     | Description             |
-| :--------- | :------- | :---------------------- |
-| `map`      | `Map`    | OpenLayers Map.         |
-| `sourceId` | `string` | Mapbox Style source id. |
+| Name       | Type                  | Description                   |
+| :--------- | :-------------------- | :---------------------------- |
+| `map`      | `LayerGroup` \| `Map` | OpenLayers Map or LayerGroup. |
+| `sourceId` | `string`              | Mapbox Style source id.       |
 
 ##### Returns
 
