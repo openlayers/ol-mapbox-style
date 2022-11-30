@@ -1091,7 +1091,7 @@ function finalizeLayer(
  * Get the OpenLayers layer instance that contains the provided Mapbox Style
  * `layer`. Note that multiple Mapbox Style layers are combined in a single
  * OpenLayers layer instance when they use the same Mapbox Style `source`.
- * @param {Map} map OpenLayers Map.
+ * @param {Map|LayerGroup} map OpenLayers Map or LayerGroup.
  * @param {string} layerId Mapbox Style layer id.
  * @return {Layer} OpenLayers layer instance.
  */
@@ -1107,13 +1107,13 @@ export function getLayer(map, layerId) {
 
 /**
  * Get the OpenLayers layer instances for the provided Mapbox Style `source`.
- * @param {Map} map OpenLayers Map.
+ * @param {Map|LayerGroup} map OpenLayers Map or LayerGroup.
  * @param {string} sourceId Mapbox Style source id.
  * @return {Array<Layer>} OpenLayers layer instances.
  */
 export function getLayers(map, sourceId) {
   const result = [];
-  const layers = map.getAllLayers();
+  const layers = map.getLayers().getArray();
   for (let i = 0, ii = layers.length; i < ii; ++i) {
     if (layers[i].get('mapbox-source') === sourceId) {
       result.push(/** @type {Layer} */ (layers[i]));
@@ -1124,7 +1124,7 @@ export function getLayers(map, sourceId) {
 
 /**
  * Get the OpenLayers source instance for the provided Mapbox Style `source`.
- * @param {Map} map OpenLayers Map.
+ * @param {Map|LayerGroup} map OpenLayers Map or LayerGroup.
  * @param {string} sourceId Mapbox Style source id.
  * @return {Source} OpenLayers source instance.
  */
