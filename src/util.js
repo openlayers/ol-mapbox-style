@@ -46,11 +46,12 @@ const pendingRequests = {};
  * @param {ResourceType} resourceType Type of resource to load.
  * @param {string} url Url of the resource.
  * @param {Options} [options={}] Options.
+ * @param {{request?: Request}} [metadata] Object to be filled with the request.
  * @return {Promise<Object|Response>} Promise that resolves with the loaded resource
  * or rejects with the Response object.
  * @private
  */
-export function fetchResource(resourceType, url, options = {}) {
+export function fetchResource(resourceType, url, options = {}, metadata) {
   if (url in pendingRequests) {
     return pendingRequests[url];
   }
@@ -59,6 +60,9 @@ export function fetchResource(resourceType, url, options = {}) {
     : new Request(url);
   if (!request.headers.get('Accept')) {
     request.headers.set('Accept', 'application/json');
+  }
+  if (metadata) {
+    metadata.request = request;
   }
   const pendingRequest = fetch(request)
     .then(function (response) {
@@ -93,6 +97,16 @@ export function getGlStyle(glStyleOrUrl, options) {
   }
 }
 
+function getTransformedTilesUrl(tilesUrl, options) {
+  if (options.transformRequest) {
+    const transformedRequest = options.transformRequest(tilesUrl, 'Tiles');
+    if (transformedRequest instanceof Request) {
+      return decodeURI(transformedRequest.url);
+    }
+  }
+  return tilesUrl;
+}
+
 const tilejsonCache = {};
 /**
  * @param {Object} glSource glStyle source object.
@@ -106,7 +120,7 @@ export function getTileJson(glSource, styleUrl, options = {}) {
   if (!promise || options.transformRequest) {
     const url = glSource.url;
     if (url && !glSource.tiles) {
-      let normalizedSourceUrl = normalizeSourceUrl(
+      const normalizedSourceUrl = normalizeSourceUrl(
         url,
         options.accessToken,
         options.accessTokenParam || 'access_token',
@@ -120,48 +134,38 @@ export function getTileJson(glSource, styleUrl, options = {}) {
           })
         );
       } else {
-        promise = fetchResource('Source', normalizedSourceUrl, options).then(
-          function (tileJson) {
-            for (let i = 0, ii = tileJson.tiles.length; i < ii; ++i) {
-              const tileUrl = tileJson.tiles[i];
-              if (options.transformRequest) {
-                const request = options.transformRequest(
-                  normalizedSourceUrl,
-                  'Source'
-                );
-                if (request) {
-                  normalizedSourceUrl = request.url;
-                }
-              }
-              let normalizedTileUrl = normalizeSourceUrl(
+        const metadata = {};
+        promise = fetchResource(
+          'Source',
+          normalizedSourceUrl,
+          options,
+          metadata
+        ).then(function (tileJson) {
+          tileJson.tiles = tileJson.tiles.map(function (tileUrl) {
+            return getTransformedTilesUrl(
+              normalizeSourceUrl(
                 tileUrl,
                 options.accessToken,
                 options.accessTokenParam || 'access_token',
-                normalizedSourceUrl
-              );
-              if (options.transformRequest) {
-                const transformedRequest = options.transformRequest(
-                  normalizedTileUrl,
-                  'Tiles'
-                );
-                if (transformedRequest instanceof Request) {
-                  normalizedTileUrl = decodeURI(transformedRequest.url);
-                }
-              }
-              tileJson.tiles[i] = normalizedTileUrl;
-            }
-            return Promise.resolve(tileJson);
-          }
-        );
+                metadata.request.url
+              ),
+              options
+            );
+          });
+          return Promise.resolve(tileJson);
+        });
       }
     } else {
       glSource = Object.assign({}, glSource, {
         tiles: glSource.tiles.map(function (tileUrl) {
-          return normalizeSourceUrl(
-            tileUrl,
-            options.accessToken,
-            options.accessTokenParam || 'access_token',
-            styleUrl || location.href
+          return getTransformedTilesUrl(
+            normalizeSourceUrl(
+              tileUrl,
+              options.accessToken,
+              options.accessTokenParam || 'access_token',
+              styleUrl || location.href
+            ),
+            options
           );
         }),
       });
