@@ -394,6 +394,22 @@ describe('ol-mapbox-style', function () {
             done(err);
           });
       });
+
+      it('calls transformRequest', function (done) {
+        let calledForRasterSource = false;
+        apply(target, context, {
+          transformRequest: function (url, type) {
+            if (type === 'Tiles' && url === context.sources.states.tiles[0]) {
+              calledForRasterSource = true;
+            }
+          },
+        })
+          .then(function () {
+            should(calledForRasterSource).be.true();
+            done();
+          })
+          .catch(done);
+      });
     });
 
     describe('vector sources and layers', function () {
