@@ -77,14 +77,29 @@ describe('ol-mapbox-style', function () {
       });
     });
 
+    it('adds a background layer', function (done) {
+      apply(target, brightV9)
+        .then(function (map) {
+          should(map).be.instanceof(Map);
+          const layer = map.getLayers().item(0);
+          should(
+            layer.render({viewState: {resolution: 1}}).className
+          ).be.exactly('ol-mapbox-style-background');
+          done();
+        })
+        .catch(done);
+    });
+
     it('adds a layer with a style function', function (done) {
-      apply(target, brightV9).then(function (map) {
-        should(map).be.instanceof(Map);
-        const layer = map.getLayers().item(0);
-        should(layer).be.instanceof(VectorTileLayer);
-        should(layer.getStyle()).be.a.Function();
-        done();
-      });
+      apply(target, brightV9)
+        .then(function (map) {
+          should(map).be.instanceof(Map);
+          const layer = map.getLayers().item(1);
+          should(layer).be.instanceof(VectorTileLayer);
+          should(layer.getStyle()).be.a.Function();
+          done();
+        })
+        .catch(done);
     });
 
     describe('raster sources', function () {
@@ -97,8 +112,8 @@ describe('ol-mapbox-style', function () {
       });
 
       it('handles raster sources', function () {
-        const osm = map.getLayers().item(0);
-        const wms = map.getLayers().item(1);
+        const osm = map.getLayers().item(1);
+        const wms = map.getLayers().item(2);
         should(osm.get('mapbox-layers')).eql(['osm']);
         should(wms.get('mapbox-layers')).eql(['states-wms']);
         const tileGrid = osm.getSource().getTileGrid();
@@ -122,7 +137,7 @@ describe('ol-mapbox-style', function () {
       });
 
       it('handles raster layer opacity when raster-opacity is set', function () {
-        const wms = map.getLayers().item(1);
+        const wms = map.getLayers().item(2);
         const wmsLayer = map
           .get('mapbox-style')
           .layers.find((l) => l.id === 'states-wms');
@@ -132,7 +147,7 @@ describe('ol-mapbox-style', function () {
       });
 
       it('lets OpenLayers handle raster opacity when raster-opacity is not set', function () {
-        const osm = map.getLayers().item(0);
+        const osm = map.getLayers().item(1);
         osm.setOpacity(0.5);
         osm.dispatchEvent({type: 'prerender', frameState: {viewState: {}}});
         should(osm.getOpacity()).eql(0.5);
@@ -156,23 +171,27 @@ describe('ol-mapbox-style', function () {
     });
 
     it('handles geojson sources', function (done) {
-      apply(target, './fixtures/geojson.json').then(function (map) {
-        const layer = map.getAllLayers()[0];
-        const source = layer.getSource();
-        should(source).be.instanceof(VectorSource);
-        should(layer.getStyle()).be.a.Function();
-        done();
-      });
+      apply(target, './fixtures/geojson.json')
+        .then(function (map) {
+          const layer = map.getAllLayers()[1];
+          const source = layer.getSource();
+          should(source).be.instanceof(VectorSource);
+          should(layer.getStyle()).be.a.Function();
+          done();
+        })
+        .catch(done);
     });
 
     it('handles geojson wfs sources', function (done) {
-      apply(target, './fixtures/geojson-wfs.json').then(function (map) {
-        const layer = map.getAllLayers()[0];
-        const source = layer.getSource();
-        should(source).be.instanceof(VectorSource);
-        should(layer.getStyle()).be.a.Function();
-        done();
-      });
+      apply(target, './fixtures/geojson-wfs.json')
+        .then(function (map) {
+          const layer = map.getAllLayers()[1];
+          const source = layer.getSource();
+          should(source).be.instanceof(VectorSource);
+          should(layer.getStyle()).be.a.Function();
+          done();
+        })
+        .catch(done);
     });
 
     it('handles geojson sources with inline GeoJSON', function (done) {
@@ -192,15 +211,13 @@ describe('ol-mapbox-style', function () {
     it('handles raster sources from TileJSON', function (done) {
       apply(target, './fixtures/tilejson.json')
         .then(function (map) {
-          const source = map.getLayers().item(0).getSource();
+          const source = map.getLayers().item(1).getSource();
           should(source).be.instanceof(TileSource);
           const tileGrid = source.getTileGrid();
           should(tileGrid.getMaxZoom()).equal(8);
           done();
         })
-        .catch(function (err) {
-          done(err);
-        });
+        .catch(done);
     });
 
     it('handles vector sources from TileJSON', function (done) {
@@ -213,15 +230,13 @@ describe('ol-mapbox-style', function () {
           should(map.getView().getResolution()).equal(
             defaultResolutions[0] / Math.pow(2, 12.241790506353492)
           );
-          const layer = map.getLayers().item(0);
+          const layer = map.getLayers().item(1);
           const source = layer.getSource();
           should(source).be.instanceof(VectorTileSource);
           should(layer.getStyle()).be.a.Function();
           done();
         })
-        .catch(function (err) {
-          done(err);
-        });
+        .catch(done);
     });
 
     it('creates a view with default resolutions', function (done) {
@@ -374,7 +389,7 @@ describe('ol-mapbox-style', function () {
       it('limits layer minzoom for geojson sources', function (done) {
         apply(target, './fixtures/geojson-wfs.json')
           .then(function (map) {
-            const layer = map.getAllLayers()[0];
+            const layer = map.getAllLayers()[1];
             should(layer.getMaxResolution()).eql(defaultResolutions[5] + 1e-9);
             done();
           })
@@ -640,57 +655,43 @@ describe('ol-mapbox-style', function () {
       map.setTarget(null);
     });
 
-    it('applies a background for a map', function () {
-      applyBackground(map, backgroundStyle);
-      const layer = new VectorLayer({
-        opacity: 0.5,
-        source: new VectorSource({
-          features: [new Feature(new Point([0, 0]))],
-        }),
-      });
-      let backgroundColor;
-      map.addLayer(layer);
-      layer.on('postrender', function (e) {
-        backgroundColor = Array.from(e.context.getImageData(0, 0, 1, 1).data);
-      });
-      map.renderSync();
-      should(backgroundColor).eql([248, 244, 240, Math.floor(0.75 * 255)]);
+    it('applies a background for a map', function (done) {
+      applyBackground(map, backgroundStyle)
+        .then(function () {
+          should(
+            map
+              .getLayers()
+              .item(0)
+              .render({viewState: {resolution: 1}}).style.backgroundColor
+          ).be.exactly('rgba(248, 244, 240, 0.75)');
+          done();
+        })
+        .catch(done);
     });
-    it('applies a background for a layer group', function () {
-      const layerGroup = new LayerGroup({
-        layers: [
-          new VectorLayer({
-            opacity: 0.5,
-            source: new VectorSource({
-              features: [new Feature(new Point([0, 0]))],
-            }),
-          }),
-        ],
-      });
-      applyBackground(layerGroup, backgroundStyle);
-      map.addLayer(layerGroup);
-      let backgroundColor;
-      layerGroup
-        .getLayers()
-        .item(0)
-        .on('postrender', function (e) {
-          backgroundColor = Array.from(e.context.getImageData(0, 0, 1, 1).data);
-        });
-      map.renderSync();
-      should(backgroundColor).eql([248, 244, 240, Math.floor(0.75 * 255)]);
+    it('applies a background for a layer group', function (done) {
+      const layerGroup = new LayerGroup();
+      applyBackground(layerGroup, backgroundStyle)
+        .then(function () {
+          should(
+            layerGroup
+              .getLayers()
+              .item(0)
+              .render({viewState: {resolution: 1}}).style.backgroundColor
+          ).be.exactly('rgba(248, 244, 240, 0.75)');
+          done();
+        })
+        .catch(done);
     });
-    it('applies a background to a layer', function () {
+    it('applies a background to a layer', function (done) {
       const layer = new VectorTileLayer({
         source: new VectorTileSource({}),
       });
-      map.addLayer(layer);
-      applyBackground(layer, backgroundStyle);
-      let backgroundColor;
-      layer.on('postrender', function (e) {
-        backgroundColor = Array.from(e.context.getImageData(0, 0, 1, 1).data);
-      });
-      map.renderSync();
-      should(backgroundColor).eql([248, 244, 240, Math.floor(0.75 * 255)]);
+      applyBackground(layer, backgroundStyle)
+        .then(function () {
+          should(layer.getBackground()(1)).eql('rgba(248,244,240,0.75)');
+          done();
+        })
+        .catch(done);
     });
     it('ignores background if layout: {visibility: "none"} (with map)', function () {
       applyBackground(map, backgroundNoneStyle);
@@ -724,18 +725,12 @@ describe('ol-mapbox-style', function () {
     it('works with a glStyle url', function (done) {
       applyBackground(map, './fixtures/background.json')
         .then(function () {
-          const layer = new VectorTileLayer({
-            source: new VectorTileSource({}),
-          });
-          map.addLayer(layer);
-          let backgroundColor;
-          layer.on('postrender', function (e) {
-            backgroundColor = Array.from(
-              e.context.getImageData(0, 0, 1, 1).data
-            );
-          });
-          map.renderSync();
-          should(backgroundColor).eql([248, 244, 240, Math.floor(0.75 * 255)]);
+          should(
+            map
+              .getLayers()
+              .item(0)
+              .render({viewState: {resolution: 1}}).style.backgroundColor
+          ).be.exactly('rgba(248, 244, 240, 0.75)');
           done();
         })
         .catch(done);
