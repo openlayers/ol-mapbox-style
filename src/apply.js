@@ -6,9 +6,12 @@ License: https://raw.githubusercontent.com/openlayers/ol-mapbox-style/master/LIC
 
 import GeoJSON from 'ol/format/GeoJSON.js';
 import ImageLayer from 'ol/layer/Image.js';
+import Layer from 'ol/layer/Layer.js';
+import LayerGroup from 'ol/layer/Group.js';
 import MVT from 'ol/format/MVT.js';
 import Map from 'ol/Map.js';
 import Raster from 'ol/source/Raster.js';
+import Source from 'ol/source/Source.js';
 import TileGrid from 'ol/tilegrid/TileGrid.js';
 import TileJSON from 'ol/source/TileJSON.js';
 import TileLayer from 'ol/layer/Tile.js';
@@ -39,8 +42,6 @@ import {
   normalizeSpriteUrl,
   normalizeStyleUrl,
 } from './mapbox.js';
-
-/** @typedef {import("ol/layer/Group.js").default} LayerGroup */
 
 /**
  * @typedef {Object} FeatureIdentifier
@@ -77,8 +78,6 @@ import {
  */
 
 /** @typedef {'Style'|'Source'|'Sprite'|'SpriteImage'|'Tiles'|'GeoJSON'} ResourceType */
-/** @typedef {import("ol/layer/Layer").default} Layer */
-/** @typedef {import("ol/source/Source").default} Source */
 
 /**
  * @param {string} styleUrl Style URL.
@@ -385,101 +384,21 @@ export function applyStyle(
 
 const emptyObj = {};
 
-function setBackground(mapOrLayer, layer, options) {
-  const background = {
-    id: layer.id,
-    type: layer.type,
-  };
-  const functionCache = {};
-
-  function getBackgroundColor(resolution) {
-    const layout = layer.layout || {};
-    const paint = layer.paint || {};
-    background['paint'] = paint;
-    const zoom = getZoomForResolution(
-      resolution,
-      options.resolutions || defaultResolutions
-    );
-    let bg, opacity;
-    if (paint['background-color'] !== undefined) {
-      bg = getValue(
-        background,
-        'paint',
-        'background-color',
-        zoom,
-        emptyObj,
-        functionCache
-      );
-    }
-    if (paint['background-opacity'] !== undefined) {
-      opacity = getValue(
-        background,
-        'paint',
-        'background-opacity',
-        zoom,
-        emptyObj,
-        functionCache
-      );
-    }
-    return layout.visibility == 'none'
-      ? undefined
-      : _colorWithOpacity(bg, opacity);
-  }
-
-  let lastRenderTime = 0;
-  let backgroundRendered = false;
-  /**
-   * @param {import("ol/render/Event.js").default} e Render event
-   */
-  function renderBackground(e) {
-    if (e.frameState.time !== lastRenderTime) {
-      lastRenderTime = e.frameState.time;
-      backgroundRendered = false;
-    }
-    if (backgroundRendered) {
-      return;
-    }
-    if (!(e.context instanceof CanvasRenderingContext2D)) {
-      throw new Error('Cannot apply background to WebGL context');
-    }
-    const resolution = e.frameState.viewState.resolution;
-    const color = getBackgroundColor(resolution);
-    if (color) {
-      const context = e.context;
-      const alpha = context.globalAlpha;
-      const gobalCompositeOperation = context.globalCompositeOperation;
-      context.globalAlpha = 1;
-      context.globalCompositeOperation = 'destination-over';
-      context.fillStyle = color;
-      context.fillRect(0, 0, e.context.canvas.width, e.context.canvas.height);
-      context.globalAlpha = alpha;
-      context.globalCompositeOperation = gobalCompositeOperation;
-    }
-    backgroundRendered = true;
-  }
-
-  if (typeof mapOrLayer.getLayers === 'function') {
-    // map or layer group
-    const layers = mapOrLayer.getLayers();
-    layers.forEach(function (layer) {
-      layer.on('postrender', renderBackground);
-    });
-    layers.on('add', function (e) {
-      e.element.on('postrender', renderBackground);
-    });
-    layers.on('remove', function (e) {
-      e.element.un('postrender', renderBackground);
-    });
-  } else {
-    mapOrLayer.on('postrender', renderBackground);
-  }
-}
-
 function setFirstBackground(mapOrLayer, glStyle, options) {
   glStyle.layers.some(function (layer) {
     if (layer.type === 'background') {
-      setBackground(mapOrLayer, layer, options);
-      return true;
+      if (mapOrLayer instanceof Layer) {
+        mapOrLayer.setBackground(function (resolution) {
+          return getBackgroundColor(layer, resolution, options, {});
+        });
+        return true;
+      } else if (
+        mapOrLayer instanceof Map ||
+        mapOrLayer instanceof LayerGroup
+      ) {
+        mapOrLayer.getLayers().push(setupBackgroundLayer(layer, options, {}));
+        return true;
+      }
     }
   });
 }
@@ -502,10 +421,6 @@ function setFirstBackground(mapOrLayer, glStyle, options) {
  * @return {Promise} Promise that resolves when the background is applied.
  */
 export function applyBackground(mapOrLayer, glStyle, options = {}) {
-  if (typeof glStyle === 'object') {
-    setFirstBackground(mapOrLayer, glStyle, options);
-    return Promise.resolve();
-  }
   return getGlStyle(glStyle, options).then(function (glStyle) {
     setFirstBackground(mapOrLayer, glStyle, options);
   });
@@ -529,6 +444,71 @@ function extentFromTileJSON(tileJSON) {
     const tr = fromLonLat([bounds[2], bounds[3]]);
     return [ll[0], ll[1], tr[0], tr[1]];
   }
+}
+
+function getBackgroundColor(glLayer, resolution, options, functionCache) {
+  const background = {
+    id: glLayer.id,
+    type: glLayer.type,
+  };
+  const layout = glLayer.layout || {};
+  const paint = glLayer.paint || {};
+  background['paint'] = paint;
+  const zoom = getZoomForResolution(
+    resolution,
+    options.resolutions || defaultResolutions
+  );
+  let bg, opacity;
+  if (paint['background-color'] !== undefined) {
+    bg = getValue(
+      background,
+      'paint',
+      'background-color',
+      zoom,
+      emptyObj,
+      functionCache
+    );
+  }
+  if (paint['background-opacity'] !== undefined) {
+    opacity = getValue(
+      background,
+      'paint',
+      'background-opacity',
+      zoom,
+      emptyObj,
+      functionCache
+    );
+  }
+  return layout.visibility == 'none'
+    ? undefined
+    : _colorWithOpacity(bg, opacity);
+}
+
+/**
+ * @param {Object} glLayer Mapbox Style layer object.
+ * @param {Options} options Options.
+ * @param {Object} functionCache Cache for functions.
+ * @return {Layer} OpenLayers layer.
+ */
+function setupBackgroundLayer(glLayer, options, functionCache) {
+  const div = document.createElement('div');
+  div.className = 'ol-mapbox-style-background';
+  div.style.position = 'absolute';
+  div.style.width = '100%';
+  div.style.height = '100%';
+  return new Layer({
+    source: new Source({}),
+    render(frameState) {
+      const color = getBackgroundColor(
+        glLayer,
+        frameState.viewState.resolution,
+        options,
+        functionCache
+      );
+      div.style.backgroundColor = color;
+      return div;
+    },
+  });
 }
 
 /**
@@ -792,12 +772,10 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
     if (type == 'heatmap') {
       //FIXME Unsupported layer type
       throw new Error(`${type} layers are not supported`);
-    } else if (type == 'background') {
-      setBackground(mapOrGroup, glLayer, options);
     } else {
       id = glLayer.source || getSourceIdByRef(glLayers, glLayer.ref);
       // this technique assumes gl layers will be in a particular order
-      if (id != glSourceId) {
+      if (!id || id != glSourceId) {
         if (layerIds.length) {
           promises.push(
             finalizeLayer(
@@ -813,7 +791,9 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
         }
         glSource = glStyle.sources[id];
         const functionCache = {};
-        if (glSource.type == 'vector') {
+        if (type == 'background') {
+          layer = setupBackgroundLayer(glLayer, options, functionCache);
+        } else if (glSource.type == 'vector') {
           layer = setupVectorLayer(glSource, styleUrl, options);
         } else if (glSource.type == 'raster') {
           layer = setupRasterLayer(glSource, styleUrl, options);
