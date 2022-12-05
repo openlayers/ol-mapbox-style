@@ -843,6 +843,22 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
             );
             data.sunEl = 35;
             data.opacity = 0.15;
+            data.accentColor = getValue(
+              glLayer,
+              'paint',
+              'hillshade-highlight-color',
+              zoom,
+              emptyObj,
+              functionCache
+            );
+            data.shadeColor = getValue(
+              glLayer,
+              'paint',
+              'hillshade-shadow-color',
+              zoom,
+              emptyObj,
+              functionCache
+            );
           });
           layer.setVisible(
             glLayer.layout ? glLayer.layout.visibility !== 'none' : true

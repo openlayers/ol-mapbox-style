@@ -21,6 +21,9 @@ export function hillshade(inputs, data) {
   const sunAz = (Math.PI * data.sunAz) / 180;
   const cosSunEl = Math.cos(sunEl);
   const sinSunEl = Math.sin(sunEl);
+  const accentColor = data.accentColor;
+  const shadeColor = data.shadeColor;
+
   let pixelX,
     pixelY,
     x0,
@@ -34,8 +37,8 @@ export function hillshade(inputs, data) {
     dzdy,
     slope,
     aspect,
-    cosIncidence,
-    scaled;
+    cosIncidence;
+
   function calculateElevation(pixel) {
     // The method used to extract elevations from the DEM.
     // In this case the format used is
@@ -107,10 +110,15 @@ export function hillshade(inputs, data) {
         cosSunEl * Math.sin(slope) * Math.cos(sunAz - aspect);
 
       offset = (pixelY * width + pixelX) * 4;
-      scaled = 255 * cosIncidence;
-      shadeData[offset] = scaled;
-      shadeData[offset + 1] = scaled;
-      shadeData[offset + 2] = scaled;
+      shadeData[offset] =
+        255 * accentColor.r * (1 - shadeColor.a * cosIncidence) +
+        255 * shadeColor.r * cosIncidence;
+      shadeData[offset + 1] =
+        255 * accentColor.g * (1 - shadeColor.a * cosIncidence) +
+        255 * shadeColor.g * cosIncidence;
+      shadeData[offset + 2] =
+        255 * accentColor.b * (1 - shadeColor.a * cosIncidence) +
+        255 * shadeColor.b * cosIncidence;
       shadeData[offset + 3] = elevationData[offset + 3] * data.opacity;
     }
   }
