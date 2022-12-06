@@ -21,8 +21,9 @@ export function hillshade(inputs, data) {
   const sunAz = (Math.PI * data.sunAz) / 180;
   const cosSunEl = Math.cos(sunEl);
   const sinSunEl = Math.sin(sunEl);
-  const accentColor = data.accentColor;
+  const highlightColor = data.highlightColor;
   const shadeColor = data.shadeColor;
+  const accentColor = data.accentColor;
 
   let pixelX,
     pixelY,
@@ -37,6 +38,12 @@ export function hillshade(inputs, data) {
     dzdy,
     slope,
     aspect,
+    accent,
+    scaled,
+    shade,
+    scaledAccentColor,
+    compositeShadeColor,
+    clamp,
     cosIncidence;
 
   function calculateElevation(pixel) {
@@ -95,6 +102,7 @@ export function hillshade(inputs, data) {
       dzdy = (z1 - z0) / dp;
 
       slope = Math.atan(Math.sqrt(dzdx * dzdx + dzdy * dzdy));
+      accent = Math.cos(slope);
 
       aspect = Math.atan2(dzdy, -dzdx);
       if (aspect < 0) {
@@ -109,16 +117,30 @@ export function hillshade(inputs, data) {
         sinSunEl * Math.cos(slope) +
         cosSunEl * Math.sin(slope) * Math.cos(sunAz - aspect);
 
+      scaled = 255 * cosIncidence;
+      clamp = Math.min(Math.max(2 * data.sunEl, 0), 1);
+
+      scaledAccentColor = {
+        r: (1 - accent) * accentColor.r * clamp * 255,
+        g: (1 - accent) * accentColor.g * clamp * 255,
+        b: (1 - accent) * accentColor.b * clamp * 255,
+        a: (1 - accent) * accentColor.a * clamp * 255,
+      };
+      shade = Math.abs((((aspect + sunAz) / Math.PI + 0.5) % 2) - 1);
+      compositeShadeColor = {
+        r: (highlightColor.r * (1 - shade) + shadeColor.r * shade) * scaled,
+        g: (highlightColor.g * (1 - shade) + shadeColor.g * shade) * scaled,
+        b: (highlightColor.b * (1 - shade) + shadeColor.b * shade) * scaled,
+        a: (highlightColor.a * (1 - shade) + shadeColor.a * shade) * scaled,
+      };
+
       offset = (pixelY * width + pixelX) * 4;
       shadeData[offset] =
-        255 * accentColor.r * (1 - shadeColor.a * cosIncidence) +
-        255 * shadeColor.r * cosIncidence;
+        scaledAccentColor.r * (1 - shade) + compositeShadeColor.r;
       shadeData[offset + 1] =
-        255 * accentColor.g * (1 - shadeColor.a * cosIncidence) +
-        255 * shadeColor.g * cosIncidence;
+        scaledAccentColor.g * (1 - shade) + compositeShadeColor.g;
       shadeData[offset + 2] =
-        255 * accentColor.b * (1 - shadeColor.a * cosIncidence) +
-        255 * shadeColor.b * cosIncidence;
+        scaledAccentColor.b * (1 - shade) + compositeShadeColor.b;
       shadeData[offset + 3] = elevationData[offset + 3] * data.opacity;
     }
   }
