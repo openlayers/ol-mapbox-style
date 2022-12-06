@@ -653,12 +653,6 @@ function setupGeoJSONSource(glSource, styleUrl, options) {
       options.accessTokenParam || 'access_token',
       styleUrl || location.href
     );
-    if (options.transformRequest) {
-      const transformed = options.transformRequest(geoJsonUrl, 'GeoJSON');
-      if (transformed instanceof Request) {
-        geoJsonUrl = encodeURI(transformed.url);
-      }
-    }
     if (geoJsonUrl.indexOf('{bbox-epsg-3857}') != -1) {
       const extentUrl = (extent) => {
         return geoJsonUrl.replace(
@@ -674,6 +668,12 @@ function setupGeoJSONSource(glSource, styleUrl, options) {
       });
       source.set('mapbox-source', glSource);
       return source;
+    }
+    if (options.transformRequest) {
+      const transformed = options.transformRequest(geoJsonUrl, 'GeoJSON');
+      if (transformed instanceof Request) {
+        geoJsonUrl = encodeURI(transformed.url);
+      }
     }
     return new VectorSource({
       attributions: glSource.attribution,
