@@ -851,7 +851,7 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
               emptyObj,
               functionCache
             );
-            data.shadeColor = getValue(
+            data.shadowColor = getValue(
               glLayer,
               'paint',
               'hillshade-shadow-color',
