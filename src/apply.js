@@ -842,7 +842,7 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
               functionCache
             );
             data.sunEl = 35;
-            data.opacity = 0.25;
+            data.opacity = 0.3;
             data.highlightColor = getValue(
               glLayer,
               'paint',
