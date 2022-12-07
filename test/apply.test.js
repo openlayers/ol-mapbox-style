@@ -194,6 +194,28 @@ describe('ol-mapbox-style', function () {
         .catch(done);
     });
 
+    it('handles geojson wfs sources with transformRequest', function (done) {
+      apply(target, './fixtures/geojson-wfs.json', {
+        transformRequest: (urlStr, type) => {
+          if (type === 'GeoJSON') {
+            const url = new URL(urlStr + '&transformRequest=true');
+            const req = new Request(url);
+            return req;
+          }
+        },
+      })
+        .then(function (map) {
+          const layer = map.getAllLayers()[1];
+          const source = layer.getSource();
+          // eslint-disable-next-line no-console
+          console.log(source.getFeatures());
+          should(source).be.instanceof(VectorSource);
+          should(layer.getStyle()).be.a.Function();
+          done();
+        })
+        .catch(done);
+    });
+
     it('handles geojson sources with inline GeoJSON', function (done) {
       const map = new Map({target: target});
       map.getLayers().once('add', function (e) {
