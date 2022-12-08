@@ -185,10 +185,15 @@ describe('ol-mapbox-style', function () {
     it('handles geojson wfs sources', function (done) {
       apply(target, './fixtures/geojson-wfs.json')
         .then(function (map) {
-          const layer = map.getAllLayers()[1];
+          const layer = map
+            .getAllLayers()
+            .find((x) => x.get('mapbox-source') === 'water_areas');
           const source = layer.getSource();
           should(source).be.instanceof(VectorSource);
           should(layer.getStyle()).be.a.Function();
+          source.once('addFeature', (e) => {
+            should(e).be.instanceof(Feature);
+          });
           done();
         })
         .catch(done);
@@ -199,18 +204,22 @@ describe('ol-mapbox-style', function () {
         transformRequest: (urlStr, type) => {
           if (type === 'GeoJSON') {
             const url = new URL(urlStr + '&transformRequest=true');
-            const req = new Request(url);
-            return req;
+            return new Request(url);
           }
         },
       })
         .then(function (map) {
-          const layer = map.getAllLayers()[1];
+          const layer = map
+            .getAllLayers()
+            .find((x) => x.get('mapbox-source') === 'water_areas');
           const source = layer.getSource();
-          // eslint-disable-next-line no-console
-          console.log(source.getFeatures());
-          should(source).be.instanceof(VectorSource);
-          should(layer.getStyle()).be.a.Function();
+          const url = new URL(
+            source.getUrl().call(this, map.getView().calculateExtent())
+          );
+          should(url.searchParams.get('transformRequest')).be.equal('true');
+          source.once('addFeature', (e) => {
+            should(e).be.instanceof(Feature);
+          });
           done();
         })
         .catch(done);
