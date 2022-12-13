@@ -21,6 +21,10 @@ export function hillshade(inputs, data) {
   const sunAz = (Math.PI * data.sunAz) / 180;
   const cosSunEl = Math.cos(sunEl);
   const sinSunEl = Math.sin(sunEl);
+  const highlightColor = data.highlightColor;
+  const shadowColor = data.shadowColor;
+  const accentColor = data.accentColor;
+
   let pixelX,
     pixelY,
     x0,
@@ -34,8 +38,16 @@ export function hillshade(inputs, data) {
     dzdy,
     slope,
     aspect,
-    cosIncidence,
-    scaled;
+    accent,
+    scaled,
+    shade,
+    scaledAccentColor,
+    compositeShadeColor,
+    clamp,
+    slopeScaleBase,
+    scaledSlope,
+    cosIncidence;
+
   function calculateElevation(pixel) {
     // The method used to extract elevations from the DEM.
     // In this case the format used is
@@ -91,8 +103,6 @@ export function hillshade(inputs, data) {
 
       dzdy = (z1 - z0) / dp;
 
-      slope = Math.atan(Math.sqrt(dzdx * dzdx + dzdy * dzdy));
-
       aspect = Math.atan2(dzdy, -dzdx);
       if (aspect < 0) {
         aspect = halfPi - aspect;
@@ -102,16 +112,65 @@ export function hillshade(inputs, data) {
         aspect = halfPi - aspect;
       }
 
+      // Bootstrap slope and corresponding incident values
+      slope = Math.atan(Math.sqrt(dzdx * dzdx + dzdy * dzdy));
       cosIncidence =
         sinSunEl * Math.cos(slope) +
         cosSunEl * Math.sin(slope) * Math.cos(sunAz - aspect);
-
-      offset = (pixelY * width + pixelX) * 4;
+      accent = Math.cos(slope);
+      // 255 for Hex colors
       scaled = 255 * cosIncidence;
-      shadeData[offset] = scaled;
-      shadeData[offset + 1] = scaled;
-      shadeData[offset + 2] = scaled;
-      shadeData[offset + 3] = elevationData[offset + 3] * data.opacity;
+
+      /*
+       * The following is heavily inspired
+       * by [Maplibre's equivalent WebGL shader](https://github.com/maplibre/maplibre-gl-js/blob/main/src/shaders/hillshade.fragment.glsl)
+       */
+
+      // Forces given value to stay between two given extremes
+      clamp = Math.min(Math.max(2 * data.sunEl, 0), 1);
+
+      // Intensity basis for hillshade opacity
+      slopeScaleBase = 1.875 - data.opacity * 1.75;
+      // Intensity interpolation so that higher intensity values create more opaque hillshading
+      scaledSlope =
+        data.opacity !== 0.5
+          ? halfPi *
+            ((Math.pow(slopeScaleBase, slope) - 1) /
+              (Math.pow(slopeScaleBase, halfPi) - 1))
+          : slope;
+
+      // Accent hillshade color with given accentColor to emphasize rougher terrain
+      scaledAccentColor = {
+        r: (1 - accent) * accentColor.r * clamp * 255,
+        g: (1 - accent) * accentColor.g * clamp * 255,
+        b: (1 - accent) * accentColor.b * clamp * 255,
+        a: (1 - accent) * accentColor.a * clamp * 255,
+      };
+
+      // Allows highlight vs shadow discrimination
+      shade = Math.abs((((aspect + sunAz) / Math.PI + 0.5) % 2) - 1);
+      // Creates a composite color mix between highlight & shadow colors to emphasize slopes
+      compositeShadeColor = {
+        r: (highlightColor.r * (1 - shade) + shadowColor.r * shade) * scaled,
+        g: (highlightColor.g * (1 - shade) + shadowColor.g * shade) * scaled,
+        b: (highlightColor.b * (1 - shade) + shadowColor.b * shade) * scaled,
+        a: (highlightColor.a * (1 - shade) + shadowColor.a * shade) * scaled,
+      };
+
+      // Fill in result color value
+      offset = (pixelY * width + pixelX) * 4;
+      shadeData[offset] =
+        scaledAccentColor.r * (1 - shade) + compositeShadeColor.r;
+      shadeData[offset + 1] =
+        scaledAccentColor.g * (1 - shade) + compositeShadeColor.g;
+      shadeData[offset + 2] =
+        scaledAccentColor.b * (1 - shade) + compositeShadeColor.b;
+      // Key opacity on the scaledSlope to improve legibility by increasing higher elevation rates' contrast
+      shadeData[offset + 3] =
+        elevationData[offset + 3] *
+        data.opacity *
+        clamp *
+        Math.sin(scaledSlope);
     }
   }
 
