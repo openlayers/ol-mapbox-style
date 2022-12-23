@@ -130,7 +130,7 @@ Renames and re-exports [apply](#apply)
 
 #### apply
 
-▸ **apply**(`mapOrGroup`, `style`, `options?`): `Promise`&lt;`LayerGroup` \| `Map`>
+▸ **apply**(`mapOrGroup`, `style`, `options?`): `Promise`&lt;`Map` \| `LayerGroup`>
 
 Loads and applies a Mapbox Style object into an OpenLayers Map or LayerGroup.
 This includes the map background, the layers, and for Map instances that did not
@@ -166,13 +166,13 @@ Map or LayerGroup instance, which holds the Mapbox Style object.
 
 | Name         | Type                                               | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | :----------- | :------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `mapOrGroup` | `string` \| `HTMLElement` \| `LayerGroup` \| `Map` | Either an existing OpenLayers Map instance, or a HTML element, or the id of a HTML element that will be the target of a new OpenLayers Map, or a layer group. If layer group, styles releated to the map and view will be ignored.                                                                                                                                                                                                                                                                                                                                    |
+| `mapOrGroup` | `string` \| `HTMLElement` \| `Map` \| `LayerGroup` | Either an existing OpenLayers Map instance, or a HTML element, or the id of a HTML element that will be the target of a new OpenLayers Map, or a layer group. If layer group, styles releated to the map and view will be ignored.                                                                                                                                                                                                                                                                                                                                    |
 | `style`      | `any`                                              | JSON style object or style url pointing to a Mapbox Style object. When using Mapbox APIs, the url is the `styleUrl` shown in Mapbox Studio's "share" panel. In addition, the `accessToken` option (see below) must be set. When passed as JSON style object, all OpenLayers layers created by `apply()` will be immediately available, but they may not have a source yet (i.e. when they are defined by a TileJSON url in the Mapbox Style document). When passed as style url, layers will be added to the map when the Mapbox Style document is loaded and parsed. |
 | `options`    | [`Options`](#interfacesinternal_optionsmd)         | Options.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 
 ##### Returns
 
-`Promise`&lt;`LayerGroup` \| `Map`>
+`Promise`&lt;`Map` \| `LayerGroup`>
 
 A promise that resolves after all layers have been added to
 the OpenLayers Map instance or LayerGroup, their sources set, and their styles applied. The
@@ -300,7 +300,7 @@ OpenLayers layer instance when they use the same Mapbox Style `source`.
 
 | Name      | Type                  | Description                   |
 | :-------- | :-------------------- | :---------------------------- |
-| `map`     | `LayerGroup` \| `Map` | OpenLayers Map or LayerGroup. |
+| `map`     | `Map` \| `LayerGroup` | OpenLayers Map or LayerGroup. |
 | `layerId` | `string`              | Mapbox Style layer id.        |
 
 ##### Returns
@@ -321,7 +321,7 @@ Get the OpenLayers layer instances for the provided Mapbox Style `source`.
 
 | Name       | Type                  | Description                   |
 | :--------- | :-------------------- | :---------------------------- |
-| `map`      | `LayerGroup` \| `Map` | OpenLayers Map or LayerGroup. |
+| `map`      | `Map` \| `LayerGroup` | OpenLayers Map or LayerGroup. |
 | `sourceId` | `string`              | Mapbox Style source id.       |
 
 ##### Returns
@@ -342,7 +342,7 @@ Get the OpenLayers source instance for the provided Mapbox Style `source`.
 
 | Name       | Type                  | Description                   |
 | :--------- | :-------------------- | :---------------------------- |
-| `map`      | `LayerGroup` \| `Map` | OpenLayers Map or LayerGroup. |
+| `map`      | `Map` \| `LayerGroup` | OpenLayers Map or LayerGroup. |
 | `sourceId` | `string`              | Mapbox Style source id.       |
 
 ##### Returns
