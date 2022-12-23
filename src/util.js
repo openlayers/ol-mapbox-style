@@ -53,7 +53,10 @@ const pendingRequests = {};
  */
 export function fetchResource(resourceType, url, options = {}, metadata) {
   if (url in pendingRequests) {
-    return pendingRequests[url];
+    if (metadata) {
+      metadata.request = pendingRequests[url][0];
+    }
+    return pendingRequests[url][1];
   }
   const request = options.transformRequest
     ? options.transformRequest(url, resourceType) || new Request(url)
@@ -75,7 +78,7 @@ export function fetchResource(resourceType, url, options = {}, metadata) {
       delete pendingRequests[url];
       return Promise.reject(new Error('Error fetching source ' + url));
     });
-  pendingRequests[url] = pendingRequest;
+  pendingRequests[url] = [request, pendingRequest];
   return pendingRequest;
 }
 

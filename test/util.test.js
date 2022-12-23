@@ -15,6 +15,37 @@ describe('util', function () {
         done();
       });
     });
+    it('adds the request to the metadata for both pending and new requests', function (done) {
+      const metadataNotPending = {};
+      const metadataPending = {};
+      fetchResource(
+        'Sprite',
+        'my://resource',
+        {
+          transformRequest: function (url, resourceType) {
+            should(url).equal('my://resource');
+            should(resourceType).equal('Sprite');
+            return new Request('/fixtures/sprites.json');
+          },
+        },
+        metadataNotPending
+      );
+      fetchResource(
+        'Sprite',
+        'my://resource',
+        {
+          transformRequest: function (url, resourceType) {
+            should(url).equal('my://resource');
+            should(resourceType).equal('Sprite');
+            return new Request('/fixtures/sprites.json');
+          },
+        },
+        metadataPending
+      );
+      should('request' in metadataPending).true();
+      should(metadataPending.request).equal(metadataNotPending.request);
+      done();
+    });
   });
   describe('getTileJson', function () {
     it('resolves mapbox:// tile urls properly', function (done) {
