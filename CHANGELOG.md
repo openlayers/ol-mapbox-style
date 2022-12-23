@@ -2,6 +2,13 @@
 
 ## Next version
 
+## 9.3.0
+
+* Fix background bleeding issue when re-applying style
+* Add support for `hillshade-highlight-color` and `hillshade-shadow-color`
+* Fix geojson layers with `bbox` in combination with `transformRequest`
+* Fix tilejson loading when using same source in different styles at the same time
+
 ## 9.2.4
 
 * Update documentation for `getLayer()` and `getSource()` for `LayerGroup` support
