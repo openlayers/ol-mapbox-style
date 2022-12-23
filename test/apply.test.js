@@ -182,11 +182,46 @@ describe('ol-mapbox-style', function () {
         .catch(done);
     });
 
-    it('handles geojson wfs sources', function (done) {
+    it('handles geojson wfs sources with bbox loadingstrategy', function (done) {
       apply(target, './fixtures/geojson-wfs.json')
         .then(function (map) {
-          const layer = map.getAllLayers()[1];
+          const layer = map
+            .getAllLayers()
+            .find((x) => x.get('mapbox-source') === 'water_areas');
           const source = layer.getSource();
+          const url = new URL(
+            source.getUrl().call(this, map.getView().calculateExtent())
+          );
+          const bbox = url.searchParams.get('bbox').split(',');
+          const proj = bbox.pop();
+          const extent = map.getView().calculateExtent();
+          should(proj).be.eql('EPSG:3857');
+          should(bbox.join(',') === extent.join(',')).be.true();
+          should(source).be.instanceof(VectorSource);
+          should(layer.getStyle()).be.a.Function();
+          done();
+        })
+        .catch(done);
+    });
+
+    it('handles geojson wfs sources with bbox loadingstrategy & transformRequest', function (done) {
+      apply(target, './fixtures/geojson-wfs.json', {
+        transformRequest: (urlStr, type) => {
+          if (type === 'GeoJSON') {
+            const url = new URL(urlStr + '&transformRequest=true');
+            return new Request(url);
+          }
+        },
+      })
+        .then(function (map) {
+          const layer = map
+            .getAllLayers()
+            .find((x) => x.get('mapbox-source') === 'water_areas');
+          const source = layer.getSource();
+          const url = new URL(
+            source.getUrl().call(this, map.getView().calculateExtent())
+          );
+          should(url.searchParams.get('transformRequest')).be.equal('true');
           should(source).be.instanceof(VectorSource);
           should(layer.getStyle()).be.a.Function();
           done();

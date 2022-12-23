@@ -656,7 +656,7 @@ function setupGeoJSONSource(glSource, styleUrl, options) {
     if (options.transformRequest) {
       const transformed = options.transformRequest(geoJsonUrl, 'GeoJSON');
       if (transformed instanceof Request) {
-        geoJsonUrl = encodeURI(transformed.url);
+        geoJsonUrl = decodeURI(transformed.url);
       }
     }
     if (geoJsonUrl.indexOf('{bbox-epsg-3857}') != -1) {
