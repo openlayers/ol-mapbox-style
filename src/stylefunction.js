@@ -1263,6 +1263,18 @@ export function stylefunction(
                   featureState
                 );
           text.setPlacement(placement);
+          if (typeof text.setRepeat === 'function') {
+            const symbolSpacing = getValue(
+              layer,
+              'layout',
+              'symbol-spacing',
+              zoom,
+              f,
+              functionCache,
+              featureState
+            );
+            text.setRepeat(symbolSpacing * 2);
+          }
           text.setOverflow(placement === 'point');
           let textHaloWidth = getValue(
             layer,
