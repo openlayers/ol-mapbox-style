@@ -2,6 +2,10 @@
 
 ## Next version
 
+## 9.4.0
+
+* Add support for labels with `symbol-spacing`
+
 ## 9.3.0
 
 * Fix background bleeding issue when re-applying style

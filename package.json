@@ -1,6 +1,6 @@
 {
   "name": "ol-mapbox-style",
-  "version": "9.3.0",
+  "version": "9.4.0",
   "description": "Create OpenLayers maps from Mapbox Style objects",
   "type": "module",
   "browser": "dist/index.js",
@@ -74,7 +74,7 @@
     "mini-css-extract-plugin": "^2.4.4",
     "mocha": "^10.0.0",
     "nanoassert": "^2.0.0",
-    "ol": "^7.2.2",
+    "ol": "^7.2.3-dev.1672696068643",
     "puppeteer": "^19.2.2",
     "remove-flow-types-loader": "^1.1.0",
     "rollup": "^2.70.2",
