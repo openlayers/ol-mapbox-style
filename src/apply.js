@@ -21,6 +21,13 @@ import VectorTileLayer from 'ol/layer/VectorTile.js';
 import VectorTileSource, {defaultLoadFunction} from 'ol/source/VectorTile.js';
 import View from 'ol/View.js';
 import {
+  METERS_PER_UNIT,
+  equivalent,
+  fromLonLat,
+  get as getProjection,
+  getUserProjection,
+} from 'ol/proj.js';
+import {
   _colorWithOpacity,
   stylefunction as applyStyleFunction,
   getValue,
@@ -34,8 +41,8 @@ import {
   getTileJson,
   getZoomForResolution,
 } from './util.js';
-import {equivalent, fromLonLat, getUserProjection} from 'ol/proj.js';
 import {getFonts} from './text.js';
+import {getTopLeft} from 'ol/extent.js';
 import {hillshade} from './shaders.js';
 import {
   normalizeSourceUrl,
@@ -58,8 +65,12 @@ import {
  * type as arguments, this function is supposed to return a `Request` object. Without a return value,
  * the original request will not be modified. For `Tiles` and `GeoJSON` resources, only the `url` of
  * the returned request will be respected.
- * @property {Array<number>} [resolutions] Resolutions for mapping resolution to zoom level.
- * Only needed when working with non-standard tile grids or projections.
+ * @property {string} [projection='EPSG:3857'] Only useful when working with non-standard projections.
+ * Code of a projection registered with OpenLayers. All sources of the style must be provided in this
+ * projection. The projection must also have a valid extent defined, which will be used to determine the
+ * origin and resolutions of the tile grid for all tiled sources of the style.
+ * @property {Array<number>} [resolutions] Only useful when working with non-standard projections.
+ * Resolutions for mapping resolution to the `zoom` used in the Mapbox style.
  * @property {string} [styleUrl] URL of the Mapbox GL style. Required for styles that were provided
  * as object, when they contain a relative sprite url, or sources referencing data by relative url.
  * @property {string} [accessTokenParam='access_token'] Access token param. For internal use.
@@ -78,6 +89,21 @@ import {
  */
 
 /** @typedef {'Style'|'Source'|'Sprite'|'SpriteImage'|'Tiles'|'GeoJSON'} ResourceType */
+
+/**
+ * @param {import("ol/proj/Projection.js").default} projection Projection.
+ * @param {number} [tileSize=512] Tile size.
+ * @return {Array<number>} Resolutions.
+ */
+function getTileResolutions(projection, tileSize = 512) {
+  return projection.getExtent()
+    ? createXYZ({
+        extent: projection.getExtent(),
+        tileSize: tileSize,
+        maxZoom: 22,
+      }).getResolutions()
+    : defaultResolutions;
+}
 
 /**
  * @param {string} styleUrl Style URL.
@@ -294,6 +320,15 @@ export function applyStyle(
         let spriteScale, spriteData, spriteImageUrl, style;
         function onChange() {
           if (!style && (!glStyle.sprite || spriteData)) {
+            if (options.projection && !resolutions) {
+              const projection = getProjection(options.projection);
+              const units = projection.getUnits();
+              if (units !== 'm') {
+                resolutions = defaultResolutions.map(
+                  (resolution) => resolution / METERS_PER_UNIT[units]
+                );
+              }
+            }
             style = applyStyleFunction(
               layer,
               glStyle,
@@ -437,13 +472,51 @@ function getSourceIdByRef(layers, ref) {
   return sourceId;
 }
 
-function extentFromTileJSON(tileJSON) {
+function extentFromTileJSON(tileJSON, projection) {
   const bounds = tileJSON.bounds;
   if (bounds) {
-    const ll = fromLonLat([bounds[0], bounds[1]]);
-    const tr = fromLonLat([bounds[2], bounds[3]]);
+    const ll = fromLonLat([bounds[0], bounds[1]], projection);
+    const tr = fromLonLat([bounds[2], bounds[3]], projection);
     return [ll[0], ll[1], tr[0], tr[1]];
   }
+  return getProjection(projection).getExtent();
+}
+
+function sourceOptionsFromTileJSON(glSource, tileJSON, options) {
+  const tileJSONSource = new TileJSON({
+    tileJSON: tileJSON,
+    tileSize: glSource.tileSize || tileJSON.tileSize || 512,
+  });
+  const tileJSONDoc = tileJSONSource.getTileJSON();
+  const tileGrid = tileJSONSource.getTileGrid();
+  const projection = getProjection(options.projection || 'EPSG:3857');
+  const extent = extentFromTileJSON(tileJSONDoc, projection);
+  const projectionExtent = projection.getExtent();
+  const minZoom = tileJSONDoc.minzoom || 0;
+  const maxZoom = tileJSONDoc.maxzoom || 22;
+  /** @type {import("ol/source/VectorTile.js").Options} */
+  const sourceOptions = {
+    attributions: tileJSONSource.getAttributions(),
+    projection: projection,
+    tileGrid: new TileGrid({
+      origin: projectionExtent
+        ? getTopLeft(projectionExtent)
+        : tileGrid.getOrigin(0),
+      extent: extent || tileGrid.getExtent(),
+      minZoom: minZoom,
+      resolutions: getTileResolutions(projection, tileJSON.tileSize).slice(
+        0,
+        maxZoom + 1
+      ),
+      tileSize: tileGrid.getTileSize(0),
+    }),
+  };
+  if (Array.isArray(tileJSONDoc.tiles)) {
+    sourceOptions.urls = tileJSONDoc.tiles;
+  } else {
+    sourceOptions.url = tileJSONDoc.tiles;
+  }
+  return sourceOptions;
 }
 
 function getBackgroundColor(glLayer, resolution, options, functionCache) {
@@ -524,30 +597,17 @@ export function setupVectorSource(glSource, styleUrl, options) {
   return new Promise(function (resolve, reject) {
     getTileJson(glSource, styleUrl, options)
       .then(function (tileJSON) {
-        const tileJSONSource = new TileJSON({tileJSON: tileJSON});
-        const tileJSONDoc = tileJSONSource.getTileJSON();
-        const tileGrid = tileJSONSource.getTileGrid();
-        const extent = extentFromTileJSON(tileJSONDoc);
-        const minZoom = tileJSONDoc.minzoom || 0;
-        const maxZoom = tileJSONDoc.maxzoom || 22;
-        const sourceOptions = {
-          attributions: tileJSONSource.getAttributions(),
-          format: new MVT(),
-          tileGrid: new TileGrid({
-            origin: tileGrid.getOrigin(0),
-            extent: extent || tileGrid.getExtent(),
-            minZoom: minZoom,
-            resolutions: defaultResolutions.slice(0, maxZoom + 1),
-            tileSize: 512,
-          }),
-        };
-        if (Array.isArray(tileJSONDoc.tiles)) {
-          sourceOptions.urls = tileJSONDoc.tiles;
+        const sourceOptions = sourceOptionsFromTileJSON(
+          glSource,
+          tileJSON,
+          options
+        );
+        sourceOptions.format = new MVT();
+
+        if (Array.isArray(tileJSON.tiles)) {
+          sourceOptions.urls = tileJSON.tiles;
         } else {
-          sourceOptions.url = tileJSONDoc.tiles;
-        }
-        if (tileJSON.olSourceOptions) {
-          Object.assign(sourceOptions, tileJSON.olSourceOptions);
+          sourceOptions.url = tileJSON.tiles;
         }
         resolve(new VectorTileSource(sourceOptions));
       })
@@ -571,6 +631,11 @@ function setupVectorLayer(glSource, styleUrl, options) {
   return layer;
 }
 
+function getBboxTemplate(projection) {
+  const projCode = projection ? projection.getCode() : 'EPSG:3857';
+  return `{bbox-${projCode.toLowerCase().replace(/[^a-z0-9]/g, '-')}}`;
+}
+
 function setupRasterLayer(glSource, styleUrl, options) {
   const layer = new TileLayer();
   getTileJson(glSource, styleUrl, options)
@@ -582,28 +647,22 @@ function setupRasterLayer(glSource, styleUrl, options) {
         crossOrigin: 'anonymous',
         tileJSON: tileJson,
       });
-      const extent = extentFromTileJSON(tileJson);
-      const tileGrid = source.getTileGrid();
-      const tileSize = glSource.tileSize || tileJson.tileSize || 512;
-      const minZoom = tileJson.minzoom || 0;
-      const maxZoom = tileJson.maxzoom || 22;
-      //@ts-ignore
-      source.tileGrid = new TileGrid({
-        origin: tileGrid.getOrigin(0),
-        extent: extent || tileGrid.getExtent(),
-        minZoom: minZoom,
-        resolutions: createXYZ({
-          maxZoom: maxZoom,
-          tileSize: tileSize,
-        }).getResolutions(),
-        tileSize: tileSize,
-      });
+      source.tileGrid = sourceOptionsFromTileJSON(
+        glSource,
+        tileJson,
+        options
+      ).tileGrid;
+      if (options.projection) {
+        //@ts-ignore
+        source.projection = getProjection(options.projection);
+      }
       const getTileUrl = source.getTileUrlFunction();
       source.setTileUrlFunction(function (tileCoord, pixelRatio, projection) {
+        const bboxTemplate = getBboxTemplate(projection);
         let src = getTileUrl(tileCoord, pixelRatio, projection);
-        if (src.indexOf('{bbox-epsg-3857}') != -1) {
+        if (src.indexOf(bboxTemplate) != -1) {
           const bbox = source.getTileGrid().getTileCoordExtent(tileCoord);
-          src = src.replace('{bbox-epsg-3857}', bbox.toString());
+          src = src.replace(bboxTemplate, bbox.toString());
         }
         return src;
       });
@@ -659,11 +718,12 @@ function setupGeoJSONSource(glSource, styleUrl, options) {
         geoJsonUrl = decodeURI(transformed.url);
       }
     }
-    if (geoJsonUrl.indexOf('{bbox-epsg-3857}') != -1) {
-      const extentUrl = (extent) => {
+    if (/\{bbox-[0-9a-z-]+\}/.test(geoJsonUrl)) {
+      const extentUrl = (extent, resolution, projection) => {
+        const bboxTemplate = getBboxTemplate(projection);
         return geoJsonUrl.replace(
-          '{bbox-epsg-3857}',
-          `${extent.join(',')},EPSG:3857`
+          bboxTemplate,
+          `${extent.join(',')},${projection.getCode()}`
         );
       };
       const source = new VectorSource({
@@ -733,6 +793,13 @@ function updateRasterLayerProperties(glLayer, layer, zoom, functionCache) {
   layer.setOpacity(opacity);
 }
 
+/**
+ * @param {*} glStyle Mapbox Style.
+ * @param {Map|LayerGroup} mapOrGroup Map or layer group.
+ * @param {string} styleUrl Style URL.
+ * @param {Options} options Options.
+ * @return {Promise} Promise that resolves when the style is loaded.
+ */
 function processStyle(glStyle, mapOrGroup, styleUrl, options) {
   const promises = [];
 
@@ -740,19 +807,28 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
   if (mapOrGroup instanceof Map) {
     view = mapOrGroup.getView();
     if (!view.isDef() && !view.getRotation() && !view.getResolutions()) {
+      const projection = options.projection
+        ? getProjection(options.projection)
+        : view.getProjection();
       view = new View(
         Object.assign(view.getProperties(), {
-          maxResolution: defaultResolutions[0],
+          maxResolution:
+            defaultResolutions[0] / METERS_PER_UNIT[projection.getUnits()],
+          projection: options.projection || view.getProjection(),
         })
       );
       mapOrGroup.setView(view);
     }
 
     if ('center' in glStyle && !view.getCenter()) {
-      view.setCenter(fromLonLat(glStyle.center));
+      view.setCenter(fromLonLat(glStyle.center, view.getProjection()));
     }
     if ('zoom' in glStyle && view.getZoom() === undefined) {
-      view.setResolution(defaultResolutions[0] / Math.pow(2, glStyle.zoom));
+      view.setResolution(
+        defaultResolutions[0] /
+          METERS_PER_UNIT[view.getProjection().getUnits()] /
+          Math.pow(2, glStyle.zoom)
+      );
     }
     if (!view.getCenter() || view.getZoom() === undefined) {
       view.fit(view.getProjection().getExtent(), {
@@ -917,9 +993,9 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
  * This function sets an additional `mapbox-style` property on the OpenLayers
  * Map or LayerGroup instance, which holds the Mapbox Style object.
  *
- * @param {Map|HTMLElement|string|LayerGroup} mapOrGroup Either an existing OpenLayers Map
- * instance, or a HTML element, or the id of a HTML element that will be the
- * target of a new OpenLayers Map, or a layer group. If layer group, styles
+ * @param {Map|HTMLElement|string|LayerGroup} mapOrGroupOrElement Either an existing
+ * OpenLayers Map instance, or a HTML element, or the id of a HTML element that will be
+ * the target of a new OpenLayers Map, or a layer group. If layer group, styles
  * releated to the map and view will be ignored.
  * @param {string|Object} style JSON style object or style url pointing to a
  * Mapbox Style object. When using Mapbox APIs, the url is the `styleUrl`
@@ -936,13 +1012,19 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
  * `resolve` callback will be called with the OpenLayers Map instance or LayerGroup as
  * argument.
  */
-export function apply(mapOrGroup, style, options = {}) {
+export function apply(mapOrGroupOrElement, style, options = {}) {
   let promise;
-
-  if (typeof mapOrGroup === 'string' || mapOrGroup instanceof HTMLElement) {
+  /** @type {Map|LayerGroup} */
+  let mapOrGroup;
+  if (
+    typeof mapOrGroupOrElement === 'string' ||
+    mapOrGroupOrElement instanceof HTMLElement
+  ) {
     mapOrGroup = new Map({
-      target: mapOrGroup,
+      target: mapOrGroupOrElement,
     });
+  } else {
+    mapOrGroup = mapOrGroupOrElement;
   }
 
   if (typeof style === 'string') {
