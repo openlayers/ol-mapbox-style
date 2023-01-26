@@ -68,7 +68,9 @@ import {
  * @property {string} [projection='EPSG:3857'] Only useful when working with non-standard projections.
  * Code of a projection registered with OpenLayers. All sources of the style must be provided in this
  * projection. The projection must also have a valid extent defined, which will be used to determine the
- * origin and resolutions of the tile grid for all tiled sources of the style.
+ * origin and resolutions of the tile grid for all tiled sources of the style. When provided, the bbox
+ * placeholder in tile and geojson urls changes: the default is `{bbox-epsg-3857}`, when projection is e.g.
+ * set to `EPSG:4326`, the bbox placeholder will be `{bbox-epsg-4326}`.
  * @property {Array<number>} [resolutions] Only useful when working with non-standard projections.
  * Resolutions for mapping resolution to the `zoom` used in the Mapbox style.
  * @property {string} [styleUrl] URL of the Mapbox GL style. Required for styles that were provided

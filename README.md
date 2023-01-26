@@ -607,7 +607,9 @@ This function be used for icons not in the sprite or to override sprite icons.
 Only useful when working with non-standard projections.
 Code of a projection registered with OpenLayers. All sources of the style must be provided in this
 projection. The projection must also have a valid extent defined, which will be used to determine the
-origin and resolutions of the tile grid for all tiled sources of the style.
+origin and resolutions of the tile grid for all tiled sources of the style. When provided, the bbox
+placeholder in tile and geojson urls changes: the default is `{bbox-epsg-3857}`, when projection is e.g.
+set to `EPSG:4326`, the bbox placeholder will be `{bbox-epsg-4326}`.
 
 * * *
 
