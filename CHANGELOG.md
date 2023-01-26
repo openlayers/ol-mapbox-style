@@ -2,6 +2,10 @@
 
 ## Next version
 
+## 9.5.0
+
+* Support for projections, using the new `projection` option
+
 ## 9.4.0
 
 * Add support for labels with `symbol-spacing`
