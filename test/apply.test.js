@@ -13,6 +13,7 @@ import backgroundNoneStyle from './fixtures/background-none.json';
 import backgroundStyle from './fixtures/background.json';
 import brightV9 from 'mapbox-gl-styles/styles/bright-v9.json';
 import should from 'should';
+import {METERS_PER_UNIT, get, toLonLat} from 'ol/proj.js';
 import {
   apply,
   applyBackground,
@@ -23,7 +24,6 @@ import {
   setFeatureState,
 } from '../src/apply.js';
 import {defaultResolutions} from '../src/util.js';
-import {toLonLat} from 'ol/proj.js';
 delete brightV9.sprite;
 
 describe('ol-mapbox-style', function () {
@@ -190,7 +190,9 @@ describe('ol-mapbox-style', function () {
             .find((x) => x.get('mapbox-source') === 'water_areas');
           const source = layer.getSource();
           const url = new URL(
-            source.getUrl().call(this, map.getView().calculateExtent())
+            source
+              .getUrl()
+              .call(this, map.getView().calculateExtent(), 1, get('EPSG:3857'))
           );
           const bbox = url.searchParams.get('bbox').split(',');
           const proj = bbox.pop();
@@ -202,6 +204,41 @@ describe('ol-mapbox-style', function () {
           done();
         })
         .catch(done);
+    });
+
+    it('handles geojson wfs sources with bbox loadingstrategy and custom projection', function (done) {
+      fetch('./fixtures/geojson-wfs.json')
+        .then(function (response) {
+          return response.json();
+        })
+        .then(function (style) {
+          style.sources.water_areas.data =
+            style.sources.water_areas.data.replace('3857', '4326');
+          apply(target, style, {projection: 'EPSG:4326'})
+            .then(function (map) {
+              const layer = map
+                .getAllLayers()
+                .find((x) => x.get('mapbox-source') === 'water_areas');
+              const source = layer.getSource();
+              const url = new URL(
+                source
+                  .getUrl()
+                  .call(
+                    this,
+                    map.getView().calculateExtent(),
+                    1,
+                    map.getView().getProjection()
+                  )
+              );
+              const bbox = url.searchParams.get('bbox').split(',');
+              const proj = bbox.pop();
+              const extent = map.getView().calculateExtent();
+              should(proj).be.eql('EPSG:4326');
+              should(bbox.join(',') === extent.join(',')).be.true();
+              done();
+            })
+            .catch(done);
+        });
     });
 
     it('handles geojson wfs sources with bbox loadingstrategy & transformRequest', function (done) {
@@ -219,7 +256,9 @@ describe('ol-mapbox-style', function () {
             .find((x) => x.get('mapbox-source') === 'water_areas');
           const source = layer.getSource();
           const url = new URL(
-            source.getUrl().call(this, map.getView().calculateExtent())
+            source
+              .getUrl()
+              .call(this, map.getView().calculateExtent(), 1, get('EPSG:3857'))
           );
           should(url.searchParams.get('transformRequest')).be.equal('true');
           should(source).be.instanceof(VectorSource);
@@ -278,6 +317,45 @@ describe('ol-mapbox-style', function () {
       apply(target, './fixtures/hot-osm/hot-osm.json')
         .then(function (map) {
           should(map.getView().getMaxResolution()).eql(defaultResolutions[0]);
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+
+    it('creates a view with default resolutions and non-standard projection', function (done) {
+      apply(
+        target,
+        {
+          version: 8,
+          center: [16, 48],
+          zoom: 14,
+          sources: {
+            'wms-source': {
+              type: 'raster',
+              tiles: ['{bbox-epsg-4326}'],
+            },
+          },
+          layers: [
+            {
+              id: 'wms-layer',
+              type: 'raster',
+              source: 'wms-source',
+            },
+          ],
+        },
+        {
+          projection: 'EPSG:4326',
+        }
+      )
+        .then(function (map) {
+          should(map.getView().getProjection().getCode()).eql('EPSG:4326');
+          should(map.getView().getCenter()).eql([16, 48]);
+          should(map.getView().getZoom()).eql(14);
+          should(map.getView().getMaxResolution()).eql(
+            defaultResolutions[0] / METERS_PER_UNIT.degrees
+          );
           done();
         })
         .catch(function (err) {
@@ -382,6 +460,64 @@ describe('ol-mapbox-style', function () {
             should(hillshadingTileGrid.getMinZoom()).eql(0);
             should(hillshadingTileGrid.getMaxZoom()).eql(20);
 
+            done();
+          })
+          .catch(function (err) {
+            done(err);
+          });
+      });
+
+      it('correctly replaces extent template with tile extent', function (done) {
+        apply(target, context)
+          .then(function (map) {
+            const statesSource = map.getLayers().item(0).getSource();
+            should(
+              statesSource.getTileUrlFunction()(
+                [0, 0, 0],
+                1,
+                map.getView().getProjection()
+              )
+            ).eql(
+              'https://ahocevar.com/geoserver/gwc/service/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image/png&SRS=EPSG:900913&LAYERS=topp:states&STYLES=&WIDTH=256&HEIGHT=256&BBOX=-20037508.342789244,-20037508.342789244,20037508.342789244,20037508.342789244'
+            );
+            done();
+          })
+          .catch(function (err) {
+            done(err);
+          });
+      });
+
+      it('creates the correct tile grid for custom projections', function (done) {
+        apply(target, context, {projection: 'EPSG:4326'})
+          .then(function (map) {
+            const statesSource = map.getLayers().item(0).getSource();
+            const statesTileGrid = statesSource.getTileGrid();
+            should(statesTileGrid.getTileSize()).eql(256);
+            should(statesTileGrid.getExtent()).eql([-180, -90, 180, 90]);
+            should(statesTileGrid.getOrigin()).eql([-180, 90]);
+            done();
+          })
+          .catch(function (err) {
+            done(err);
+          });
+      });
+
+      it('correctly replaces extent template with tile extent for custom projections', function (done) {
+        context.sources.states.tiles = [
+          'https://ahocevar.com/geoserver/gwc/service/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image/png&SRS=EPSG:4326&LAYERS=topp:states&STYLES=&WIDTH=256&HEIGHT=256&BBOX={bbox-epsg-4326}',
+        ];
+        apply(target, context, {projection: 'EPSG:4326'})
+          .then(function (map) {
+            const statesSource = map.getLayers().item(0).getSource();
+            should(
+              statesSource.getTileUrlFunction()(
+                [0, 0, 0],
+                1,
+                map.getView().getProjection()
+              )
+            ).eql(
+              'https://ahocevar.com/geoserver/gwc/service/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image/png&SRS=EPSG:4326&LAYERS=topp:states&STYLES=&WIDTH=256&HEIGHT=256&BBOX=-180,-270,180,90'
+            );
             done();
           })
           .catch(function (err) {
