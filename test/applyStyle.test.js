@@ -206,6 +206,89 @@ describe('applyStyle with source creation', function () {
   });
 });
 
+describe('applyStyle without source creation', function () {
+  it('leaves vector source untouched when updateSource is false', function (done) {
+    const source = new VectorSource({});
+    const layer = new VectorLayer({
+      source: source,
+    });
+    const loader = function (extent, resolution, projection, success, failure) {
+      fetch(/** @type {string} */ (layer.getSource().getUrl()))
+        .then((response) => {
+          response.json().then((json) => {
+            const features = this.getFormat().readFeatures(json, {
+              featureProjection: projection,
+            });
+            success(
+              /** @type {Array<import("ol/Feature").default>} */ (features)
+            );
+          });
+        })
+        .catch((error) => {
+          failure();
+        });
+    };
+    layer.getSource().setLoader(loader);
+    applyStyle(layer, '/fixtures/osm-liberty/style.json', 'openmaptiles', {
+      updateSource: false,
+    })
+      .then(function () {
+        try {
+          should(layer.getSource()).equal(source);
+          should(layer.getSource().getUrl()).be.undefined();
+          should(layer.getSource().getAttributions()).be.null();
+          should(layer.getSource().loader_).equal(loader);
+          should(layer.getStyle()).be.an.instanceOf(Function);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      })
+      .catch(function (e) {
+        done(e);
+      });
+  });
+  it('leaves vector tile source untouched when updateSource is false', function (done) {
+    const source = new VectorTileSource({});
+    const layer = new VectorTileLayer({
+      source: source,
+    });
+    const loader = function (tile, url) {
+      tile.setLoader(function (extent, resolution, projection) {
+        fetch(url + '?foo=bar').then(function (response) {
+          response.arrayBuffer().then(function (data) {
+            const format = tile.getFormat();
+            const features = format.readFeatures(data, {
+              extent: extent,
+              featureProjection: projection,
+            });
+            tile.setFeatures(features);
+          });
+        });
+      });
+    };
+    layer.getSource().setTileLoadFunction(loader);
+    applyStyle(layer, '/fixtures/osm-liberty/style.json', 'openmaptiles', {
+      updateSource: false,
+    })
+      .then(function () {
+        try {
+          should(layer.getSource()).equal(source);
+          should(layer.getSource().getUrls()).be.null();
+          should(layer.getSource().getAttributions()).be.null();
+          should(layer.getSource().getTileLoadFunction()).equal(loader);
+          should(layer.getStyle()).be.an.instanceOf(Function);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      })
+      .catch(function (e) {
+        done(e);
+      });
+  });
+});
+
 describe('maxResolution', function () {
   const glStyle = {
     version: 8,
