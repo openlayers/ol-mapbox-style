@@ -298,7 +298,13 @@ export function applyStyle(
           }
           const glSource = glStyle.sources[sourceId];
           let source = layer.getSource();
-          if (!source || source.get('mapbox-source') !== glSource) {
+          if (
+            !source ||
+            (
+              source.get('mapbox-source') &&
+              source.get('mapbox-source') !== glSource
+            )
+          ) {
             source = setupGeoJSONSource(glSource, styleUrl, options);
           }
           const targetSource = /** @type {VectorSource} */ (layer.getSource());
