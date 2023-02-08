@@ -88,6 +88,8 @@ import {
  * style to be used.
  * @property {Array<string>} [layers] Layers. If no source is provided, the layers with the
  * provided ids will be used from the style's `layers` array. All layers need to use the same source.
+ * @property {boolean} [updateSource=true] Update or create vector (tile) layer source with parameters
+ * specified for the source in the mapbox style definition.
  */
 
 /** @typedef {'Style'|'Source'|'Sprite'|'SpriteImage'|'Tiles'|'GeoJSON'} ResourceType */
@@ -128,7 +130,8 @@ function completeOptions(styleUrl, options) {
 /**
  * Applies a style function to an `ol/layer/VectorTile` or `ol/layer/Vector`
  * with an `ol/source/VectorTile` or an `ol/source/Vector`. If the layer does not have a source
- * yet, it will be created and populated from the information in the `glStyle`.
+ * yet, it will be created and populated from the information in the `glStyle` (unless `updateSource` is
+ * set to `false`).
  *
  * **Example:**
  * ```js
@@ -181,6 +184,7 @@ export function applyStyle(
   /** @type {Options&ApplyStyleOptions} */
   let options;
   let sourceOrLayers;
+  let updateSource = true;
   if (
     typeof sourceOrLayersOrOptions !== 'string' &&
     !Array.isArray(sourceOrLayersOrOptions)
@@ -197,6 +201,9 @@ export function applyStyle(
   } else {
     styleUrl = optionsOrPath.styleUrl;
     options = optionsOrPath;
+  }
+  if (options.updateSource === false) {
+    updateSource = false;
   }
   if (!resolutions) {
     resolutions = options.resolutions;
@@ -250,6 +257,9 @@ export function applyStyle(
         }
 
         function assignSource() {
+          if (!updateSource) {
+            return Promise.resolve();
+          }
           if (layer instanceof VectorTileLayer) {
             return setupVectorSource(
               glStyle.sources[sourceId],
