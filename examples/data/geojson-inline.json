@@ -2,6 +2,12 @@
   "zoom": 6,
   "center": [5, 5],
   "layers": [{
+    "id": "background",
+    "type": "background",
+    "paint": {
+      "background-color": "#aaa"
+    }
+  }, {
     "source": "points",
     "type": "symbol",
     "id": "points",
@@ -15,6 +21,10 @@
           [2, "amenity_firestation"]
         ]
       }
+    },
+    "paint": {
+      "icon-halo-color": "#fff",
+      "icon-halo-width": 5
     }
   }],
   "name": "QGIS project",
