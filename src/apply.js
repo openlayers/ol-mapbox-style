@@ -874,6 +874,7 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
         } else if (glSource.type == 'vector') {
           layer = setupVectorLayer(glSource, styleUrl, options);
         } else if (glSource.type == 'raster') {
+          layerIds = [];
           layer = setupRasterLayer(glSource, styleUrl, options);
           layer.setVisible(
             glLayer.layout ? glLayer.layout.visibility !== 'none' : true
@@ -888,6 +889,7 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
           glSource.type == 'raster-dem' &&
           glLayer.type == 'hillshade'
         ) {
+          layerIds = [];
           const hillshadeLayer = setupHillshadeLayer(
             glSource,
             styleUrl,
