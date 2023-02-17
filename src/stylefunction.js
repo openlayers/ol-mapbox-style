@@ -825,11 +825,29 @@ export function stylefunction(
                       )
                     : null;
                 if (!iconColor || iconColor.a !== 0) {
-                  let icon_cache_key = icon + '.' + iconSize;
+                  const haloColor = getValue(
+                    layer,
+                    'paint',
+                    'icon-halo-color',
+                    zoom,
+                    f,
+                    functionCache,
+                    featureState
+                  );
+                  const haloWidth = getValue(
+                    layer,
+                    'paint',
+                    'icon-halo-width',
+                    zoom,
+                    f,
+                    functionCache,
+                    featureState
+                  );
+                  let iconCacheKey = `${icon}.${iconSize}.${haloWidth}.${haloColor}`;
                   if (iconColor !== null) {
-                    icon_cache_key += '.' + iconColor;
+                    iconCacheKey += `.${iconColor}`;
                   }
-                  iconImg = iconImageCache[icon_cache_key];
+                  iconImg = iconImageCache[iconCacheKey];
                   if (!iconImg) {
                     const declutterMode = getIconDeclutterMode(
                       layer,
@@ -859,41 +877,73 @@ export function stylefunction(
                         ]
                       : undefined;
                     if (imageElement) {
+                      const iconOptions = {
+                        color: color,
+                        rotateWithView: iconRotationAlignment === 'map',
+                        displacement: displacement,
+                        declutterMode: declutterMode,
+                      };
                       if (typeof imageElement === 'string') {
                         // it is a src URL
-                        iconImg = new Icon({
-                          color: color,
-                          src: imageElement,
-                          rotateWithView: iconRotationAlignment === 'map',
-                          displacement: displacement,
-                          declutterMode: declutterMode,
-                        });
+                        iconOptions.src = imageElement;
                       } else {
-                        iconImg = new Icon({
-                          color: color,
-                          img: imageElement,
-                          imgSize: [imageElement.width, imageElement.height],
-                          rotateWithView: iconRotationAlignment === 'map',
-                          displacement: displacement,
-                          declutterMode: declutterMode,
-                        });
+                        iconOptions.img = imageElement;
+                        iconOptions.imgSize = [
+                          imageElement.width,
+                          imageElement.height,
+                        ];
                       }
+                      iconImg = new Icon(iconOptions);
                     } else {
                       const spriteImageData = spriteData[icon];
-
+                      let img, imgSize, size, offset;
+                      if (haloWidth) {
+                        const imageCanvas = document.createElement('canvas');
+                        imgSize = [
+                          2 * haloWidth * spriteImageData.pixelRatio +
+                            spriteImageData.width,
+                          2 * haloWidth * spriteImageData.pixelRatio +
+                            spriteImageData.height,
+                        ];
+                        imageCanvas.width = imgSize[0];
+                        imageCanvas.height = imgSize[1];
+                        const imageContext = imageCanvas.getContext('2d');
+                        imageContext.shadowBlur =
+                          haloWidth * spriteImageData.pixelRatio;
+                        imageContext.shadowColor = `rgba(${haloColor.r * 255},${
+                          haloColor.g * 255
+                        },${haloColor.b * 255},${haloColor.a})`;
+                        imageContext.drawImage(
+                          spriteImage,
+                          spriteImageData.x,
+                          spriteImageData.y,
+                          spriteImageData.width,
+                          spriteImageData.height,
+                          haloWidth * spriteImageData.pixelRatio,
+                          haloWidth * spriteImageData.pixelRatio,
+                          spriteImageData.width,
+                          spriteImageData.height
+                        );
+                        img = imageCanvas;
+                      } else {
+                        img = spriteImage;
+                        imgSize = spriteImageSize;
+                        size = [spriteImageData.width, spriteImageData.height];
+                        offset = [spriteImageData.x, spriteImageData.y];
+                      }
                       iconImg = new Icon({
                         color: color,
-                        img: spriteImage,
-                        imgSize: spriteImageSize,
-                        size: [spriteImageData.width, spriteImageData.height],
-                        offset: [spriteImageData.x, spriteImageData.y],
+                        img: img,
+                        imgSize: imgSize,
+                        size: size,
+                        offset: offset,
                         rotateWithView: iconRotationAlignment === 'map',
                         scale: iconSize / spriteImageData.pixelRatio,
                         displacement: displacement,
                         declutterMode: declutterMode,
                       });
                     }
-                    iconImageCache[icon_cache_key] = iconImg;
+                    iconImageCache[iconCacheKey] = iconImg;
                   }
                 }
                 if (iconImg) {
