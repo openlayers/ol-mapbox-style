@@ -2,6 +2,12 @@
 
 ## Next version
 
+## 9.6.0
+
+* New `updateSource` option on `applyStyle()` for keeping pre-configured OpenLayers sources
+* Fix `mapbox-layers` array for `raster` or `raster-dem` layers that share the same source
+* Support for `paint` properties `icon-halo-color` and `icon-halo-width`
+
 ## 9.5.0
 
 * Support for projections, using the new `projection` option

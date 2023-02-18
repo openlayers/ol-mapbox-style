@@ -220,7 +220,8 @@ Promise that resolves when the background is applied.
 
 Applies a style function to an `ol/layer/VectorTile` or `ol/layer/Vector`
 with an `ol/source/VectorTile` or an `ol/source/Vector`. If the layer does not have a source
-yet, it will be created and populated from the information in the `glStyle`.
+yet, it will be created and populated from the information in the `glStyle` (unless `updateSource` is
+set to `false`).
 
 **Example:**
 
@@ -491,6 +492,7 @@ Style function for use in
 
 - [layers](#layers)
 - [source](#source)
+- [updateSource](#updateSource)
 
 ### Properties
 
@@ -509,6 +511,15 @@ provided ids will be used from the style's `layers` array. All layers need to us
 
 Source. Default is `''`, which causes the first source in the
 style to be used.
+
+* * *
+
+#### updateSource
+
+• **updateSource**: `boolean`
+
+Update or create vector (tile) layer source with parameters
+specified for the source in the mapbox style definition.
 
 <a name="interfacesinternal_featureidentifiermd"></a>
 
