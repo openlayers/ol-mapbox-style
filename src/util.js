@@ -1,6 +1,36 @@
 import {expandUrl} from 'ol/tileurlfunction.js';
 import {normalizeSourceUrl, normalizeStyleUrl} from './mapbox.js';
 
+let styleId = 0;
+const functionCacheByStyleId = {};
+const filterCacheByStyleId = {};
+
+/**
+ * @param {Object} glStyle Mapboox style object.
+ * @return {Object} Function cache.
+ */
+export function getFunctionCache(glStyle) {
+  if (!glStyle.id) {
+    glStyle.id = styleId++;
+  }
+  const functionCache = {};
+  functionCacheByStyleId[glStyle.id] = functionCache;
+  return functionCache;
+}
+
+/**
+ * @param {Object} glStyle Mapboox style object.
+ * @return {Object} Filter cache.
+ */
+export function getFilterCache(glStyle) {
+  if (!glStyle.id) {
+    glStyle.id = styleId++;
+  }
+  const filterCache = {};
+  filterCacheByStyleId[glStyle.id] = filterCache;
+  return filterCache;
+}
+
 export function deg2rad(degrees) {
   return (degrees * Math.PI) / 180;
 }

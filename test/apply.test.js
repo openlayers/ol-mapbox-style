@@ -2,6 +2,7 @@ import Feature from 'ol/Feature.js';
 import LayerGroup from 'ol/layer/Group.js';
 import Map from 'ol/Map.js';
 import Point from 'ol/geom/Point.js';
+import Polygon from 'ol/geom/Polygon.js';
 import RasterSource from 'ol/source/Raster.js';
 import TileSource from 'ol/source/Tile.js';
 import VectorLayer from 'ol/layer/Vector.js';
@@ -15,13 +16,16 @@ import brightV9 from 'mapbox-gl-styles/styles/bright-v9.json';
 import should from 'should';
 import {METERS_PER_UNIT, get, toLonLat} from 'ol/proj.js';
 import {
+  addMapboxLayer,
   apply,
   applyBackground,
   getFeatureState,
   getLayer,
   getLayers,
+  getMapboxLayer,
   getSource,
   setFeatureState,
+  updateMapboxLayer,
 } from '../src/apply.js';
 import {defaultResolutions} from '../src/util.js';
 delete brightV9.sprite;
@@ -968,6 +972,88 @@ describe('ol-mapbox-style', function () {
           map.addLayer(new VectorTileLayer());
           should(getSource(map, 'mapbox')).be.an.instanceOf(VectorTileSource);
           should(getSource(map, 'mapbo')).be.undefined();
+          done();
+        })
+        .catch(function (error) {
+          done(error);
+        });
+    });
+  });
+
+  describe('getMapboxLayer', function () {
+    let target;
+    beforeEach(function () {
+      target = document.createElement('div');
+    });
+
+    it('returns a mapbox layer', function (done) {
+      apply(target, brightV9)
+        .then(function (map) {
+          should(getMapboxLayer(map, 'landuse_park').id).eql('landuse_park');
+          done();
+        })
+        .catch(function (error) {
+          done(error);
+        });
+    });
+  });
+
+  describe('addMapboxLayer', function () {
+    let target;
+    beforeEach(function () {
+      target = document.createElement('div');
+    });
+
+    it('adds a mapbox layer', function (done) {
+      apply(target, JSON.parse(JSON.stringify(brightV9)))
+        .then(function (map) {
+          addMapboxLayer(
+            map,
+            {
+              id: 'inserted',
+              source: 'mapbox',
+            },
+            'landuse_park'
+          );
+          should.notEqual(getMapboxLayer(map, 'inserted'), undefined);
+          done();
+        })
+        .catch(function (error) {
+          done(error);
+        });
+    });
+  });
+
+  describe('updateMapboxLayer', function () {
+    let target;
+    beforeEach(function () {
+      target = document.createElement('div');
+    });
+
+    it('updates a mapbox layer', function (done) {
+      apply(target, JSON.parse(JSON.stringify(brightV9)))
+        .then(function (map) {
+          // add another layer that has no 'mapbox-layers' set
+          map.addLayer(new VectorTileLayer());
+          const layer = getMapboxLayer(map, 'landuse_park');
+          layer.paint['fill-color'] = 'red';
+          updateMapboxLayer(map, layer);
+          const getStyle = getLayer(map, 'landuse_park').getStyle();
+          const feature = new Feature({
+            geometry: new Polygon([
+              [
+                [0, 0],
+                [0, 1],
+                [1, 1],
+                [1, 0],
+                [0, 0],
+              ],
+            ]),
+            layer: 'landuse',
+            class: 'park',
+          });
+          const styles = getStyle(feature, 1);
+          should(styles[0].getFill().getColor()).eql('rgba(255,0,0,1)');
           done();
         })
         .catch(function (error) {
