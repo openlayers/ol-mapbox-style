@@ -23,6 +23,7 @@ import {
   createCanvas,
   defaultResolutions,
   deg2rad,
+  drawIconHalo,
   getZoomForResolution,
 } from './util.js';
 import {
@@ -898,33 +899,13 @@ export function stylefunction(
                       const spriteImageData = spriteData[icon];
                       let img, imgSize, size, offset;
                       if (haloWidth) {
-                        const imageCanvas = document.createElement('canvas');
-                        imgSize = [
-                          2 * haloWidth * spriteImageData.pixelRatio +
-                            spriteImageData.width,
-                          2 * haloWidth * spriteImageData.pixelRatio +
-                            spriteImageData.height,
-                        ];
-                        imageCanvas.width = imgSize[0];
-                        imageCanvas.height = imgSize[1];
-                        const imageContext = imageCanvas.getContext('2d');
-                        imageContext.shadowBlur =
-                          haloWidth * spriteImageData.pixelRatio;
-                        imageContext.shadowColor = `rgba(${haloColor.r * 255},${
-                          haloColor.g * 255
-                        },${haloColor.b * 255},${haloColor.a})`;
-                        imageContext.drawImage(
+                        img = drawIconHalo(
                           spriteImage,
-                          spriteImageData.x,
-                          spriteImageData.y,
-                          spriteImageData.width,
-                          spriteImageData.height,
-                          haloWidth * spriteImageData.pixelRatio,
-                          haloWidth * spriteImageData.pixelRatio,
-                          spriteImageData.width,
-                          spriteImageData.height
+                          spriteImageData,
+                          haloWidth,
+                          haloColor
                         );
-                        img = imageCanvas;
+                        imgSize = [img.width, img.height];
                       } else {
                         img = spriteImage;
                         imgSize = spriteImageSize;

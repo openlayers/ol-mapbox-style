@@ -24,7 +24,7 @@
     },
     "paint": {
       "icon-halo-color": "#fff",
-      "icon-halo-width": 5
+      "icon-halo-width": 1
     }
   }],
   "name": "QGIS project",
