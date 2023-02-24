@@ -180,6 +180,63 @@ export function getTileJson(glSource, styleUrl, options = {}) {
 }
 
 /**
+ * @param {HTMLImageElement} spriteImage Sprite image id.
+ * @param {{x: number, y: number, width: number, height: number, pixelRatio: number}} spriteImageData Sprite image data.
+ * @param {number} haloWidth Halo width.
+ * @param {{r: number, g: number, b: number, a: number}} haloColor Halo color.
+ * @return {HTMLCanvasElement} Canvas element with the halo.
+ */
+export function drawIconHalo(
+  spriteImage,
+  spriteImageData,
+  haloWidth,
+  haloColor
+) {
+  const imageCanvas = document.createElement('canvas');
+  const imgSize = [
+    2 * haloWidth * spriteImageData.pixelRatio + spriteImageData.width,
+    2 * haloWidth * spriteImageData.pixelRatio + spriteImageData.height,
+  ];
+  imageCanvas.width = imgSize[0];
+  imageCanvas.height = imgSize[1];
+  const imageContext = imageCanvas.getContext('2d');
+  imageContext.drawImage(
+    spriteImage,
+    spriteImageData.x,
+    spriteImageData.y,
+    spriteImageData.width,
+    spriteImageData.height,
+    haloWidth * spriteImageData.pixelRatio,
+    haloWidth * spriteImageData.pixelRatio,
+    spriteImageData.width,
+    spriteImageData.height
+  );
+  const imageData = imageContext.getImageData(0, 0, imgSize[0], imgSize[1]);
+  imageContext.globalCompositeOperation = 'destination-over';
+  imageContext.fillStyle = `rgba(${haloColor.r * 255},${haloColor.g * 255},${
+    haloColor.b * 255
+  },${haloColor.a})`;
+  const data = imageData.data;
+  for (let i = 0, ii = imageData.width; i < ii; ++i) {
+    for (let j = 0, jj = imageData.height; j < jj; ++j) {
+      const index = (j * ii + i) * 4;
+      const alpha = data[index + 3];
+      if (alpha > 0) {
+        imageContext.arc(
+          i,
+          j,
+          haloWidth * spriteImageData.pixelRatio,
+          0,
+          2 * Math.PI
+        );
+      }
+    }
+  }
+  imageContext.fill();
+  return imageCanvas;
+}
+
+/**
  * @typedef {import("./apply.js").Options} Options
  * @typedef {import('./apply.js').ResourceType} ResourceType
  * @private
