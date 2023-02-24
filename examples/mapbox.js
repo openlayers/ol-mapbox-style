@@ -7,8 +7,10 @@ let key = document.cookie.replace(
 );
 if (!key) {
   key = window.prompt('Enter your Mapbox API access token:');
-  document.cookie =
-    'mapbox_access_token=' + key + '; expires=Fri, 31 Dec 9999 23:59:59 GMT';
+  if (key) {
+    document.cookie =
+      'mapbox_access_token=' + key + '; expires=Fri, 31 Dec 9999 23:59:59 GMT';
+  }
 }
 
 olms('map', 'mapbox://styles/mapbox/bright-v9', {accessToken: key});
