@@ -37,6 +37,8 @@ import {createXYZ} from 'ol/tilegrid.js';
 import {
   defaultResolutions,
   fetchResource,
+  getFilterCache,
+  getFunctionCache,
   getGlStyle,
   getTileJson,
   getZoomForResolution,
@@ -75,11 +77,11 @@ import {
  * Resolutions for mapping resolution to the `zoom` used in the Mapbox style.
  * @property {string} [styleUrl] URL of the Mapbox GL style. Required for styles that were provided
  * as object, when they contain a relative sprite url, or sources referencing data by relative url.
- * @property {string} [accessTokenParam='access_token'] Access token param. For internal use.
  * @property {function(VectorLayer|VectorTileLayer, string):HTMLImageElement|HTMLCanvasElement|string|undefined} [getImage=undefined]
  * Function that returns an image for an icon name. If the result is an HTMLImageElement, it must already be
  * loaded. The layer can be used to call layer.changed() when the loading and processing of the image has finished.
  * This function be used for icons not in the sprite or to override sprite icons.
+ * @property {string} [accessTokenParam='access_token'] Access token param. For internal use.
  */
 
 /**
@@ -165,7 +167,7 @@ function completeOptions(styleUrl, options) {
  * provided, all layers for the specified source will be included in the style function. When layer
  * `id`s are provided, they must be from layers that use the same source. When not provided or a falsey
  * value, all layers using the first source specified in the glStyle will be rendered.
- * @param {Options|string} [optionsOrPath] **Deprecated**. Options. Alternatively the path of the style file
+ * @param {Options&ApplyStyleOptions|string} [optionsOrPath] **Deprecated**. Options. Alternatively the path of the style file
  * (only required when a relative path is used for the `"sprite"` property of the style).
  * @param {Array<number>} [resolutions] **Deprecated**. Resolutions for mapping resolution to zoom level.
  * Only needed when working with non-standard tile grids or projections, can also be supplied with
@@ -877,8 +879,10 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
           );
           layerIds = [];
         }
+
+        const functionCache = getFunctionCache(glStyle);
+
         glSource = glStyle.sources[id];
-        const functionCache = {};
         if (type == 'background') {
           layer = setupBackgroundLayer(glLayer, options, functionCache);
         } else if (glSource.type == 'vector') {
@@ -1291,6 +1295,76 @@ export function getFeatureState(mapOrLayer, feature) {
     }
   }
   return null;
+}
+
+/**
+ * Get the Mapbox Layer object for the provided `layerId`.
+ * @param {Map|LayerGroup} mapOrGroup Map or LayerGroup.
+ * @param {string} layerId Mapbox Layer id.
+ * @return {Object} Mapbox Layer object.
+ */
+export function getMapboxLayer(mapOrGroup, layerId) {
+  const style = mapOrGroup.get('mapbox-style');
+  const layerStyle = style.layers.find(function (layer) {
+    return layer.id === layerId;
+  });
+  return layerStyle;
+}
+
+/**
+ * Add a new Mapbox Layer object to the style.
+ * @param {Map|LayerGroup} mapOrGroup Map or LayerGroup.
+ * @param {Object} mapboxLayer Mapbox Layer object.
+ * @param {string} [beforeLayerId] Optional id of the Mapbox Layer before the new layer that will be added.
+ */
+export function addMapboxLayer(mapOrGroup, mapboxLayer, beforeLayerId) {
+  const mapboxLayers = mapOrGroup.get('mapbox-style').layers;
+  let index;
+  if (beforeLayerId !== undefined) {
+    const beforeLayer = getMapboxLayer(mapOrGroup, beforeLayerId);
+    if (beforeLayer === undefined) {
+      throw new Error(`Layer with id "${beforeLayerId}" not found.`);
+    }
+    index = mapboxLayers.indexOf(beforeLayer);
+  } else {
+    index = mapboxLayers.length;
+  }
+  if (index === 0) {
+    throw new Error('Cannot add layer before first layer.');
+  }
+  if (mapboxLayers[index - 1].source !== mapboxLayer.source) {
+    throw new Error('Added layer and layer before must use the same source.');
+  }
+  if (mapboxLayers.some((layer) => layer.id === mapboxLayer.id)) {
+    throw new Error(`Layer with id "${mapboxLayer.id}" already exists.`);
+  }
+  mapboxLayers.splice(index, 0, mapboxLayer);
+}
+
+/**
+ * Update a Mapbox Layer object in the style. The map will be re-rendered with the new style.
+ * @param {Map|LayerGroup} mapOrGroup Map or LayerGroup.
+ * @param {Object} mapboxLayer Updated Mapbox Layer object.
+ */
+export function updateMapboxLayer(mapOrGroup, mapboxLayer) {
+  const glStyle = mapOrGroup.get('mapbox-style');
+  const mapboxLayers = glStyle.layers;
+  const index = mapboxLayers.findIndex(function (layer) {
+    return layer.id === mapboxLayer.id;
+  });
+  if (index === -1) {
+    throw new Error(`Layer with id "${mapboxLayer.id}" not found.`);
+  }
+  const oldLayer = mapboxLayers[index];
+  if (oldLayer.source !== mapboxLayer.source) {
+    throw new Error(
+      'Updated layer and previous version must use the same source.'
+    );
+  }
+  delete getFunctionCache(glStyle)[mapboxLayer.id];
+  delete getFilterCache(glStyle)[mapboxLayer.id];
+  mapboxLayers[index] = mapboxLayer;
+  getLayer(mapOrGroup, mapboxLayer.id).changed();
 }
 
 export {finalizeLayer as _finalizeLayer};

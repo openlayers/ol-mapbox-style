@@ -108,17 +108,20 @@ and open a browser on the host and port indicated in the console output (usually
 
 #### Functions
 
+- [addMapboxLayer](#addMapboxLayer)
 - [apply](#apply)
 - [applyBackground](#applyBackground)
 - [applyStyle](#applyStyle)
 - [getFeatureState](#getFeatureState)
 - [getLayer](#getLayer)
 - [getLayers](#getLayers)
+- [getMapboxLayer](#getMapboxLayer)
 - [getSource](#getSource)
 - [recordStyleLayer](#recordStyleLayer)
 - [renderTransparent](#renderTransparent)
 - [setFeatureState](#setFeatureState)
 - [stylefunction](#stylefunction)
+- [updateMapboxLayer](#updateMapboxLayer)
 
 ### References
 
@@ -127,6 +130,26 @@ and open a browser on the host and port indicated in the console output (usually
 Renames and re-exports [apply](#apply)
 
 ### Functions
+
+#### addMapboxLayer
+
+▸ **addMapboxLayer**(`mapOrGroup`, `mapboxLayer`, `beforeLayerId?`): `void`
+
+Add a new Mapbox Layer object to the style.
+
+##### Parameters
+
+| Name             | Type                  | Description                                                              |
+| :--------------- | :-------------------- | :----------------------------------------------------------------------- |
+| `mapOrGroup`     | `Map` \| `LayerGroup` | Map or LayerGroup.                                                       |
+| `mapboxLayer`    | `any`                 | Mapbox Layer object.                                                     |
+| `beforeLayerId?` | `string`              | Optional id of the Mapbox Layer before the new layer that will be added. |
+
+##### Returns
+
+`void`
+
+* * *
 
 #### apply
 
@@ -253,7 +276,7 @@ Two additional properties will be set on the provided layer:
 | `layer`                    | `VectorLayer`&lt;`any`> \| `VectorTileLayer`                                                                                           | `undefined`   | OpenLayers layer. When the layer has a source configured, it will be modified to use the configuration from the glStyle's `source`. Options specified on the layer's source will override those from the glStyle's `source`, except for `url`, `tileUrlFunction` and `tileGrid` (exception: when the source projection is not `EPSG:3857`).                                                       |
 | `glStyle`                  | `any`                                                                                                                                  | `undefined`   | Mapbox Style object.                                                                                                                                                                                                                                                                                                                                                                              |
 | `sourceOrLayersOrOptions?` | `string` \| `string`\[] \| [`Options`](#interfacesinternal_optionsmd) & [`ApplyStyleOptions`](#interfacesinternal_applystyleoptionsmd) | `''`          | Options or `source` key or an array of layer `id`s from the Mapbox Style object. When a `source` key is provided, all layers for the specified source will be included in the style function. When layer `id`s are provided, they must be from layers that use the same source. When not provided or a falsey value, all layers using the first source specified in the glStyle will be rendered. |
-| `optionsOrPath?`           | `string` \| [`Options`](#interfacesinternal_optionsmd)                                                                                 | `{}`          | **Deprecated**. Options. Alternatively the path of the style file (only required when a relative path is used for the `"sprite"` property of the style).                                                                                                                                                                                                                                          |
+| `optionsOrPath?`           | `string` \| [`Options`](#interfacesinternal_optionsmd) & [`ApplyStyleOptions`](#interfacesinternal_applystyleoptionsmd)                | `{}`          | **Deprecated**. Options. Alternatively the path of the style file (only required when a relative path is used for the `"sprite"` property of the style).                                                                                                                                                                                                                                          |
 | `resolutions?`             | `number`\[]                                                                                                                            | `undefined`   | **Deprecated**. Resolutions for mapping resolution to zoom level. Only needed when working with non-standard tile grids or projections, can also be supplied with options.                                                                                                                                                                                                                        |
 
 ##### Returns
@@ -330,6 +353,27 @@ Get the OpenLayers layer instances for the provided Mapbox Style `source`.
 `Layer`&lt;`Source`, `LayerRenderer`&lt;`any`>>\[]
 
 OpenLayers layer instances.
+
+* * *
+
+#### getMapboxLayer
+
+▸ **getMapboxLayer**(`mapOrGroup`, `layerId`): `any`
+
+Get the Mapbox Layer object for the provided `layerId`.
+
+##### Parameters
+
+| Name         | Type                  | Description        |
+| :----------- | :-------------------- | :----------------- |
+| `mapOrGroup` | `Map` \| `LayerGroup` | Map or LayerGroup. |
+| `layerId`    | `string`              | Mapbox Layer id.   |
+
+##### Returns
+
+`any`
+
+Mapbox Layer object.
 
 * * *
 
@@ -479,6 +523,25 @@ sure that sprite image loading works:
 
 Style function for use in
 `ol.layer.Vector` or `ol.layer.VectorTile`.
+
+* * *
+
+#### updateMapboxLayer
+
+▸ **updateMapboxLayer**(`mapOrGroup`, `mapboxLayer`): `void`
+
+Update a Mapbox Layer object in the style. The map will be re-rendered with the new style.
+
+##### Parameters
+
+| Name          | Type                  | Description                  |
+| :------------ | :-------------------- | :--------------------------- |
+| `mapOrGroup`  | `Map` \| `LayerGroup` | Map or LayerGroup.           |
+| `mapboxLayer` | `any`                 | Updated Mapbox Layer object. |
+
+##### Returns
+
+`void`
 
 <a name="interfacesinternal_applystyleoptionsmd"></a>
 

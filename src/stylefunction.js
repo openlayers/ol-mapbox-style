@@ -24,6 +24,8 @@ import {
   defaultResolutions,
   deg2rad,
   drawIconHalo,
+  getFilterCache,
+  getFunctionCache,
   getZoomForResolution,
 } from './util.js';
 import {
@@ -378,8 +380,8 @@ export function stylefunction(
 
   const iconImageCache = {};
   const patternCache = {};
-  const functionCache = {};
-  const filterCache = {};
+  const functionCache = getFunctionCache(glStyle);
+  const filterCache = getFilterCache(glStyle);
 
   let mapboxSource;
   for (let i = 0, ii = allLayers.length; i < ii; ++i) {

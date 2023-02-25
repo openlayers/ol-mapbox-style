@@ -38,10 +38,18 @@ describe('stylefunction', function () {
 
     it('does not modify the input style object', function () {
       const style = JSON.parse(JSON.stringify(states));
+      style.id = 'states';
       deepFreeze(style);
       should.doesNotThrow(function () {
         applyStyleFunction(layer, style, 'states');
       });
+    });
+
+    it('adds an id to the style object when none is set', function () {
+      const style = JSON.parse(JSON.stringify(states));
+      style.id = undefined;
+      applyStyleFunction(layer, style, 'states');
+      should.notEqual(style.id, undefined);
     });
 
     it('creates a style function with all layers of a source', function () {
