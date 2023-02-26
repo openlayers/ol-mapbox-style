@@ -2,6 +2,12 @@
 
 ## Next version
 
+## 9.7.0
+
+* Improved icon halo - now looks the same as text halo
+* New API for working with layer style objects and updating the rendered style
+* Improved access token handling for the Mapbox example
+
 ## 9.6.0
 
 * New `updateSource` option on `applyStyle()` for keeping pre-configured OpenLayers sources
