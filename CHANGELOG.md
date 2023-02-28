@@ -2,6 +2,8 @@
 
 ## Next version
 
+## 10.0.0
+
 ### Breaking changes
 
 #### BBOX templates for `geojson` souurces
