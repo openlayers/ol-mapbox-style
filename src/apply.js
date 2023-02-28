@@ -735,10 +735,7 @@ function setupGeoJSONSource(glSource, styleUrl, options) {
     if (/\{bbox-[0-9a-z-]+\}/.test(geoJsonUrl)) {
       const extentUrl = (extent, resolution, projection) => {
         const bboxTemplate = getBboxTemplate(projection);
-        return geoJsonUrl.replace(
-          bboxTemplate,
-          `${extent.join(',')},${projection.getCode()}`
-        );
+        return geoJsonUrl.replace(bboxTemplate, `${extent.join(',')}`);
       };
       const source = new VectorSource({
         attributions: glSource.attribution,
