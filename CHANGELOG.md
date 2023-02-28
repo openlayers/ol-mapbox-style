@@ -6,7 +6,7 @@
 
 ### Breaking changes
 
-#### BBOX templates for `geojson` souurces
+#### BBOX templates for `geojson` sources
 
 Previously, the `{bbox-epsg-3857}` and `{bbox-epsg-[custom projection srs code]}` template replacement included the projection's SRS identifier, e.g. `1234,4567,4321,7654,EPSG:9876`. Now, the template replacement just includes the bounding box. This means that e.g. WFS source URLs need to be changed in the Mapbox style.
 
