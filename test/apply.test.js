@@ -198,11 +198,9 @@ describe('ol-mapbox-style', function () {
               .getUrl()
               .call(this, map.getView().calculateExtent(), 1, get('EPSG:3857'))
           );
-          const bbox = url.searchParams.get('bbox').split(',');
-          const proj = bbox.pop();
+          const bbox = url.searchParams.get('bbox');
           const extent = map.getView().calculateExtent();
-          should(proj).be.eql('EPSG:3857');
-          should(bbox.join(',') === extent.join(',')).be.true();
+          should(bbox).be.equal(extent.join(','));
           should(source).be.instanceof(VectorSource);
           should(layer.getStyle()).be.a.Function();
           done();
@@ -234,11 +232,9 @@ describe('ol-mapbox-style', function () {
                     map.getView().getProjection()
                   )
               );
-              const bbox = url.searchParams.get('bbox').split(',');
-              const proj = bbox.pop();
+              const bbox = url.searchParams.get('bbox');
               const extent = map.getView().calculateExtent();
-              should(proj).be.eql('EPSG:4326');
-              should(bbox.join(',') === extent.join(',')).be.true();
+              should(bbox).be.equal(extent.join(','));
               done();
             })
             .catch(done);

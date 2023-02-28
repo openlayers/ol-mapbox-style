@@ -2,6 +2,30 @@
 
 ## Next version
 
+### Breaking changes
+
+#### BBOX templates for `geojson` souurces
+
+Previously, the `{bbox-epsg-3857}` and `{bbox-epsg-[custom projection srs code]}` template replacement included the projection's SRS identifier, e.g. `1234,4567,4321,7654,EPSG:9876`. Now, the template replacement just includes the bounding box. This means that e.g. WFS source URLs need to be changed in the Mapbox style.
+
+If you previously had a source definition like
+```json
+{
+  "type": "geojson",
+  "data": "https://ahocevar.com/geoserver/wfs?service=WFS&version=1.1.0&request=GetFeature&typename=osm:water_areas&outputFormat=application/json&srsname=EPSG:4326&bbox={bbox-epsg-3857}"
+}
+```
+
+you have to change it to
+
+```json
+{
+  "type": "geojson",
+  "data": "https://ahocevar.com/geoserver/wfs?service=WFS&version=1.1.0&request=GetFeature&typename=osm:water_areas&outputFormat=application/json&srsname=EPSG:4326&bbox={bbox-epsg-3857},EPSG:3857"
+}
+```
+The reason for this breaking change is compatibility with OCG API Features and other services that do not accept the SRS identifier as additional BBOX parameter.
+
 ## 9.7.0
 
 * Improved icon halo - now looks the same as text halo
