@@ -2,6 +2,12 @@
 
 ## Next version
 
+## 10.1.0
+
+* New `removeMapboxLayer()` function
+* Substantial fixes to the `addMapboxLayer()` function
+* Manage OpenLayers layer visibility based on the visibility of its Mapbox layers
+
 ## 10.0.0
 
 ### Breaking changes
