@@ -1086,4 +1086,38 @@ describe('ol-mapbox-style', function () {
         });
     });
   });
+  describe('manageVisibility', function () {
+    let target;
+    beforeEach(function () {
+      target = document.createElement('div');
+    });
+
+    it('manages layer visibility', function (done) {
+      apply(target, JSON.parse(JSON.stringify(brightV9)))
+        .then(function (map) {
+          const layer = getLayer(map, 'landuse_park');
+          should.equal(layer.getVisible(), true);
+
+          const landuseParkLayer = getMapboxLayer(map, 'landuse_park');
+          const mapboxSource = landuseParkLayer.source;
+          const mapboxLayers = map
+            .get('mapbox-style')
+            .layers.filter((layer) => layer.source == mapboxSource);
+          mapboxLayers.forEach((mapboxLayer) => {
+            mapboxLayer.layout = Object.assign(mapboxLayer.layout || {}, {
+              visibility: 'none',
+            });
+            updateMapboxLayer(map, mapboxLayer);
+          });
+          should.equal(layer.getVisible(), false);
+          landuseParkLayer.layout.visibility = 'visible';
+          updateMapboxLayer(map, landuseParkLayer);
+          should.equal(layer.getVisible(), true);
+          done();
+        })
+        .catch(function (error) {
+          done(error);
+        });
+    });
+  });
 });
