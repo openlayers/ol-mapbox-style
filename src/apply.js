@@ -1309,8 +1309,8 @@ export function getMapboxLayer(mapOrGroup, layerId) {
 }
 
 /**
- * Add a new Mapbox Layer object to the style.
- * @param {Map|LayerGroup} mapOrGroup Map or LayerGroup.
+ * Add a new Mapbox Layer object to the style. The map will be re-rendered.
+ * @param {Map|LayerGroup} mapOrGroup The Map or LayerGroup `apply` was called on.
  * @param {Object} mapboxLayer Mapbox Layer object.
  * @param {string} [beforeLayerId] Optional id of the Mapbox Layer before the new layer that will be added.
  */
@@ -1347,7 +1347,7 @@ export function addMapboxLayer(mapOrGroup, mapboxLayer, beforeLayerId) {
 
 /**
  * Update a Mapbox Layer object in the style. The map will be re-rendered with the new style.
- * @param {Map|LayerGroup} mapOrGroup Map or LayerGroup.
+ * @param {Map|LayerGroup} mapOrGroup The Map or LayerGroup `apply` was called on.
  * @param {Object} mapboxLayer Updated Mapbox Layer object.
  */
 export function updateMapboxLayer(mapOrGroup, mapboxLayer) {
@@ -1369,6 +1369,33 @@ export function updateMapboxLayer(mapOrGroup, mapboxLayer) {
   delete getFilterCache(glStyle)[mapboxLayer.id];
   mapboxLayers[index] = mapboxLayer;
   getLayer(mapOrGroup, mapboxLayer.id).changed();
+}
+
+/**
+ * Remove a Mapbox Layer object from the style. The map will be re-rendered.
+ * @param {Map|LayerGroup} mapOrGroup The Map or LayerGroup `apply` was called on.
+ * @param {string|Object} mapboxLayerIdOrLayer Mapbox Layer id or Mapbox Layer object.
+ */
+export function removeMapboxLayer(mapOrGroup, mapboxLayerIdOrLayer) {
+  const mapboxLayerId =
+    typeof mapboxLayerIdOrLayer === 'string'
+      ? mapboxLayerIdOrLayer
+      : mapboxLayerIdOrLayer.id;
+  const layer = getLayer(mapOrGroup, mapboxLayerId);
+  /** @type {Array<Object>} */
+  const layerMapboxLayers = layer.get('mapbox-layers');
+  if (layerMapboxLayers.length === 1) {
+    throw new Error(
+      'Cannot remove last Mapbox layer from an OpenLayers layer.'
+    );
+  }
+  layerMapboxLayers.splice(layerMapboxLayers.indexOf(mapboxLayerId), 1);
+  const layers = mapOrGroup.get('mapbox-style').layers;
+  layers.splice(
+    layers.findIndex((layer) => layer.id === mapboxLayerId),
+    1
+  );
+  layer.changed();
 }
 
 export {finalizeLayer as _finalizeLayer};

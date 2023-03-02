@@ -135,13 +135,13 @@ Renames and re-exports [apply](#apply)
 
 ▸ **addMapboxLayer**(`mapOrGroup`, `mapboxLayer`, `beforeLayerId?`): `void`
 
-Add a new Mapbox Layer object to the style.
+Add a new Mapbox Layer object to the style. The map will be re-rendered.
 
 ##### Parameters
 
 | Name             | Type                  | Description                                                              |
 | :--------------- | :-------------------- | :----------------------------------------------------------------------- |
-| `mapOrGroup`     | `Map` \| `LayerGroup` | Map or LayerGroup.                                                       |
+| `mapOrGroup`     | `Map` \| `LayerGroup` | The Map or LayerGroup `apply` was called on.                             |
 | `mapboxLayer`    | `any`                 | Mapbox Layer object.                                                     |
 | `beforeLayerId?` | `string`              | Optional id of the Mapbox Layer before the new layer that will be added. |
 
@@ -534,10 +534,10 @@ Update a Mapbox Layer object in the style. The map will be re-rendered with the 
 
 ##### Parameters
 
-| Name          | Type                  | Description                  |
-| :------------ | :-------------------- | :--------------------------- |
-| `mapOrGroup`  | `Map` \| `LayerGroup` | Map or LayerGroup.           |
-| `mapboxLayer` | `any`                 | Updated Mapbox Layer object. |
+| Name          | Type                  | Description                                  |
+| :------------ | :-------------------- | :------------------------------------------- |
+| `mapOrGroup`  | `Map` \| `LayerGroup` | The Map or LayerGroup `apply` was called on. |
+| `mapboxLayer` | `any`                 | Updated Mapbox Layer object.                 |
 
 ##### Returns
 
