@@ -24,6 +24,7 @@ import {
   getLayers,
   getMapboxLayer,
   getSource,
+  removeMapboxLayer,
   setFeatureState,
   updateMapboxLayer,
 } from '../src/apply.js';
@@ -1054,6 +1055,30 @@ describe('ol-mapbox-style', function () {
           });
           const styles = getStyle(feature, 1);
           should(styles[0].getFill().getColor()).eql('rgba(255,0,0,1)');
+          done();
+        })
+        .catch(function (error) {
+          done(error);
+        });
+    });
+  });
+
+  describe('removeMapboxLayer', function () {
+    let target;
+    beforeEach(function () {
+      target = document.createElement('div');
+    });
+
+    it('removes a mapbox layer', function (done) {
+      apply(target, JSON.parse(JSON.stringify(brightV9)))
+        .then(function (map) {
+          const layer = getLayer(map, 'landuse_park');
+          const oldRevision = layer.getRevision();
+          const mapboxLayer = getMapboxLayer(map, 'landuse_park');
+          removeMapboxLayer(map, mapboxLayer);
+          should.equal(getMapboxLayer(map, 'landuse_park'), undefined);
+          should.equal(layer.get('mapbox-layers').indexOf('landuse_park'), -1);
+          should.equal(layer.getRevision(), oldRevision + 1);
           done();
         })
         .catch(function (error) {
