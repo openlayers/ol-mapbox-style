@@ -20,6 +20,7 @@ import VectorSource from 'ol/source/Vector.js';
 import VectorTileLayer from 'ol/layer/VectorTile.js';
 import VectorTileSource, {defaultLoadFunction} from 'ol/source/VectorTile.js';
 import View from 'ol/View.js';
+import derefLayers from '@mapbox/mapbox-gl-style-spec/deref.js';
 import {
   METERS_PER_UNIT,
   equivalent,
@@ -804,6 +805,27 @@ function updateRasterLayerProperties(glLayer, layer, zoom, functionCache) {
   layer.setOpacity(opacity);
 }
 
+function manageVisibility(layer, mapOrGroup) {
+  layer.on('change', function () {
+    const mapboxLayers = derefLayers(mapOrGroup.get('mapbox-style').layers);
+    const layerMapboxLayerids = layer.get('mapbox-layers');
+    const visible = mapboxLayers
+      .filter(function (mapboxLayer) {
+        return layerMapboxLayerids.includes(mapboxLayer.id);
+      })
+      .some(function (mapboxLayer) {
+        return (
+          !mapboxLayer.layout ||
+          !mapboxLayer.layout.visibility ||
+          mapboxLayer.layout.visibility === 'visible'
+        );
+      });
+    if (layer.get('visible') !== visible) {
+      layer.setVisible(visible);
+    }
+  });
+}
+
 /**
  * @param {*} glStyle Mapbox Style.
  * @param {Map|LayerGroup} mapOrGroup Map or layer group.
@@ -884,6 +906,7 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
           layer = setupBackgroundLayer(glLayer, options, functionCache);
         } else if (glSource.type == 'vector') {
           layer = setupVectorLayer(glSource, styleUrl, options);
+          manageVisibility(layer, mapOrGroup);
         } else if (glSource.type == 'raster') {
           layerIds = [];
           layer = setupRasterLayer(glSource, styleUrl, options);
@@ -896,6 +919,7 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
           );
         } else if (glSource.type == 'geojson') {
           layer = setupGeoJSONLayer(glSource, styleUrl, options);
+          manageVisibility(layer, mapOrGroup);
         } else if (
           glSource.type == 'raster-dem' &&
           glLayer.type == 'hillshade'
