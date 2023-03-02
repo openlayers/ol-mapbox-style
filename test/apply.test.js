@@ -994,29 +994,33 @@ describe('ol-mapbox-style', function () {
     });
   });
 
-  describe('addMapboxLayer', function () {
-    let target;
-    beforeEach(function () {
-      target = document.createElement('div');
+  describe('addMapboxLayer', function (done) {
+    let map;
+    beforeEach(function (done) {
+      const target = document.createElement('div');
+      map = new Map({
+        target: target,
+      });
+      apply(map, JSON.parse(JSON.stringify(brightV9))).then(() => done());
+    });
+    afterEach(function () {
+      map.setTarget(null);
     });
 
-    it('adds a mapbox layer', function (done) {
-      apply(target, JSON.parse(JSON.stringify(brightV9)))
-        .then(function (map) {
-          addMapboxLayer(
-            map,
-            {
-              id: 'inserted',
-              source: 'mapbox',
-            },
-            'landuse_park'
-          );
-          should.notEqual(getMapboxLayer(map, 'inserted'), undefined);
-          done();
-        })
-        .catch(function (error) {
-          done(error);
-        });
+    it('adds a mapbox layer at the end of the layer stack', function () {
+      const layer = getLayer(map, 'landuse_park');
+      const oldRevision = layer.getRevision();
+      addMapboxLayer(
+        map,
+        {
+          id: 'inserted',
+          source: 'mapbox',
+        },
+        'landuse_park'
+      );
+      should.notEqual(getMapboxLayer(map, 'inserted'), undefined);
+      should.notEqual(layer.get('mapbox-layers').indexOf('inserted'), -1);
+      should.equal(layer.getRevision(), oldRevision + 1);
     });
   });
 

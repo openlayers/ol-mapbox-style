@@ -1336,6 +1336,13 @@ export function addMapboxLayer(mapOrGroup, mapboxLayer, beforeLayerId) {
     throw new Error(`Layer with id "${mapboxLayer.id}" already exists.`);
   }
   mapboxLayers.splice(index, 0, mapboxLayer);
+  const layer = getLayer(mapOrGroup, mapboxLayers[index - 1].id);
+  const layerMapboxLayers = layer.get('mapbox-layers');
+  const layerIndex = beforeLayerId
+    ? layerMapboxLayers.indexOf(beforeLayerId)
+    : layerMapboxLayers.length;
+  layerMapboxLayers.splice(layerIndex, 0, mapboxLayer.id);
+  layer.changed();
 }
 
 /**
