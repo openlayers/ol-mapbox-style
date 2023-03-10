@@ -2,6 +2,10 @@
 
 ## Next version
 
+## 10.2.0
+
+* Add support for the `"id"` expression
+
 ## 10.1.0
 
 * New `removeMapboxLayer()` function
