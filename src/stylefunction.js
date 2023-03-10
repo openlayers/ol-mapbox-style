@@ -439,6 +439,7 @@ export function stylefunction(
     }
     const type = types[feature.getGeometry().getType()];
     const f = {
+      id: feature.getId(),
       properties: properties,
       type: type,
     };
