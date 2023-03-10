@@ -47,7 +47,7 @@
         "type": "line",
         "source": "water_areas",
         "paint": {
-          "fill-color": "white"
+          "line-color": "white"
         }
       }
     ]
