@@ -2,6 +2,10 @@
 
 ## Next version
 
+## 10.3.0
+
+* Add support for `symbol-placement: "line-center"`
+
 ## 10.2.0
 
 * Add support for the `"id"` expression
