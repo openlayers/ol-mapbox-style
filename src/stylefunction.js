@@ -1296,8 +1296,14 @@ export function stylefunction(
                   functionCache,
                   featureState
                 );
-          text.setPlacement(placement);
-          if (typeof text.setRepeat === 'function') {
+          let textAlign;
+          if (placement === 'line-center') {
+            text.setPlacement('line');
+            textAlign = 'center';
+          } else {
+            text.setPlacement(placement);
+          }
+          if (placement === 'line' && typeof text.setRepeat === 'function') {
             const symbolSpacing = getValue(
               layer,
               'layout',
@@ -1341,7 +1347,7 @@ export function stylefunction(
           let vOffset = 0;
           let hOffset = 0;
           if (placement == 'point') {
-            let textAlign = 'center';
+            textAlign = 'center';
             if (textAnchor.indexOf('left') !== -1) {
               textAlign = 'left';
               hOffset = textHaloWidth;
@@ -1349,7 +1355,6 @@ export function stylefunction(
               textAlign = 'right';
               hOffset = -textHaloWidth;
             }
-            text.setTextAlign(textAlign);
             const textRotationAlignment = getValue(
               layer,
               'layout',
@@ -1376,9 +1381,9 @@ export function stylefunction(
                 label.length) /
                 wrappedLabel.length
             );
-            text.setTextAlign();
             text.setRotateWithView(false);
           }
+          text.setTextAlign(textAlign);
           let textBaseline = 'middle';
           if (textAnchor.indexOf('bottom') == 0) {
             textBaseline = 'bottom';
