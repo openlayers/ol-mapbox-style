@@ -806,8 +806,12 @@ function updateRasterLayerProperties(glLayer, layer, zoom, functionCache) {
 }
 
 function manageVisibility(layer, mapOrGroup) {
-  layer.on('change', function () {
-    const mapboxLayers = derefLayers(mapOrGroup.get('mapbox-style').layers);
+  function onChange() {
+    const glStyle = mapOrGroup.get('mapbox-style');
+    if (!glStyle) {
+      return;
+    }
+    const mapboxLayers = derefLayers(glStyle.layers);
     const layerMapboxLayerids = layer.get('mapbox-layers');
     const visible = mapboxLayers
       .filter(function (mapboxLayer) {
@@ -823,7 +827,9 @@ function manageVisibility(layer, mapOrGroup) {
     if (layer.get('visible') !== visible) {
       layer.setVisible(visible);
     }
-  });
+  }
+  layer.on('change', onChange);
+  onChange();
 }
 
 /**
@@ -906,7 +912,6 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
           layer = setupBackgroundLayer(glLayer, options, functionCache);
         } else if (glSource.type == 'vector') {
           layer = setupVectorLayer(glSource, styleUrl, options);
-          manageVisibility(layer, mapOrGroup);
         } else if (glSource.type == 'raster') {
           layerIds = [];
           layer = setupRasterLayer(glSource, styleUrl, options);
@@ -919,7 +924,6 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
           );
         } else if (glSource.type == 'geojson') {
           layer = setupGeoJSONLayer(glSource, styleUrl, options);
-          manageVisibility(layer, mapOrGroup);
         } else if (
           glSource.type == 'raster-dem' &&
           glLayer.type == 'hillshade'
@@ -1189,7 +1193,7 @@ function finalizeLayer(
           Object.assign({styleUrl: styleUrl}, options)
         )
           .then(function () {
-            layer.setVisible(true);
+            manageVisibility(layer, mapOrGroup);
             resolve();
           })
           .catch(reject);
