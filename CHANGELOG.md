@@ -2,6 +2,10 @@
 
 ## Next version
 
+## 10.3.1
+
+* Fix initial visibility of `vector` and `geojson` source layers
+
 ## 10.3.0
 
 * Add support for `symbol-placement: "line-center"`
