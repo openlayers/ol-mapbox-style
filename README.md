@@ -118,6 +118,7 @@ and open a browser on the host and port indicated in the console output (usually
 - [getMapboxLayer](#getMapboxLayer)
 - [getSource](#getSource)
 - [recordStyleLayer](#recordStyleLayer)
+- [removeMapboxLayer](#removeMapboxLayer)
 - [renderTransparent](#renderTransparent)
 - [setFeatureState](#setFeatureState)
 - [stylefunction](#stylefunction)
@@ -411,6 +412,25 @@ the layer that a rendered feature belongs to will be set as the feature's
 | Name     | Type      | Default value | Description                         |
 | :------- | :-------- | :------------ | :---------------------------------- |
 | `record` | `boolean` | `false`       | Recording of the style layer is on. |
+
+##### Returns
+
+`void`
+
+* * *
+
+#### removeMapboxLayer
+
+▸ **removeMapboxLayer**(`mapOrGroup`, `mapboxLayerIdOrLayer`): `void`
+
+Remove a Mapbox Layer object from the style. The map will be re-rendered.
+
+##### Parameters
+
+| Name                   | Type                  | Description                                  |
+| :--------------------- | :-------------------- | :------------------------------------------- |
+| `mapOrGroup`           | `Map` \| `LayerGroup` | The Map or LayerGroup `apply` was called on. |
+| `mapboxLayerIdOrLayer` | `any`                 | Mapbox Layer id or Mapbox Layer object.      |
 
 ##### Returns
 

@@ -2,6 +2,10 @@
 
 ## Next version
 
+## 10.3.2
+
+* Export `removeMapboxLayer`
+
 ## 10.3.1
 
 * Fix initial visibility of `vector` and `geojson` source layers
