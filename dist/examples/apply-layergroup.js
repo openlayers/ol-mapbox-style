@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkol_mapbox_style=self.webpackChunkol_mapbox_style||[]).push([[835],{5385:(e,s,a)=>{a(9789);var n=a(4311),o=a(195),t=a(5495),l=a(707),w=new n.Z;(0,l.nn)(w,"data/geojson-wms.json"),new o.Z({target:"map",view:new t.ZP({center:[-10203186.115192635,4475744.563386],zoom:4}),layers:[w]})}},e=>{e(e.s=5385)}]);
+//# sourceMappingURL=apply-layergroup.js.map

@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkol_mapbox_style=self.webpackChunkol_mapbox_style||[]).push([[408],{3513:(s,e,r)=>{r(9789),(0,r(707).nn)("map","https://basemaps.arcgis.com/arcgis/rest/services/World_Basemap_GCS_v2/VectorTileServer/resources/styles/",{projection:"EPSG:4326"})}},s=>{s(s.s=3513)}]);
+//# sourceMappingURL=esri-4326.js.map
