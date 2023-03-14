@@ -16,4 +16,5 @@ export {
   getMapboxLayer,
   updateMapboxLayer,
   addMapboxLayer,
+  removeMapboxLayer,
 } from './apply.js';
