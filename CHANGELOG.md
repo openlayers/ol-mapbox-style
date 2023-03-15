@@ -2,6 +2,10 @@
 
 ## Next version
 
+## 10.3.3
+
+* Fix `updateMapboxLayers()` and function/filter cache handling
+
 ## 10.3.2
 
 * Export `removeMapboxLayer`
