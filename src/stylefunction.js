@@ -20,6 +20,7 @@ import mb2css from 'mapbox-to-css-font';
 import spec from '@mapbox/mapbox-gl-style-spec/reference/v8.json';
 import {applyLetterSpacing, wrapText} from './text.js';
 import {
+  clearFunctionCache,
   createCanvas,
   defaultResolutions,
   deg2rad,
@@ -201,7 +202,10 @@ let renderTransparentEnabled = false;
  * Default is `false`.
  */
 export function renderTransparent(enabled) {
-  renderTransparentEnabled = enabled;
+  if (enabled !== renderTransparentEnabled) {
+    clearFunctionCache();
+    renderTransparentEnabled = enabled;
+  }
 }
 
 /**
