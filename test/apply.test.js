@@ -1053,8 +1053,12 @@ describe('ol-mapbox-style', function () {
             layer: 'landuse',
             class: 'park',
           });
-          const styles = getStyle(feature, 1);
+          let styles = getStyle(feature, 1);
           should(styles[0].getFill().getColor()).eql('rgba(255,0,0,1)');
+          layer.paint['fill-color'] = 'blue';
+          updateMapboxLayer(map, layer);
+          styles = getStyle(feature, 1);
+          should(styles[0].getFill().getColor()).eql('rgba(0,0,255,1)');
           done();
         })
         .catch(function (error) {

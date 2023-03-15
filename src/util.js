@@ -13,9 +13,18 @@ export function getFunctionCache(glStyle) {
   if (!glStyle.id) {
     glStyle.id = styleId++;
   }
-  const functionCache = {};
-  functionCacheByStyleId[glStyle.id] = functionCache;
+  let functionCache = functionCacheByStyleId[glStyle.id];
+  if (!functionCache) {
+    functionCache = {};
+    functionCacheByStyleId[glStyle.id] = functionCache;
+  }
   return functionCache;
+}
+
+export function clearFunctionCache() {
+  for (const key in functionCacheByStyleId) {
+    delete functionCacheByStyleId[key];
+  }
 }
 
 /**
@@ -26,8 +35,11 @@ export function getFilterCache(glStyle) {
   if (!glStyle.id) {
     glStyle.id = styleId++;
   }
-  const filterCache = {};
-  filterCacheByStyleId[glStyle.id] = filterCache;
+  let filterCache = filterCacheByStyleId[glStyle.id];
+  if (!filterCache) {
+    filterCache = {};
+    filterCacheByStyleId[glStyle.id] = filterCache;
+  }
   return filterCache;
 }
 
