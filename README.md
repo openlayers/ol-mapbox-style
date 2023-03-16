@@ -190,7 +190,7 @@ Map or LayerGroup instance, which holds the Mapbox Style object.
 
 | Name                  | Type                                               | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | :-------------------- | :------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `mapOrGroupOrElement` | `string` \| `HTMLElement` \| `Map` \| `LayerGroup` | Either an existing OpenLayers Map instance, or a HTML element, or the id of a HTML element that will be the target of a new OpenLayers Map, or a layer group. If layer group, styles releated to the map and view will be ignored.                                                                                                                                                                                                                                                                                                                                    |
+| `mapOrGroupOrElement` | `string` \| `Map` \| `LayerGroup` \| `HTMLElement` | Either an existing OpenLayers Map instance, or a HTML element, or the id of a HTML element that will be the target of a new OpenLayers Map, or a layer group. If layer group, styles releated to the map and view will be ignored.                                                                                                                                                                                                                                                                                                                                    |
 | `style`               | `any`                                              | JSON style object or style url pointing to a Mapbox Style object. When using Mapbox APIs, the url is the `styleUrl` shown in Mapbox Studio's "share" panel. In addition, the `accessToken` option (see below) must be set. When passed as JSON style object, all OpenLayers layers created by `apply()` will be immediately available, but they may not have a source yet (i.e. when they are defined by a TileJSON url in the Mapbox Style document). When passed as style url, layers will be added to the map when the Mapbox Style document is loaded and parsed. |
 | `options`             | [`Options`](#interfacesinternal_optionsmd)         | Options.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 
@@ -226,7 +226,7 @@ applyBackground(map, 'https://api.maptiler.com/maps/basic/style.json?key=YOUR_OP
 
 | Name         | Type                                       | Description                         |
 | :----------- | :----------------------------------------- | :---------------------------------- |
-| `mapOrLayer` | `VectorTileLayer` \| `Map`                 | OpenLayers Map or VectorTile layer. |
+| `mapOrLayer` | `Map` \| `VectorTileLayer`                 | OpenLayers Map or VectorTile layer. |
 | `glStyle`    | `any`                                      | Mapbox Style object or url.         |
 | `options`    | [`Options`](#interfacesinternal_optionsmd) | Options.                            |
 
@@ -301,7 +301,7 @@ features differently.
 
 | Name         | Type                                                           | Description                               |
 | :----------- | :------------------------------------------------------------- | :---------------------------------------- |
-| `mapOrLayer` | `VectorLayer`&lt;`any`> \| `VectorTileLayer` \| `Map`          | Map or layer to set the feature state on. |
+| `mapOrLayer` | `Map` \| `VectorLayer`&lt;`any`> \| `VectorTileLayer`          | Map or layer to set the feature state on. |
 | `feature`    | [`FeatureIdentifier`](#interfacesinternal_featureidentifiermd) | Feature identifier.                       |
 
 ##### Returns
@@ -474,7 +474,7 @@ The feature state will be stored on the OpenLayers layer matching the feature id
 
 | Name         | Type                                                           | Description                                               |
 | :----------- | :------------------------------------------------------------- | :-------------------------------------------------------- |
-| `mapOrLayer` | `VectorLayer`&lt;`any`> \| `VectorTileLayer` \| `Map`          | OpenLayers Map or layer to set the feature state on.      |
+| `mapOrLayer` | `Map` \| `VectorLayer`&lt;`any`> \| `VectorTileLayer`          | OpenLayers Map or layer to set the feature state on.      |
 | `feature`    | [`FeatureIdentifier`](#interfacesinternal_featureidentifiermd) | Feature identifier.                                       |
 | `state`      | `any`                                                          | Feature state. Set to `null` to remove the feature state. |
 
@@ -486,7 +486,7 @@ The feature state will be stored on the OpenLayers layer matching the feature id
 
 #### stylefunction
 
-▸ **stylefunction**(`olLayer`, `glStyle`, `sourceOrLayers`, `resolutions?`, `spriteData?`, `spriteImageUrl?`, `getFonts?`, `getImage?`): `StyleFunction`
+▸ **stylefunction**(`olLayer`, `glStyle`, `sourceOrLayers`, `resolutions?`, `spriteData?`, `spriteImageUrl?`, `getFonts?`, `getImage?`, `...args`): `StyleFunction`
 
 Creates a style function from the `glStyle` object for all layers that use
 the specified `source`, which needs to be a `"type": "vector"` or
@@ -536,6 +536,7 @@ sure that sprite image loading works:
 | `spriteImageUrl` | `string`                                                                                                                          | `undefined`          | Sprite image url for the sprite specified in the Mapbox Style object's `sprite` property. Only required if a `sprite` property is specified in the Mapbox Style object.                                                                                                                                                 |
 | `getFonts`       | (`arg0`: `string`\[]) => `string`\[]                                                                                              | `undefined`          | Function that receives a font stack as arguments, and returns a (modified) font stack that is available. Font names are the names used in the Mapbox Style object. If not provided, the font stack will be used as-is. This function can also be used for loading web fonts.                                            |
 | `getImage?`      | (`arg0`: `VectorLayer`&lt;`any`> \| `VectorTileLayer`, `arg1`: `string`) => `string` \| `HTMLCanvasElement` \| `HTMLImageElement` | `undefined`          | Function that returns an image or a URL for an image name. If the result is an HTMLImageElement, it must already be loaded. The layer can be used to call layer.changed() when the loading and processing of the image has finished. This function can be used for icons not in the sprite or to override sprite icons. |
+| `...args`        | `any`\[]                                                                                                                          | `undefined`          | -                                                                                                                                                                                                                                                                                                                       |
 
 ##### Returns
 

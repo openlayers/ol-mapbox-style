@@ -3,11 +3,8 @@ export {
   recordStyleLayer,
   renderTransparent,
 } from './stylefunction.js';
+export {apply as default, apply, applyBackground, applyStyle} from './apply.js';
 export {
-  apply as default,
-  apply,
-  applyBackground,
-  applyStyle,
   getFeatureState,
   setFeatureState,
   getLayer,
@@ -17,4 +14,4 @@ export {
   updateMapboxLayer,
   addMapboxLayer,
   removeMapboxLayer,
-} from './apply.js';
+} from './util.js';
