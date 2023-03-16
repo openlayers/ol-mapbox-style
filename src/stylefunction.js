@@ -27,6 +27,7 @@ import {
   drawIconHalo,
   getFilterCache,
   getFunctionCache,
+  getStyleId,
   getZoomForResolution,
 } from './util.js';
 import {
@@ -262,6 +263,8 @@ export function recordStyleLayer(record = false) {
   recordLayer = record;
 }
 
+export const styleFunctionArgs = {};
+
 /**
  * Creates a style function from the `glStyle` object for all layers that use
  * the specified `source`, which needs to be a `"type": "vector"` or
@@ -345,6 +348,7 @@ export function stylefunction(
   if (glStyle.version != 8) {
     throw new Error('glStyle version 8 required.');
   }
+  styleFunctionArgs[getStyleId(glStyle)] = Array.from(arguments);
 
   let spriteImage, spriteImageSize;
   if (spriteImageUrl) {
@@ -1493,7 +1497,7 @@ export function stylefunction(
   olLayer.setStyle(styleFunction);
   olLayer.set('mapbox-source', mapboxSource);
   olLayer.set('mapbox-layers', mapboxLayers);
-  olLayer.set('mapbox-featurestate', {});
+  olLayer.set('mapbox-featurestate', olLayer.get('mapbox-featurestate') || {});
   return styleFunction;
 }
 
