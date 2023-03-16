@@ -1,6 +1,10 @@
+import {
+  stylefunction as applyStylefunction,
+  styleFunctionArgs,
+} from './stylefunction.js';
 import {expandUrl} from 'ol/tileurlfunction.js';
+import {getUid} from 'ol';
 import {normalizeSourceUrl, normalizeStyleUrl} from './mapbox.js';
-import {styleFunctionArgs, stylefunction} from './stylefunction.js';
 
 /** @typedef {import("ol").Map} Map */
 /** @typedef {import("ol/layer").Layer} Layer */
@@ -24,6 +28,10 @@ export function getStyleId(glStyle) {
     glStyle.id = styleId++;
   }
   return glStyle.id;
+}
+
+export function getStyleFunctionKey(glStyle, olLayer) {
+  return getStyleId(glStyle) + '.' + getUid(olLayer);
 }
 
 /**
@@ -441,10 +449,44 @@ export function addMapboxLayer(mapOrGroup, mapboxLayer, beforeLayerId) {
     throw new Error(`Layer with id "${mapboxLayer.id}" already exists.`);
   }
   mapboxLayers.splice(index, 0, mapboxLayer);
-  stylefunction.apply(
-    undefined,
-    styleFunctionArgs[getStyleId(mapOrGroup.get('mapbox-style'))]
-  );
+
+  const args =
+    styleFunctionArgs[
+      getStyleFunctionKey(
+        mapOrGroup.get('mapbox-style'),
+        getLayer(mapOrGroup, mapboxLayers[index - 1].id)
+      )
+    ];
+  if (args) {
+    const [
+      olLayer,
+      glStyle,
+      sourceOrLayers,
+      resolutions,
+      spriteData,
+      spriteImageUrl,
+      getFonts,
+      getImage,
+    ] = args;
+    if (Array.isArray(sourceOrLayers)) {
+      const layerIndex = beforeLayerId
+        ? sourceOrLayers.indexOf(beforeLayerId)
+        : sourceOrLayers.length;
+      sourceOrLayers.splice(layerIndex, 0, mapboxLayer.id);
+    }
+    applyStylefunction(
+      olLayer,
+      glStyle,
+      sourceOrLayers,
+      resolutions,
+      spriteData,
+      spriteImageUrl,
+      getFonts,
+      getImage
+    );
+  } else {
+    getLayer(mapOrGroup, mapboxLayers[index - 1].id).changed();
+  }
 }
 
 /**
@@ -469,9 +511,14 @@ export function updateMapboxLayer(mapOrGroup, mapboxLayer) {
   }
   delete getFunctionCache(glStyle)[mapboxLayer.id];
   delete getFilterCache(glStyle)[mapboxLayer.id];
-  stylefunction.apply(
+  applyStylefunction.apply(
     undefined,
-    styleFunctionArgs[getStyleId(mapOrGroup.get('mapbox-style'))]
+    styleFunctionArgs[
+      getStyleFunctionKey(
+        mapOrGroup.get('mapbox-style'),
+        getLayer(mapOrGroup, mapboxLayer.id)
+      )
+    ]
   );
 }
 
@@ -499,9 +546,11 @@ export function removeMapboxLayer(mapOrGroup, mapboxLayerIdOrLayer) {
     layers.findIndex((layer) => layer.id === mapboxLayerId),
     1
   );
-  stylefunction.apply(
+  applyStylefunction.apply(
     undefined,
-    styleFunctionArgs[getStyleId(mapOrGroup.get('mapbox-style'))]
+    styleFunctionArgs[
+      getStyleFunctionKey(mapOrGroup.get('mapbox-style'), layer)
+    ]
   );
 }
 

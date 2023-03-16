@@ -27,7 +27,7 @@ import {
   drawIconHalo,
   getFilterCache,
   getFunctionCache,
-  getStyleId,
+  getStyleFunctionKey,
   getZoomForResolution,
 } from './util.js';
 import {
@@ -348,7 +348,8 @@ export function stylefunction(
   if (glStyle.version != 8) {
     throw new Error('glStyle version 8 required.');
   }
-  styleFunctionArgs[getStyleId(glStyle)] = Array.from(arguments);
+  styleFunctionArgs[getStyleFunctionKey(glStyle, olLayer)] =
+    Array.from(arguments);
 
   let spriteImage, spriteImageSize;
   if (spriteImageUrl) {

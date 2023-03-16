@@ -268,6 +268,61 @@ describe('util', function () {
         });
     });
   });
+
+  describe('add-update-remove Mapbox layer', function () {
+    let target;
+    beforeEach(function () {
+      target = document.createElement('div');
+    });
+    it('adds, updates and removes a mapbox layer', function (done) {
+      apply(target, JSON.parse(JSON.stringify(brightV9)))
+        .then(function (map) {
+          addMapboxLayer(
+            map,
+            {
+              id: 'inserted',
+              source: 'mapbox',
+              type: 'fill',
+              filter: ['==', 'class', 'inserted'],
+              paint: {
+                'fill-color': 'red',
+              },
+            },
+            'landuse_park'
+          );
+          should(getLayer(map, 'inserted')).eql(getLayer(map, 'landuse_park'));
+          let getStyle = getLayer(map, 'inserted').getStyle();
+          const feature = new Feature({
+            geometry: new Polygon([
+              [
+                [0, 0],
+                [0, 1],
+                [1, 1],
+                [1, 0],
+                [0, 0],
+              ],
+            ]),
+            class: 'inserted',
+          });
+          let styles = getStyle(feature, 1);
+          should(styles[0].getFill().getColor()).eql('rgba(255,0,0,1)');
+
+          const inserted = getMapboxLayer(map, 'inserted');
+          inserted.paint['fill-color'] = 'blue';
+          updateMapboxLayer(map, inserted);
+          getStyle = getLayer(map, 'inserted').getStyle();
+          styles = getStyle(feature, 1);
+          should(styles[0].getFill().getColor()).eql('rgba(0,0,255,1)');
+          removeMapboxLayer(map, inserted);
+          should(getLayer(map, 'inserted')).eql(undefined);
+          done();
+        })
+        .catch(function (error) {
+          done(error);
+        });
+    });
+  });
+
   describe('manageVisibility', function () {
     let target;
     beforeEach(function () {
