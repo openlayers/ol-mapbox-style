@@ -320,8 +320,9 @@ export const styleFunctionArgs = {};
  * @param {string} spriteImageUrl Sprite image url for the sprite
  * specified in the Mapbox Style object's `sprite` property. Only required if a
  * `sprite` property is specified in the Mapbox Style object.
- * @param {function(Array<string>):Array<string>} getFonts Function that
- * receives a font stack as arguments, and returns a (modified) font stack that
+ * @param {function(Array<string>, string=):Array<string>} getFonts Function that
+ * receives a font stack and the url template from the GL style's `metadata['ol:webfonts']`
+ * property (if set) as arguments, and returns a (modified) font stack that
  * is available. Font names are the names used in the Mapbox Style object. If
  * not provided, the font stack will be used as-is. This function can also be
  * used for loading web fonts.
@@ -1145,7 +1146,12 @@ export function stylefunction(
             featureState
           );
           font = mb2css(
-            getFonts ? getFonts(fontArray) : fontArray,
+            getFonts
+              ? getFonts(
+                  fontArray,
+                  glStyle.metadata ? glStyle.metadata['ol:webfonts'] : undefined
+                )
+              : fontArray,
             textSize,
             textLineHeight
           );

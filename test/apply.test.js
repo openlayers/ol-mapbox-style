@@ -900,4 +900,58 @@ describe('ol-mapbox-style', function () {
         .catch(done);
     });
   });
+
+  describe('Font loading', function () {
+    let target;
+    beforeEach(function () {
+      target = document.createElement('div');
+    });
+
+    it('loads fonts from a style', function (done) {
+      const stylesheets = document.querySelectorAll('link[rel=stylesheet]');
+      stylesheets.forEach(function (stylesheet) {
+        stylesheet.remove();
+      });
+      apply(target, {
+        version: 8,
+        metadata: {
+          'ol:webfonts':
+            'https://fonts.openmaptiles.org/{font-family}/{fontweight}{-fontstyle}.css',
+        },
+        sources: {
+          test: {
+            type: 'geojson',
+            data: {
+              type: 'FeatureCollection',
+              features: [],
+            },
+          },
+        },
+        layers: [
+          {
+            id: 'test',
+            type: 'symbol',
+            source: 'test',
+            layout: {
+              'text-field': 'test',
+              'text-font': ['Open Sans Regular'],
+            },
+          },
+        ],
+      })
+        .then(function (map) {
+          const getStyle = map.getAllLayers()[0].getStyle();
+          getStyle(new Feature(new Point([0, 0])), 1);
+          const stylesheets = document.querySelectorAll('link[rel=stylesheet]');
+          should(stylesheets.length).eql(1);
+          should(stylesheets.item(0).href).eql(
+            'https://fonts.openmaptiles.org/open-sans/400.css'
+          );
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+  });
 });
