@@ -267,6 +267,13 @@ export function applyStyle(
                 layer.setSource(source);
               } else if (source !== targetSource) {
                 targetSource.setTileUrlFunction(source.getTileUrlFunction());
+                if (
+                  typeof targetSource.setUrls === 'function' &&
+                  typeof source.getUrls === 'function'
+                ) {
+                  // to get correct keys for tile cache and queue
+                  targetSource.setUrls(source.getUrls());
+                }
                 //@ts-ignore
                 if (!targetSource.format_) {
                   //@ts-ignore
