@@ -511,6 +511,7 @@ export function updateMapboxLayer(mapOrGroup, mapboxLayer) {
   }
   delete getFunctionCache(glStyle)[mapboxLayer.id];
   delete getFilterCache(glStyle)[mapboxLayer.id];
+  mapboxLayers.splice(index, 1, mapboxLayer);  //Replace old layer
   applyStylefunction.apply(
     undefined,
     styleFunctionArgs[
