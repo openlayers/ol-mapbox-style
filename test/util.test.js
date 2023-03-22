@@ -243,6 +243,39 @@ describe('util', function () {
           done(error);
         });
     });
+
+    it('updates a mapbox layer with a new object', function (done) {
+      apply(target, JSON.parse(JSON.stringify(brightV9)))
+        .then(function (map) {
+          // add another layer that has no 'mapbox-layers' set
+          map.addLayer(new VectorTileLayer());
+          const layer = JSON.parse(
+            JSON.stringify(getMapboxLayer(map, 'landuse_park'))
+          );
+          layer.paint['fill-color'] = 'red';
+          updateMapboxLayer(map, layer);
+          const getStyle = getLayer(map, 'landuse_park').getStyle();
+          const feature = new Feature({
+            geometry: new Polygon([
+              [
+                [0, 0],
+                [0, 1],
+                [1, 1],
+                [1, 0],
+                [0, 0],
+              ],
+            ]),
+            layer: 'landuse',
+            class: 'park',
+          });
+          const styles = getStyle(feature, 1);
+          should(styles[0].getFill().getColor()).eql('rgba(255,0,0,1)');
+          done();
+        })
+        .catch(function (error) {
+          done(error);
+        });
+    });
   });
 
   describe('removeMapboxLayer', function () {
