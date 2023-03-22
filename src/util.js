@@ -210,6 +210,9 @@ export function getTileJson(glSource, styleUrl, options = {}) {
           metadata
         ).then(function (tileJson) {
           tileJson.tiles = tileJson.tiles.map(function (tileUrl) {
+            if (tileJson.scheme === 'tms') {
+              tileUrl = tileUrl.replace('{y}', '{-y}');
+            }
             return getTransformedTilesUrl(
               normalizeSourceUrl(
                 tileUrl,
@@ -226,6 +229,9 @@ export function getTileJson(glSource, styleUrl, options = {}) {
     } else {
       glSource = Object.assign({}, glSource, {
         tiles: glSource.tiles.map(function (tileUrl) {
+          if (glSource.scheme === 'tms') {
+            tileUrl = tileUrl.replace('{y}', '{-y}');
+          }
           return getTransformedTilesUrl(
             normalizeSourceUrl(
               tileUrl,

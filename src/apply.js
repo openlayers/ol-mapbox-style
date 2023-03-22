@@ -618,12 +618,6 @@ export function setupVectorSource(glSource, styleUrl, options) {
           options
         );
         sourceOptions.format = new MVT();
-
-        if (Array.isArray(tileJSON.tiles)) {
-          sourceOptions.urls = tileJSON.tiles;
-        } else {
-          sourceOptions.url = tileJSON.tiles;
-        }
         resolve(new VectorTileSource(sourceOptions));
       })
       .catch(reject);
