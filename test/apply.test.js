@@ -287,6 +287,37 @@ describe('ol-mapbox-style', function () {
         .catch(done);
     });
 
+    it('handles raster sources with tms scheme', function (done) {
+      apply(target, {
+        version: 8,
+        sources: {
+          'raster-tms': {
+            type: 'raster',
+            tiles: [
+              'https://ahocevar.com/geoserver/gwc/service/tms/1.0.0/topp:states@EPSG%3A900913@pbf/{z}/{x}/{y}.png',
+            ],
+            tileSize: 256,
+            scheme: 'tms',
+          },
+        },
+        layers: [
+          {
+            id: 'raster-tms',
+            type: 'raster',
+            source: 'raster-tms',
+          },
+        ],
+      })
+        .then(function (map) {
+          const source = map.getLayers().item(0).getSource();
+          should(source.tileJSON_.tiles[0]).be.equal(
+            'https://ahocevar.com/geoserver/gwc/service/tms/1.0.0/topp:states@EPSG%3A900913@pbf/{z}/{x}/{-y}.png'
+          );
+          done();
+        })
+        .catch(done);
+    });
+
     it('handles vector sources from TileJSON', function (done) {
       apply(target, './fixtures/hot-osm/hot-osm.json')
         .then(function (map) {
@@ -301,6 +332,41 @@ describe('ol-mapbox-style', function () {
           const source = layer.getSource();
           should(source).be.instanceof(VectorTileSource);
           should(layer.getStyle()).be.a.Function();
+          done();
+        })
+        .catch(done);
+    });
+
+    it('handles vector sources with tms scheme', function (done) {
+      apply(target, {
+        version: 8,
+        sources: {
+          'vector-tms': {
+            type: 'vector',
+            tiles: [
+              'https://ahocevar.com/geoserver/gwc/service/tms/1.0.0/topp:states@EPSG%3A900913@pbf/{z}/{x}/{y}.pbf',
+            ],
+            tileSize: 256,
+            scheme: 'tms',
+          },
+        },
+        layers: [
+          {
+            id: 'states',
+            type: 'fill',
+            source: 'vector-tms',
+            'source-layer': 'states',
+            paint: {
+              'fill-color': 'red',
+            },
+          },
+        ],
+      })
+        .then(function (map) {
+          const source = map.getLayers().item(0).getSource();
+          should(source.getUrls()[0]).be.equal(
+            'https://ahocevar.com/geoserver/gwc/service/tms/1.0.0/topp:states@EPSG%3A900913@pbf/{z}/{x}/{-y}.pbf'
+          );
           done();
         })
         .catch(done);
