@@ -3,7 +3,7 @@ import {
   styleFunctionArgs,
 } from './stylefunction.js';
 import {expandUrl} from 'ol/tileurlfunction.js';
-import {getUid} from 'ol';
+import {getUid} from 'ol/util.js';
 import {normalizeSourceUrl, normalizeStyleUrl} from './mapbox.js';
 
 /** @typedef {import("ol").Map} Map */
