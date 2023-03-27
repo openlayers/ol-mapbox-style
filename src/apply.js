@@ -936,6 +936,7 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
               event.resolution,
               options.resolutions || defaultResolutions
             );
+            data.encoding = glSource.encoding;
             data.vert =
               5 *
               getValue(

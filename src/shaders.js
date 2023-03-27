@@ -24,6 +24,7 @@ export function hillshade(inputs, data) {
   const highlightColor = data.highlightColor;
   const shadowColor = data.shadowColor;
   const accentColor = data.accentColor;
+  const encoding = data.encoding;
 
   let pixelX,
     pixelY,
@@ -48,7 +49,7 @@ export function hillshade(inputs, data) {
     scaledSlope,
     cosIncidence;
 
-  function calculateElevation(pixel) {
+  function calculateElevation(pixel, encoding = 'mapbox') {
     // The method used to extract elevations from the DEM.
     // In this case the format used is
     // red + green * 2 + blue * 3
@@ -58,7 +59,12 @@ export function hillshade(inputs, data) {
     // and the Terrarium format
     // (red * 256 + green + blue / 256) - 32768
     //
-    return (pixel[0] * 256 * 256 + pixel[1] * 256 + pixel[2]) * 0.1 - 10000;
+    if (encoding === 'mapbox') {
+      return (pixel[0] * 256 * 256 + pixel[1] * 256 + pixel[2]) * 0.1 - 10000;
+    }
+    if (encoding === 'terrarium') {
+      return pixel[0] * 256 + pixel[1] + pixel[2] / 256 - 32768;
+    }
   }
   for (pixelY = 0; pixelY <= maxY; ++pixelY) {
     y0 = pixelY === 0 ? 0 : pixelY - 1;
@@ -73,7 +79,7 @@ export function hillshade(inputs, data) {
       pixel[1] = elevationData[offset + 1];
       pixel[2] = elevationData[offset + 2];
       pixel[3] = elevationData[offset + 3];
-      z0 = data.vert * calculateElevation(pixel);
+      z0 = data.vert * calculateElevation(pixel, encoding);
 
       // determine elevation for (x1, pixelY)
       offset = (pixelY * width + x1) * 4;
@@ -81,7 +87,7 @@ export function hillshade(inputs, data) {
       pixel[1] = elevationData[offset + 1];
       pixel[2] = elevationData[offset + 2];
       pixel[3] = elevationData[offset + 3];
-      z1 = data.vert * calculateElevation(pixel);
+      z1 = data.vert * calculateElevation(pixel, encoding);
 
       dzdx = (z1 - z0) / dp;
 
@@ -91,7 +97,7 @@ export function hillshade(inputs, data) {
       pixel[1] = elevationData[offset + 1];
       pixel[2] = elevationData[offset + 2];
       pixel[3] = elevationData[offset + 3];
-      z0 = data.vert * calculateElevation(pixel);
+      z0 = data.vert * calculateElevation(pixel, encoding);
 
       // determine elevation for (pixelX, y1)
       offset = (y1 * width + pixelX) * 4;
@@ -99,7 +105,7 @@ export function hillshade(inputs, data) {
       pixel[1] = elevationData[offset + 1];
       pixel[2] = elevationData[offset + 2];
       pixel[3] = elevationData[offset + 3];
-      z1 = data.vert * calculateElevation(pixel);
+      z1 = data.vert * calculateElevation(pixel, encoding);
 
       dzdy = (z1 - z0) / dp;
 
