@@ -8,9 +8,11 @@ import {
   apply,
   stylefunction as applyStyleFunction,
   getFeatureState,
+  getMapboxLayer,
   recordStyleLayer,
   renderTransparent,
   setFeatureState,
+  updateMapboxLayer,
 } from '../src/index.js';
 
 describe('stylefunction', function () {
@@ -43,6 +45,62 @@ describe('stylefunction', function () {
       should.doesNotThrow(function () {
         applyStyleFunction(layer, style, 'states');
       });
+    });
+
+    it('does not modify the input style offsets', function (done) {
+      const style = {
+        version: '8',
+        id: 'test',
+        name: 'test',
+        sources: {
+          'geojson': {
+            type: 'geojson',
+            data: {
+              type: 'FeatureCollection',
+              features: [
+                {
+                  type: 'Feature',
+                  geometry: {
+                    type: 'Point',
+                    coordinates: [0, 0],
+                  },
+                  properties: {
+                    'name': 'test',
+                  },
+                },
+              ],
+            },
+          },
+        },
+        layers: [
+          {
+            id: 'test',
+            type: 'symbol',
+            source: 'geojson',
+            layout: {
+              'symbol-placement': 'point',
+              'icon-image': 'amenity_firestation',
+              'icon-offset': [0, 10],
+            },
+          },
+        ],
+      };
+      deepFreeze(style);
+      apply(document.createElement('div'), style)
+        .then(function (map) {
+          const layer = map.getLayers().item(0);
+          const styleFunction = layer.getStyle();
+          const feature = layer.getSource().getFeatures()[0];
+          styleFunction(feature);
+          should.doesNotThrow(function () {
+            updateMapboxLayer(map, getMapboxLayer(map, 'test'));
+            styleFunction(feature);
+          });
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
     });
 
     it('adds an id to the style object when none is set', function () {
