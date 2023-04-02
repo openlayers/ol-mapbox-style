@@ -8,11 +8,9 @@ import {
   apply,
   stylefunction as applyStyleFunction,
   getFeatureState,
-  getMapboxLayer,
   recordStyleLayer,
   renderTransparent,
   setFeatureState,
-  updateMapboxLayer,
 } from '../src/index.js';
 
 describe('stylefunction', function () {
@@ -52,6 +50,7 @@ describe('stylefunction', function () {
         version: '8',
         id: 'test',
         name: 'test',
+        sprite: '/fixtures/sprites',
         sources: {
           'geojson': {
             type: 'geojson',
@@ -63,9 +62,6 @@ describe('stylefunction', function () {
                   geometry: {
                     type: 'Point',
                     coordinates: [0, 0],
-                  },
-                  properties: {
-                    'name': 'test',
                   },
                 },
               ],
@@ -85,18 +81,18 @@ describe('stylefunction', function () {
           },
         ],
       };
-      deepFreeze(style);
+      const json = JSON.stringify(style);
       apply(document.createElement('div'), style)
         .then(function (map) {
-          const layer = map.getLayers().item(0);
-          const styleFunction = layer.getStyle();
-          const feature = layer.getSource().getFeatures()[0];
-          styleFunction(feature);
-          should.doesNotThrow(function () {
-            updateMapboxLayer(map, getMapboxLayer(map, 'test'));
-            styleFunction(feature);
+          map.setSize([100, 100]);
+          map.once('rendercomplete', function () {
+            try {
+              should(JSON.stringify(style)).equal(json);
+              done();
+            } catch (e) {
+              done(e);
+            }
           });
-          done();
         })
         .catch(function (err) {
           done(err);
