@@ -878,7 +878,7 @@ export function stylefunction(
                         f,
                         functionCache,
                         featureState
-                      );
+                      ).slice(0);
                       displacement[1] *= -1;
                     }
                     const color = iconColor

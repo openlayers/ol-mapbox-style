@@ -45,6 +45,60 @@ describe('stylefunction', function () {
       });
     });
 
+    it('does not modify the input style offsets', function (done) {
+      const style = {
+        version: '8',
+        id: 'test',
+        name: 'test',
+        sprite: '/fixtures/sprites',
+        sources: {
+          'geojson': {
+            type: 'geojson',
+            data: {
+              type: 'FeatureCollection',
+              features: [
+                {
+                  type: 'Feature',
+                  geometry: {
+                    type: 'Point',
+                    coordinates: [0, 0],
+                  },
+                },
+              ],
+            },
+          },
+        },
+        layers: [
+          {
+            id: 'test',
+            type: 'symbol',
+            source: 'geojson',
+            layout: {
+              'symbol-placement': 'point',
+              'icon-image': 'amenity_firestation',
+              'icon-offset': [0, 10],
+            },
+          },
+        ],
+      };
+      const json = JSON.stringify(style);
+      apply(document.createElement('div'), style)
+        .then(function (map) {
+          map.setSize([100, 100]);
+          map.once('rendercomplete', function () {
+            try {
+              should(JSON.stringify(style)).equal(json);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          });
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+
     it('adds an id to the style object when none is set', function () {
       const style = JSON.parse(JSON.stringify(states));
       style.id = undefined;
