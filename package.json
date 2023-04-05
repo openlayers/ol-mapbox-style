@@ -86,7 +86,7 @@
     "typedoc": "^0.23.10",
     "typedoc-plugin-markdown": "^3.13.4",
     "typedoc-plugin-missing-exports": "^1.0.0",
-    "typescript": "^4.6.0-beta",
+    "typescript": "^5.0.3",
     "webpack": "^5.62.1",
     "webpack-cli": "^5.0.0",
     "webpack-dev-server": "^4.4.0"
