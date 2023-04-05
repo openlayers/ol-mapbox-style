@@ -704,7 +704,6 @@ function setupHillshadeLayer(glSource, styleUrl, options) {
   return layer;
 }
 
-const geoJsonFormat = new GeoJSON();
 /**
  * @param {Object} glSource glStyle source.
  * @param {string} styleUrl Style URL.
@@ -712,6 +711,9 @@ const geoJsonFormat = new GeoJSON();
  * @return {VectorSource} Configured vector source.
  */
 function setupGeoJSONSource(glSource, styleUrl, options) {
+  const geoJsonFormat = options.projection
+    ? new GeoJSON({dataProjection: options.projection})
+    : new GeoJSON();
   const data = glSource.data;
   const sourceOptions = {};
   if (typeof data == 'string') {

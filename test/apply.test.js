@@ -13,7 +13,13 @@ import backgroundNoneStyle from './fixtures/background-none.json';
 import backgroundStyle from './fixtures/background.json';
 import brightV9 from 'mapbox-gl-styles/styles/bright-v9.json';
 import should from 'should';
-import {METERS_PER_UNIT, get, toLonLat} from 'ol/proj.js';
+import {
+  METERS_PER_UNIT,
+  Projection,
+  addProjection,
+  get,
+  toLonLat,
+} from 'ol/proj.js';
 import {
   apply,
   applyBackground,
@@ -231,6 +237,74 @@ describe('ol-mapbox-style', function () {
               done();
             })
             .catch(done);
+        });
+    });
+
+    it('sets the correct GeoJON data projection for custom projections', function (done) {
+      const epsg31287 = new Projection({
+        code: 'EPSG:31287',
+        extent: [
+          121983.868598955, 285075.189779654, 694938.749394035,
+          575854.254725608,
+        ],
+        units: 'm',
+      });
+      addProjection(epsg31287);
+      const geojson = {
+        'type': 'FeatureCollection',
+        'features': [
+          {
+            'type': 'Feature',
+            'geometry': {
+              'type': 'Polygon',
+              'coordinates': [
+                [
+                  [610433.51, 363256.87],
+                  [610419.23, 363289.19],
+                  [610414.18, 363305.62],
+                  [610405.04, 363307.77],
+                  [610346.98, 363324.42],
+                  [610341.5, 363275.4],
+                  [610423.22, 363261.54],
+                  [610433.51, 363256.87],
+                ],
+              ],
+            },
+          },
+        ],
+      };
+      apply(
+        target,
+        {
+          'version': 8,
+          'sources': {
+            'bird': {
+              'type': 'geojson',
+              'data': geojson,
+            },
+          },
+          'layers': [
+            {
+              'id': 'bird',
+              'type': 'fill',
+              'source': 'bird',
+              'paint': {
+                'fill-color': 'red',
+              },
+            },
+          ],
+        },
+        {projection: 'EPSG:31287'}
+      )
+        .then(function (map) {
+          const source = map.getLayers().item(0).getSource();
+          should(source.getFormat().readProjectionFromObject(geojson)).eql(
+            epsg31287
+          );
+          done();
+        })
+        .catch(function (err) {
+          done(err);
         });
     });
 
