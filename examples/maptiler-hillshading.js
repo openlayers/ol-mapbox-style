@@ -19,6 +19,10 @@ fetch(`https://api.maptiler.com/maps/outdoor-v2/style.json?key=${key}`)
       Object.assign({}, style, {
         center: [13.783578, 47.609499],
         zoom: 11,
+        metadata: Object.assign(style.metadata, {
+          'ol:webfonts':
+            'https://fonts.googleapis.com/css?family={Font+Family}:{fontweight}{fontstyle}',
+        }),
       })
     );
   });

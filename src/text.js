@@ -151,42 +151,49 @@ const processedFontFamilies = {};
 
 /**
  * @param {Array} fonts Fonts.
+ * @param {string} [templateUrl] Template URL.
  * @return {Array} Processed fonts.
  * @private
  */
-export function getFonts(fonts) {
+export function getFonts(
+  fonts,
+  templateUrl = 'https://cdn.jsdelivr.net/npm/@fontsource/{font-family}/{fontweight}{-fontstyle}.css'
+) {
   const fontsKey = fonts.toString();
   if (fontsKey in processedFontFamilies) {
     return processedFontFamilies[fontsKey];
   }
-  const googleFontDescriptions = [];
+  const fontDescriptions = [];
   for (let i = 0, ii = fonts.length; i < ii; ++i) {
     fonts[i] = fonts[i].replace('Arial Unicode MS', 'Arial');
     const font = fonts[i];
     const cssFont = mb2css(font, 1);
     registerFont(cssFont);
     const parts = cssFont.split(' ');
-    googleFontDescriptions.push([
+    fontDescriptions.push([
       parts.slice(3).join(' ').replace(/"/g, ''),
       parts[1],
       parts[0],
     ]);
   }
-  for (let i = 0, ii = googleFontDescriptions.length; i < ii; ++i) {
-    const googleFontDescription = googleFontDescriptions[i];
-    const family = googleFontDescription[0];
+  for (let i = 0, ii = fontDescriptions.length; i < ii; ++i) {
+    const fontDescription = fontDescriptions[i];
+    const family = fontDescription[0];
     if (!hasFontFamily(family)) {
       if (
         checkedFonts.get(
-          `${googleFontDescription[2]}\n${googleFontDescription[1]} \n${family}`
+          `${fontDescription[2]}\n${fontDescription[1]} \n${family}`
         ) !== 100
       ) {
-        const fontUrl =
-          'https://fonts.googleapis.com/css?family=' +
-          family.replace(/ /g, '+') +
-          ':' +
-          googleFontDescription[1] +
-          googleFontDescription[2];
+        const fontUrl = templateUrl
+          .replace('{font-family}', family.replace(/ /g, '-').toLowerCase())
+          .replace('{Font+Family}', family.replace(/ /g, '+'))
+          .replace('{fontweight}', fontDescription[1])
+          .replace(
+            '{-fontstyle}',
+            fontDescription[2].replace('normal', '').replace(/(.+)/, '-$1')
+          )
+          .replace('{fontstyle}', fontDescription[2]);
         if (!document.querySelector('link[href="' + fontUrl + '"]')) {
           const markup = document.createElement('link');
           markup.href = fontUrl;

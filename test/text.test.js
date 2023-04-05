@@ -41,7 +41,7 @@ describe('text', function () {
   });
 
   describe('getFonts', function () {
-    beforeEach(function () {
+    before(function () {
       const stylesheets = document.querySelectorAll('link[rel=stylesheet]');
       stylesheets.forEach(function (stylesheet) {
         stylesheet.remove();
@@ -54,14 +54,16 @@ describe('text', function () {
       should(stylesheets.length).eql(0);
     });
 
-    it('loads fonts from fonts.google.com', function () {
-      let stylesheets;
-      getFonts([
-        'Noto Sans Bold',
-        'Noto Sans Regular Italic',
-        'Averia Sans Libre Bold',
-      ]);
-      stylesheets = document.querySelectorAll('link[rel=stylesheet]');
+    it('loads fonts with a template using {Font+Family} and {fontstyle}', function () {
+      getFonts(
+        [
+          'Noto Sans Bold',
+          'Noto Sans Regular Italic',
+          'Averia Sans Libre Bold',
+        ],
+        'https://fonts.googleapis.com/css?family={Font+Family}:{fontweight}{fontstyle}'
+      );
+      const stylesheets = document.querySelectorAll('link[rel=stylesheet]');
       should(stylesheets.length).eql(3);
       should(stylesheets.item(0).href).eql(
         'https://fonts.googleapis.com/css?family=Noto+Sans:700normal'
@@ -72,11 +74,39 @@ describe('text', function () {
       should(stylesheets.item(2).href).eql(
         'https://fonts.googleapis.com/css?family=Averia+Sans+Libre:700normal'
       );
+    });
 
-      // already loaded family, no additional link
-      getFonts(['Noto Sans Bold']);
-      stylesheets = document.querySelectorAll('link[rel=stylesheet]');
-      should(stylesheets.length).eql(3);
+    it('loads fonts with a template using {font-family} and {-fontstyle}', function () {
+      getFonts(
+        ['Noto Sans Regular', 'Averia Sans Libre Bold Italic'],
+        './fonts/{font-family}/{fontweight}{-fontstyle}.css'
+      );
+      const stylesheets = document.querySelectorAll('link[rel=stylesheet]');
+      should(stylesheets.length).eql(5);
+      should(stylesheets.item(3).href).eql(
+        location.origin + '/fonts/noto-sans/400.css'
+      );
+      should(stylesheets.item(4).href).eql(
+        location.origin + '/fonts/averia-sans-libre/700-italic.css'
+      );
+    });
+
+    it('does not load fonts twice', function () {
+      getFonts(
+        ['Noto Sans Bold'],
+        'https://fonts.googleapis.com/css?family={Font+Family}:{fontweight}{fontstyle}'
+      );
+      const stylesheets = document.querySelectorAll('link[rel=stylesheet]');
+      should(stylesheets.length).eql(5);
+    });
+
+    it('uses the default template if none is provided', function () {
+      getFonts(['Averia Sans Libre']);
+      const stylesheets = document.querySelectorAll('link[rel=stylesheet]');
+      should(stylesheets.length).eql(6);
+      should(stylesheets.item(5).href).eql(
+        'https://cdn.jsdelivr.net/npm/@fontsource/averia-sans-libre/400.css'
+      );
     });
   });
 });
