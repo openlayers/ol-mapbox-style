@@ -2,6 +2,47 @@
 
 ## Next version
 
+## 10.4.0
+
+### Changes that require attention
+
+#### Font handling and loading
+
+ol-mapbox-style no longer defaults to loading Google fonts when a required font is not available. Instead, it respects the new `metadata.ol:webfonts` field in the Mapbox Style document. Example:
+```js
+{
+  "version": 8,
+  "metadata": {
+    "ol:webfonts": "https://mytileservergl.com/fonts/{font-family}/{fontweight}{-fontstyle}.css"
+  }
+  // ...
+}
+```
+The supported template placeholders are
+* {font-family}: CSS font family converted to lowercase, blanks replaced with `-`, e.g. `noto-sans`
+* {Font+Family}: CSS font family in original case, blanks replaced with `+`, e.g. `Noto+Sans`
+* {fontweight}: CSS font weight (numeric), e.g. `400`, `700`
+* {fontstyle}: CSS font style, e.g. `normal`, `italic`
+* {-fontstyle}: CSS font style other than normal, e.g. `-italic` or empty string for normal
+
+In addition to providing fonts along with the style, this can be used to retrieve fonts from a CDN (e.g. `@fontsource`) or Google fonts. If this metadata field is not set to the style, the following default template will be used:
+
+    https://cdn.jsdelivr.net/npm/@fontsource/{font-family}/{fontweight}{-fontstyle}.css
+
+To retain the current behavior (i.e. use Google Fonts), the template URL will have to be
+
+    https://fonts.googleapis.com/css?family={Font+Family}:{fontweight}{fontstyle}
+
+### Other changes
+
+* Fix a potential tile cache issue
+* Fix problem caused by `getUid` function missing in the full build
+* Make `updateMapboxStyle()` work with objects that are not a reference to the original one
+* Add support for the `tms` tile scheme for `raster` and `vector` layers
+* Add support for the `terrarium` encoding for `raster-dem` sources
+* Fix an issue where the `icon-offset` layout property modifies the underlying Mapbox Style object
+* Set the correct input projection for `geojson` sources when the `projection` option is used
+
 ## 10.3.4
 
 * Fix addMapboxLayer - updateMapboxLayer - removeMapboxLayer sequence
