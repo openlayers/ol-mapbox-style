@@ -2,6 +2,11 @@
 
 ## Next version
 
+## 10.5.0
+
+* Add terrarium hillshade example
+* Add getStyleForLayer() function for more efficient legend creation without `recordStyleLayer(true)`
+
 ## 10.4.0
 
 ### Changes that require attention
