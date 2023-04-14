@@ -2,6 +2,7 @@ export {
   stylefunction,
   recordStyleLayer,
   renderTransparent,
+  getStyleForLayer,
 } from './stylefunction.js';
 export {apply as default, apply, applyBackground, applyStyle} from './apply.js';
 export {
