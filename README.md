@@ -139,6 +139,7 @@ and open a browser on the host and port indicated in the console output (usually
 - [getLayers](#getLayers)
 - [getMapboxLayer](#getMapboxLayer)
 - [getSource](#getSource)
+- [getStyleForLayer](#getStyleForLayer)
 - [recordStyleLayer](#recordStyleLayer)
 - [removeMapboxLayer](#removeMapboxLayer)
 - [renderTransparent](#renderTransparent)
@@ -418,6 +419,29 @@ Get the OpenLayers source instance for the provided Mapbox Style `source`.
 `Source`
 
 OpenLayers source instance.
+
+* * *
+
+#### getStyleForLayer
+
+▸ **getStyleForLayer**(`feature`, `resolution`, `olLayer`, `layerId`): `Style`\[]
+
+Get the the style for a specific Mapbox layer only. This can be useful for creating a legend.
+
+##### Parameters
+
+| Name         | Type                                         | Description                                 |
+| :----------- | :------------------------------------------- | :------------------------------------------ |
+| `feature`    | `RenderFeature` \| `Feature`&lt;`Geometry`>  | OpenLayers feature.                         |
+| `resolution` | `number`                                     | View resolution.                            |
+| `olLayer`    | `VectorLayer`&lt;`any`> \| `VectorTileLayer` | OpenLayers layer.                           |
+| `layerId`    | `string`                                     | Id of the Mapbox layer to get the style for |
+
+##### Returns
+
+`Style`\[]
+
+Styles for the provided Mapbox layer.
 
 * * *
 

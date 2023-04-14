@@ -437,7 +437,13 @@ export function stylefunction(
 
   const styles = [];
 
-  const styleFunction = function (feature, resolution) {
+  /**
+   * @param {import("ol/Feature").default|import("ol/render/Feature").default} feature Feature.
+   * @param {number} resolution Resolution.
+   * @param {string} [onlyLayer] Calculate style for this layer only.
+   * @return {Array<import("ol/style/Style").default>} Sttyle.
+   */
+  const styleFunction = function (feature, resolution, onlyLayer) {
     const properties = feature.getProperties();
     const layers = layersBySourceLayer[properties.layer];
     if (!layers) {
@@ -460,6 +466,9 @@ export function stylefunction(
       const layerData = layers[i];
       const layer = layerData.layer;
       const layerId = layer.id;
+      if (onlyLayer !== undefined && onlyLayer !== layerId) {
+        continue;
+      }
 
       const layout = layer.layout || emptyObj;
       const paint = layer.paint || emptyObj;
@@ -745,7 +754,7 @@ export function stylefunction(
                 featureState
               );
               if (type == 2) {
-                const geom = feature.getGeometry();
+                const geom = /** @type {*} */ (feature.getGeometry());
                 // ol package and ol-debug.js only
                 if (geom.getFlatMidpoint || geom.getFlatMidpoints) {
                   const extent = geom.getExtent();
@@ -1489,7 +1498,7 @@ export function stylefunction(
     if (stylesLength > -1) {
       styles.length = stylesLength + 1;
       if (recordLayer) {
-        if (typeof feature.set === 'function') {
+        if ('set' in feature) {
           // ol/Feature
           feature.set('mapbox-layer', featureBelongsToLayer);
         } else {
@@ -1506,6 +1515,22 @@ export function stylefunction(
   olLayer.set('mapbox-layers', mapboxLayers);
   olLayer.set('mapbox-featurestate', olLayer.get('mapbox-featurestate') || {});
   return styleFunction;
+}
+
+/**
+ * Get the the style for a specific Mapbox layer only. This can be useful for creating a legend.
+ * @param {import("ol/Feature").default|import("ol/render/Feature").default} feature OpenLayers feature.
+ * @param {number} resolution View resolution.
+ * @param {import("ol/layer").Vector|import("ol/layer").VectorTile} olLayer OpenLayers layer.
+ * @param {string} layerId Id of the Mapbox layer to get the style for
+ * @return {Array<import("ol/style").Style>} Styles for the provided Mapbox layer.
+ */
+export function getStyleForLayer(feature, resolution, olLayer, layerId) {
+  const evaluateStyle = olLayer.getStyleFunction();
+  if (evaluateStyle.length === 3) {
+    // @ts-ignore
+    return evaluateStyle(feature, resolution, layerId);
+  }
 }
 
 export {

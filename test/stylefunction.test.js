@@ -8,6 +8,7 @@ import {
   apply,
   stylefunction as applyStyleFunction,
   getFeatureState,
+  getStyleForLayer,
   recordStyleLayer,
   renderTransparent,
   setFeatureState,
@@ -859,6 +860,85 @@ describe('stylefunction', function () {
           const styles2 = styleFunction2(feature2, 1);
           const fill2 = styles2[0].getFill();
           should(fill2.getColor()).eql('rgba(178,223,138,1)');
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+  });
+
+  describe('getStyleForLayer()', function () {
+    // create a mapbox style with a geojson source and two layers
+    const style = {
+      version: '8',
+      name: 'test',
+      sources: {
+        'geojson': {
+          type: 'geojson',
+          data: {
+            type: 'FeatureCollection',
+            features: [
+              {
+                type: 'Feature',
+                geometry: {
+                  type: 'Polygon',
+                  coordinates: [
+                    [
+                      [-1, -1],
+                      [-1, 1],
+                      [1, 1],
+                      [1, -1],
+                      [-1, -1],
+                    ],
+                  ],
+                },
+              },
+            ],
+          },
+        },
+      },
+      layers: [
+        {
+          id: 'test1',
+          type: 'fill',
+          source: 'geojson',
+          paint: {
+            'fill-color': '#A6CEE3',
+          },
+        },
+        {
+          id: 'test2',
+          type: 'fill',
+          source: 'geojson',
+          paint: {
+            'fill-color': '#B2DF8A',
+          },
+        },
+      ],
+    };
+
+    it('returns the style for a layer', function (done) {
+      apply(document.createElement('div'), style)
+        .then(function (map) {
+          const layer = map.getLayers().item(0);
+          // use the getStyleForLayer function to get the styles array for the first layer
+          // getStyleForLayer takes 4 arguments
+          const [style1] = getStyleForLayer(
+            layer.getSource().getFeatures()[0],
+            1,
+            layer,
+            'test1'
+          );
+          should(style1.getFill().getColor()).eql('rgba(166,206,227,1)');
+          // same as above fo the 2nd layer
+          const [style2] = getStyleForLayer(
+            layer.getSource().getFeatures()[0],
+            1,
+            layer,
+            'test2'
+          );
+          should(style2.getFill().getColor()).eql('rgba(178,223,138,1)');
           done();
         })
         .catch(function (err) {
