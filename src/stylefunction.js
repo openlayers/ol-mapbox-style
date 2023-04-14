@@ -441,13 +441,13 @@ export function stylefunction(
    * @param {import("ol/Feature").default|import("ol/render/Feature").default} feature Feature.
    * @param {number} resolution Resolution.
    * @param {string} [onlyLayer] Calculate style for this layer only.
-   * @return {Array<import("ol/style/Style").default>} Sttyle.
+   * @return {Array<import("ol/style/Style").default>} Style.
    */
   const styleFunction = function (feature, resolution, onlyLayer) {
     const properties = feature.getProperties();
     const layers = layersBySourceLayer[properties.layer];
     if (!layers) {
-      return;
+      return undefined;
     }
     let zoom = resolutions.indexOf(resolution);
     if (zoom == -1) {
@@ -1508,6 +1508,7 @@ export function stylefunction(
       }
       return styles;
     }
+    return undefined;
   };
 
   olLayer.setStyle(styleFunction);
@@ -1531,6 +1532,7 @@ export function getStyleForLayer(feature, resolution, olLayer, layerId) {
     // @ts-ignore
     return evaluateStyle(feature, resolution, layerId);
   }
+  return undefined;
 }
 
 export {

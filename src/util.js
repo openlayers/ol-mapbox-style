@@ -323,6 +323,7 @@ export function getLayer(map, layerId) {
       return /** @type {Layer} */ (layers[i]);
     }
   }
+  return undefined;
 }
 
 /**
@@ -356,6 +357,7 @@ export function getSource(map, sourceId) {
       return source;
     }
   }
+  return undefined;
 }
 
 /**
@@ -410,7 +412,7 @@ export function getFeatureState(mapOrLayer, feature) {
       return featureState[feature.id];
     }
   }
-  return null;
+  return undefined;
 }
 
 /**

@@ -442,10 +442,8 @@ function setFirstBackground(mapOrLayer, glStyle, options) {
           return getBackgroundColor(layer, resolution, options, {});
         });
         return true;
-      } else if (
-        mapOrLayer instanceof Map ||
-        mapOrLayer instanceof LayerGroup
-      ) {
+      }
+      if (mapOrLayer instanceof Map || mapOrLayer instanceof LayerGroup) {
         mapOrLayer.getLayers().push(setupBackgroundLayer(layer, options, {}));
         return true;
       }
