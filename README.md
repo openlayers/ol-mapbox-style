@@ -70,19 +70,19 @@ Note that this low-level API does not create a source for the layer, and extra w
 
 ### Font handling
 
-`ol-mapbox-style` cannot use PBF/SDF glyphs for `text-font` layout property, as defined in the Mapbox Style specification. Instead, it relies on web fonts. A `ol-webfonts` metadata property can be set on the root of the Style object to specify a location for webfonts, e.g.
+`ol-mapbox-style` cannot use PBF/SDF glyphs for `text-font` layout property, as defined in the Mapbox Style specification. Instead, it relies on web fonts. A `ol:webfonts` metadata property can be set on the root of the Style object to specify a location for webfonts, e.g.
 
 ```js
 {
   "version": 8,
   "metadata": {
-    "ol-webfonts": "https://my.server/fonts/{font-family}/{fontweight}{-fontstyle}.css"
+    "ol:webfonts": "https://my.server/fonts/{font-family}/{fontweight}{-fontstyle}.css"
   }
   // ...
 }
 ```
 
-The following placeholders can be used in the `ol-webfonts` url:
+The following placeholders can be used in the `ol:webfonts` url:
 
 - `{font-family}`: CSS font family converted to lowercase, blanks replaced with -, e.g. noto-sans
 - `{Font+Family}`: CSS font family in original case, blanks replaced with +, e.g. Noto+Sans
@@ -90,7 +90,7 @@ The following placeholders can be used in the `ol-webfonts` url:
 - `{fontstyle}`: CSS font style, e.g. normal, italic
 - `{-fontstyle}`: CSS font style other than normal, e.g. -italic or empty string for normal
 
-If no `metadata['ol-webfonts']` property is available on the Style object, [Fontsource Fonts](https://fontsource.org/fonts) will be used. It is also possible for the application to load other fonts. If a font is already available in the browser, `ol-mapbox-style` will not load it.
+If no `metadata['ol:webfonts']` property is available on the Style object, [Fontsource Fonts](https://fontsource.org/fonts) will be used. It is also possible for the application to load other fonts. If a font is already available in the browser, `ol-mapbox-style` will not load it.
 
 Because of this difference, the [font stack](https://www.mapbox.com/help/manage-fontstacks/) is treated a little different than defined in the spec: style and weight are taken from the primary font (i.e. the first one in the font stack). Subsequent fonts in the font stack are only used if the primary font is not available/loaded, and they will be used with the style and weight of the primary font.
 
