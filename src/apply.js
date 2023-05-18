@@ -55,6 +55,7 @@ import {
 /**
  * @typedef {Object} Options
  * @property {string} [accessToken] Access token for 'mapbox://' urls.
+ * @property {string} [declutterGroup] Assign a declutterGroup to the layers created from styling
  * @property {function(string, ResourceType): (Request|void)} [transformRequest]
  * Function for controlling how `ol-mapbox-style` fetches resources. Can be used for modifying
  * the url, adding headers or setting credentials options. Called with the url and the resource
@@ -1196,6 +1197,12 @@ function finalizeLayer(
         resolve();
       }
     };
+
+    if (options.declutterGroup) {
+      layer.set('declutterGroup', options.declutterGroup)
+    } else if (mapOrGroup.get('declutterGroup')) {
+        layer.set('declutterGroup', mapOrGroup.get('declutterGroup'))
+    }
 
     layer.set('mapbox-layers', layerIds);
     const layers = mapOrGroup.getLayers();
