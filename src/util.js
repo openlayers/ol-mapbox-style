@@ -437,34 +437,51 @@ export function getMapboxLayer(mapOrGroup, layerId) {
  */
 export function addMapboxLayer(mapOrGroup, mapboxLayer, beforeLayerId) {
   const mapboxLayers = mapOrGroup.get('mapbox-style').layers;
-  let index;
+  let spliceIndex;
+  let sourceIndex = -1;
   if (beforeLayerId !== undefined) {
     const beforeLayer = getMapboxLayer(mapOrGroup, beforeLayerId);
     if (beforeLayer === undefined) {
       throw new Error(`Layer with id "${beforeLayerId}" not found.`);
     }
-    index = mapboxLayers.indexOf(beforeLayer);
+    spliceIndex = mapboxLayers.indexOf(beforeLayer);
   } else {
-    index = mapboxLayers.length;
+    spliceIndex = mapboxLayers.length;
   }
-  if (index === 0) {
-    throw new Error('Cannot add layer before first layer.');
+  let sourceOffset;
+  if (
+    spliceIndex > 0 &&
+    mapboxLayers[spliceIndex - 1].source === mapboxLayer.source
+  ) {
+    sourceIndex = spliceIndex - 1;
+    sourceOffset = -1;
+  } else if (
+    spliceIndex < mapboxLayers.length &&
+    mapboxLayers[spliceIndex].source === mapboxLayer.source
+  ) {
+    sourceIndex = spliceIndex;
+    sourceOffset = 0;
   }
-  if (mapboxLayers[index - 1].source !== mapboxLayer.source) {
-    throw new Error('Added layer and layer before must use the same source.');
+  if (sourceIndex === -1) {
+    throw new Error(
+      'Added layer must have the same source as an adjacent layer.'
+    );
   }
   if (mapboxLayers.some((layer) => layer.id === mapboxLayer.id)) {
     throw new Error(`Layer with id "${mapboxLayer.id}" already exists.`);
   }
-  mapboxLayers.splice(index, 0, mapboxLayer);
 
+  const sourceLayerId = mapboxLayers[sourceIndex].id;
   const args =
     styleFunctionArgs[
       getStyleFunctionKey(
         mapOrGroup.get('mapbox-style'),
-        getLayer(mapOrGroup, mapboxLayers[index - 1].id)
+        getLayer(mapOrGroup, sourceLayerId)
       )
     ];
+
+  mapboxLayers.splice(spliceIndex, 0, mapboxLayer);
+
   if (args) {
     const [
       olLayer,
@@ -477,9 +494,7 @@ export function addMapboxLayer(mapOrGroup, mapboxLayer, beforeLayerId) {
       getImage,
     ] = args;
     if (Array.isArray(sourceOrLayers)) {
-      const layerIndex = beforeLayerId
-        ? sourceOrLayers.indexOf(beforeLayerId)
-        : sourceOrLayers.length;
+      const layerIndex = sourceOrLayers.indexOf(sourceLayerId) + sourceOffset;
       sourceOrLayers.splice(layerIndex, 0, mapboxLayer.id);
     }
     applyStylefunction(
@@ -493,7 +508,7 @@ export function addMapboxLayer(mapOrGroup, mapboxLayer, beforeLayerId) {
       getImage
     );
   } else {
-    getLayer(mapOrGroup, mapboxLayers[index - 1].id).changed();
+    getLayer(mapOrGroup, mapboxLayers[sourceIndex].id).changed();
   }
 }
 

@@ -186,8 +186,15 @@ describe('util', function () {
       map.setTarget(null);
     });
 
-    it('adds a mapbox layer at the end of the layer stack', function () {
+    it('adds a mapbox layer before a specific layer', function () {
       const layer = getLayer(map, 'landuse_park');
+      should.equal(layer.get('mapbox-layers').indexOf('landuse_park'), 1);
+      should.equal(
+        map
+          .get('mapbox-style')
+          .layers.findIndex((l) => l.id === 'landuse_park'),
+        2
+      );
       const oldRevision = layer.getRevision();
       addMapboxLayer(
         map,
@@ -197,9 +204,150 @@ describe('util', function () {
         },
         'landuse_park'
       );
-      should.notEqual(getMapboxLayer(map, 'inserted'), undefined);
-      should.notEqual(layer.get('mapbox-layers').indexOf('inserted'), -1);
+      should.deepEqual(getMapboxLayer(map, 'inserted'), {
+        id: 'inserted',
+        source: 'mapbox',
+      });
+      should.equal(layer.get('mapbox-layers').indexOf('landuse_park'), 2);
+      should.equal(
+        map
+          .get('mapbox-style')
+          .layers.findIndex((l) => l.id === 'landuse_park'),
+        3
+      );
+      should.equal(layer.get('mapbox-layers').indexOf('inserted'), 1);
+      should.equal(
+        map.get('mapbox-style').layers.findIndex((l) => l.id === 'inserted'),
+        2
+      );
       should.equal(layer.getRevision(), oldRevision + 1);
+    });
+
+    it('adds a mapbox layer at the end of the layer stack', function () {
+      const layer = getLayer(map, 'country_label_1');
+      addMapboxLayer(map, {
+        id: 'inserted',
+        source: 'mapbox',
+      });
+      should.equal(
+        map.get('mapbox-style').layers.findIndex((l) => l.id === 'inserted'),
+        map.get('mapbox-style').layers.length - 1
+      );
+      should.equal(
+        layer.get('mapbox-layers').indexOf('inserted'),
+        layer.get('mapbox-layers').length - 1
+      );
+    });
+  });
+
+  describe('addMapboxLayer with multiple sources', function (done) {
+    let map;
+    beforeEach(function (done) {
+      const target = document.createElement('div');
+      map = new Map({
+        target: target,
+      });
+      apply(map, {
+        version: 8,
+        sources: {
+          source1: {
+            type: 'geojson',
+            data: {
+              type: 'FeatureCollection',
+              features: [
+                {
+                  type: 'Feature',
+                  properties: {},
+                  geometry: {type: 'Point', coordinates: [0, 0]},
+                },
+              ],
+            },
+          },
+          source2: {
+            type: 'geojson',
+            data: {
+              type: 'FeatureCollection',
+              features: [
+                {
+                  type: 'Feature',
+                  properties: {},
+                  geometry: {type: 'Point', coordinates: [16, 48]},
+                },
+              ],
+            },
+          },
+        },
+        layers: [
+          {
+            id: 'layer1',
+            source: 'source1',
+            type: 'circle',
+          },
+          {
+            id: 'layer2',
+            source: 'source2',
+            type: 'circle',
+          },
+        ],
+      })
+        .then(() => done())
+        .catch((err) => done(err));
+    });
+    afterEach(function () {
+      map.setTarget(null);
+    });
+
+    it('adds a mapbox layer at the beginning of the layer stack', function () {
+      addMapboxLayer(
+        map,
+        {
+          id: 'inserted',
+          source: 'source1',
+        },
+        'layer1'
+      );
+      const layer = getLayer(map, 'inserted');
+      should.equal(
+        map.get('mapbox-style').layers.findIndex((l) => l.id === 'inserted'),
+        0
+      );
+      should.equal(layer.get('mapbox-layers').indexOf('inserted'), 0);
+    });
+
+    it('adds layers between sources - next layer', function () {
+      addMapboxLayer(
+        map,
+        {
+          id: 'inserted',
+          source: 'source1',
+        },
+        'layer2'
+      );
+      const layer = getLayer(map, 'inserted');
+      should.equal(map.getLayers().getArray().indexOf(layer), 0);
+      should.equal(
+        map.get('mapbox-style').layers.findIndex((l) => l.id === 'inserted'),
+        1
+      );
+      should.equal(layer.get('mapbox-layers').indexOf('inserted'), 1);
+    });
+
+    it('adds layers between sources - previous layer', function () {
+      addMapboxLayer(
+        map,
+        {
+          id: 'inserted',
+          source: 'source2',
+        },
+        'layer2'
+      );
+      const layer = getLayer(map, 'inserted');
+      should.equal(map.getLayers().getArray().indexOf(layer), 1);
+      should.equal(
+        map.get('mapbox-style').layers.findIndex((l) => l.id === 'inserted'),
+        1
+      );
+      should.equal(layer.get('mapbox-layers').indexOf('inserted'), 0);
     });
   });
 
