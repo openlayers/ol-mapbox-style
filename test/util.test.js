@@ -1,4 +1,5 @@
 import Map from 'ol/Map.js';
+import VectorLayer from 'ol/layer/Vector.js';
 import VectorTileLayer from 'ol/layer/VectorTile.js';
 import VectorTileSource from 'ol/source/VectorTile.js';
 import brightV9 from 'mapbox-gl-styles/styles/bright-v9.json';
@@ -83,7 +84,7 @@ describe('util', function () {
           ]);
           done();
         })
-        .catch(done);
+        .catch((err) => done(err));
     });
   });
 
@@ -186,7 +187,7 @@ describe('util', function () {
       map.setTarget(null);
     });
 
-    it('adds a mapbox layer before a specific layer', function () {
+    it('adds a mapbox layer before a specific layer', function (done) {
       const layer = getLayer(map, 'landuse_park');
       should.equal(layer.get('mapbox-layers').indexOf('landuse_park'), 1);
       should.equal(
@@ -203,40 +204,52 @@ describe('util', function () {
           source: 'mapbox',
         },
         'landuse_park'
-      );
-      should.deepEqual(getMapboxLayer(map, 'inserted'), {
-        id: 'inserted',
-        source: 'mapbox',
-      });
-      should.equal(layer.get('mapbox-layers').indexOf('landuse_park'), 2);
-      should.equal(
-        map
-          .get('mapbox-style')
-          .layers.findIndex((l) => l.id === 'landuse_park'),
-        3
-      );
-      should.equal(layer.get('mapbox-layers').indexOf('inserted'), 1);
-      should.equal(
-        map.get('mapbox-style').layers.findIndex((l) => l.id === 'inserted'),
-        2
-      );
-      should.equal(layer.getRevision(), oldRevision + 1);
+      )
+        .then(() => {
+          should.deepEqual(getMapboxLayer(map, 'inserted'), {
+            id: 'inserted',
+            source: 'mapbox',
+          });
+          should.equal(layer.get('mapbox-layers').indexOf('landuse_park'), 2);
+          should.equal(
+            map
+              .get('mapbox-style')
+              .layers.findIndex((l) => l.id === 'landuse_park'),
+            3
+          );
+          should.equal(layer.get('mapbox-layers').indexOf('inserted'), 1);
+          should.equal(
+            map
+              .get('mapbox-style')
+              .layers.findIndex((l) => l.id === 'inserted'),
+            2
+          );
+          should.equal(layer.getRevision(), oldRevision + 1);
+          done();
+        })
+        .catch((err) => done(err));
     });
 
-    it('adds a mapbox layer at the end of the layer stack', function () {
+    it('adds a mapbox layer at the end of the layer stack', function (done) {
       const layer = getLayer(map, 'country_label_1');
       addMapboxLayer(map, {
         id: 'inserted',
         source: 'mapbox',
-      });
-      should.equal(
-        map.get('mapbox-style').layers.findIndex((l) => l.id === 'inserted'),
-        map.get('mapbox-style').layers.length - 1
-      );
-      should.equal(
-        layer.get('mapbox-layers').indexOf('inserted'),
-        layer.get('mapbox-layers').length - 1
-      );
+      })
+        .then(() => {
+          should.equal(
+            map
+              .get('mapbox-style')
+              .layers.findIndex((l) => l.id === 'inserted'),
+            map.get('mapbox-style').layers.length - 1
+          );
+          should.equal(
+            layer.get('mapbox-layers').indexOf('inserted'),
+            layer.get('mapbox-layers').length - 1
+          );
+          done();
+        })
+        .catch((err) => done(err));
     });
   });
 
@@ -297,7 +310,7 @@ describe('util', function () {
       map.setTarget(null);
     });
 
-    it('adds a mapbox layer at the beginning of the layer stack', function () {
+    it('adds a mapbox layer at the beginning of the layer stack', function (done) {
       addMapboxLayer(
         map,
         {
@@ -305,16 +318,22 @@ describe('util', function () {
           source: 'source1',
         },
         'layer1'
-      );
-      const layer = getLayer(map, 'inserted');
-      should.equal(
-        map.get('mapbox-style').layers.findIndex((l) => l.id === 'inserted'),
-        0
-      );
-      should.equal(layer.get('mapbox-layers').indexOf('inserted'), 0);
+      )
+        .then(() => {
+          const layer = getLayer(map, 'inserted');
+          should.equal(
+            map
+              .get('mapbox-style')
+              .layers.findIndex((l) => l.id === 'inserted'),
+            0
+          );
+          should.equal(layer.get('mapbox-layers').indexOf('inserted'), 0);
+          done();
+        })
+        .catch((err) => done(err));
     });
 
-    it('adds layers between sources - next layer', function () {
+    it('adds layers between sources - next layer', function (done) {
       addMapboxLayer(
         map,
         {
@@ -322,17 +341,23 @@ describe('util', function () {
           source: 'source1',
         },
         'layer2'
-      );
-      const layer = getLayer(map, 'inserted');
-      should.equal(map.getLayers().getArray().indexOf(layer), 0);
-      should.equal(
-        map.get('mapbox-style').layers.findIndex((l) => l.id === 'inserted'),
-        1
-      );
-      should.equal(layer.get('mapbox-layers').indexOf('inserted'), 1);
+      )
+        .then(() => {
+          const layer = getLayer(map, 'inserted');
+          should.equal(map.getLayers().getArray().indexOf(layer), 0);
+          should.equal(
+            map
+              .get('mapbox-style')
+              .layers.findIndex((l) => l.id === 'inserted'),
+            1
+          );
+          should.equal(layer.get('mapbox-layers').indexOf('inserted'), 1);
+          done();
+        })
+        .catch((err) => done(err));
     });
 
-    it('adds layers between sources - previous layer', function () {
+    it('adds layers between sources - previous layer', function (done) {
       addMapboxLayer(
         map,
         {
@@ -340,14 +365,72 @@ describe('util', function () {
           source: 'source2',
         },
         'layer2'
-      );
-      const layer = getLayer(map, 'inserted');
-      should.equal(map.getLayers().getArray().indexOf(layer), 1);
-      should.equal(
-        map.get('mapbox-style').layers.findIndex((l) => l.id === 'inserted'),
-        1
-      );
-      should.equal(layer.get('mapbox-layers').indexOf('inserted'), 0);
+      )
+        .then(() => {
+          const layer = getLayer(map, 'inserted');
+          should.equal(map.getLayers().getArray().indexOf(layer), 1);
+          should.equal(
+            map
+              .get('mapbox-style')
+              .layers.findIndex((l) => l.id === 'inserted'),
+            1
+          );
+          should.equal(layer.get('mapbox-layers').indexOf('inserted'), 0);
+          done();
+        })
+        .catch((err) => done(err));
+    });
+
+    it('appends an OpenLayers layer for a Mapbox layer', function (done) {
+      addMapboxLayer(map, {
+        id: 'inserted',
+        source: 'source1',
+        type: 'circle',
+      })
+        .then(() => {
+          const layer = getLayer(map, 'inserted');
+          should(layer).be.instanceOf(VectorLayer);
+          should.equal(map.getLayers().getArray().length, 3);
+          should.deepEqual(layer.get('mapbox-layers'), ['inserted']);
+          should.equal(map.getLayers().getArray().indexOf(layer), 2);
+          should.equal(layer.getVisible(), true);
+          done();
+        })
+        .catch((err) => done(err));
+    });
+
+    it('inserts an OpenLayers layer for a Mapbox layer', function (done) {
+      map.get('mapbox-style').sources.source3 = {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: [
+            {
+              type: 'Feature',
+              properties: {},
+              geometry: {type: 'Point', coordinates: [3, 60]},
+            },
+          ],
+        },
+      };
+      addMapboxLayer(
+        map,
+        {
+          id: 'inserted',
+          source: 'source3',
+        },
+        'layer2'
+      )
+        .then(() => {
+          const layer = getLayer(map, 'inserted');
+          should(layer).be.instanceOf(VectorLayer);
+          should.equal(map.getLayers().getArray().length, 3);
+          should.deepEqual(layer.get('mapbox-layers'), ['inserted']);
+          should.equal(map.getLayers().getArray().indexOf(layer), 1);
+          should.equal(layer.getVisible(), true);
+          done();
+        })
+        .catch((err) => done(err));
     });
   });
 
@@ -387,9 +470,7 @@ describe('util', function () {
           should(styles[0].getFill().getColor()).eql('rgba(0,0,255,1)');
           done();
         })
-        .catch(function (error) {
-          done(error);
-        });
+        .catch((err) => done(err));
     });
 
     it('updates a mapbox layer with a new object', function (done) {
@@ -420,9 +501,7 @@ describe('util', function () {
           should(styles[0].getFill().getColor()).eql('rgba(255,0,0,1)');
           done();
         })
-        .catch(function (error) {
-          done(error);
-        });
+        .catch((err) => done(err));
     });
   });
 
@@ -444,9 +523,7 @@ describe('util', function () {
           should.equal(layer.getRevision(), oldRevision + 1);
           done();
         })
-        .catch(function (error) {
-          done(error);
-        });
+        .catch((err) => done(err));
     });
   });
 
@@ -498,9 +575,7 @@ describe('util', function () {
           should(getLayer(map, 'inserted')).eql(undefined);
           done();
         })
-        .catch(function (error) {
-          done(error);
-        });
+        .catch((err) => done(err));
     });
   });
 
@@ -533,9 +608,7 @@ describe('util', function () {
           should.equal(layer.getVisible(), true);
           done();
         })
-        .catch(function (error) {
-          done(error);
-        });
+        .catch((err) => done(err));
     });
   });
 });
