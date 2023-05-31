@@ -157,7 +157,7 @@ Renames and re-exports [apply](#apply)
 
 #### addMapboxLayer
 
-▸ **addMapboxLayer**(`mapOrGroup`, `mapboxLayer`, `beforeLayerId?`): `void`
+▸ **addMapboxLayer**(`mapOrGroup`, `mapboxLayer`, `beforeLayerId?`): `Promise`&lt;`void`>
 
 Add a new Mapbox Layer object to the style. The map will be re-rendered.
 
@@ -171,7 +171,9 @@ Add a new Mapbox Layer object to the style. The map will be re-rendered.
 
 ##### Returns
 
-`void`
+`Promise`&lt;`void`>
+
+Resolves when the added layer is available.
 
 * * *
 

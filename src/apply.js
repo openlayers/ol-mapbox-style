@@ -826,6 +826,93 @@ function manageVisibility(layer, mapOrGroup) {
   onChange();
 }
 
+export function setupLayer(glStyle, styleUrl, glLayer, options) {
+  const functionCache = getFunctionCache(glStyle);
+  const glLayers = glStyle.layers;
+  const type = glLayer.type;
+
+  const id = glLayer.source || getSourceIdByRef(glLayers, glLayer.ref);
+  const glSource = glStyle.sources[id];
+  let layer;
+  if (type == 'background') {
+    layer = setupBackgroundLayer(glLayer, options, functionCache);
+  } else if (glSource.type == 'vector') {
+    layer = setupVectorLayer(glSource, styleUrl, options);
+  } else if (glSource.type == 'raster') {
+    layer = setupRasterLayer(glSource, styleUrl, options);
+    layer.setVisible(
+      glLayer.layout ? glLayer.layout.visibility !== 'none' : true
+    );
+    layer.on('prerender', prerenderRasterLayer(glLayer, layer, functionCache));
+  } else if (glSource.type == 'geojson') {
+    layer = setupGeoJSONLayer(glSource, styleUrl, options);
+  } else if (glSource.type == 'raster-dem' && glLayer.type == 'hillshade') {
+    const hillshadeLayer = setupHillshadeLayer(glSource, styleUrl, options);
+    layer = hillshadeLayer;
+    hillshadeLayer.getSource().on('beforeoperations', function (event) {
+      const data = event.data;
+      data.resolution = event.resolution;
+      const zoom = getZoomForResolution(
+        event.resolution,
+        options.resolutions || defaultResolutions
+      );
+      data.encoding = glSource.encoding;
+      data.vert =
+        5 *
+        getValue(
+          glLayer,
+          'paint',
+          'hillshade-exaggeration',
+          zoom,
+          emptyObj,
+          functionCache
+        );
+      data.sunAz = getValue(
+        glLayer,
+        'paint',
+        'hillshade-illumination-direction',
+        zoom,
+        emptyObj,
+        functionCache
+      );
+      data.sunEl = 35;
+      data.opacity = 0.3;
+      data.highlightColor = getValue(
+        glLayer,
+        'paint',
+        'hillshade-highlight-color',
+        zoom,
+        emptyObj,
+        functionCache
+      );
+      data.shadowColor = getValue(
+        glLayer,
+        'paint',
+        'hillshade-shadow-color',
+        zoom,
+        emptyObj,
+        functionCache
+      );
+      data.accentColor = getValue(
+        glLayer,
+        'paint',
+        'hillshade-accent-color',
+        zoom,
+        emptyObj,
+        functionCache
+      );
+    });
+    layer.setVisible(
+      glLayer.layout ? glLayer.layout.visibility !== 'none' : true
+    );
+  }
+  const glSourceId = id;
+  if (layer) {
+    layer.set('mapbox-source', glSourceId);
+  }
+  return layer;
+}
+
 /**
  * @param {*} glStyle Mapbox Style.
  * @param {Map|LayerGroup} mapOrGroup Map or layer group.
@@ -870,11 +957,13 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
       });
     }
   }
+  mapOrGroup.set('mapbox-style', glStyle);
+  mapOrGroup.set('mapbox-metadata', {styleUrl, options});
 
   const glLayers = glStyle.layers;
   let layerIds = [];
 
-  let layer, glSource, glSourceId, id;
+  let layer, glSourceId, id;
   for (let i = 0, ii = glLayers.length; i < ii; ++i) {
     const glLayer = glLayers[i];
     const type = glLayer.type;
@@ -899,97 +988,13 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
           layerIds = [];
         }
 
-        const functionCache = getFunctionCache(glStyle);
-
-        glSource = glStyle.sources[id];
-        if (type == 'background') {
-          layer = setupBackgroundLayer(glLayer, options, functionCache);
-        } else if (glSource.type == 'vector') {
-          layer = setupVectorLayer(glSource, styleUrl, options);
-        } else if (glSource.type == 'raster') {
-          layerIds = [];
-          layer = setupRasterLayer(glSource, styleUrl, options);
-          layer.setVisible(
-            glLayer.layout ? glLayer.layout.visibility !== 'none' : true
-          );
-          layer.on(
-            'prerender',
-            prerenderRasterLayer(glLayer, layer, functionCache)
-          );
-        } else if (glSource.type == 'geojson') {
-          layer = setupGeoJSONLayer(glSource, styleUrl, options);
-        } else if (
-          glSource.type == 'raster-dem' &&
-          glLayer.type == 'hillshade'
+        layer = setupLayer(glStyle, styleUrl, glLayer, options);
+        if (
+          !(layer instanceof VectorLayer || layer instanceof VectorTileLayer)
         ) {
           layerIds = [];
-          const hillshadeLayer = setupHillshadeLayer(
-            glSource,
-            styleUrl,
-            options
-          );
-          layer = hillshadeLayer;
-          hillshadeLayer.getSource().on('beforeoperations', function (event) {
-            const data = event.data;
-            data.resolution = event.resolution;
-            const zoom = getZoomForResolution(
-              event.resolution,
-              options.resolutions || defaultResolutions
-            );
-            data.encoding = glSource.encoding;
-            data.vert =
-              5 *
-              getValue(
-                glLayer,
-                'paint',
-                'hillshade-exaggeration',
-                zoom,
-                emptyObj,
-                functionCache
-              );
-            data.sunAz = getValue(
-              glLayer,
-              'paint',
-              'hillshade-illumination-direction',
-              zoom,
-              emptyObj,
-              functionCache
-            );
-            data.sunEl = 35;
-            data.opacity = 0.3;
-            data.highlightColor = getValue(
-              glLayer,
-              'paint',
-              'hillshade-highlight-color',
-              zoom,
-              emptyObj,
-              functionCache
-            );
-            data.shadowColor = getValue(
-              glLayer,
-              'paint',
-              'hillshade-shadow-color',
-              zoom,
-              emptyObj,
-              functionCache
-            );
-            data.accentColor = getValue(
-              glLayer,
-              'paint',
-              'hillshade-accent-color',
-              zoom,
-              emptyObj,
-              functionCache
-            );
-          });
-          layer.setVisible(
-            glLayer.layout ? glLayer.layout.visibility !== 'none' : true
-          );
         }
-        glSourceId = id;
-        if (layer) {
-          layer.set('mapbox-source', glSourceId);
-        }
+        glSourceId = layer.get('mapbox-source');
       }
       layerIds.push(glLayer.id);
     }
@@ -997,7 +1002,6 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
   promises.push(
     finalizeLayer(layer, layerIds, glStyle, styleUrl, mapOrGroup, options)
   );
-  mapOrGroup.set('mapbox-style', glStyle);
   return Promise.all(promises);
 }
 
@@ -1120,9 +1124,8 @@ export function apply(mapOrGroupOrElement, style, options = {}) {
  * @param {Options} options Options.
  * @return {Promise} Returns a promise that resolves after the source has
  * been set on the specified layer, and the style has been applied.
- * @private
  */
-function finalizeLayer(
+export function finalizeLayer(
   layer,
   layerIds,
   glStyle,
@@ -1210,5 +1213,3 @@ function finalizeLayer(
     }
   });
 }
-
-export {finalizeLayer as _finalizeLayer};

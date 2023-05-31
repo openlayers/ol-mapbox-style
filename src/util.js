@@ -3,6 +3,7 @@ import {
   styleFunctionArgs,
 } from './stylefunction.js';
 import {expandUrl} from 'ol/tileurlfunction.js';
+import {finalizeLayer, setupLayer} from './apply.js';
 import {getUid} from 'ol/util.js';
 import {normalizeSourceUrl, normalizeStyleUrl} from './mapbox.js';
 
@@ -434,17 +435,19 @@ export function getMapboxLayer(mapOrGroup, layerId) {
  * @param {Map|LayerGroup} mapOrGroup The Map or LayerGroup `apply` was called on.
  * @param {Object} mapboxLayer Mapbox Layer object.
  * @param {string} [beforeLayerId] Optional id of the Mapbox Layer before the new layer that will be added.
+ * @return {Promise<void>} Resolves when the added layer is available.
  */
 export function addMapboxLayer(mapOrGroup, mapboxLayer, beforeLayerId) {
-  const mapboxLayers = mapOrGroup.get('mapbox-style').layers;
+  const glStyle = mapOrGroup.get('mapbox-style');
+  const mapboxLayers = glStyle.layers;
   let spliceIndex;
   let sourceIndex = -1;
   if (beforeLayerId !== undefined) {
-    const beforeLayer = getMapboxLayer(mapOrGroup, beforeLayerId);
-    if (beforeLayer === undefined) {
+    const beforeMapboxLayer = getMapboxLayer(mapOrGroup, beforeLayerId);
+    if (beforeMapboxLayer === undefined) {
       throw new Error(`Layer with id "${beforeLayerId}" not found.`);
     }
-    spliceIndex = mapboxLayers.indexOf(beforeLayer);
+    spliceIndex = mapboxLayers.indexOf(beforeMapboxLayer);
   } else {
     spliceIndex = mapboxLayers.length;
   }
@@ -463,14 +466,30 @@ export function addMapboxLayer(mapOrGroup, mapboxLayer, beforeLayerId) {
     sourceOffset = 0;
   }
   if (sourceIndex === -1) {
-    throw new Error(
-      'Added layer must have the same source as an adjacent layer.'
+    const {options, styleUrl} = mapOrGroup.get('mapbox-metadata');
+    const layer = setupLayer(glStyle, styleUrl, mapboxLayer, options);
+    if (beforeLayerId) {
+      const beforeLayer = getLayer(mapOrGroup, beforeLayerId);
+      const beforeLayerIndex = mapOrGroup
+        .getLayers()
+        .getArray()
+        .indexOf(beforeLayer);
+      mapOrGroup.getLayers().insertAt(beforeLayerIndex, layer);
+    }
+    mapboxLayers.splice(spliceIndex, 0, mapboxLayer);
+    return finalizeLayer(
+      layer,
+      [mapboxLayer.id],
+      glStyle,
+      styleUrl,
+      mapOrGroup,
+      options
     );
   }
+
   if (mapboxLayers.some((layer) => layer.id === mapboxLayer.id)) {
     throw new Error(`Layer with id "${mapboxLayer.id}" already exists.`);
   }
-
   const sourceLayerId = mapboxLayers[sourceIndex].id;
   const args =
     styleFunctionArgs[
@@ -479,9 +498,7 @@ export function addMapboxLayer(mapOrGroup, mapboxLayer, beforeLayerId) {
         getLayer(mapOrGroup, sourceLayerId)
       )
     ];
-
   mapboxLayers.splice(spliceIndex, 0, mapboxLayer);
-
   if (args) {
     const [
       olLayer,
@@ -510,6 +527,7 @@ export function addMapboxLayer(mapOrGroup, mapboxLayer, beforeLayerId) {
   } else {
     getLayer(mapOrGroup, mapboxLayers[sourceIndex].id).changed();
   }
+  return Promise.resolve();
 }
 
 /**
