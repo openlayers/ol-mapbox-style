@@ -2,6 +2,11 @@
 
 ## Next version
 
+## 10.6.0
+
+* `addMapboxLayer()` can now also add a layer as first layer in the layer stack.
+* `addMapboxLayer()` is no longer restricted go layers with the same source.
+
 ## 10.5.0
 
 * Add terrarium hillshade example
