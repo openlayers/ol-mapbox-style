@@ -553,15 +553,18 @@ export function updateMapboxLayer(mapOrGroup, mapboxLayer) {
   delete getFunctionCache(glStyle)[mapboxLayer.id];
   delete getFilterCache(glStyle)[mapboxLayer.id];
   mapboxLayers[index] = mapboxLayer;
-  applyStylefunction.apply(
-    undefined,
+  const args =
     styleFunctionArgs[
       getStyleFunctionKey(
         mapOrGroup.get('mapbox-style'),
         getLayer(mapOrGroup, mapboxLayer.id)
       )
-    ]
-  );
+    ];
+  if (args) {
+    applyStylefunction.apply(undefined, args);
+  } else {
+    getLayer(mapOrGroup, mapboxLayer.id).changed();
+  }
 }
 
 /**
@@ -583,17 +586,43 @@ export function removeMapboxLayer(mapOrGroup, mapboxLayerIdOrLayer) {
     );
   }
   layerMapboxLayers.splice(layerMapboxLayers.indexOf(mapboxLayerId), 1);
-  const layers = mapOrGroup.get('mapbox-style').layers;
+  const glStyle = mapOrGroup.get('mapbox-style');
+  const layers = glStyle.layers;
   layers.splice(
     layers.findIndex((layer) => layer.id === mapboxLayerId),
     1
   );
-  applyStylefunction.apply(
-    undefined,
-    styleFunctionArgs[
-      getStyleFunctionKey(mapOrGroup.get('mapbox-style'), layer)
-    ]
-  );
+  const args = styleFunctionArgs[getStyleFunctionKey(glStyle, layer)];
+  if (args) {
+    const [
+      olLayer,
+      glStyle,
+      sourceOrLayers,
+      resolutions,
+      spriteData,
+      spriteImageUrl,
+      getFonts,
+      getImage,
+    ] = args;
+    if (Array.isArray(sourceOrLayers)) {
+      sourceOrLayers.splice(
+        sourceOrLayers.findIndex((layer) => layer === mapboxLayerId),
+        1
+      );
+    }
+    applyStylefunction(
+      olLayer,
+      glStyle,
+      sourceOrLayers,
+      resolutions,
+      spriteData,
+      spriteImageUrl,
+      getFonts,
+      getImage
+    );
+  } else {
+    getLayer(mapOrGroup, mapboxLayerId).changed();
+  }
 }
 
 /**
