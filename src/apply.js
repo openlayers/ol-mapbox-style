@@ -453,7 +453,7 @@ function setFirstBackground(mapOrLayer, glStyle, options) {
 
 /**
  * Applies properties of the Mapbox Style's first `background` layer to the
- * provided map or VectorTile layer.
+ * provided map or layer (group).
  *
  * **Example:**
  * ```js
@@ -463,7 +463,7 @@ function setFirstBackground(mapOrLayer, glStyle, options) {
  * const map = new Map({target: 'map'});
  * applyBackground(map, 'https://api.maptiler.com/maps/basic/style.json?key=YOUR_OPENMAPTILES_TOKEN');
  * ```
- * @param {Map|VectorTileLayer} mapOrLayer OpenLayers Map or VectorTile layer.
+ * @param {Map|import("ol/layer/Base.js").default} mapOrLayer OpenLayers Map or layer (group).
  * @param {Object|string} glStyle Mapbox Style object or url.
  * @param {Options} options Options.
  * @return {Promise} Promise that resolves when the background is applied.
