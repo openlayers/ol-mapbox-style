@@ -235,7 +235,7 @@ argument.
 ▸ **applyBackground**(`mapOrLayer`, `glStyle`, `options?`): `Promise`&lt;`any`>
 
 Applies properties of the Mapbox Style's first `background` layer to the
-provided map or VectorTile layer.
+provided map or layer (group).
 
 **Example:**
 
@@ -249,11 +249,11 @@ applyBackground(map, 'https://api.maptiler.com/maps/basic/style.json?key=YOUR_OP
 
 ##### Parameters
 
-| Name         | Type                                       | Description                         |
-| :----------- | :----------------------------------------- | :---------------------------------- |
-| `mapOrLayer` | `Map` \| `VectorTileLayer`                 | OpenLayers Map or VectorTile layer. |
-| `glStyle`    | `any`                                      | Mapbox Style object or url.         |
-| `options`    | [`Options`](#interfacesinternal_optionsmd) | Options.                            |
+| Name         | Type                                       | Description                      |
+| :----------- | :----------------------------------------- | :------------------------------- |
+| `mapOrLayer` | `Map` \| `BaseLayer`                       | OpenLayers Map or layer (group). |
+| `glStyle`    | `any`                                      | Mapbox Style object or url.      |
+| `options`    | [`Options`](#interfacesinternal_optionsmd) | Options.                         |
 
 ##### Returns
 
