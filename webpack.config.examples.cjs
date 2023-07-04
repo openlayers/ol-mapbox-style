@@ -128,6 +128,7 @@ module.exports = (env, argv) => {
             loader: 'buble-loader',
             options: {
               transforms: {dangerousForOf: true},
+              objectAssign: 'Object.assign',
             },
           },
         },
