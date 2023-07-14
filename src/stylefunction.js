@@ -25,6 +25,7 @@ import {
   defaultResolutions,
   deg2rad,
   drawIconHalo,
+  drawSDF,
   getFilterCache,
   getFunctionCache,
   getStyleFunctionKey,
@@ -353,6 +354,8 @@ export function stylefunction(
     Array.from(arguments);
 
   let spriteImage, spriteImageSize;
+  let spriteImageUnSDFed;
+
   if (spriteImageUrl) {
     if (typeof Image !== 'undefined') {
       const img = new Image();
@@ -891,7 +894,7 @@ export function stylefunction(
                       ).slice(0);
                       displacement[1] *= -1;
                     }
-                    const color = iconColor
+                    let color = iconColor
                       ? [
                           iconColor.r * 255,
                           iconColor.g * 255,
@@ -921,15 +924,47 @@ export function stylefunction(
                       const spriteImageData = spriteData[icon];
                       let img, imgSize, size, offset;
                       if (haloWidth) {
-                        img = drawIconHalo(
-                          spriteImage,
-                          spriteImageData,
-                          haloWidth,
-                          haloColor
-                        );
+                        if (spriteImageData.sdf) {
+                          img = drawIconHalo(
+                            drawSDF(spriteImage, spriteImageData, iconColor),
+                            {
+                              x: 0,
+                              y: 0,
+                              width: spriteImageData.width,
+                              height: spriteImageData.height,
+                              pixelRatio: spriteImageData.pixelRatio,
+                            },
+                            haloWidth,
+                            haloColor
+                          );
+                          color = undefined; // do not tint haloed icons
+                        } else {
+                          img = drawIconHalo(
+                            spriteImage,
+                            spriteImageData,
+                            haloWidth,
+                            haloColor
+                          );
+                        }
                         imgSize = [img.width, img.height];
                       } else {
-                        img = spriteImage;
+                        if (spriteImageData.sdf) {
+                          if (!spriteImageUnSDFed) {
+                            spriteImageUnSDFed = drawSDF(
+                              spriteImage,
+                              {
+                                x: 0,
+                                y: 0,
+                                width: spriteImageSize[0],
+                                height: spriteImageSize[1],
+                              },
+                              {r: 1, g: 1, b: 1, a: 1}
+                            );
+                          }
+                          img = spriteImageUnSDFed;
+                        } else {
+                          img = spriteImage;
+                        }
                         imgSize = spriteImageSize;
                         size = [spriteImageData.width, spriteImageData.height];
                         offset = [spriteImageData.x, spriteImageData.y];

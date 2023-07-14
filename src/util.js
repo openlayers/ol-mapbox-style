@@ -252,7 +252,7 @@ export function getTileJson(glSource, styleUrl, options = {}) {
 }
 
 /**
- * @param {HTMLImageElement} spriteImage Sprite image id.
+ * @param {HTMLImageElement|HTMLCanvasElement} spriteImage Sprite image id.
  * @param {{x: number, y: number, width: number, height: number, pixelRatio: number}} spriteImageData Sprite image data.
  * @param {number} haloWidth Halo width.
  * @param {{r: number, g: number, b: number, a: number}} haloColor Halo color.
@@ -305,6 +305,58 @@ export function drawIconHalo(
     }
   }
   imageContext.fill();
+  return imageCanvas;
+}
+
+function smoothstep(min, max, value) {
+  const x = Math.max(0, Math.min(1, (value - min) / (max - min)));
+  return x * x * (3 - 2 * x);
+}
+
+/**
+ * @param {HTMLImageElement} image SDF image
+ * @param {{x: number, y: number, width: number, height: number}} area Area to unSDF
+ * @param {{r: number, g: number, b: number, a: number}} color Color to use
+ * @return {HTMLCanvasElement} Regular image
+ */
+export function drawSDF(image, area, color) {
+  const imageCanvas = document.createElement('canvas');
+  imageCanvas.width = area.width;
+  imageCanvas.height = area.height;
+  const imageContext = imageCanvas.getContext('2d');
+  imageContext.drawImage(
+    image,
+    area.x,
+    area.y,
+    area.width,
+    area.height,
+    0,
+    0,
+    area.width,
+    area.height
+  );
+  const imageData = imageContext.getImageData(0, 0, area.width, area.height);
+  const data = imageData.data;
+  for (let i = 0, ii = imageData.width; i < ii; ++i) {
+    for (let j = 0, jj = imageData.height; j < jj; ++j) {
+      const index = (j * ii + i) * 4;
+      const dist = data[index + 3] / 255;
+
+      const buffer = 0.75;
+      const gamma = 0.1;
+
+      const alpha = smoothstep(buffer - gamma, buffer + gamma, dist);
+      if (alpha > 0) {
+        data[index + 0] = Math.round(255 * color.r * alpha);
+        data[index + 1] = Math.round(255 * color.g * alpha);
+        data[index + 2] = Math.round(255 * color.b * alpha);
+        data[index + 3] = Math.round(255 * alpha);
+      } else {
+        data[index + 3] = 0;
+      }
+    }
+  }
+  imageContext.putImageData(imageData, 0, 0);
   return imageCanvas;
 }
 
