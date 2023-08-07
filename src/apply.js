@@ -153,8 +153,10 @@ function completeOptions(styleUrl, options) {
  *
  * @param {VectorTileLayer|VectorLayer} layer OpenLayers layer. When the layer has a source configured,
  * it will be modified to use the configuration from the glStyle's `source`. Options specified on the
- * layer's source will override those from the glStyle's `source`, except for `url`,
- * `tileUrlFunction` and `tileGrid` (exception: when the source projection is not `EPSG:3857`).
+ * layer's source will override those from the glStyle's `source`, except for `url` and
+ * `tileUrlFunction`. When the source projection is the default (`EPSG:3857`), the `tileGrid` will
+ * also be overridden. If you'd rather not have ol-mapbox-style modify the source, configure `applyStyle()`
+ * with the `updateSource: false` option.
  * @param {string|Object} glStyle Mapbox Style object.
  * @param {string|Array<string>|Options&ApplyStyleOptions} [sourceOrLayersOrOptions] Options or
  * `source` key or an array of layer `id`s from the Mapbox Style object. When a `source` key is
