@@ -1,6 +1,10 @@
 # Changelog
 
-## Next version
+## 10.7.0
+
+* Small fixes for add/update/removeMapboxLayer
+* Support for SDF sprites
+* Improved documentation for `applyStyle`
 
 ## 10.6.0
 
