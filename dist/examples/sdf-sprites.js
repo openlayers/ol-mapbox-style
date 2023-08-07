@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkol_mapbox_style=self.webpackChunkol_mapbox_style||[]).push([[709],{1888:(e,s,t)=>{t(9789);var o=t(3216),p=document.cookie.replace(/(?:(?:^|.*;\s*)maptiler_access_token\s*\=\s*([^;]*).*$)|^.*$/,"$1");p||(p=window.prompt("Enter your MapTiler API access token:"),document.cookie="maptiler_access_token="+p+"; expires=Fri, 31 Dec 9999 23:59:59 GMT"),(0,o.ZP)("map","https://api.maptiler.com/maps/test-bright/style.json?key="+p)}},e=>{e(e.s=1888)}]);
+//# sourceMappingURL=sdf-sprites.js.map
