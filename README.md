@@ -120,13 +120,622 @@ and open a browser on the host and port indicated in the console output (usually
 
 ### Table of contents
 
-#### References
+#### Modules
 
-- [default](#default)
+- [MapboxVectorLayer](#modulesmapboxvectorlayermd)
+- [index](#modulesindexmd)
+
+<a name="classesmapboxvectorlayerdefaultmd"></a>
+
+## Class: default
+
+[MapboxVectorLayer](#modulesmapboxvectorlayermd).default
+
+**`Classdesc`**
+
+```js
+import MapboxVectorLayer from 'ol-mapbox-style/MapboxVectorLayer';
+```
+
+A vector tile layer based on a Mapbox style that uses a single vector source.  Configure
+the layer with the `styleUrl` and `accessToken` shown in Mapbox Studio's share panel.
+If the style uses more than one source, use the `source` property to choose a single
+vector source.  If you want to render a subset of the layers in the style, use the `layers`
+property (all layers must share the same vector source).  See the constructor options for
+more detail.
+
+    const map = new Map({
+      view: new View({
+        center: [0, 0],
+        zoom: 1,
+      }),
+      layers: [
+        new MapboxVectorLayer({
+          styleUrl: 'mapbox://styles/mapbox/bright-v9',
+          accessToken: 'your-mapbox-access-token-here',
+        }),
+      ],
+      target: 'map',
+    });
+
+On configuration or loading error, the layer will trigger an `'error'` event.  Listeners
+will receive an object with an `error` property that can be used to diagnose the problem.
+
+**Note for users of the full build**: The `MapboxVectorLayer` requires the
+[ol-mapbox-style](https://github.com/openlayers/ol-mapbox-style) library to be loaded as well.
+
+**`Param`**
+
+Options.
+
+**`Fires`**
+
+module:ol/events/Event~BaseEvent#event:error
+
+**`Api`**
+
+### Hierarchy
+
+- `VectorTileLayer`
+
+  ↳ **`default`**
+
+### Table of contents
+
+#### Constructors
+
+- [constructor](#constructor)
+
+#### Properties
+
+- [accessToken](#accessToken)
+
+### Constructors
+
+#### constructor
+
+• **new default**(`options`)
+
+##### Parameters
+
+| Name      | Type                                               | Description                                                                 |
+| :-------- | :------------------------------------------------- | :-------------------------------------------------------------------------- |
+| `options` | [`Options`](#interfacesmapboxvectorlayeroptionsmd) | Layer options. At a minimum, `styleUrl` and `accessToken` must be provided. |
+
+##### Overrides
+
+VectorTileLayer.constructor
+
+### Properties
+
+#### accessToken
+
+• **accessToken**: `string`
+
+<a name="interfacesmapboxvectorlayeroptionsmd"></a>
+
+## Interface: Options&lt;>
+
+[MapboxVectorLayer](#modulesmapboxvectorlayermd).Options
+
+### Table of contents
+
+#### Properties
+
+- [accessToken](#accessToken)
+- [background](#background)
+- [className](#className)
+- [declutter](#declutter)
+- [extent](#extent)
+- [layers](#layers)
+- [map](#map)
+- [maxResolution](#maxResolution)
+- [maxZoom](#maxZoom)
+- [minResolution](#minResolution)
+- [minZoom](#minZoom)
+- [opacity](#opacity)
+- [preload](#preload)
+- [properties](#properties)
+- [renderBuffer](#renderBuffer)
+- [renderMode](#renderMode)
+- [renderOrder](#renderOrder)
+- [source](#source)
+- [styleUrl](#styleUrl)
+- [updateWhileAnimating](#updateWhileAnimating)
+- [updateWhileInteracting](#updateWhileInteracting)
+- [useInterimTilesOnError](#useInterimTilesOnError)
+- [visible](#visible)
+- [zIndex](#zIndex)
+
+### Properties
+
+#### accessToken
+
+• **accessToken**: `string`
+
+The access token for your Mapbox style. This has to be provided
+for `mapbox://` style urls. For `https://` and other urls, any access key must be the last query
+parameter of the style url.
+
+* * *
+
+#### background
+
+• **background**: `false` \| `BackgroundColor`
+
+Background color for the layer.
+If not specified, the background from the Mapbox style object will be used. Set to `false` to prevent
+the Mapbox style's background from being used.
+
+* * *
+
+#### className
+
+• **className**: `string`
+
+A CSS class name to set to the layer element.
+
+* * *
+
+#### declutter
+
+• **declutter**: `boolean`
+
+Declutter images and text. Decluttering is applied to all
+image and text styles of all Vector and VectorTile layers that have set this to `true`. The priority
+is defined by the z-index of the layer, the `zIndex` of the style and the render order of features.
+Higher z-index means higher priority. Within the same z-index, a feature rendered before another has
+higher priority.
+
+As an optimization decluttered features from layers with the same `className` are rendered above
+the fill and stroke styles of all of those layers regardless of z-index.  To opt out of this
+behavior and place declutterd features with their own layer configure the layer with a `className`
+other than `ol-layer`.
+
+* * *
+
+#### extent
+
+• **extent**: `Extent`
+
+The bounding extent for layer rendering.  The layer will not be
+rendered outside of this extent.
+
+* * *
+
+#### layers
+
+• **layers**: `string`\[]
+
+Limit rendering to the list of included layers.  All layers
+must share the same vector source.  If your style uses more than one source, you need to use
+either the `source` property or the `layers` property to limit rendering to a single vector
+source.
+
+* * *
+
+#### map
+
+• **map**: `Map`
+
+Sets the layer as overlay on a map. The map will not manage
+this layer in its layers collection, and the layer will be rendered on top. This is useful for
+temporary layers. The standard way to add a layer to a map and have it managed by the map is to
+use `map.addLayer()`[Map](#Map).
+
+* * *
+
+#### maxResolution
+
+• **maxResolution**: `number`
+
+The maximum resolution (exclusive) below which this layer will
+be visible. If neither `maxResolution` nor `minZoom` are defined, the layer's `maxResolution` will
+match the style source's `minzoom`.
+
+* * *
+
+#### maxZoom
+
+• **maxZoom**: `number`
+
+The maximum view zoom level (inclusive) at which this layer will
+be visible.
+
+* * *
+
+#### minResolution
+
+• **minResolution**: `number`
+
+The minimum resolution (inclusive) at which this layer will be
+visible.
+
+* * *
+
+#### minZoom
+
+• **minZoom**: `number`
+
+The minimum view zoom level (exclusive) above which this layer will
+be visible. If neither `maxResolution` nor `minZoom` are defined, the layer's `minZoom` will match
+the style source's `minzoom`.
+
+* * *
+
+#### opacity
+
+• **opacity**: `number`
+
+Opacity (0, 1).
+
+* * *
+
+#### preload
+
+• **preload**: `number`
+
+Preload. Load low-resolution tiles up to `preload` levels. `0`
+means no preloading.
+
+* * *
+
+#### properties
+
+• **properties**: `Object`
+
+Arbitrary observable properties. Can be accessed with `#get()` and `#set()`.
+
+* * *
+
+#### renderBuffer
+
+• **renderBuffer**: `number`
+
+The buffer in pixels around the tile extent used by the
+renderer when getting features from the vector tile for the rendering or hit-detection.
+Recommended value: Vector tiles are usually generated with a buffer, so this value should match
+the largest possible buffer of the used tiles. It should be at least the size of the largest
+point symbol or line width.
+
+* * *
+
+#### renderMode
+
+• **renderMode**: `VectorTileRenderType`
+
+Render mode for vector tiles:
+
+- `'hybrid'`: Polygon and line elements are rendered as images, so pixels are scaled during zoom
+  animations. Point symbols and texts are accurately rendered as vectors and can stay upright on
+  rotated views.
+- `'vector'`: Everything is rendered as vectors. Use this mode for improved performance on vector
+  tile layers with only a few rendered features (e.g. for highlighting a subset of features of
+  another layer with the same source).
+
+* * *
+
+#### renderOrder
+
+• **renderOrder**: `OrderFunction`
+
+Render order. Function to be used when sorting
+features before rendering. By default features are drawn in the order that they are created. Use
+`null` to avoid the sort, but get an undefined draw order.
+
+* * *
+
+#### source
+
+• **source**: `string`
+
+If your style uses more than one source, you need to use either the
+`source` property or the `layers` property to limit rendering to a single vector source.  The
+`source` property corresponds to the id of a vector source in your Mapbox style.
+
+* * *
+
+#### styleUrl
+
+• **styleUrl**: `string`
+
+The URL of the Mapbox style object to use for this layer.  For a
+style created with Mapbox Studio and hosted on Mapbox, this will look like
+'mapbox://styles/you/your-style'.
+
+* * *
+
+#### updateWhileAnimating
+
+• **updateWhileAnimating**: `boolean`
+
+When set to `true`, feature batches will be
+recreated during animations. This means that no vectors will be shown clipped, but the setting
+will have a performance impact for large amounts of vector data. When set to `false`, batches
+will be recreated when no animation is active.
+
+* * *
+
+#### updateWhileInteracting
+
+• **updateWhileInteracting**: `boolean`
+
+When set to `true`, feature batches will be
+recreated during interactions. See also `updateWhileAnimating`.
+
+* * *
+
+#### useInterimTilesOnError
+
+• **useInterimTilesOnError**: `boolean`
+
+Use interim tiles on error.
+
+* * *
+
+#### visible
+
+• **visible**: `boolean`
+
+Visibility.
+
+* * *
+
+#### zIndex
+
+• **zIndex**: `number`
+
+The z-index for layer rendering.  At rendering time, the layers
+will be ordered, first by Z-index and then by position. When `undefined`, a `zIndex` of 0 is assumed
+for layers that are added to the map's `layers` collection, or `Infinity` when the layer's `setMap()`
+method was used.
+
+<a name="interfacesmapboxvectorlayer_internal_applystyleoptionsmd"></a>
+
+## Interface: ApplyStyleOptions&lt;>
+
+[MapboxVectorLayer](#modulesmapboxvectorlayermd).[<internal>](#modulesmapboxvectorlayer_internal_md).ApplyStyleOptions
+
+### Table of contents
+
+#### Properties
+
+- [layers](#layers)
+- [source](#source)
+- [updateSource](#updateSource)
+
+### Properties
+
+#### layers
+
+• **layers**: `string`\[]
+
+Layers. If no source is provided, the layers with the
+provided ids will be used from the style's `layers` array. All layers need to use the same source.
+
+* * *
+
+#### source
+
+• **source**: `string`
+
+Source. Default is `''`, which causes the first source in the
+style to be used.
+
+* * *
+
+#### updateSource
+
+• **updateSource**: `boolean`
+
+Update or create vector (tile) layer source with parameters
+specified for the source in the mapbox style definition.
+
+<a name="interfacesmapboxvectorlayer_internal_featureidentifiermd"></a>
+
+## Interface: FeatureIdentifier&lt;>
+
+[MapboxVectorLayer](#modulesmapboxvectorlayermd).[<internal>](#modulesmapboxvectorlayer_internal_md).FeatureIdentifier
+
+### Table of contents
+
+#### Properties
+
+- [id](#id)
+- [source](#source)
+
+### Properties
+
+#### id
+
+• **id**: `string` \| `number`
+
+The feature id.
+
+* * *
+
+#### source
+
+• **source**: `string`
+
+The source id.
+
+<a name="interfacesmapboxvectorlayer_internal_optionsmd"></a>
+
+## Interface: Options&lt;>
+
+[MapboxVectorLayer](#modulesmapboxvectorlayermd).[<internal>](#modulesmapboxvectorlayer_internal_md).Options
+
+### Table of contents
+
+#### Properties
+
+- [accessToken](#accessToken)
+- [accessTokenParam](#accessTokenParam)
+- [getImage](#getImage)
+- [projection](#projection)
+- [resolutions](#resolutions)
+- [styleUrl](#styleUrl)
+- [transformRequest](#transformRequest)
+
+### Properties
+
+#### accessToken
+
+• **accessToken**: `string`
+
+Access token for 'mapbox://' urls.
+
+* * *
+
+#### accessTokenParam
+
+• **accessTokenParam**: `string`
+
+Access token param. For internal use.
+
+* * *
+
+#### getImage
+
+• **getImage**: (`arg0`: `VectorLayer`&lt;`any`> \| `VectorTileLayer`, `arg1`: `string`) => `string` \| `HTMLImageElement` \| `HTMLCanvasElement`
+
+##### Type declaration
+
+▸ (`arg0`, `arg1`): `string` \| `HTMLImageElement` \| `HTMLCanvasElement`
+
+Function that returns an image for an icon name. If the result is an HTMLImageElement, it must already be
+loaded. The layer can be used to call layer.changed() when the loading and processing of the image has finished.
+This function be used for icons not in the sprite or to override sprite icons.
+
+###### Parameters
+
+| Name   | Type                                         |
+| :----- | :------------------------------------------- |
+| `arg0` | `VectorLayer`&lt;`any`> \| `VectorTileLayer` |
+| `arg1` | `string`                                     |
+
+###### Returns
+
+`string` \| `HTMLImageElement` \| `HTMLCanvasElement`
+
+* * *
+
+#### projection
+
+• **projection**: `string`
+
+Only useful when working with non-standard projections.
+Code of a projection registered with OpenLayers. All sources of the style must be provided in this
+projection. The projection must also have a valid extent defined, which will be used to determine the
+origin and resolutions of the tile grid for all tiled sources of the style. When provided, the bbox
+placeholder in tile and geojson urls changes: the default is `{bbox-epsg-3857}`, when projection is e.g.
+set to `EPSG:4326`, the bbox placeholder will be `{bbox-epsg-4326}`.
+
+* * *
+
+#### resolutions
+
+• **resolutions**: `number`\[]
+
+Only useful when working with non-standard projections.
+Resolutions for mapping resolution to the `zoom` used in the Mapbox style.
+
+* * *
+
+#### styleUrl
+
+• **styleUrl**: `string`
+
+URL of the Mapbox GL style. Required for styles that were provided
+as object, when they contain a relative sprite url, or sources referencing data by relative url.
+
+* * *
+
+#### transformRequest
+
+• **transformRequest**: (`arg0`: `string`, `arg1`: [`ResourceType`](#ResourceType)) => `void` \| `Request`
+
+##### Type declaration
+
+▸ (`arg0`, `arg1`): `void` \| `Request`
+
+Function for controlling how `ol-mapbox-style` fetches resources. Can be used for modifying
+the url, adding headers or setting credentials options. Called with the url and the resource
+type as arguments, this function is supposed to return a `Request` object. Without a return value,
+the original request will not be modified. For `Tiles` and `GeoJSON` resources, only the `url` of
+the returned request will be respected.
+
+###### Parameters
+
+| Name   | Type                            |
+| :----- | :------------------------------ |
+| `arg0` | `string`                        |
+| `arg1` | [`ResourceType`](#ResourceType) |
+
+###### Returns
+
+`void` \| `Request`
+
+<a name="modulesmapboxvectorlayer_internal_md"></a>
+
+## Module: &lt;internal>
+
+### Table of contents
+
+#### Interfaces
+
+- [ApplyStyleOptions](#interfacesmapboxvectorlayer_internal_applystyleoptionsmd)
+- [FeatureIdentifier](#interfacesmapboxvectorlayer_internal_featureidentifiermd)
+- [Options](#interfacesmapboxvectorlayer_internal_optionsmd)
+
+#### Type Aliases
+
+- [ResourceType](#ResourceType)
+
+### Type Aliases
+
+#### ResourceType
+
+Ƭ **ResourceType**&lt;>: `"Style"` \| `"Source"` \| `"Sprite"` \| `"SpriteImage"` \| `"Tiles"` \| `"GeoJSON"`
+
+<a name="modulesmapboxvectorlayermd"></a>
+
+## Module: MapboxVectorLayer
+
+### Table of contents
 
 #### Modules
 
-- [&lt;internal\\>](#modulesinternal_md)
+- [&lt;internal\\>](#modulesmapboxvectorlayer_internal_md)
+
+#### Classes
+
+- [default](#classesmapboxvectorlayerdefaultmd)
+
+#### Interfaces
+
+- [Options](#interfacesmapboxvectorlayeroptionsmd)
+
+#### Type Aliases
+
+- [Map](#Map)
+
+### Type Aliases
+
+#### Map
+
+Ƭ **Map**&lt;>: `default`
+
+<a name="modulesindexmd"></a>
+
+## Module: index
+
+### Table of contents
+
+#### References
+
+- [default](#default)
 
 #### Functions
 
@@ -213,11 +822,11 @@ Map or LayerGroup instance, which holds the Mapbox Style object.
 
 ##### Parameters
 
-| Name                  | Type                                               | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| :-------------------- | :------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `mapOrGroupOrElement` | `string` \| `Map` \| `LayerGroup` \| `HTMLElement` | Either an existing OpenLayers Map instance, or a HTML element, or the id of a HTML element that will be the target of a new OpenLayers Map, or a layer group. If layer group, styles releated to the map and view will be ignored.                                                                                                                                                                                                                                                                                                                                    |
-| `style`               | `any`                                              | JSON style object or style url pointing to a Mapbox Style object. When using Mapbox APIs, the url is the `styleUrl` shown in Mapbox Studio's "share" panel. In addition, the `accessToken` option (see below) must be set. When passed as JSON style object, all OpenLayers layers created by `apply()` will be immediately available, but they may not have a source yet (i.e. when they are defined by a TileJSON url in the Mapbox Style document). When passed as style url, layers will be added to the map when the Mapbox Style document is loaded and parsed. |
-| `options`             | [`Options`](#interfacesinternal_optionsmd)         | Options.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Name                  | Type                                                         | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| :-------------------- | :----------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mapOrGroupOrElement` | `string` \| `HTMLElement` \| `Map` \| `LayerGroup`           | Either an existing OpenLayers Map instance, or a HTML element, or the id of a HTML element that will be the target of a new OpenLayers Map, or a layer group. If layer group, styles releated to the map and view will be ignored.                                                                                                                                                                                                                                                                                                                                    |
+| `style`               | `any`                                                        | JSON style object or style url pointing to a Mapbox Style object. When using Mapbox APIs, the url is the `styleUrl` shown in Mapbox Studio's "share" panel. In addition, the `accessToken` option (see below) must be set. When passed as JSON style object, all OpenLayers layers created by `apply()` will be immediately available, but they may not have a source yet (i.e. when they are defined by a TileJSON url in the Mapbox Style document). When passed as style url, layers will be added to the map when the Mapbox Style document is loaded and parsed. |
+| `options`             | [`Options`](#interfacesmapboxvectorlayer_internal_optionsmd) | Options.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 
 ##### Returns
 
@@ -249,11 +858,11 @@ applyBackground(map, 'https://api.maptiler.com/maps/basic/style.json?key=YOUR_OP
 
 ##### Parameters
 
-| Name         | Type                                       | Description                      |
-| :----------- | :----------------------------------------- | :------------------------------- |
-| `mapOrLayer` | `Map` \| `BaseLayer`                       | OpenLayers Map or layer (group). |
-| `glStyle`    | `any`                                      | Mapbox Style object or url.      |
-| `options`    | [`Options`](#interfacesinternal_optionsmd) | Options.                         |
+| Name         | Type                                                         | Description                      |
+| :----------- | :----------------------------------------------------------- | :------------------------------- |
+| `mapOrLayer` | `Map` \| `BaseLayer`                                         | OpenLayers Map or layer (group). |
+| `glStyle`    | `any`                                                        | Mapbox Style object or url.      |
+| `options`    | [`Options`](#interfacesmapboxvectorlayer_internal_optionsmd) | Options.                         |
 
 ##### Returns
 
@@ -297,13 +906,13 @@ Two additional properties will be set on the provided layer:
 
 ##### Parameters
 
-| Name                       | Type                                                                                                                                   | Default value | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| :------------------------- | :------------------------------------------------------------------------------------------------------------------------------------- | :------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `layer`                    | `VectorLayer`&lt;`any`> \| `VectorTileLayer`                                                                                           | `undefined`   | OpenLayers layer. When the layer has a source configured, it will be modified to use the configuration from the glStyle's `source`. Options specified on the layer's source will override those from the glStyle's `source`, except for `url` and `tileUrlFunction`. When the source projection is the default (`EPSG:3857`), the `tileGrid` will also be overridden. If you'd rather not have ol-mapbox-style modify the source, configure `applyStyle()` with the `updateSource: false` option. |
-| `glStyle`                  | `any`                                                                                                                                  | `undefined`   | Mapbox Style object.                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| `sourceOrLayersOrOptions?` | `string` \| `string`\[] \| [`Options`](#interfacesinternal_optionsmd) & [`ApplyStyleOptions`](#interfacesinternal_applystyleoptionsmd) | `''`          | Options or `source` key or an array of layer `id`s from the Mapbox Style object. When a `source` key is provided, all layers for the specified source will be included in the style function. When layer `id`s are provided, they must be from layers that use the same source. When not provided or a falsey value, all layers using the first source specified in the glStyle will be rendered.                                                                                                 |
-| `optionsOrPath?`           | `string` \| [`Options`](#interfacesinternal_optionsmd) & [`ApplyStyleOptions`](#interfacesinternal_applystyleoptionsmd)                | `{}`          | **Deprecated**. Options. Alternatively the path of the style file (only required when a relative path is used for the `"sprite"` property of the style).                                                                                                                                                                                                                                                                                                                                          |
-| `resolutions?`             | `number`\[]                                                                                                                            | `undefined`   | **Deprecated**. Resolutions for mapping resolution to zoom level. Only needed when working with non-standard tile grids or projections, can also be supplied with options.                                                                                                                                                                                                                                                                                                                        |
+| Name                       | Type                                                                                                                                                                       | Default value | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| :------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `layer`                    | `VectorLayer`&lt;`any`> \| `VectorTileLayer`                                                                                                                               | `undefined`   | OpenLayers layer. When the layer has a source configured, it will be modified to use the configuration from the glStyle's `source`. Options specified on the layer's source will override those from the glStyle's `source`, except for `url` and `tileUrlFunction`. When the source projection is the default (`EPSG:3857`), the `tileGrid` will also be overridden. If you'd rather not have ol-mapbox-style modify the source, configure `applyStyle()` with the `updateSource: false` option. |
+| `glStyle`                  | `any`                                                                                                                                                                      | `undefined`   | Mapbox Style object.                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `sourceOrLayersOrOptions?` | `string` \| `string`\[] \| [`Options`](#interfacesmapboxvectorlayer_internal_optionsmd) & [`ApplyStyleOptions`](#interfacesmapboxvectorlayer_internal_applystyleoptionsmd) | `''`          | Options or `source` key or an array of layer `id`s from the Mapbox Style object. When a `source` key is provided, all layers for the specified source will be included in the style function. When layer `id`s are provided, they must be from layers that use the same source. When not provided or a falsey value, all layers using the first source specified in the glStyle will be rendered.                                                                                                 |
+| `optionsOrPath?`           | `string` \| [`Options`](#interfacesmapboxvectorlayer_internal_optionsmd) & [`ApplyStyleOptions`](#interfacesmapboxvectorlayer_internal_applystyleoptionsmd)                | `{}`          | **Deprecated**. Options. Alternatively the path of the style file (only required when a relative path is used for the `"sprite"` property of the style).                                                                                                                                                                                                                                                                                                                                          |
+| `resolutions?`             | `number`\[]                                                                                                                                                                | `undefined`   | **Deprecated**. Resolutions for mapping resolution to zoom level. Only needed when working with non-standard tile grids or projections, can also be supplied with options.                                                                                                                                                                                                                                                                                                                        |
 
 ##### Returns
 
@@ -324,10 +933,10 @@ features differently.
 
 ##### Parameters
 
-| Name         | Type                                                           | Description                               |
-| :----------- | :------------------------------------------------------------- | :---------------------------------------- |
-| `mapOrLayer` | `Map` \| `VectorLayer`&lt;`any`> \| `VectorTileLayer`          | Map or layer to set the feature state on. |
-| `feature`    | [`FeatureIdentifier`](#interfacesinternal_featureidentifiermd) | Feature identifier.                       |
+| Name         | Type                                                                             | Description                               |
+| :----------- | :------------------------------------------------------------------------------- | :---------------------------------------- |
+| `mapOrLayer` | `VectorLayer`&lt;`any`> \| `VectorTileLayer` \| `Map`                            | Map or layer to set the feature state on. |
+| `feature`    | [`FeatureIdentifier`](#interfacesmapboxvectorlayer_internal_featureidentifiermd) | Feature identifier.                       |
 
 ##### Returns
 
@@ -520,11 +1129,11 @@ The feature state will be stored on the OpenLayers layer matching the feature id
 
 ##### Parameters
 
-| Name         | Type                                                           | Description                                               |
-| :----------- | :------------------------------------------------------------- | :-------------------------------------------------------- |
-| `mapOrLayer` | `Map` \| `VectorLayer`&lt;`any`> \| `VectorTileLayer`          | OpenLayers Map or layer to set the feature state on.      |
-| `feature`    | [`FeatureIdentifier`](#interfacesinternal_featureidentifiermd) | Feature identifier.                                       |
-| `state`      | `any`                                                          | Feature state. Set to `null` to remove the feature state. |
+| Name         | Type                                                                             | Description                                               |
+| :----------- | :------------------------------------------------------------------------------- | :-------------------------------------------------------- |
+| `mapOrLayer` | `VectorLayer`&lt;`any`> \| `VectorTileLayer` \| `Map`                            | OpenLayers Map or layer to set the feature state on.      |
+| `feature`    | [`FeatureIdentifier`](#interfacesmapboxvectorlayer_internal_featureidentifiermd) | Feature identifier.                                       |
+| `state`      | `any`                                                                            | Feature state. Set to `null` to remove the feature state. |
 
 ##### Returns
 
@@ -583,7 +1192,7 @@ sure that sprite image loading works:
 | `spriteData`     | `any`                                                                                                                             | `undefined`          | Sprite data from the url specified in the Mapbox Style object's `sprite` property. Only required if a `sprite` property is specified in the Mapbox Style object.                                                                                                                                                                                                  |
 | `spriteImageUrl` | `string`                                                                                                                          | `undefined`          | Sprite image url for the sprite specified in the Mapbox Style object's `sprite` property. Only required if a `sprite` property is specified in the Mapbox Style object.                                                                                                                                                                                           |
 | `getFonts`       | (`arg0`: `string`\[], `arg1`: `string`) => `string`\[]                                                                            | `undefined`          | Function that receives a font stack and the url template from the GL style's `metadata['ol:webfonts']` property (if set) as arguments, and returns a (modified) font stack that is available. Font names are the names used in the Mapbox Style object. If not provided, the font stack will be used as-is. This function can also be used for loading web fonts. |
-| `getImage?`      | (`arg0`: `VectorLayer`&lt;`any`> \| `VectorTileLayer`, `arg1`: `string`) => `string` \| `HTMLCanvasElement` \| `HTMLImageElement` | `undefined`          | Function that returns an image or a URL for an image name. If the result is an HTMLImageElement, it must already be loaded. The layer can be used to call layer.changed() when the loading and processing of the image has finished. This function can be used for icons not in the sprite or to override sprite icons.                                           |
+| `getImage?`      | (`arg0`: `VectorLayer`&lt;`any`> \| `VectorTileLayer`, `arg1`: `string`) => `string` \| `HTMLImageElement` \| `HTMLCanvasElement` | `undefined`          | Function that returns an image or a URL for an image name. If the result is an HTMLImageElement, it must already be loaded. The layer can be used to call layer.changed() when the loading and processing of the image has finished. This function can be used for icons not in the sprite or to override sprite icons.                                           |
 | `...args`        | `any`                                                                                                                             | `undefined`          | -                                                                                                                                                                                                                                                                                                                                                                 |
 
 ##### Returns
@@ -611,212 +1220,3 @@ Update a Mapbox Layer object in the style. The map will be re-rendered with the 
 ##### Returns
 
 `void`
-
-<a name="interfacesinternal_applystyleoptionsmd"></a>
-
-## Interface: ApplyStyleOptions&lt;>
-
-[<internal>](#modulesinternal_md).ApplyStyleOptions
-
-### Table of contents
-
-#### Properties
-
-- [layers](#layers)
-- [source](#source)
-- [updateSource](#updateSource)
-
-### Properties
-
-#### layers
-
-• **layers**: `string`\[]
-
-Layers. If no source is provided, the layers with the
-provided ids will be used from the style's `layers` array. All layers need to use the same source.
-
-* * *
-
-#### source
-
-• **source**: `string`
-
-Source. Default is `''`, which causes the first source in the
-style to be used.
-
-* * *
-
-#### updateSource
-
-• **updateSource**: `boolean`
-
-Update or create vector (tile) layer source with parameters
-specified for the source in the mapbox style definition.
-
-<a name="interfacesinternal_featureidentifiermd"></a>
-
-## Interface: FeatureIdentifier&lt;>
-
-[<internal>](#modulesinternal_md).FeatureIdentifier
-
-### Table of contents
-
-#### Properties
-
-- [id](#id)
-- [source](#source)
-
-### Properties
-
-#### id
-
-• **id**: `string` \| `number`
-
-The feature id.
-
-* * *
-
-#### source
-
-• **source**: `string`
-
-The source id.
-
-<a name="interfacesinternal_optionsmd"></a>
-
-## Interface: Options&lt;>
-
-[<internal>](#modulesinternal_md).Options
-
-### Table of contents
-
-#### Properties
-
-- [accessToken](#accessToken)
-- [accessTokenParam](#accessTokenParam)
-- [getImage](#getImage)
-- [projection](#projection)
-- [resolutions](#resolutions)
-- [styleUrl](#styleUrl)
-- [transformRequest](#transformRequest)
-
-### Properties
-
-#### accessToken
-
-• **accessToken**: `string`
-
-Access token for 'mapbox://' urls.
-
-* * *
-
-#### accessTokenParam
-
-• **accessTokenParam**: `string`
-
-Access token param. For internal use.
-
-* * *
-
-#### getImage
-
-• **getImage**: (`arg0`: `VectorLayer`&lt;`any`> \| `VectorTileLayer`, `arg1`: `string`) => `string` \| `HTMLCanvasElement` \| `HTMLImageElement`
-
-##### Type declaration
-
-▸ (`arg0`, `arg1`): `string` \| `HTMLCanvasElement` \| `HTMLImageElement`
-
-Function that returns an image for an icon name. If the result is an HTMLImageElement, it must already be
-loaded. The layer can be used to call layer.changed() when the loading and processing of the image has finished.
-This function be used for icons not in the sprite or to override sprite icons.
-
-###### Parameters
-
-| Name   | Type                                         |
-| :----- | :------------------------------------------- |
-| `arg0` | `VectorLayer`&lt;`any`> \| `VectorTileLayer` |
-| `arg1` | `string`                                     |
-
-###### Returns
-
-`string` \| `HTMLCanvasElement` \| `HTMLImageElement`
-
-* * *
-
-#### projection
-
-• **projection**: `string`
-
-Only useful when working with non-standard projections.
-Code of a projection registered with OpenLayers. All sources of the style must be provided in this
-projection. The projection must also have a valid extent defined, which will be used to determine the
-origin and resolutions of the tile grid for all tiled sources of the style. When provided, the bbox
-placeholder in tile and geojson urls changes: the default is `{bbox-epsg-3857}`, when projection is e.g.
-set to `EPSG:4326`, the bbox placeholder will be `{bbox-epsg-4326}`.
-
-* * *
-
-#### resolutions
-
-• **resolutions**: `number`\[]
-
-Only useful when working with non-standard projections.
-Resolutions for mapping resolution to the `zoom` used in the Mapbox style.
-
-* * *
-
-#### styleUrl
-
-• **styleUrl**: `string`
-
-URL of the Mapbox GL style. Required for styles that were provided
-as object, when they contain a relative sprite url, or sources referencing data by relative url.
-
-* * *
-
-#### transformRequest
-
-• **transformRequest**: (`arg0`: `string`, `arg1`: [`ResourceType`](#ResourceType)) => `void` \| `Request`
-
-##### Type declaration
-
-▸ (`arg0`, `arg1`): `void` \| `Request`
-
-Function for controlling how `ol-mapbox-style` fetches resources. Can be used for modifying
-the url, adding headers or setting credentials options. Called with the url and the resource
-type as arguments, this function is supposed to return a `Request` object. Without a return value,
-the original request will not be modified. For `Tiles` and `GeoJSON` resources, only the `url` of
-the returned request will be respected.
-
-###### Parameters
-
-| Name   | Type                            |
-| :----- | :------------------------------ |
-| `arg0` | `string`                        |
-| `arg1` | [`ResourceType`](#ResourceType) |
-
-###### Returns
-
-`void` \| `Request`
-
-<a name="modulesinternal_md"></a>
-
-## Module: &lt;internal>
-
-### Table of contents
-
-#### Interfaces
-
-- [ApplyStyleOptions](#interfacesinternal_applystyleoptionsmd)
-- [FeatureIdentifier](#interfacesinternal_featureidentifiermd)
-- [Options](#interfacesinternal_optionsmd)
-
-#### Type Aliases
-
-- [ResourceType](#ResourceType)
-
-### Type Aliases
-
-#### ResourceType
-
-Ƭ **ResourceType**&lt;>: `"Style"` \| `"Source"` \| `"Sprite"` \| `"SpriteImage"` \| `"Tiles"` \| `"GeoJSON"`

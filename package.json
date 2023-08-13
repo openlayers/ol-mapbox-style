@@ -11,7 +11,8 @@
     ".": {
       "import": "./dist/index.js",
       "require": "./dist/olms.js"
-    }
+    },
+    "./MapboxVectorLayer": "./dist/MapboxVectorLayer.js"
   },
   "repository": {
     "type": "git",
@@ -29,8 +30,8 @@
   "scripts": {
     "start": "webpack serve --config ./webpack.config.examples.cjs",
     "prepare": "npm run doc && npm run build",
-    "build": "tsc --project tsconfig-build.json && rollup -c && cross-env esm=true rollup -c && webpack-cli --mode=production --config ./webpack.config.examples.cjs",
-    "doc": "typedoc --plugin typedoc-plugin-markdown --plugin typedoc-plugin-missing-exports src/index.js --readme none --excludeExternals --preserveAnchorCasing --hideBreadcrumbs --disableSources --tsconfig tsconfig-typecheck.json && npx concat-md docs --hide-anchor-links=false | npx add-text-to-markdown README.md --section \"API\" --write",
+    "build": "tsc --project tsconfig-build.json && rollup -c && cross-env esm=true rollup -c && shx cp src/MapboxVectorLayer.* dist/ && webpack-cli --mode=production --config ./webpack.config.examples.cjs",
+    "doc": "typedoc --plugin typedoc-plugin-markdown --plugin typedoc-plugin-missing-exports src/index.js src/MapboxVectorLayer.js --readme none --excludeExternals --preserveAnchorCasing --hideBreadcrumbs --disableSources --tsconfig tsconfig-typecheck.json && npx concat-md docs --hide-anchor-links=false | npx add-text-to-markdown README.md --section \"API\" --write",
     "karma": "karma start test/karma.conf.cjs",
     "lint": "eslint test examples src",
     "typecheck": "tsc --project tsconfig-typecheck.json",
@@ -81,6 +82,7 @@
     "rollup-plugin-terser": "^7.0.2",
     "rollup-plugin-unassert": "^0.6.0",
     "should": "^13.2.3",
+    "shx": "^0.3.4",
     "sinon": "^15.0.1",
     "style-loader": "^3.3.1",
     "typedoc": "0.24.x",

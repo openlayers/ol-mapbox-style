@@ -8,16 +8,15 @@ import {Feature} from 'ol';
 import {Polygon} from 'ol/geom.js';
 import {
   addMapboxLayer,
-  fetchResource,
+  apply,
   getLayer,
   getLayers,
   getMapboxLayer,
   getSource,
-  getTileJson,
   removeMapboxLayer,
   updateMapboxLayer,
-} from '../src/util.js';
-import {apply} from '../src/apply.js';
+} from '../src/apply.js';
+import {fetchResource, getTileJson} from '../src/util.js';
 
 describe('util', function () {
   describe('fetchResource', function () {

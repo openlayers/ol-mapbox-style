@@ -31,15 +31,19 @@ import {
 import {
   _colorWithOpacity,
   stylefunction as applyStyleFunction,
+  stylefunction as applyStylefunction,
   getValue,
+  styleFunctionArgs,
 } from './stylefunction.js';
 import {bbox as bboxStrategy} from 'ol/loadingstrategy.js';
 import {createXYZ} from 'ol/tilegrid.js';
 import {
   defaultResolutions,
   fetchResource,
+  getFilterCache,
   getFunctionCache,
   getGlStyle,
+  getStyleFunctionKey,
   getTileJson,
   getZoomForResolution,
 } from './util.js';
@@ -51,6 +55,12 @@ import {
   normalizeSpriteUrl,
   normalizeStyleUrl,
 } from './mapbox.js';
+
+/**
+ * @typedef {Object} FeatureIdentifier
+ * @property {string|number} id The feature id.
+ * @property {string} source The source id.
+ */
 
 /**
  * @typedef {Object} Options
@@ -1214,4 +1224,321 @@ export function finalizeLayer(
       layer.once('change:source', setStyle);
     }
   });
+}
+
+/**
+ * Get the Mapbox Layer object for the provided `layerId`.
+ * @param {Map|LayerGroup} mapOrGroup Map or LayerGroup.
+ * @param {string} layerId Mapbox Layer id.
+ * @return {Object} Mapbox Layer object.
+ */
+export function getMapboxLayer(mapOrGroup, layerId) {
+  const style = mapOrGroup.get('mapbox-style');
+  const layerStyle = style.layers.find(function (layer) {
+    return layer.id === layerId;
+  });
+  return layerStyle;
+}
+
+/**
+ * Add a new Mapbox Layer object to the style. The map will be re-rendered.
+ * @param {Map|LayerGroup} mapOrGroup The Map or LayerGroup `apply` was called on.
+ * @param {Object} mapboxLayer Mapbox Layer object.
+ * @param {string} [beforeLayerId] Optional id of the Mapbox Layer before the new layer that will be added.
+ * @return {Promise<void>} Resolves when the added layer is available.
+ */
+export function addMapboxLayer(mapOrGroup, mapboxLayer, beforeLayerId) {
+  const glStyle = mapOrGroup.get('mapbox-style');
+  const mapboxLayers = glStyle.layers;
+  let spliceIndex;
+  let sourceIndex = -1;
+  if (beforeLayerId !== undefined) {
+    const beforeMapboxLayer = getMapboxLayer(mapOrGroup, beforeLayerId);
+    if (beforeMapboxLayer === undefined) {
+      throw new Error(`Layer with id "${beforeLayerId}" not found.`);
+    }
+    spliceIndex = mapboxLayers.indexOf(beforeMapboxLayer);
+  } else {
+    spliceIndex = mapboxLayers.length;
+  }
+  let sourceOffset;
+  if (
+    spliceIndex > 0 &&
+    mapboxLayers[spliceIndex - 1].source === mapboxLayer.source
+  ) {
+    sourceIndex = spliceIndex - 1;
+    sourceOffset = -1;
+  } else if (
+    spliceIndex < mapboxLayers.length &&
+    mapboxLayers[spliceIndex].source === mapboxLayer.source
+  ) {
+    sourceIndex = spliceIndex;
+    sourceOffset = 0;
+  }
+  if (sourceIndex === -1) {
+    const {options, styleUrl} = mapOrGroup.get('mapbox-metadata');
+    const layer = setupLayer(glStyle, styleUrl, mapboxLayer, options);
+    if (beforeLayerId) {
+      const beforeLayer = getLayer(mapOrGroup, beforeLayerId);
+      const beforeLayerIndex = mapOrGroup
+        .getLayers()
+        .getArray()
+        .indexOf(beforeLayer);
+      mapOrGroup.getLayers().insertAt(beforeLayerIndex, layer);
+    }
+    mapboxLayers.splice(spliceIndex, 0, mapboxLayer);
+    return finalizeLayer(
+      layer,
+      [mapboxLayer.id],
+      glStyle,
+      styleUrl,
+      mapOrGroup,
+      options
+    );
+  }
+
+  if (mapboxLayers.some((layer) => layer.id === mapboxLayer.id)) {
+    throw new Error(`Layer with id "${mapboxLayer.id}" already exists.`);
+  }
+  const sourceLayerId = mapboxLayers[sourceIndex].id;
+  const args =
+    styleFunctionArgs[
+      getStyleFunctionKey(
+        mapOrGroup.get('mapbox-style'),
+        getLayer(mapOrGroup, sourceLayerId)
+      )
+    ];
+  mapboxLayers.splice(spliceIndex, 0, mapboxLayer);
+  if (args) {
+    const [
+      olLayer,
+      glStyle,
+      sourceOrLayers,
+      resolutions,
+      spriteData,
+      spriteImageUrl,
+      getFonts,
+      getImage,
+    ] = args;
+    if (Array.isArray(sourceOrLayers)) {
+      const layerIndex = sourceOrLayers.indexOf(sourceLayerId) + sourceOffset;
+      sourceOrLayers.splice(layerIndex, 0, mapboxLayer.id);
+    }
+    applyStyleFunction(
+      olLayer,
+      glStyle,
+      sourceOrLayers,
+      resolutions,
+      spriteData,
+      spriteImageUrl,
+      getFonts,
+      getImage
+    );
+  } else {
+    getLayer(mapOrGroup, mapboxLayers[sourceIndex].id).changed();
+  }
+  return Promise.resolve();
+}
+
+/**
+ * Update a Mapbox Layer object in the style. The map will be re-rendered with the new style.
+ * @param {Map|LayerGroup} mapOrGroup The Map or LayerGroup `apply` was called on.
+ * @param {Object} mapboxLayer Updated Mapbox Layer object.
+ */
+export function updateMapboxLayer(mapOrGroup, mapboxLayer) {
+  const glStyle = mapOrGroup.get('mapbox-style');
+  const mapboxLayers = glStyle.layers;
+  const index = mapboxLayers.findIndex(function (layer) {
+    return layer.id === mapboxLayer.id;
+  });
+  if (index === -1) {
+    throw new Error(`Layer with id "${mapboxLayer.id}" not found.`);
+  }
+  const oldLayer = mapboxLayers[index];
+  if (oldLayer.source !== mapboxLayer.source) {
+    throw new Error(
+      'Updated layer and previous version must use the same source.'
+    );
+  }
+  delete getFunctionCache(glStyle)[mapboxLayer.id];
+  delete getFilterCache(glStyle)[mapboxLayer.id];
+  mapboxLayers[index] = mapboxLayer;
+  const args =
+    styleFunctionArgs[
+      getStyleFunctionKey(
+        mapOrGroup.get('mapbox-style'),
+        getLayer(mapOrGroup, mapboxLayer.id)
+      )
+    ];
+  if (args) {
+    applyStylefunction.apply(undefined, args);
+  } else {
+    getLayer(mapOrGroup, mapboxLayer.id).changed();
+  }
+}
+
+/**
+ * Remove a Mapbox Layer object from the style. The map will be re-rendered.
+ * @param {Map|LayerGroup} mapOrGroup The Map or LayerGroup `apply` was called on.
+ * @param {string|Object} mapboxLayerIdOrLayer Mapbox Layer id or Mapbox Layer object.
+ */
+export function removeMapboxLayer(mapOrGroup, mapboxLayerIdOrLayer) {
+  const mapboxLayerId =
+    typeof mapboxLayerIdOrLayer === 'string'
+      ? mapboxLayerIdOrLayer
+      : mapboxLayerIdOrLayer.id;
+  const layer = getLayer(mapOrGroup, mapboxLayerId);
+  /** @type {Array<Object>} */
+  const layerMapboxLayers = layer.get('mapbox-layers');
+  if (layerMapboxLayers.length === 1) {
+    throw new Error(
+      'Cannot remove last Mapbox layer from an OpenLayers layer.'
+    );
+  }
+  layerMapboxLayers.splice(layerMapboxLayers.indexOf(mapboxLayerId), 1);
+  const glStyle = mapOrGroup.get('mapbox-style');
+  const layers = glStyle.layers;
+  layers.splice(
+    layers.findIndex((layer) => layer.id === mapboxLayerId),
+    1
+  );
+  const args = styleFunctionArgs[getStyleFunctionKey(glStyle, layer)];
+  if (args) {
+    const [
+      olLayer,
+      glStyle,
+      sourceOrLayers,
+      resolutions,
+      spriteData,
+      spriteImageUrl,
+      getFonts,
+      getImage,
+    ] = args;
+    if (Array.isArray(sourceOrLayers)) {
+      sourceOrLayers.splice(
+        sourceOrLayers.findIndex((layer) => layer === mapboxLayerId),
+        1
+      );
+    }
+    applyStylefunction(
+      olLayer,
+      glStyle,
+      sourceOrLayers,
+      resolutions,
+      spriteData,
+      spriteImageUrl,
+      getFonts,
+      getImage
+    );
+  } else {
+    getLayer(mapOrGroup, mapboxLayerId).changed();
+  }
+}
+
+/**
+ * Get the OpenLayers layer instance that contains the provided Mapbox Style
+ * `layer`. Note that multiple Mapbox Style layers are combined in a single
+ * OpenLayers layer instance when they use the same Mapbox Style `source`.
+ * @param {Map|LayerGroup} map OpenLayers Map or LayerGroup.
+ * @param {string} layerId Mapbox Style layer id.
+ * @return {Layer} OpenLayers layer instance.
+ */
+export function getLayer(map, layerId) {
+  const layers = map.getLayers().getArray();
+  for (let i = 0, ii = layers.length; i < ii; ++i) {
+    const mapboxLayers = layers[i].get('mapbox-layers');
+    if (mapboxLayers && mapboxLayers.indexOf(layerId) !== -1) {
+      return /** @type {Layer} */ (layers[i]);
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Get the OpenLayers layer instances for the provided Mapbox Style `source`.
+ * @param {Map|LayerGroup} map OpenLayers Map or LayerGroup.
+ * @param {string} sourceId Mapbox Style source id.
+ * @return {Array<Layer>} OpenLayers layer instances.
+ */
+export function getLayers(map, sourceId) {
+  const result = [];
+  const layers = map.getLayers().getArray();
+  for (let i = 0, ii = layers.length; i < ii; ++i) {
+    if (layers[i].get('mapbox-source') === sourceId) {
+      result.push(/** @type {Layer} */ (layers[i]));
+    }
+  }
+  return result;
+}
+
+/**
+ * Get the OpenLayers source instance for the provided Mapbox Style `source`.
+ * @param {Map|LayerGroup} map OpenLayers Map or LayerGroup.
+ * @param {string} sourceId Mapbox Style source id.
+ * @return {Source} OpenLayers source instance.
+ */
+export function getSource(map, sourceId) {
+  const layers = map.getLayers().getArray();
+  for (let i = 0, ii = layers.length; i < ii; ++i) {
+    const source = /** @type {Layer} */ (layers[i]).getSource();
+    if (layers[i].get('mapbox-source') === sourceId) {
+      return source;
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Sets or removes a feature state. The feature state is taken into account for styling,
+ * just like the feature's properties, and can be used e.g. to conditionally render selected
+ * features differently.
+ *
+ * The feature state will be stored on the OpenLayers layer matching the feature identifier, in the
+ * `mapbox-featurestate` property.
+ * @param {Map|VectorLayer|VectorTileLayer} mapOrLayer OpenLayers Map or layer to set the feature
+ * state on.
+ * @param {FeatureIdentifier} feature Feature identifier.
+ * @param {Object|null} state Feature state. Set to `null` to remove the feature state.
+ */
+export function setFeatureState(mapOrLayer, feature, state) {
+  const layers =
+    'getLayers' in mapOrLayer
+      ? getLayers(mapOrLayer, feature.source)
+      : [mapOrLayer];
+  for (let i = 0, ii = layers.length; i < ii; ++i) {
+    const featureState = layers[i].get('mapbox-featurestate');
+    if (featureState) {
+      if (state) {
+        featureState[feature.id] = state;
+      } else {
+        delete featureState[feature.id];
+      }
+      layers[i].changed();
+    } else {
+      throw new Error(`Map or layer for source "${feature.source}" not found.`);
+    }
+  }
+}
+
+/**
+ * Sets or removes a feature state. The feature state is taken into account for styling,
+ * just like the feature's properties, and can be used e.g. to conditionally render selected
+ * features differently.
+ * @param {Map|VectorLayer|VectorTileLayer} mapOrLayer Map or layer to set the feature state on.
+ * @param {FeatureIdentifier} feature Feature identifier.
+ * @return {Object|null} Feature state or `null` when no feature state is set for the given
+ * feature identifier.
+ */
+export function getFeatureState(mapOrLayer, feature) {
+  const layers =
+    'getLayers' in mapOrLayer
+      ? getLayers(mapOrLayer, feature.source)
+      : [mapOrLayer];
+  for (let i = 0, ii = layers.length; i < ii; ++i) {
+    const featureState = layers[i].get('mapbox-featurestate');
+    if (featureState && featureState[feature.id]) {
+      return featureState[feature.id];
+    }
+  }
+  return undefined;
 }
