@@ -1,5 +1,15 @@
 # Changelog
 
+## 11.0.0
+
+### Backwards incompatible changes
+
+* The ol-mapbox-style package now contains untranspiled modern JavaScript code. When targeting older browsers, make sure to configure your build tools to transpile the code accordingly.
+
+### Other changes
+
+* New `MapboxVectorLayer` export, which replaces `ol/layer/MapboxVector` from OpenLayers.
+
 ## 10.7.0
 
 * Small fixes for add/update/removeMapboxLayer
