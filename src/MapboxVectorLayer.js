@@ -3,7 +3,7 @@ import EventType from 'ol/events/EventType.js';
 import MVT from 'ol/format/MVT.js';
 import VectorTileLayer from 'ol/layer/VectorTile.js';
 import VectorTileSource from 'ol/source/VectorTile.js';
-import {applyBackground, applyStyle} from './index.js';
+import {applyBackground, applyStyle} from './apply.js';
 
 /** @typedef {import("ol/Map.js").default} Map */
 
@@ -90,7 +90,7 @@ class ErrorEvent extends BaseEvent {
  * @property {import("ol/Map.js").default} [map] Sets the layer as overlay on a map. The map will not manage
  * this layer in its layers collection, and the layer will be rendered on top. This is useful for
  * temporary layers. The standard way to add a layer to a map and have it managed by the map is to
- * use `map.addLayer()`{@link Map}.
+ * use `map.addLayer()`.
  * @property {boolean} [updateWhileAnimating=false] When set to `true`, feature batches will be
  * recreated during animations. This means that no vectors will be shown clipped, but the setting
  * will have a performance impact for large amounts of vector data. When set to `false`, batches
@@ -106,7 +106,7 @@ class ErrorEvent extends BaseEvent {
 /**
  * @classdesc
  * ```js
- * import MapboxVectorLayer from 'ol-mapbox-style/MapboxVectorLayer';
+ * import {MapboxVectorLayer} from 'ol-mapbox-style';
  * ```
  * A vector tile layer based on a Mapbox style that uses a single vector source.  Configure
  * the layer with the `styleUrl` and `accessToken` shown in Mapbox Studio's share panel.

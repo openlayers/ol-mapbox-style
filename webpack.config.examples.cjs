@@ -122,16 +122,6 @@ module.exports = (env, argv) => {
             'mapbox-gl-style-spec'
           ),
         },
-        {
-          test: /\.js$/,
-          use: {
-            loader: 'buble-loader',
-            options: {
-              transforms: {dangerousForOf: true},
-              objectAssign: 'Object.assign',
-            },
-          },
-        },
       ],
     },
     plugins: [
