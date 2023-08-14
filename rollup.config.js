@@ -1,6 +1,5 @@
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-import buble from '@rollup/plugin-buble';
 import unassert from 'rollup-plugin-unassert';
 import flowRemoveTypes from '@mapbox/flow-remove-types';
 import {terser} from 'rollup-plugin-terser';
@@ -48,11 +47,6 @@ const config = [{
       }
     },
     unassert(),
-    buble({
-      transforms: {
-        dangerousForOf: true,
-      }
-    }),
     resolve({
       browser: true,
       preferBuiltins: false

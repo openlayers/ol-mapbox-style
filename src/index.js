@@ -19,3 +19,4 @@ export {
   getFeatureState,
   setFeatureState,
 } from './apply.js';
+export {default as MapboxVectorLayer} from './MapboxVectorLayer.js';
