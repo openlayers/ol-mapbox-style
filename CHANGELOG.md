@@ -1,5 +1,9 @@
 # Changelog
 
+## 11.0.1
+
+* Use ol >= 7.x || v8.0.0-dev to allow deduping
+
 ## 11.0.0
 
 ### Backwards incompatible changes
