@@ -40,7 +40,7 @@
   "dependencies": {
     "@mapbox/mapbox-gl-style-spec": "^13.23.1",
     "mapbox-to-css-font": "^2.4.1",
-    "ol": "^7.3.0"
+    "ol": ">=7.x || ^8.0.0-dev.1692637592529"
   },
   "devDependencies": {
     "@mapbox/flow-remove-types": "^2.0.0",
