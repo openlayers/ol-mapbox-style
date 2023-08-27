@@ -14,9 +14,9 @@ To use the library in an application with an npm based dev environment, install 
 
 When installed this way, just import the ol-mapbox-style module, like in the usage example below. To use a standalone build of ol-mapbox-style, just include 'dist/olms.js' on your HTML page, and access the exported functions from the global `olms` object (e.g. `olms.apply()`, `olms.applyBackground()`). Note that the standalone build depends on the full build of OpenLayers.
 
-**ol-mapbox-style v9 requires [OpenLayers](https://npmjs.com/package/ol) version >= 7 &lt; 8**.
+**ol-mapbox-style >=v9 requires [OpenLayers](https://npmjs.com/package/ol) version >=7**.
 
-**ol-mapbox-style v8 requires [OpenLayers](https://npmjs.com/package/ol) version >= 6.13.0 &lt; 7**.
+**ol-mapbox-style v8 requires [OpenLayers](https://npmjs.com/package/ol) version >=6.13.0 &lt;7**.
 
 ### Usage
 
