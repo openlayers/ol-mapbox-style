@@ -1,5 +1,9 @@
 # Changelog
 
+## 11.0.2
+
+* Make `ol` a peer dependency
+
 ## 11.0.1
 
 * Use ol >= 7.x || v8.0.0-dev to allow deduping
