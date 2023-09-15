@@ -1,8 +1,20 @@
 # Changelog
 
+## 12.0.0
+
+### Backwards incompatible changes
+
+* The `transformRequest` hook is now called for every single `Tiles` request with the final url, instead of just once with the url template.
+* Generated OpenLayers Tile and VectorTile sources previously used the template urls obtained by `source.getUrl()` or `source.getUrls()`. Now they use a `tileLoadFunction` configured by ol-mapbox-style instead.
+* Generated OpenLayers Vector sources are now always configured with a `loader` by ol-mapbox-style. The `getUrl()` method will return the url without the `transformRequest` transform. When the url is templated (`{bbox-...}`), `getUrl()` will return `undefined`.
+
+### Other changes
+
+* The `transformRequest` hook now also accepts a url string as return value. When a `Request` is returned, it will be fully respected - not just the request's `url`.
+
 ## 11.0.3
 
-* Moree ol versions included in peer dependency version range
+* More ol versions included in peer dependency version range
 
 ## 11.0.2
 
