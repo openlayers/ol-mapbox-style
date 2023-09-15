@@ -1,5 +1,9 @@
 # Changelog
 
+## 11.0.3
+
+* Moree ol versions included in peer dependency version range
+
 ## 11.0.2
 
 * Make `ol` a peer dependency
