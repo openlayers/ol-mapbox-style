@@ -14,7 +14,8 @@ import styleInvalidVersion from './fixtures/style-invalid-version.json';
 import styleMissingSprite from './fixtures/style-missing-sprite.json';
 
 import VectorSource from 'ol/source/Vector.js';
-import {applyStyle} from '../src/apply.js';
+import {apply, applyStyle} from '../src/apply.js';
+import {get} from 'ol/proj.js';
 
 describe('applyStyle with source creation', function () {
   it('accepts incorrect source with simple 3-parameter configuration', function (done) {
@@ -62,9 +63,20 @@ describe('applyStyle with source creation', function () {
         return new Request(url);
       },
     }).then(function () {
+      const originalFetch = fetch;
+      /** @type {Array<Request>} */
+      const requests = [];
+      fetch = (request) => {
+        requests.push(request);
+        return originalFetch(request);
+      };
+      layer
+        .getSource()
+        .loadFeatures([0, 0, 10000, 10000], 10, get('EPSG:3857'));
+      window.fetch = originalFetch;
       try {
         should(layer.getSource()).be.an.instanceOf(VectorSource);
-        should(layer.getSource().getUrl()).equal(
+        should(requests[0].url).equal(
           `${location.origin}/fixtures/states.geojson?foo=bar`
         );
         should(layer.getStyle()).be.an.instanceOf(Function);
@@ -139,14 +151,20 @@ describe('applyStyle with source creation', function () {
         if (type === 'Tiles') {
           url += '?foo=bar';
         }
-        return new Request(url);
+        return url;
       },
     })
       .then(function () {
         try {
           should(layer.getSource()).be.an.instanceOf(VectorTileSource);
-          should(layer.getSource().getUrls()[0]).equal(
-            `${location.origin}/fixtures/osm-liberty/tiles/v3/{z}/{x}/{y}.pbf?foo=bar`
+          const image = {};
+          const img = {getImage: () => image};
+          layer.getSource().getTileLoadFunction()(
+            img,
+            `${location.origin}/fixtures/osm-liberty/tiles/v3/0/0/0.pbf`
+          );
+          should(image.src).equal(
+            `${location.origin}/fixtures/osm-liberty/tiles/v3/0/0/0.pbf?foo=bar`
           );
           should(layer.getStyle()).be.an.instanceOf(Function);
           done();
@@ -202,7 +220,7 @@ describe('applyStyle with source creation', function () {
         should(url).endWith(accessToken);
         done();
       },
-    });
+    }).catch(done);
   });
 });
 
@@ -503,7 +521,6 @@ describe('applyStyle functionality', function () {
 
 describe('applyStyle supports transformRequest object', function () {
   it('applies transformRequest to all Vector Tile request types', function (done) {
-    const layer = new VectorTileLayer();
     const expectedRequestTypes = new Set([
       'Style',
       'Sprite',
@@ -512,49 +529,54 @@ describe('applyStyle supports transformRequest object', function () {
       'Tiles',
     ]);
     const seenRequestTypes = new Set();
-    applyStyle(layer, '/fixtures/hot-osm/hot-osm.json', '', {
+    apply(document.createElement('div'), '/fixtures/hot-osm/hot-osm.json', {
       transformRequest: function (url, type) {
         seenRequestTypes.add(type);
         return new Request(url);
       },
     })
-      .then(function () {
-        should.deepEqual(
-          expectedRequestTypes,
-          seenRequestTypes,
-          `Request types seen by transformRequest: ${Array.from(
-            seenRequestTypes
-          )} do not match those expected for a Vector Tile style: ${Array.from(
-            expectedRequestTypes
-          )}`
-        );
-        done();
+      .then(function (map) {
+        map.once('rendercomplete', () => {
+          should.deepEqual(
+            expectedRequestTypes,
+            seenRequestTypes,
+            `Request types seen by transformRequest: ${Array.from(
+              seenRequestTypes
+            )} do not match those expected for a Vector Tile style: ${Array.from(
+              expectedRequestTypes
+            )}`
+          );
+          done();
+        });
+        map.setSize([100, 100]);
       })
       .catch(function (error) {
         done(error);
       });
   });
   it('applies transformRequest to GeoJSON request types', function (done) {
-    const layer = new VectorLayer();
     const expectedRequestTypes = new Set(['Style', 'GeoJSON']);
     const seenRequestTypes = new Set();
-    applyStyle(layer, '/fixtures/geojson.json', '', {
+    apply(document.createElement('div'), '/fixtures/geojson.json', {
       transformRequest: function (url, type) {
         seenRequestTypes.add(type);
         return new Request(url);
       },
     })
-      .then(function () {
-        should.deepEqual(
-          expectedRequestTypes,
-          seenRequestTypes,
-          `Request types seen by transformRequest: ${Array.from(
-            seenRequestTypes
-          )} do not match those expected for a GeoJSON style: ${Array.from(
-            expectedRequestTypes
-          )}`
-        );
-        done();
+      .then(function (map) {
+        map.once('rendercomplete', () => {
+          should.deepEqual(
+            expectedRequestTypes,
+            seenRequestTypes,
+            `Request types seen by transformRequest: ${Array.from(
+              seenRequestTypes
+            )} do not match those expected for a GeoJSON style: ${Array.from(
+              expectedRequestTypes
+            )}`
+          );
+          done();
+        });
+        map.setSize([100, 100]);
       })
       .catch(function (error) {
         done(error);

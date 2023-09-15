@@ -14,9 +14,10 @@ import {
   getMapboxLayer,
   getSource,
   removeMapboxLayer,
+  setupVectorSource,
   updateMapboxLayer,
 } from '../src/apply.js';
-import {fetchResource, getTileJson} from '../src/util.js';
+import {fetchResource} from '../src/util.js';
 
 describe('util', function () {
   describe('fetchResource', function () {
@@ -66,21 +67,21 @@ describe('util', function () {
   });
   describe('getTileJson', function () {
     it('resolves mapbox:// tile urls properly', function (done) {
-      getTileJson(
+      setupVectorSource(
         {
           url: 'mapbox://mapbox.mapbox-streets-v7',
           type: 'vector',
         },
-        '',
-        {accessToken: 'mytoken'}
+        location.href + '?getTileJson',
+        {
+          accessToken: 'mytoken',
+        }
       )
-        .then(function (tilejson) {
-          should(tilejson.tiles).eql([
-            'https://a.tiles.mapbox.com/v4/mapbox.mapbox-streets-v7/{z}/{x}/{y}.vector.pbf?access_token=mytoken',
-            'https://b.tiles.mapbox.com/v4/mapbox.mapbox-streets-v7/{z}/{x}/{y}.vector.pbf?access_token=mytoken',
-            'https://c.tiles.mapbox.com/v4/mapbox.mapbox-streets-v7/{z}/{x}/{y}.vector.pbf?access_token=mytoken',
-            'https://d.tiles.mapbox.com/v4/mapbox.mapbox-streets-v7/{z}/{x}/{y}.vector.pbf?access_token=mytoken',
-          ]);
+        .then(function (source) {
+          const url = source.getTileUrlFunction()([0, 0, 0]);
+          should(url).eql(
+            'https://a.tiles.mapbox.com/v4/mapbox.mapbox-streets-v7/0/0/0.vector.pbf?access_token=mytoken'
+          );
           done();
         })
         .catch((err) => done(err));

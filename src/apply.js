@@ -65,12 +65,11 @@ import {
 /**
  * @typedef {Object} Options
  * @property {string} [accessToken] Access token for 'mapbox://' urls.
- * @property {function(string, ResourceType): (Request|void)} [transformRequest]
+ * @property {function(string, import("./util.js").ResourceType): (Request|string|void)} [transformRequest]
  * Function for controlling how `ol-mapbox-style` fetches resources. Can be used for modifying
  * the url, adding headers or setting credentials options. Called with the url and the resource
- * type as arguments, this function is supposed to return a `Request` object. Without a return value,
- * the original request will not be modified. For `Tiles` and `GeoJSON` resources, only the `url` of
- * the returned request will be respected.
+ * type as arguments, this function is supposed to return a `Request` or a url `string`. Without a return value,
+ * the original request will not be modified.
  * @property {string} [projection='EPSG:3857'] Only useful when working with non-standard projections.
  * Code of a projection registered with OpenLayers. All sources of the style must be provided in this
  * projection. The projection must also have a valid extent defined, which will be used to determine the
@@ -97,8 +96,6 @@ import {
  * @property {boolean} [updateSource=true] Update or create vector (tile) layer source with parameters
  * specified for the source in the mapbox style definition.
  */
-
-/** @typedef {'Style'|'Source'|'Sprite'|'SpriteImage'|'Tiles'|'GeoJSON'} ResourceType */
 
 /**
  * @param {import("ol/proj/Projection.js").default} projection Projection.
@@ -419,12 +416,11 @@ export function applyStyle(
                 '.png' +
                 sprite.search;
               if (options.transformRequest) {
-                const transformed = options.transformRequest(
-                  spriteImageUrl,
-                  'SpriteImage'
-                );
+                const transformed =
+                  options.transformRequest(spriteImageUrl, 'SpriteImage') ||
+                  spriteImageUrl;
                 if (transformed instanceof Request) {
-                  spriteImageUrl = encodeURI(transformed.url);
+                  spriteImageUrl = transformed;
                 }
               }
               onChange();
@@ -621,12 +617,13 @@ function setupBackgroundLayer(glLayer, options, functionCache) {
 export function setupVectorSource(glSource, styleUrl, options) {
   return new Promise(function (resolve, reject) {
     getTileJson(glSource, styleUrl, options)
-      .then(function (tileJSON) {
+      .then(function ({tileJson, tileLoadFunction}) {
         const sourceOptions = sourceOptionsFromTileJSON(
           glSource,
-          tileJSON,
+          tileJson,
           options
         );
+        sourceOptions.tileLoadFunction = tileLoadFunction;
         sourceOptions.format = new MVT();
         resolve(new VectorTileSource(sourceOptions));
       })
@@ -658,7 +655,7 @@ function getBboxTemplate(projection) {
 function setupRasterLayer(glSource, styleUrl, options) {
   const layer = new TileLayer();
   getTileJson(glSource, styleUrl, options)
-    .then(function (tileJson) {
+    .then(function ({tileJson, tileLoadFunction}) {
       const source = new TileJSON({
         interpolate:
           options.interpolate === undefined ? true : options.interpolate,
@@ -676,6 +673,9 @@ function setupRasterLayer(glSource, styleUrl, options) {
         source.projection = getProjection(options.projection);
       }
       const getTileUrl = source.getTileUrlFunction();
+      if (tileLoadFunction) {
+        source.setTileLoadFunction(tileLoadFunction);
+      }
       source.setTileUrlFunction(function (tileCoord, pixelRatio, projection) {
         const bboxTemplate = getBboxTemplate(projection);
         let src = getTileUrl(tileCoord, pixelRatio, projection);
@@ -727,18 +727,12 @@ function setupGeoJSONSource(glSource, styleUrl, options) {
   const data = glSource.data;
   const sourceOptions = {};
   if (typeof data == 'string') {
-    let geoJsonUrl = normalizeSourceUrl(
+    const geoJsonUrl = normalizeSourceUrl(
       data,
       options.accessToken,
       options.accessTokenParam || 'access_token',
       styleUrl || location.href
     );
-    if (options.transformRequest) {
-      const transformed = options.transformRequest(geoJsonUrl, 'GeoJSON');
-      if (transformed instanceof Request) {
-        geoJsonUrl = decodeURI(transformed.url);
-      }
-    }
     if (/\{bbox-[0-9a-z-]+\}/.test(geoJsonUrl)) {
       const extentUrl = (extent, resolution, projection) => {
         const bboxTemplate = getBboxTemplate(projection);
@@ -747,17 +741,53 @@ function setupGeoJSONSource(glSource, styleUrl, options) {
       const source = new VectorSource({
         attributions: glSource.attribution,
         format: geoJsonFormat,
-        url: extentUrl,
+        loader: (extent, resolution, projection, success, failure) => {
+          const url =
+            typeof extentUrl === 'function'
+              ? extentUrl(extent, resolution, projection)
+              : extentUrl;
+          fetchResource('GeoJSON', url, options)
+            .then((json) => {
+              const features = /** @type {*} */ (
+                source
+                  .getFormat()
+                  .readFeatures(json, {featureProjection: projection})
+              );
+              source.addFeatures(features);
+              success(features);
+            })
+            .catch((response) => {
+              source.removeLoadedExtent(extent);
+              failure();
+            });
+        },
         strategy: bboxStrategy,
       });
       source.set('mapbox-source', glSource);
       return source;
     }
-    return new VectorSource({
+    const source = new VectorSource({
       attributions: glSource.attribution,
       format: geoJsonFormat,
       url: geoJsonUrl,
+      loader: (extent, resolution, projection, success, failure) => {
+        fetchResource('GeoJSON', geoJsonUrl, options)
+          .then((json) => {
+            const features = /** @type {*} */ (
+              source
+                .getFormat()
+                .readFeatures(json, {featureProjection: projection})
+            );
+            source.addFeatures(features);
+            success(features);
+          })
+          .catch((response) => {
+            source.removeLoadedExtent(extent);
+            failure();
+          });
+      },
     });
+    return source;
   }
   sourceOptions.features = geoJsonFormat.readFeatures(data, {
     featureProjection: getUserProjection() || 'EPSG:3857',

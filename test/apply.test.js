@@ -186,24 +186,28 @@ describe('ol-mapbox-style', function () {
     });
 
     it('handles geojson wfs sources with bbox loadingstrategy', function (done) {
-      apply(target, './fixtures/geojson-wfs.json')
-        .then(function (map) {
-          const layer = map
-            .getAllLayers()
-            .find((x) => x.get('mapbox-source') === 'water_areas');
-          const source = layer.getSource();
-          const url = new URL(
-            source
-              .getUrl()
-              .call(this, map.getView().calculateExtent(), 1, get('EPSG:3857'))
-          );
-          const bbox = url.searchParams.get('bbox');
-          const extent = map.getView().calculateExtent();
-          should(bbox).be.equal(extent.join(','));
-          should(source).be.instanceof(VectorSource);
-          should(layer.getStyle()).be.a.Function();
-          done();
-        })
+      const map = new Map({target});
+      apply(map, './fixtures/geojson-wfs.json', {
+        transformRequest: (src, type) => {
+          if (src.includes('bbox')) {
+            try {
+              const layer = map
+                .getAllLayers()
+                .find((x) => x.get('mapbox-source') === 'water_areas');
+              const source = layer.getSource();
+              const url = new URL(src);
+              const bbox = url.searchParams.get('bbox').split(',');
+              should(bbox).have.length(4);
+              should(source).be.instanceof(VectorSource);
+              should(layer.getStyle()).be.a.Function();
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }
+        },
+      })
+        .then((map) => map.setSize([100, 100]))
         .catch(done);
     });
 
@@ -221,16 +225,19 @@ describe('ol-mapbox-style', function () {
                 .getAllLayers()
                 .find((x) => x.get('mapbox-source') === 'water_areas');
               const source = layer.getSource();
-              const url = new URL(
-                source
-                  .getUrl()
-                  .call(
-                    this,
-                    map.getView().calculateExtent(),
-                    1,
-                    map.getView().getProjection()
-                  )
+              const originalFetch = fetch;
+              const requests = [];
+              fetch = (request) => {
+                requests.push(request);
+                return originalFetch(request);
+              };
+              source.loadFeatures(
+                map.getView().calculateExtent(),
+                1,
+                map.getView().getProjection()
               );
+              window.fetch = originalFetch;
+              const url = new URL(requests[0].url);
               const bbox = url.searchParams.get('bbox');
               const extent = map.getView().calculateExtent();
               should(bbox).be.equal(extent.join(','));
@@ -322,11 +329,19 @@ describe('ol-mapbox-style', function () {
             .getAllLayers()
             .find((x) => x.get('mapbox-source') === 'water_areas');
           const source = layer.getSource();
-          const url = new URL(
-            source
-              .getUrl()
-              .call(this, map.getView().calculateExtent(), 1, get('EPSG:3857'))
+          const originalFetch = fetch;
+          const requests = [];
+          fetch = (request) => {
+            requests.push(request);
+            return originalFetch(request);
+          };
+          source.loadFeatures(
+            map.getView().calculateExtent(),
+            1,
+            get('EPSG:3857')
           );
+          window.fetch = originalFetch;
+          const url = new URL(requests[0].url);
           should(url.searchParams.get('transformRequest')).be.equal('true');
           should(source).be.instanceof(VectorSource);
           should(layer.getStyle()).be.a.Function();
@@ -718,14 +733,21 @@ describe('ol-mapbox-style', function () {
         let calledForRasterSource = false;
         apply(target, context, {
           transformRequest: function (url, type) {
-            if (type === 'Tiles' && url === context.sources.states.tiles[0]) {
+            if (type === 'Tiles') {
               calledForRasterSource = true;
             }
           },
         })
-          .then(function () {
-            should(calledForRasterSource).be.true();
-            done();
+          .then(function (map) {
+            map.once('rendercomplete', () => {
+              try {
+                should(calledForRasterSource).be.true();
+                done();
+              } catch (e) {
+                done(e);
+              }
+            });
+            map.setSize([100, 100]);
           })
           .catch(done);
       });
@@ -1029,13 +1051,17 @@ describe('ol-mapbox-style', function () {
     it('works with a glStyle url', function (done) {
       applyBackground(map, './fixtures/background.json')
         .then(function () {
-          should(
-            map
-              .getLayers()
-              .item(0)
-              .render({viewState: {resolution: 1}}).style.backgroundColor
-          ).be.exactly('rgba(248, 244, 240, 0.75)');
-          done();
+          try {
+            should(
+              map
+                .getLayers()
+                .item(0)
+                .render({viewState: {resolution: 1}}).style.backgroundColor
+            ).be.exactly('rgba(248, 244, 240, 0.75)');
+            done();
+          } catch (e) {
+            done(e);
+          }
         })
         .catch(done);
     });
