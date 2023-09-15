@@ -438,7 +438,7 @@ Get the the style for a specific Mapbox layer only. This can be useful for creat
 
 | Name         | Type                                         | Description                                 |
 | :----------- | :------------------------------------------- | :------------------------------------------ |
-| `feature`    | `Feature`&lt;`Geometry`> \| `RenderFeature`  | OpenLayers feature.                         |
+| `feature`    | `RenderFeature` \| `Feature`&lt;`Geometry`>  | OpenLayers feature.                         |
 | `resolution` | `number`                                     | View resolution.                            |
 | `olLayer`    | `VectorLayer`&lt;`any`> \| `VectorTileLayer` | OpenLayers layer.                           |
 | `layerId`    | `string`                                     | Id of the Mapbox layer to get the style for |
@@ -585,7 +585,7 @@ sure that sprite image loading works:
 | `sourceOrLayers` | `string` \| `string`\[]                                                                                                           | `undefined`          | `source` key or an array of layer `id`s from the Mapbox Style object. When a `source` key is provided, all layers for the specified source will be included in the style function. When layer `id`s are provided, they must be from layers that use the same source.                                                                                              |
 | `resolutions`    | `number`\[]                                                                                                                       | `defaultResolutions` | Resolutions for mapping resolution to zoom level.                                                                                                                                                                                                                                                                                                                 |
 | `spriteData`     | `any`                                                                                                                             | `undefined`          | Sprite data from the url specified in the Mapbox Style object's `sprite` property. Only required if a `sprite` property is specified in the Mapbox Style object.                                                                                                                                                                                                  |
-| `spriteImageUrl` | `string`                                                                                                                          | `undefined`          | Sprite image url for the sprite specified in the Mapbox Style object's `sprite` property. Only required if a `sprite` property is specified in the Mapbox Style object.                                                                                                                                                                                           |
+| `spriteImageUrl` | `string` \| `Request`                                                                                                             | `undefined`          | Sprite image url for the sprite specified in the Mapbox Style object's `sprite` property. Only required if a `sprite` property is specified in the Mapbox Style object.                                                                                                                                                                                           |
 | `getFonts`       | (`arg0`: `string`\[], `arg1`: `string`) => `string`\[]                                                                            | `undefined`          | Function that receives a font stack and the url template from the GL style's `metadata['ol:webfonts']` property (if set) as arguments, and returns a (modified) font stack that is available. Font names are the names used in the Mapbox Style object. If not provided, the font stack will be used as-is. This function can also be used for loading web fonts. |
 | `getImage?`      | (`arg0`: `VectorLayer`&lt;`any`> \| `VectorTileLayer`, `arg1`: `string`) => `string` \| `HTMLCanvasElement` \| `HTMLImageElement` | `undefined`          | Function that returns an image or a URL for an image name. If the result is an HTMLImageElement, it must already be loaded. The layer can be used to call layer.changed() when the loading and processing of the image has finished. This function can be used for icons not in the sprite or to override sprite icons.                                           |
 | `...args`        | `any`                                                                                                                             | `undefined`          | -                                                                                                                                                                                                                                                                                                                                                                 |
@@ -1143,17 +1143,16 @@ as object, when they contain a relative sprite url, or sources referencing data 
 
 #### transformRequest
 
-• **transformRequest**: (`arg0`: `string`, `arg1`: [`ResourceType`](#ResourceType)) => `void` \| `Request`
+• **transformRequest**: (`arg0`: `string`, `arg1`: [`ResourceType`](#ResourceType)) => `string` \| `void` \| `Request`
 
 ##### Type declaration
 
-▸ (`arg0`, `arg1`): `void` \| `Request`
+▸ (`arg0`, `arg1`): `string` \| `void` \| `Request`
 
 Function for controlling how `ol-mapbox-style` fetches resources. Can be used for modifying
 the url, adding headers or setting credentials options. Called with the url and the resource
-type as arguments, this function is supposed to return a `Request` object. Without a return value,
-the original request will not be modified. For `Tiles` and `GeoJSON` resources, only the `url` of
-the returned request will be respected.
+type as arguments, this function is supposed to return a `Request` or a url `string`. Without a return value,
+the original request will not be modified.
 
 ###### Parameters
 
@@ -1164,7 +1163,7 @@ the returned request will be respected.
 
 ###### Returns
 
-`void` \| `Request`
+`string` \| `void` \| `Request`
 
 <a name="modulesinternal_md"></a>
 

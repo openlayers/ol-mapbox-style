@@ -179,9 +179,19 @@ export default class MapboxVectorLayer extends VectorTileLayer {
       this.accessToken = options.accessToken;
     }
     const url = options.styleUrl;
-    applyStyle(this, url, options.layers || options.source, {
-      accessToken: this.accessToken,
-    })
+    const promises = [
+      applyStyle(this, url, options.layers || options.source, {
+        accessToken: this.accessToken,
+      }),
+    ];
+    if (this.getBackground() === undefined) {
+      promises.push(
+        applyBackground(this, options.styleUrl, {
+          accessToken: this.accessToken,
+        })
+      );
+    }
+    Promise.all(promises)
       .then(() => {
         source.setState('ready');
       })
@@ -190,10 +200,5 @@ export default class MapboxVectorLayer extends VectorTileLayer {
         const source = this.getSource();
         source.setState('error');
       });
-    if (this.getBackground() === undefined) {
-      applyBackground(this, options.styleUrl, {
-        accessToken: this.accessToken,
-      });
-    }
   }
 }

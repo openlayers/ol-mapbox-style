@@ -41,6 +41,7 @@ import {isFunction} from '@mapbox/mapbox-gl-style-spec/function/index.js';
  * @typedef {import("ol/layer/Vector").default} VectorLayer
  * @typedef {import("ol/layer/VectorTile").default} VectorTileLayer
  * @typedef {import("ol/style/Style").StyleFunction} StyleFunction
+ * @typedef {import('./util.js').ResourceType} ResourceType
  */
 
 const types = {
@@ -318,7 +319,7 @@ export const styleFunctionArgs = {};
  * @param {Object} spriteData Sprite data from the url specified in
  * the Mapbox Style object's `sprite` property. Only required if a `sprite`
  * property is specified in the Mapbox Style object.
- * @param {string} spriteImageUrl Sprite image url for the sprite
+ * @param {string|Request} spriteImageUrl Sprite image url for the sprite
  * specified in the Mapbox Style object's `sprite` property. Only required if a
  * `sprite` property is specified in the Mapbox Style object.
  * @param {function(Array<string>, string=):Array<string>} getFonts Function that
@@ -359,14 +360,28 @@ export function stylefunction(
   if (spriteImageUrl) {
     if (typeof Image !== 'undefined') {
       const img = new Image();
-      img.crossOrigin = 'anonymous';
+      let blobUrl;
+      if (spriteImageUrl instanceof Request) {
+        fetch(spriteImageUrl)
+          .then((response) => response.blob())
+          .then((blob) => {
+            blobUrl = URL.createObjectURL(blob);
+            img.src = blobUrl;
+          })
+          .catch(() => {});
+      } else {
+        img.crossOrigin = 'anonymous';
+        img.src = spriteImageUrl;
+        if (blobUrl) {
+          URL.revokeObjectURL(blobUrl);
+        }
+      }
       img.onload = function () {
         spriteImage = img;
         spriteImageSize = [img.width, img.height];
         olLayer.changed();
         img.onload = null;
       };
-      img.src = spriteImageUrl;
     } else if (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) { //eslint-disable-line
       const worker = /** @type {*} */ (self);
       // Main thread needs to handle 'loadImage' and dispatch 'imageLoaded'
@@ -922,7 +937,7 @@ export function stylefunction(
                       iconImg = new Icon(iconOptions);
                     } else {
                       const spriteImageData = spriteData[icon];
-                      let img, imgSize, size, offset;
+                      let img, size, offset;
                       if (haloWidth) {
                         if (spriteImageData.sdf) {
                           img = drawIconHalo(
@@ -946,7 +961,6 @@ export function stylefunction(
                             haloColor
                           );
                         }
-                        imgSize = [img.width, img.height];
                       } else {
                         if (spriteImageData.sdf) {
                           if (!spriteImageUnSDFed) {
@@ -965,14 +979,14 @@ export function stylefunction(
                         } else {
                           img = spriteImage;
                         }
-                        imgSize = spriteImageSize;
                         size = [spriteImageData.width, spriteImageData.height];
                         offset = [spriteImageData.x, spriteImageData.y];
                       }
                       iconImg = new Icon({
                         color: color,
                         img: img,
-                        imgSize: imgSize,
+                        // @ts-ignore
+                        imgSize: spriteImageSize,
                         size: size,
                         offset: offset,
                         rotateWithView: iconRotationAlignment === 'map',

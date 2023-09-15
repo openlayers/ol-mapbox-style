@@ -1,6 +1,10 @@
+import TileState from 'ol/TileState.js';
+import {VectorTile} from 'ol';
 import {expandUrl} from 'ol/tileurlfunction.js';
 import {getUid} from 'ol/util.js';
 import {normalizeSourceUrl, normalizeStyleUrl} from './mapbox.js';
+
+/** @typedef {'Style'|'Source'|'Sprite'|'SpriteImage'|'Tiles'|'GeoJSON'} ResourceType */
 
 /** @typedef {import("ol").Map} Map */
 /** @typedef {import("ol/layer").Layer} Layer */
@@ -113,16 +117,19 @@ export function fetchResource(resourceType, url, options = {}, metadata) {
     }
     return pendingRequests[url][1];
   }
-  const request = options.transformRequest
-    ? options.transformRequest(url, resourceType) || new Request(url)
-    : new Request(url);
-  if (!request.headers.get('Accept')) {
-    request.headers.set('Accept', 'application/json');
+  let transformedRequest = options.transformRequest
+    ? options.transformRequest(url, resourceType) || url
+    : url;
+  if (!(transformedRequest instanceof Request)) {
+    transformedRequest = new Request(transformedRequest);
+  }
+  if (!transformedRequest.headers.get('Accept')) {
+    transformedRequest.headers.set('Accept', 'application/json');
   }
   if (metadata) {
-    metadata.request = request;
+    metadata.request = transformedRequest;
   }
-  const pendingRequest = fetch(request)
+  const pendingRequest = fetch(transformedRequest)
     .then(function (response) {
       delete pendingRequests[url];
       return response.ok
@@ -133,7 +140,7 @@ export function fetchResource(resourceType, url, options = {}, metadata) {
       delete pendingRequests[url];
       return Promise.reject(new Error('Error fetching source ' + url));
     });
-  pendingRequests[url] = [request, pendingRequest];
+  pendingRequests[url] = [transformedRequest, pendingRequest];
   return pendingRequest;
 }
 
@@ -155,27 +162,56 @@ export function getGlStyle(glStyleOrUrl, options) {
   }
 }
 
-function getTransformedTilesUrl(tilesUrl, options) {
-  if (options.transformRequest) {
-    const transformedRequest = options.transformRequest(tilesUrl, 'Tiles');
-    if (transformedRequest instanceof Request) {
-      return decodeURI(transformedRequest.url);
-    }
-  }
-  return tilesUrl;
-}
-
 const tilejsonCache = {};
 /**
  * @param {Object} glSource glStyle source object.
  * @param {string} styleUrl Style URL.
  * @param {Options} options Options.
- * @return {Object} TileJson
+ * @return {Promise<{tileJson: Object, tileLoadFunction: import('ol/Tile.js').LoadFunction}?>} TileJson and load function
  */
 export function getTileJson(glSource, styleUrl, options = {}) {
   const cacheKey = [styleUrl, JSON.stringify(glSource)].toString();
   let promise = tilejsonCache[cacheKey];
   if (!promise || options.transformRequest) {
+    let tileLoadFunction;
+    if (options.transformRequest) {
+      tileLoadFunction = (tile, src) => {
+        const transformedRequest = options.transformRequest
+          ? options.transformRequest(src, 'Tiles') || src
+          : src;
+        if (tile instanceof VectorTile) {
+          tile.setLoader((extent, resolution, projection) => {
+            fetch(transformedRequest)
+              .then((response) => response.arrayBuffer())
+              .then((data) => {
+                const format = tile.getFormat();
+                const features = format.readFeatures(data, {
+                  extent: extent,
+                  featureProjection: projection,
+                });
+                // @ts-ignore
+                tile.setFeatures(features);
+              })
+              .catch((e) => tile.setState(TileState.ERROR));
+          });
+        } else {
+          const img = tile.getImage();
+          if (transformedRequest instanceof Request) {
+            fetch(transformedRequest)
+              .then((response) => response.blob())
+              .then((blob) => {
+                const url = URL.createObjectURL(blob);
+                img.addEventListener('load', () => URL.revokeObjectURL(url));
+                img.addEventListener('error', () => URL.revokeObjectURL(url));
+                img.src = url;
+              })
+              .catch((e) => tile.setState(TileState.ERROR));
+          } else {
+            img.src = transformedRequest;
+          }
+        }
+      };
+    }
     const url = glSource.url;
     if (url && !glSource.tiles) {
       const normalizedSourceUrl = normalizeSourceUrl(
@@ -185,12 +221,13 @@ export function getTileJson(glSource, styleUrl, options = {}) {
         styleUrl || location.href
       );
       if (url.startsWith('mapbox://')) {
-        promise = Promise.resolve(
-          Object.assign({}, glSource, {
+        promise = Promise.resolve({
+          tileJson: Object.assign({}, glSource, {
             url: undefined,
             tiles: expandUrl(normalizedSourceUrl),
-          })
-        );
+          }),
+          tileLoadFunction,
+        });
       } else {
         const metadata = {};
         promise = fetchResource(
@@ -203,17 +240,14 @@ export function getTileJson(glSource, styleUrl, options = {}) {
             if (tileJson.scheme === 'tms') {
               tileUrl = tileUrl.replace('{y}', '{-y}');
             }
-            return getTransformedTilesUrl(
-              normalizeSourceUrl(
-                tileUrl,
-                options.accessToken,
-                options.accessTokenParam || 'access_token',
-                metadata.request.url
-              ),
-              options
+            return normalizeSourceUrl(
+              tileUrl,
+              options.accessToken,
+              options.accessTokenParam || 'access_token',
+              metadata.request.url
             );
           });
-          return Promise.resolve(tileJson);
+          return Promise.resolve({tileJson, tileLoadFunction});
         });
       }
     } else {
@@ -222,18 +256,18 @@ export function getTileJson(glSource, styleUrl, options = {}) {
           if (glSource.scheme === 'tms') {
             tileUrl = tileUrl.replace('{y}', '{-y}');
           }
-          return getTransformedTilesUrl(
-            normalizeSourceUrl(
-              tileUrl,
-              options.accessToken,
-              options.accessTokenParam || 'access_token',
-              styleUrl || location.href
-            ),
-            options
+          return normalizeSourceUrl(
+            tileUrl,
+            options.accessToken,
+            options.accessTokenParam || 'access_token',
+            styleUrl || location.href
           );
         }),
       });
-      promise = Promise.resolve(Object.assign({}, glSource));
+      promise = Promise.resolve({
+        tileJson: Object.assign({}, glSource),
+        tileLoadFunction,
+      });
     }
     tilejsonCache[cacheKey] = promise;
   }
@@ -351,6 +385,5 @@ export function drawSDF(image, area, color) {
 
 /**
  * @typedef {import("./apply.js").Options} Options
- * @typedef {import('./apply.js').ResourceType} ResourceType
  * @private
  */
