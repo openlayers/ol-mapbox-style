@@ -13,6 +13,7 @@ export {
   getLayers,
   getSource,
   getMapboxLayer,
+  updateMapboxSource,
   updateMapboxLayer,
   addMapboxLayer,
   removeMapboxLayer,

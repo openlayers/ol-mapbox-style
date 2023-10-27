@@ -150,6 +150,7 @@ and open a browser on the host and port indicated in the console output (usually
 - [setFeatureState](#setFeatureState)
 - [stylefunction](#stylefunction)
 - [updateMapboxLayer](#updateMapboxLayer)
+- [updateMapboxSource](#updateMapboxSource)
 
 ### References
 
@@ -615,6 +616,29 @@ Update a Mapbox Layer object in the style. The map will be re-rendered with the 
 ##### Returns
 
 `void`
+
+* * *
+
+#### updateMapboxSource
+
+▸ **updateMapboxSource**(`mapOrGroup`, `id`, `mapboxSource`): `Promise`&lt;`Source`>
+
+Updates a Mapbox source object in the style. The according OpenLayers source will be replaced
+and the map will be re-rendered.
+
+##### Parameters
+
+| Name           | Type                  | Description                                        |
+| :------------- | :-------------------- | :------------------------------------------------- |
+| `mapOrGroup`   | `Map` \| `LayerGroup` | The Map or LayerGroup `apply` was called on.       |
+| `id`           | `string`              | Key of the source in the `sources` object literal. |
+| `mapboxSource` | `any`                 | Mapbox source object.                              |
+
+##### Returns
+
+`Promise`&lt;`Source`>
+
+Promise that resolves when the source has been updated.
 
 <a name="classesmapboxvectorlayermd"></a>
 

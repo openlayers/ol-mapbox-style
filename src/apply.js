@@ -652,43 +652,55 @@ function getBboxTemplate(projection) {
   return `{bbox-${projCode.toLowerCase().replace(/[^a-z0-9]/g, '-')}}`;
 }
 
+function setupRasterSource(glSource, styleUrl, options) {
+  return new Promise(function (resolve, reject) {
+    getTileJson(glSource, styleUrl, options)
+      .then(function ({tileJson, tileLoadFunction}) {
+        const source = new TileJSON({
+          interpolate:
+            options.interpolate === undefined ? true : options.interpolate,
+          transition: 0,
+          crossOrigin: 'anonymous',
+          tileJSON: tileJson,
+        });
+        source.tileGrid = sourceOptionsFromTileJSON(
+          glSource,
+          tileJson,
+          options
+        ).tileGrid;
+        if (options.projection) {
+          //@ts-ignore
+          source.projection = getProjection(options.projection);
+        }
+        const getTileUrl = source.getTileUrlFunction();
+        if (tileLoadFunction) {
+          source.setTileLoadFunction(tileLoadFunction);
+        }
+        source.setTileUrlFunction(function (tileCoord, pixelRatio, projection) {
+          const bboxTemplate = getBboxTemplate(projection);
+          let src = getTileUrl(tileCoord, pixelRatio, projection);
+          if (src.indexOf(bboxTemplate) != -1) {
+            const bbox = source.getTileGrid().getTileCoordExtent(tileCoord);
+            src = src.replace(bboxTemplate, bbox.toString());
+          }
+          return src;
+        });
+        source.set('mapbox-source', glSource);
+        resolve(source);
+      })
+      .catch(function (error) {
+        reject(error);
+      });
+  });
+}
+
 function setupRasterLayer(glSource, styleUrl, options) {
   const layer = new TileLayer();
-  getTileJson(glSource, styleUrl, options)
-    .then(function ({tileJson, tileLoadFunction}) {
-      const source = new TileJSON({
-        interpolate:
-          options.interpolate === undefined ? true : options.interpolate,
-        transition: 0,
-        crossOrigin: 'anonymous',
-        tileJSON: tileJson,
-      });
-      source.tileGrid = sourceOptionsFromTileJSON(
-        glSource,
-        tileJson,
-        options
-      ).tileGrid;
-      if (options.projection) {
-        //@ts-ignore
-        source.projection = getProjection(options.projection);
-      }
-      const getTileUrl = source.getTileUrlFunction();
-      if (tileLoadFunction) {
-        source.setTileLoadFunction(tileLoadFunction);
-      }
-      source.setTileUrlFunction(function (tileCoord, pixelRatio, projection) {
-        const bboxTemplate = getBboxTemplate(projection);
-        let src = getTileUrl(tileCoord, pixelRatio, projection);
-        if (src.indexOf(bboxTemplate) != -1) {
-          const bbox = source.getTileGrid().getTileCoordExtent(tileCoord);
-          src = src.replace(bboxTemplate, bbox.toString());
-        }
-        return src;
-      });
-      source.set('mapbox-source', glSource);
+  setupRasterSource(glSource, styleUrl, options)
+    .then(function (source) {
       layer.setSource(source);
     })
-    .catch(function (error) {
+    .catch(function () {
       layer.setSource(undefined);
     });
   return layer;
@@ -1405,6 +1417,65 @@ export function updateMapboxLayer(mapOrGroup, mapboxLayer) {
   } else {
     getLayer(mapOrGroup, mapboxLayer.id).changed();
   }
+}
+
+/**
+ * Updates a Mapbox source object in the style. The according OpenLayers source will be replaced
+ * and the map will be re-rendered.
+ * @param {Map|LayerGroup} mapOrGroup The Map or LayerGroup `apply` was called on.
+ * @param {string} id Key of the source in the `sources` object literal.
+ * @param {Object} mapboxSource Mapbox source object.
+ * @return {Promise<Source>} Promise that resolves when the source has been updated.
+ */
+export function updateMapboxSource(mapOrGroup, id, mapboxSource) {
+  const currentSource = getSource(mapOrGroup, id);
+  const layers = /** @type {Array<VectorLayer|TileLayer|VectorTileLayer>} */ (
+    mapOrGroup
+      .getLayers()
+      .getArray()
+      .filter(function (layer) {
+        return (
+          (layer instanceof VectorLayer ||
+            layer instanceof TileLayer ||
+            layer instanceof VectorTileLayer) &&
+          layer.getSource() === currentSource
+        );
+      })
+  );
+  const metadata = mapOrGroup.get('mapbox-metadata');
+  let newSourcePromise;
+  switch (mapboxSource.type) {
+    case 'vector':
+      newSourcePromise = setupVectorSource(
+        mapboxSource,
+        metadata.styleUrl,
+        metadata.options
+      );
+      break;
+    case 'geojson':
+      newSourcePromise = Promise.resolve(
+        setupGeoJSONSource(mapboxSource, metadata.styleUrl, metadata.options)
+      );
+      break;
+    case 'raster':
+    case 'raster-dem':
+      newSourcePromise = setupRasterSource(
+        mapboxSource,
+        metadata.styleUrl,
+        metadata.options
+      );
+      break;
+    default:
+      return Promise.reject(
+        new Error('Unsupported source type ' + mapboxSource.type)
+      );
+  }
+  newSourcePromise.then(function (newSource) {
+    layers.forEach(function (layer) {
+      layer.setSource(newSource);
+    });
+  });
+  return newSourcePromise;
 }
 
 /**
