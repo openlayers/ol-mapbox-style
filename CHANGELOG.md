@@ -1,5 +1,11 @@
 # Changelog
 
+## 12.1.0
+
+* New 'updateMapboxSource()' utility function.
+* Accept `Promise` as return type for `transformRequest()`
+* Do not overwrite existing search param with access token
+
 ## 12.0.0
 
 ### Backwards incompatible changes
