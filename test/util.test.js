@@ -16,6 +16,7 @@ import {
   removeMapboxLayer,
   setupVectorSource,
   updateMapboxLayer,
+  updateMapboxSource,
 } from '../src/apply.js';
 import {fetchResource} from '../src/util.js';
 
@@ -434,13 +435,119 @@ describe('util', function () {
     });
   });
 
+  describe('updateMapboxSource', function () {
+    let map, target, source1, source2, source3;
+    beforeEach(function () {
+      target = document.createElement('div');
+      map = new Map({target: target});
+      source1 = {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: [
+            {
+              type: 'Feature',
+              properties: {},
+              geometry: {type: 'Point', coordinates: [1, 1]},
+            },
+          ],
+        },
+      };
+      source2 = {
+        type: 'vector',
+        tiles: ['http://example.com/{z}/{x}/{y}.pbf'],
+      };
+      source3 = {
+        type: 'raster',
+        tiles: ['http://example.com/{z}/{x}/{y}.png'],
+      };
+      return apply(map, {
+        version: 8,
+        sources: {
+          source1: source1,
+          source2: source2,
+          source3: source3,
+        },
+        layers: [
+          {
+            id: 'layer1',
+            source: 'source1',
+            type: 'circle',
+          },
+          {
+            id: 'layer2',
+            source: 'source2',
+            'source-layer': 'layer2',
+            type: 'circle',
+          },
+          {
+            id: 'layer3',
+            source: 'source3',
+            type: 'raster',
+          },
+        ],
+      });
+    });
+    it('updates a geojson source', function (done) {
+      should(getSource(map, 'source1').getFeatures()[0].get('modified')).eql(
+        undefined
+      );
+      source1.data.features[0].properties.modified = true;
+      updateMapboxSource(map, 'source1', source1).then(function () {
+        try {
+          const source = getSource(map, 'source1');
+          should(source).eql(getLayer(map, 'layer1').getSource());
+          should(source.getFeatures()[0].get('modified')).eql(true);
+          should();
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+    });
+    it('updates a vector source', function (done) {
+      should(getSource(map, 'source2').getUrls()[0]).eql(
+        'http://example.com/{z}/{x}/{y}.pbf'
+      );
+      source2.tiles[0] = 'http://example.com/{z}/{x}/{y}.mvt';
+      updateMapboxSource(map, 'source2', source2).then(function () {
+        try {
+          const source = getSource(map, 'source2');
+          should(source).eql(getLayer(map, 'layer2').getSource());
+          should(source.getUrls()[0]).eql('http://example.com/{z}/{x}/{y}.mvt');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+    });
+    it('updates a raster source', function (done) {
+      should(getSource(map, 'source3').getTileUrlFunction()([0, 0, 0])).eql(
+        'http://example.com/0/0/0.png'
+      );
+      source3.tiles[0] = 'http://example.com/{z}/{x}/{y}.jpg';
+      updateMapboxSource(map, 'source3', source3).then(function () {
+        try {
+          const source = getSource(map, 'source3');
+          should(source).eql(getLayer(map, 'layer3').getSource());
+          should(source.getTileUrlFunction()([0, 0, 0])).eql(
+            'http://example.com/0/0/0.jpg'
+          );
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+    });
+  });
+
   describe('updateMapboxLayer', function () {
     let target;
     beforeEach(function () {
       target = document.createElement('div');
     });
 
-    it('updates a mapbox layer', function (done) {
+    it('updates a geojson source', function (done) {
       apply(target, JSON.parse(JSON.stringify(brightV9)))
         .then(function (map) {
           // add another layer that has no 'mapbox-layers' set
