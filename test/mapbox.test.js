@@ -106,6 +106,11 @@ describe('Mapbox utilities', function () {
         expected:
           'https://example.com/source/{z}/{x}/{y}.pbf?foo=bar&token=test-token',
       },
+      {
+        url: 'https://example.com/source/{z}/{x}/{y}.pbf?token=override-token',
+        expected:
+          'https://example.com/source/{z}/{x}/{y}.pbf?token=override-token',
+      },
     ];
 
     const token = 'test-token';
