@@ -1175,8 +1175,8 @@ as object, when they contain a relative sprite url, or sources referencing data 
 
 Function for controlling how `ol-mapbox-style` fetches resources. Can be used for modifying
 the url, adding headers or setting credentials options. Called with the url and the resource
-type as arguments, this function is supposed to return a `Request` or a url `string`. Without a return value,
-the original request will not be modified.
+type as arguments, this function is supposed to return a `Request` or a url `string`, or a promise tehereof.
+Without a return value the original request will not be modified.
 
 ###### Parameters
 
