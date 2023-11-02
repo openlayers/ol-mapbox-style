@@ -162,20 +162,28 @@ describe('ol/layer/MapboxVector', () => {
     afterEach(function () {
       window.fetch = originalFetch;
     });
-    it('applies correct access token', function () {
+    it('applies correct access token', function (done) {
       new MapboxVectorLayer({
         styleUrl: 'mapbox://styles/mapbox/streets-v7',
         accessToken: '123',
-      });
-      should(fetchUrl.url).eql(
-        'https://api.mapbox.com/styles/v1/mapbox/streets-v7?&access_token=123'
-      );
+      })
+        .getSource()
+        .once('change', () => {
+          should(fetchUrl.url).eql(
+            'https://api.mapbox.com/styles/v1/mapbox/streets-v7?&access_token=123'
+          );
+          done();
+        });
     });
-    it('applies correct access token from url', function () {
+    it('applies correct access token from url', function (done) {
       new MapboxVectorLayer({
         styleUrl: 'foo?key=123',
-      });
-      should(fetchUrl.url).eql(`${location.origin}/foo?key=123`);
+      })
+        .getSource()
+        .once('change', () => {
+          should(fetchUrl.url).eql(`${location.origin}/foo?key=123`);
+          done();
+        });
     });
   });
 });

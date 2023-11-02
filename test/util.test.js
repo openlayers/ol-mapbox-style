@@ -37,33 +37,38 @@ describe('util', function () {
     it('adds the request to the metadata for both pending and new requests', function (done) {
       const metadataNotPending = {};
       const metadataPending = {};
-      fetchResource(
-        'Sprite',
-        'my://resource',
-        {
-          transformRequest: function (url, resourceType) {
-            should(url).equal('my://resource');
-            should(resourceType).equal('Sprite');
-            return new Request('/fixtures/sprites.json');
+      Promise.all([
+        fetchResource(
+          'Sprite',
+          'my://resource',
+          {
+            transformRequest: function (url, resourceType) {
+              should(url).equal('my://resource');
+              should(resourceType).equal('Sprite');
+              return new Request('/fixtures/sprites.json');
+            },
           },
-        },
-        metadataNotPending
-      );
-      fetchResource(
-        'Sprite',
-        'my://resource',
-        {
-          transformRequest: function (url, resourceType) {
-            should(url).equal('my://resource');
-            should(resourceType).equal('Sprite');
-            return new Request('/fixtures/sprites.json');
+          metadataNotPending
+        ),
+        fetchResource(
+          'Sprite',
+          'my://resource',
+          {
+            transformRequest: function (url, resourceType) {
+              should(url).equal('my://resource');
+              should(resourceType).equal('Sprite');
+              return new Request('/fixtures/sprites.json');
+            },
           },
-        },
-        metadataPending
-      );
-      should('request' in metadataPending).true();
-      should(metadataPending.request).equal(metadataNotPending.request);
-      done();
+          metadataPending
+        ),
+      ])
+        .then(() => {
+          should('request' in metadataPending).true();
+          should(metadataPending.request).equal(metadataNotPending.request);
+          done();
+        })
+        .catch((err) => done(err));
     });
   });
   describe('getTileJson', function () {
