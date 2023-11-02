@@ -73,7 +73,9 @@ export function normalizeSourceUrl(url, token, tokenParam, styleUrl) {
     if (!token) {
       return decodeURI(urlObject.href);
     }
-    urlObject.searchParams.set(tokenParam, token);
+    if (!urlObject.searchParams.has(tokenParam)) {
+      urlObject.searchParams.set(tokenParam, token);
+    }
     return decodeURI(urlObject.href);
   }
 
