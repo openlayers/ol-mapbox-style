@@ -236,12 +236,14 @@ describe('ol-mapbox-style', function () {
                 1,
                 map.getView().getProjection()
               );
-              window.fetch = originalFetch;
-              const url = new URL(requests[0].url);
-              const bbox = url.searchParams.get('bbox');
-              const extent = map.getView().calculateExtent();
-              should(bbox).be.equal(extent.join(','));
-              done();
+              source.once('change', () => {
+                window.fetch = originalFetch;
+                const url = new URL(requests[0].url);
+                const bbox = url.searchParams.get('bbox');
+                const extent = map.getView().calculateExtent();
+                should(bbox).be.equal(extent.join(','));
+                done();
+              });
             })
             .catch(done);
         });
@@ -340,12 +342,14 @@ describe('ol-mapbox-style', function () {
             1,
             get('EPSG:3857')
           );
-          window.fetch = originalFetch;
-          const url = new URL(requests[0].url);
-          should(url.searchParams.get('transformRequest')).be.equal('true');
-          should(source).be.instanceof(VectorSource);
-          should(layer.getStyle()).be.a.Function();
-          done();
+          source.once('change', () => {
+            window.fetch = originalFetch;
+            const url = new URL(requests[0].url);
+            should(url.searchParams.get('transformRequest')).be.equal('true');
+            should(source).be.instanceof(VectorSource);
+            should(layer.getStyle()).be.a.Function();
+            done();
+          });
         })
         .catch(done);
     });

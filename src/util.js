@@ -3,6 +3,7 @@ import {VectorTile} from 'ol';
 import {expandUrl} from 'ol/tileurlfunction.js';
 import {getUid} from 'ol/util.js';
 import {normalizeSourceUrl, normalizeStyleUrl} from './mapbox.js';
+import {toPromise} from 'ol/functions.js';
 
 /** @typedef {'Style'|'Source'|'Sprite'|'SpriteImage'|'Tiles'|'GeoJSON'} ResourceType */
 
@@ -117,29 +118,33 @@ export function fetchResource(resourceType, url, options = {}, metadata) {
     }
     return pendingRequests[url][1];
   }
-  let transformedRequest = options.transformRequest
+  const transformedRequest = options.transformRequest
     ? options.transformRequest(url, resourceType) || url
     : url;
-  if (!(transformedRequest instanceof Request)) {
-    transformedRequest = new Request(transformedRequest);
-  }
-  if (!transformedRequest.headers.get('Accept')) {
-    transformedRequest.headers.set('Accept', 'application/json');
-  }
-  if (metadata) {
-    metadata.request = transformedRequest;
-  }
-  const pendingRequest = fetch(transformedRequest)
-    .then(function (response) {
-      delete pendingRequests[url];
-      return response.ok
-        ? response.json()
-        : Promise.reject(new Error('Error fetching source ' + url));
-    })
-    .catch(function (error) {
-      delete pendingRequests[url];
-      return Promise.reject(new Error('Error fetching source ' + url));
-    });
+  const pendingRequest = toPromise(() => transformedRequest).then(
+    (transformedRequest) => {
+      if (!(transformedRequest instanceof Request)) {
+        transformedRequest = new Request(transformedRequest);
+      }
+      if (!transformedRequest.headers.get('Accept')) {
+        transformedRequest.headers.set('Accept', 'application/json');
+      }
+      if (metadata) {
+        metadata.request = transformedRequest;
+      }
+      return fetch(transformedRequest)
+        .then(function (response) {
+          delete pendingRequests[url];
+          return response.ok
+            ? response.json()
+            : Promise.reject(new Error('Error fetching source ' + url));
+        })
+        .catch(function (error) {
+          delete pendingRequests[url];
+          return Promise.reject(new Error('Error fetching source ' + url));
+        });
+    }
+  );
   pendingRequests[url] = [transformedRequest, pendingRequest];
   return pendingRequest;
 }
@@ -181,34 +186,38 @@ export function getTileJson(glSource, styleUrl, options = {}) {
           : src;
         if (tile instanceof VectorTile) {
           tile.setLoader((extent, resolution, projection) => {
-            fetch(transformedRequest)
-              .then((response) => response.arrayBuffer())
-              .then((data) => {
-                const format = tile.getFormat();
-                const features = format.readFeatures(data, {
-                  extent: extent,
-                  featureProjection: projection,
-                });
-                // @ts-ignore
-                tile.setFeatures(features);
-              })
-              .catch((e) => tile.setState(TileState.ERROR));
+            toPromise(() => transformedRequest).then((transformedRequest) => {
+              fetch(transformedRequest)
+                .then((response) => response.arrayBuffer())
+                .then((data) => {
+                  const format = tile.getFormat();
+                  const features = format.readFeatures(data, {
+                    extent: extent,
+                    featureProjection: projection,
+                  });
+                  // @ts-ignore
+                  tile.setFeatures(features);
+                })
+                .catch((e) => tile.setState(TileState.ERROR));
+            });
           });
         } else {
           const img = tile.getImage();
-          if (transformedRequest instanceof Request) {
-            fetch(transformedRequest)
-              .then((response) => response.blob())
-              .then((blob) => {
-                const url = URL.createObjectURL(blob);
-                img.addEventListener('load', () => URL.revokeObjectURL(url));
-                img.addEventListener('error', () => URL.revokeObjectURL(url));
-                img.src = url;
-              })
-              .catch((e) => tile.setState(TileState.ERROR));
-          } else {
-            img.src = transformedRequest;
-          }
+          toPromise(() => transformedRequest).then((transformedRequest) => {
+            if (transformedRequest instanceof Request) {
+              fetch(transformedRequest)
+                .then((response) => response.blob())
+                .then((blob) => {
+                  const url = URL.createObjectURL(blob);
+                  img.addEventListener('load', () => URL.revokeObjectURL(url));
+                  img.addEventListener('error', () => URL.revokeObjectURL(url));
+                  img.src = url;
+                })
+                .catch((e) => tile.setState(TileState.ERROR));
+            } else {
+              img.src = transformedRequest;
+            }
+          });
         }
       };
     }

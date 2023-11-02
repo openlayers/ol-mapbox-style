@@ -11,6 +11,7 @@ import RenderFeature from 'ol/render/Feature.js';
 import Stroke from 'ol/style/Stroke.js';
 import Style from 'ol/style/Style.js';
 import Text from 'ol/style/Text.js';
+import {toPromise} from 'ol/functions.js';
 
 import Color from '@mapbox/mapbox-gl-style-spec/util/color.js';
 import convertFunction from '@mapbox/mapbox-gl-style-spec/function/convert.js';
@@ -319,7 +320,7 @@ export const styleFunctionArgs = {};
  * @param {Object} spriteData Sprite data from the url specified in
  * the Mapbox Style object's `sprite` property. Only required if a `sprite`
  * property is specified in the Mapbox Style object.
- * @param {string|Request} spriteImageUrl Sprite image url for the sprite
+ * @param {string|Request|Promise<string|Request>} spriteImageUrl Sprite image url for the sprite
  * specified in the Mapbox Style object's `sprite` property. Only required if a
  * `sprite` property is specified in the Mapbox Style object.
  * @param {function(Array<string>, string=):Array<string>} getFonts Function that
@@ -361,21 +362,23 @@ export function stylefunction(
     if (typeof Image !== 'undefined') {
       const img = new Image();
       let blobUrl;
-      if (spriteImageUrl instanceof Request) {
-        fetch(spriteImageUrl)
-          .then((response) => response.blob())
-          .then((blob) => {
-            blobUrl = URL.createObjectURL(blob);
-            img.src = blobUrl;
-          })
-          .catch(() => {});
-      } else {
-        img.crossOrigin = 'anonymous';
-        img.src = spriteImageUrl;
-        if (blobUrl) {
-          URL.revokeObjectURL(blobUrl);
+      toPromise(() => spriteImageUrl).then((spriteImageUrl) => {
+        if (spriteImageUrl instanceof Request) {
+          fetch(spriteImageUrl)
+            .then((response) => response.blob())
+            .then((blob) => {
+              blobUrl = URL.createObjectURL(blob);
+              img.src = blobUrl;
+            })
+            .catch(() => {});
+        } else {
+          img.crossOrigin = 'anonymous';
+          img.src = spriteImageUrl;
+          if (blobUrl) {
+            URL.revokeObjectURL(blobUrl);
+          }
         }
-      }
+      });
       img.onload = function () {
         spriteImage = img;
         spriteImageSize = [img.width, img.height];
