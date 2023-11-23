@@ -42,7 +42,7 @@
     "mapbox-to-css-font": "^2.4.1"
   },
   "peerDependencies": {
-    "ol": "8.x || 7.x"
+    "ol": ">=9.0.0 || >=9.0.0-dev.0 <9.0.0 || >=8.0.0 <=8.2.0 || >=7.0.0 <=7.5.2"
   },
   "devDependencies": {
     "@mapbox/flow-remove-types": "^2.0.0",
