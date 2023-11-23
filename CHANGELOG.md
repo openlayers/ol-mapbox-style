@@ -1,5 +1,10 @@
 # Changelog
 
+## 12.1.1
+
+* Consider the `icon-size` layout property also for icons not provided by the stylesheet
+* Handle fractional layer `minzoom` and `maxzoom` properly when fetching source data
+
 ## 12.1.0
 
 * New 'updateMapboxSource()' utility function.
