@@ -926,6 +926,7 @@ export function stylefunction(
                         rotateWithView: iconRotationAlignment === 'map',
                         displacement: displacement,
                         declutterMode: declutterMode,
+                        scale: iconSize,
                       };
                       if (typeof imageElement === 'string') {
                         // it is a src URL
