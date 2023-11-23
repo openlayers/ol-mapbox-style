@@ -1,6 +1,8 @@
+import TileGrid from 'ol/tilegrid/TileGrid.js';
 import TileState from 'ol/TileState.js';
 import {VectorTile} from 'ol';
 import {expandUrl} from 'ol/tileurlfunction.js';
+import {get as getProjection} from 'ol/proj.js';
 import {getUid} from 'ol/util.js';
 import {normalizeSourceUrl, normalizeStyleUrl} from './mapbox.js';
 import {toPromise} from 'ol/functions.js';
@@ -72,6 +74,11 @@ export const defaultResolutions = (function () {
   }
   return resolutions;
 })();
+
+export const defaultTileGrid = new TileGrid({
+  extent: getProjection('EPSG:3857').getExtent(),
+  resolutions: defaultResolutions,
+});
 
 /**
  * @param {number} width Width of the canvas.
