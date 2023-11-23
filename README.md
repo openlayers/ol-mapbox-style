@@ -707,13 +707,17 @@ module:ol/events/Event~BaseEvent#event:error
 
 #### constructor
 
-• **new MapboxVectorLayer**(`options`)
+• **new MapboxVectorLayer**(`options`): [`MapboxVectorLayer`](#classesmapboxvectorlayermd)
 
 ##### Parameters
 
 | Name      | Type                                         | Description                                                                 |
 | :-------- | :------------------------------------------- | :-------------------------------------------------------------------------- |
 | `options` | [`Options`](#interfacesinternal_options-1md) | Layer options. At a minimum, `styleUrl` and `accessToken` must be provided. |
+
+##### Returns
+
+[`MapboxVectorLayer`](#classesmapboxvectorlayermd)
 
 ##### Overrides
 
