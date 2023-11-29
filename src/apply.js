@@ -456,7 +456,9 @@ function setFirstBackground(mapOrLayer, glStyle, options) {
         return true;
       }
       if (mapOrLayer instanceof Map || mapOrLayer instanceof LayerGroup) {
-        mapOrLayer.getLayers().push(setupBackgroundLayer(layer, options, {}));
+        mapOrLayer
+          .getLayers()
+          .insertAt(0, setupBackgroundLayer(layer, options, {}));
         return true;
       }
     }
