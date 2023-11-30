@@ -21,13 +21,7 @@ import VectorTileLayer from 'ol/layer/VectorTile.js';
 import VectorTileSource, {defaultLoadFunction} from 'ol/source/VectorTile.js';
 import View from 'ol/View.js';
 import derefLayers from '@mapbox/mapbox-gl-style-spec/deref.js';
-import {
-  METERS_PER_UNIT,
-  equivalent,
-  fromLonLat,
-  get as getProjection,
-  getUserProjection,
-} from 'ol/proj.js';
+import {METERS_PER_UNIT} from 'ol/proj/Units.js';
 import {
   _colorWithOpacity,
   stylefunction as applyStyleFunction,
@@ -48,6 +42,12 @@ import {
   getTileJson,
   getZoomForResolution,
 } from './util.js';
+import {
+  equivalent,
+  fromLonLat,
+  get as getProjection,
+  getUserProjection,
+} from 'ol/proj.js';
 import {getFonts} from './text.js';
 import {getTopLeft} from 'ol/extent.js';
 import {hillshade} from './shaders.js';
