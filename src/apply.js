@@ -531,7 +531,7 @@ function sourceOptionsFromTileJSON(glSource, tileJSON, options) {
         : tileGrid.getOrigin(0),
       extent: extent || tileGrid.getExtent(),
       minZoom: minZoom,
-      resolutions: getTileResolutions(projection, tileJSON.tileSize).slice(
+      resolutions: options.resolutions || getTileResolutions(projection, tileJSON.tileSize).slice(
         0,
         maxZoom + 1
       ),
