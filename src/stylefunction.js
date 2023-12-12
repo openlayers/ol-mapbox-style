@@ -798,8 +798,9 @@ export function stylefunction(
                         'Point',
                         renderFeatureCoordinates,
                         [],
+                        2,
                         {},
-                        null
+                        undefined
                       );
                     }
                     styleGeom = renderFeature;

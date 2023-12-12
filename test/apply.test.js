@@ -211,42 +211,90 @@ describe('ol-mapbox-style', function () {
         .catch(done);
     });
 
-    it('handles geojson wfs sources with bbox loadingstrategy and custom projection', function (done) {
-      fetch('./fixtures/geojson-wfs.json')
-        .then(function (response) {
-          return response.json();
+    describe('geojson', function () {
+      let originalFetch;
+      const requests = [];
+      beforeEach(function () {
+        originalFetch = fetch;
+        window.fetch = (request) => {
+          requests.push(request);
+          return originalFetch(request);
+        };
+      });
+      afterEach(function () {
+        window.fetch = originalFetch;
+        requests.length = 0;
+      });
+      it('handles geojson wfs sources with bbox loadingstrategy and custom projection', function (done) {
+        fetch('./fixtures/geojson-wfs.json')
+          .then(function (response) {
+            return response.json();
+          })
+          .then(function (style) {
+            style.sources.water_areas.data =
+              style.sources.water_areas.data.replace('3857', '4326');
+            apply(target, style, {projection: 'EPSG:4326'})
+              .then(function (map) {
+                const layer = map
+                  .getAllLayers()
+                  .find((x) => x.get('mapbox-source') === 'water_areas');
+                const source = layer.getSource();
+                source.once('change', () => {
+                  try {
+                    const url = new URL(requests[requests.length - 1].url);
+                    const bbox = url.searchParams.get('bbox');
+                    const extent = map.getView().calculateExtent();
+                    should(bbox).be.equal(extent.join(','));
+                    done();
+                  } catch (e) {
+                    done(e);
+                  }
+                });
+                source.loadFeatures(
+                  map.getView().calculateExtent(),
+                  1,
+                  map.getView().getProjection()
+                );
+              })
+              .catch(done);
+          });
+      });
+
+      it('handles geojson wfs sources with bbox loadingstrategy & transformRequest', function (done) {
+        apply(target, './fixtures/geojson-wfs.json', {
+          transformRequest: (urlStr, type) => {
+            if (type === 'GeoJSON') {
+              const url = new URL(urlStr + '&transformRequest=true');
+              return new Request(url);
+            }
+          },
         })
-        .then(function (style) {
-          style.sources.water_areas.data =
-            style.sources.water_areas.data.replace('3857', '4326');
-          apply(target, style, {projection: 'EPSG:4326'})
-            .then(function (map) {
-              const layer = map
-                .getAllLayers()
-                .find((x) => x.get('mapbox-source') === 'water_areas');
-              const source = layer.getSource();
-              const originalFetch = fetch;
-              const requests = [];
-              fetch = (request) => {
-                requests.push(request);
-                return originalFetch(request);
-              };
-              source.loadFeatures(
-                map.getView().calculateExtent(),
-                1,
-                map.getView().getProjection()
-              );
-              source.once('change', () => {
-                window.fetch = originalFetch;
-                const url = new URL(requests[0].url);
-                const bbox = url.searchParams.get('bbox');
-                const extent = map.getView().calculateExtent();
-                should(bbox).be.equal(extent.join(','));
+          .then(function (map) {
+            const layer = map
+              .getAllLayers()
+              .find((x) => x.get('mapbox-source') === 'water_areas');
+            const source = layer.getSource();
+            source.loadFeatures(
+              map.getView().calculateExtent(),
+              1,
+              get('EPSG:3857')
+            );
+            source.once('change', () => {
+              try {
+                const url = new URL(requests[requests.length - 1].url);
+                should(url.searchParams.get('transformRequest')).be.equal(
+                  'true'
+                );
+                should(source).be.instanceof(VectorSource);
+                should(layer.getStyle()).be.a.Function();
                 done();
-              });
-            })
-            .catch(done);
-        });
+              } catch (e) {
+                done(e);
+              }
+            });
+          })
+          .catch(done);
+      });
     });
 
     it('sets the correct GeoJON data projection for custom projections', function (done) {
@@ -315,43 +363,6 @@ describe('ol-mapbox-style', function () {
         .catch(function (err) {
           done(err);
         });
-    });
-
-    it('handles geojson wfs sources with bbox loadingstrategy & transformRequest', function (done) {
-      apply(target, './fixtures/geojson-wfs.json', {
-        transformRequest: (urlStr, type) => {
-          if (type === 'GeoJSON') {
-            const url = new URL(urlStr + '&transformRequest=true');
-            return new Request(url);
-          }
-        },
-      })
-        .then(function (map) {
-          const layer = map
-            .getAllLayers()
-            .find((x) => x.get('mapbox-source') === 'water_areas');
-          const source = layer.getSource();
-          const originalFetch = fetch;
-          const requests = [];
-          fetch = (request) => {
-            requests.push(request);
-            return originalFetch(request);
-          };
-          source.loadFeatures(
-            map.getView().calculateExtent(),
-            1,
-            get('EPSG:3857')
-          );
-          source.once('change', () => {
-            window.fetch = originalFetch;
-            const url = new URL(requests[0].url);
-            should(url.searchParams.get('transformRequest')).be.equal('true');
-            should(source).be.instanceof(VectorSource);
-            should(layer.getStyle()).be.a.Function();
-            done();
-          });
-        })
-        .catch(done);
     });
 
     it('handles geojson sources with inline GeoJSON', function (done) {

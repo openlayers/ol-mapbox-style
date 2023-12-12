@@ -819,7 +819,7 @@ function setupGeoJSONSource(glSource, styleUrl, options) {
     )
   );
   source.set('mapbox-source', glSource);
-  return source;
+  return /** @type {VectorSource} */ (source);
 }
 
 function setupGeoJSONLayer(glSource, styleUrl, options) {
