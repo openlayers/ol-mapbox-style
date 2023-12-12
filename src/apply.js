@@ -962,14 +962,17 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
         emptyObj,
         functionCache
       );
-      data.opacity = ('raster-opacity' in glLayer.paint) ? getValue(
-        glLayer,
-        'paint',
-        'raster-opacity',
-        zoom,
-        emptyObj,
-        functionCache
-      ) : undefined;
+      data.opacity =
+        'raster-opacity' in glLayer.paint
+          ? getValue(
+              glLayer,
+              'paint',
+              'raster-opacity',
+              zoom,
+              emptyObj,
+              functionCache
+            )
+          : undefined;
       data.saturation = getValue(
         glLayer,
         'paint',
