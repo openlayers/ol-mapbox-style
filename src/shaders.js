@@ -180,3 +180,124 @@ export function hillshade(inputs, data) {
 
   return new ImageData(shadeData, width, height);
 }
+
+export function raster (inputs, data) {
+  const image = inputs[0];
+  const width = image.width;
+  const height = image.height;
+  const imageData = image.data;
+  const shadeData = new Uint8ClampedArray(imageData.length);
+  const maxX = width - 1;
+  const maxY = height - 1;
+  const pixel = [0, 0, 0, 0];
+
+  let pixelX,
+    pixelY,
+    x0,
+    x1,
+    y0,
+    y1,
+    offset;
+
+  // [start] from <https://stackoverflow.com/a/9493060>
+  /**
+   * @param {number} h
+   * @param {number} s
+   * @param {number} l
+   */
+  function hslToRgb(h, s, l) {
+    let r, g, b;
+  
+    if (s === 0) {
+      r = g = b = l; // achromatic
+    } else {
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      r = hueToRgb(p, q, h + 1/3);
+      g = hueToRgb(p, q, h);
+      b = hueToRgb(p, q, h - 1/3);
+    }
+  
+    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+  }
+    
+  /**
+   * @param {number} p
+   * @param {number} q
+   * @param {number} t
+   */
+  function hueToRgb(p, q, t) {
+    if (t < 0) t += 1;
+    if (t > 1) t -= 1;
+    if (t < 1/6) return p + (q - p) * 6 * t;
+    if (t < 1/2) return q;
+    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+    return p;
+  }
+
+    /**
+   * Converts an RGB color value to HSL. Conversion formula
+   * adapted from http://en.wikipedia.org/wiki/HSL_color_space.
+   * Assumes r, g, and b are contained in the set [0, 255] and
+   * returns h, s, and l in the set [0, 1].
+   *
+   * @param   {number}  r       The red color value
+   * @param   {number}  g       The green color value
+   * @param   {number}  b       The blue color value
+   * @return  {Array}           The HSL representation
+   */
+  function rgbToHsl(r, g, b) {
+    (r /= 255), (g /= 255), (b /= 255);
+    const vmax = Math.max(r, g, b), vmin = Math.min(r, g, b);
+    let h, s, l = (vmax + vmin) / 2;
+
+    if (vmax === vmin) {
+      return [0, 0, l]; // achromatic
+    }
+
+    const d = vmax - vmin;
+    s = l > 0.5 ? d / (2 - vmax - vmin) : d / (vmax + vmin);
+    if (vmax === r) h = (g - b) / d + (g < b ? 6 : 0);
+    if (vmax === g) h = (b - r) / d + 2;
+    if (vmax === b) h = (r - g) / d + 4;
+    h /= 6;
+
+    return [h, s, l];
+  }
+  // [end] from <https://stackoverflow.com/a/9493060>
+  
+  const hOffset = 1 / 360 * data.hue
+  const sOffset = data.saturation
+
+  for (pixelY = 0; pixelY <= maxY; ++pixelY) {
+    y0 = pixelY === 0 ? 0 : pixelY - 1;
+    y1 = pixelY === maxY ? maxY : pixelY + 1;
+    for (pixelX = 0; pixelX <= maxX; ++pixelX) {
+      x0 = pixelX === 0 ? 0 : pixelX - 1;
+      x1 = pixelX === maxX ? maxX : pixelX + 1;
+
+      offset = (pixelY * width + x0) * 4;
+      pixel[0] = imageData[offset];
+      pixel[1] = imageData[offset + 1];
+      pixel[2] = imageData[offset + 2];
+      pixel[3] = imageData[offset + 3];
+
+      let [h,s,l] = rgbToHsl(pixel[0], pixel[1], pixel[2]);
+
+      h += hOffset;
+      h = h % 1;
+
+      s += sOffset;
+      s = Math.max(0, Math.min(s, 1))
+
+      const [r, g, b] = hslToRgb(h, s, l);
+      shadeData[offset] = r
+      shadeData[offset+1] = g
+      shadeData[offset+2] = b
+      shadeData[offset+3] = data.opacity !== undefined ? data.opacity*255 : pixel[3]
+    }
+  }
+
+  return new ImageData(shadeData, width, height);
+}
+

@@ -50,7 +50,7 @@ import {
 } from 'ol/proj.js';
 import {getFonts} from './text.js';
 import {getTopLeft} from 'ol/extent.js';
-import {hillshade} from './shaders.js';
+import {hillshade, raster as rasterShader} from './shaders.js';
 import {
   normalizeSourceUrl,
   normalizeSpriteUrl,
@@ -691,6 +691,7 @@ function setupRasterSource(glSource, styleUrl, options) {
           }
           return src;
         });
+
         source.set('mapbox-source', glSource);
         resolve(source);
       })
@@ -700,7 +701,7 @@ function setupRasterSource(glSource, styleUrl, options) {
   });
 }
 
-function setupRasterLayer(glSource, styleUrl, options) {
+function setupRasterLayerAbstract(glSource, styleUrl, options) {
   const layer = new TileLayer();
   setupRasterSource(glSource, styleUrl, options)
     .then(function (source) {
@@ -719,8 +720,28 @@ function setupRasterLayer(glSource, styleUrl, options) {
  * @param {Options} options ol-mapbox-style options.
  * @return {ImageLayer<Raster>} The raster layer
  */
+function setupRasterLayer(glSource, styleUrl, options) {
+  const tileLayer = setupRasterLayerAbstract(glSource, styleUrl, options);
+  /** @type {ImageLayer<Raster>} */
+  const layer = new ImageLayer({
+    source: new Raster({
+      operationType: 'image',
+      operation: rasterShader,
+      sources: [tileLayer],
+    }),
+  });
+  return layer;
+}
+
+/**
+ *
+ * @param {Object} glSource "source" entry from a Mapbox Style object.
+ * @param {string} styleUrl Style url
+ * @param {Options} options ol-mapbox-style options.
+ * @return {ImageLayer<Raster>} The raster layer
+ */
 function setupHillshadeLayer(glSource, styleUrl, options) {
-  const tileLayer = setupRasterLayer(glSource, styleUrl, options);
+  const tileLayer = setupRasterLayerAbstract(glSource, styleUrl, options);
   /** @type {ImageLayer<Raster>} */
   const layer = new ImageLayer({
     source: new Raster({
@@ -832,33 +853,6 @@ function setupGeoJSONLayer(glSource, styleUrl, options) {
   });
 }
 
-function prerenderRasterLayer(glLayer, layer, functionCache) {
-  let zoom = null;
-  return function (event) {
-    if (
-      glLayer.paint &&
-      'raster-opacity' in glLayer.paint &&
-      event.frameState.viewState.zoom !== zoom
-    ) {
-      zoom = event.frameState.viewState.zoom;
-      delete functionCache[glLayer.id];
-      updateRasterLayerProperties(glLayer, layer, zoom, functionCache);
-    }
-  };
-}
-
-function updateRasterLayerProperties(glLayer, layer, zoom, functionCache) {
-  const opacity = getValue(
-    glLayer,
-    'paint',
-    'raster-opacity',
-    zoom,
-    emptyObj,
-    functionCache
-  );
-  layer.setOpacity(opacity);
-}
-
 function manageVisibility(layer, mapOrGroup) {
   function onChange() {
     const glStyle = mapOrGroup.get('mapbox-style');
@@ -903,7 +897,38 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
     layer.setVisible(
       glLayer.layout ? glLayer.layout.visibility !== 'none' : true
     );
-    layer.on('prerender', prerenderRasterLayer(glLayer, layer, functionCache));
+    layer.getSource().on('beforeoperations', function (event) {
+      const zoom = getZoomForResolution(
+        event.resolution,
+        options.resolutions || defaultResolutions
+      );
+
+      const data = event.data;
+      data.hue = getValue(
+        glLayer,
+        'paint',
+        'raster-hue-rotate',
+        zoom,
+        emptyObj,
+        functionCache
+      );
+      data.opacity = ('raster-opacity' in glLayer.paint) ? getValue(
+        glLayer,
+        'paint',
+        'raster-opacity',
+        zoom,
+        emptyObj,
+        functionCache
+      ) : undefined;
+      data.saturation = getValue(
+        glLayer,
+        'paint',
+        'raster-saturation',
+        zoom,
+        emptyObj,
+        functionCache
+      );
+    });
   } else if (glSource.type == 'geojson') {
     layer = setupGeoJSONLayer(glSource, styleUrl, options);
   } else if (glSource.type == 'raster-dem' && glLayer.type == 'hillshade') {
