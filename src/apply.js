@@ -558,17 +558,15 @@ function getBackgroundColor(glLayer, resolution, options, functionCache) {
     resolution,
     options.resolutions || defaultResolutions
   );
-  let bg, opacity;
-  if (paint['background-color'] !== undefined) {
-    bg = getValue(
-      background,
-      'paint',
-      'background-color',
-      zoom,
-      emptyObj,
-      functionCache
-    );
-  }
+  let opacity;
+  const bg = getValue(
+    background,
+    'paint',
+    'background-color',
+    zoom,
+    emptyObj,
+    functionCache
+  );
   if (paint['background-opacity'] !== undefined) {
     opacity = getValue(
       background,
