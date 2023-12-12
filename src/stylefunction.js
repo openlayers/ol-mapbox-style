@@ -1111,6 +1111,16 @@ export function stylefunction(
               featureState
             )
           );
+
+          const circleTranslate = getValue(
+            layer,
+            'paint',
+            'circle-translate',
+            zoom,
+            f,
+            functionCache,
+            featureState
+          );
           const circleColor = colorWithOpacity(
             getValue(
               layer,
@@ -1147,11 +1157,17 @@ export function stylefunction(
             '.' +
             circleColor +
             '.' +
-            circleStrokeWidth;
+            circleStrokeWidth +
+            '.' +
+            circleTranslate[0] +
+            '.' +
+            circleTranslate[1];
+
           iconImg = iconImageCache[cache_key];
           if (!iconImg) {
             iconImg = new Circle({
               radius: circleRadius,
+              displacement: [circleTranslate[0], -circleTranslate[1]],
               stroke:
                 circleStrokeColor && circleStrokeWidth > 0
                   ? new Stroke({
