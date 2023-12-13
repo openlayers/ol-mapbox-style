@@ -4,7 +4,6 @@ Copyright 2016-present ol-mapbox-style contributors
 License: https://raw.githubusercontent.com/openlayers/ol-mapbox-style/master/LICENSE
 */
 
-import Circle from 'ol/style/Circle.js';
 import Fill from 'ol/style/Fill.js';
 import Icon from 'ol/style/Icon.js';
 import RenderFeature from 'ol/render/Feature.js';
@@ -1140,6 +1139,16 @@ export function stylefunction(
             functionCache,
             featureState
           );
+
+          const circleBlur = getValue(
+            layer,
+            'paint',
+            'circle-blur',
+            zoom,
+            f,
+            functionCache,
+            featureState
+          );
           const cache_key =
             circleRadius +
             '.' +
@@ -1147,33 +1156,54 @@ export function stylefunction(
             '.' +
             circleColor +
             '.' +
-            circleStrokeWidth;
-          iconImg = iconImageCache[cache_key];
-          if (!iconImg) {
-            iconImg = new Circle({
-              radius: circleRadius,
-              stroke:
-                circleStrokeColor && circleStrokeWidth > 0
-                  ? new Stroke({
-                      width: circleStrokeWidth,
-                      color: circleStrokeColor,
-                    })
-                  : undefined,
-              fill: circleColor
-                ? new Fill({
-                    color: circleColor,
-                  })
-                : undefined,
-              declutterMode: 'none',
-            });
-            iconImageCache[cache_key] = iconImg;
-          }
-          style.setImage(iconImg);
+            circleStrokeWidth +
+            '.' +
+            circleBlur;
+
           text = style.getText();
           style.setText(undefined);
           style.setGeometry(undefined);
           style.setZIndex(index);
-          hasImage = true;
+          style.setRenderer(([x, y], renderOpts) => {
+            const r = circleRadius * renderOpts.pixelRatio;
+            const sw = circleStrokeWidth * renderOpts.pixelRatio;
+            const cb = circleBlur * renderOpts.pixelRatio;
+
+            const w = r * 2 + sw * 2 + sw / 2 + cb * 2;
+            const h = r * 2 + sw * 2 + sw / 2 + cb * 2;
+
+            let bitmap = iconImageCache[cache_key];
+            if (!bitmap) {
+              const offscreenBuffer = new OffscreenCanvas(w, h);
+              const ctx = offscreenBuffer.getContext('2d');
+
+              if (cb !== 0) {
+                ctx.filter = `blur(${cb}px)`;
+              }
+
+              const ox = w / 2;
+              const oy = h / 2;
+
+              ctx.save();
+              ctx.beginPath();
+              ctx.arc(ox, oy, r, 0, 2 * Math.PI);
+              ctx.fillStyle = circleColor;
+              ctx.fill();
+              ctx.restore();
+
+              ctx.save();
+              ctx.beginPath();
+              ctx.arc(ox, oy, r + sw / 2, 0, 2 * Math.PI);
+              ctx.strokeStyle = circleStrokeColor;
+              ctx.lineWidth = sw;
+              ctx.stroke();
+              ctx.restore();
+              ctx.restore();
+              bitmap = offscreenBuffer.transferToImageBitmap();
+              iconImageCache[cache_key] = bitmap;
+            }
+            renderOpts.context.drawImage(bitmap, x - w / 2, y - h / 2);
+          });
         }
 
         let label, font, textLineHeight, textSize, letterSpacing, maxTextWidth;
