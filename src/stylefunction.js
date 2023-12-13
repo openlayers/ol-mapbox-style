@@ -21,6 +21,7 @@ import mb2css from 'mapbox-to-css-font';
 import spec from '@mapbox/mapbox-gl-style-spec/reference/v8.json';
 import {applyLetterSpacing, wrapText} from './text.js';
 import {
+  calcSortIndex,
   clearFunctionCache,
   createCanvas,
   defaultResolutions,
@@ -518,6 +519,20 @@ export function stylefunction(
             functionCache,
             featureState
           );
+
+          const zIndex = calcSortIndex(
+            index,
+            getValue(
+              layer,
+              'layout',
+              layer.type + '-sort-key',
+              zoom,
+              f,
+              functionCache,
+              featureState
+            )
+          );
+
           if (layer.type + '-pattern' in paint) {
             const fillIcon = getValue(
               layer,
@@ -548,7 +563,7 @@ export function stylefunction(
                   styles[stylesLength] = style;
                 }
                 fill = style.getFill();
-                style.setZIndex(index);
+                style.setZIndex(zIndex);
                 const icon_cache_key = icon + '.' + opacity;
                 let pattern = patternCache[icon_cache_key];
                 if (!pattern) {
@@ -634,7 +649,7 @@ export function stylefunction(
                 stroke.setColor(strokeColor);
                 stroke.setWidth(0.5);
               }
-              style.setZIndex(index);
+              style.setZIndex(zIndex);
             }
           }
         }
@@ -722,6 +737,20 @@ export function stylefunction(
             );
             stroke.setColor(color);
             stroke.setWidth(width);
+
+            const zIndex = calcSortIndex(
+              index,
+              getValue(
+                layer,
+                'layout',
+                'line-sort-key',
+                zoom,
+                f,
+                functionCache,
+                featureState
+              )
+            );
+
             stroke.setLineDash(
               paint['line-dasharray']
                 ? getValue(
@@ -737,7 +766,7 @@ export function stylefunction(
                   })
                 : null
             );
-            style.setZIndex(index);
+            style.setZIndex(zIndex);
           }
         }
 
@@ -1055,10 +1084,24 @@ export function stylefunction(
                       )
                     ]
                   );
+
+                  const zIndex = calcSortIndex(
+                    index,
+                    getValue(
+                      layer,
+                      'layout',
+                      'line-sort-key',
+                      zoom,
+                      f,
+                      functionCache,
+                      featureState
+                    )
+                  );
+
                   style.setImage(iconImg);
                   text = style.getText();
                   style.setText(undefined);
-                  style.setZIndex(index);
+                  style.setZIndex(zIndex);
                   hasImage = true;
                   skipLabel = false;
                 }
@@ -1531,6 +1574,20 @@ export function stylefunction(
             ),
             opacity
           );
+
+          const zIndex = calcSortIndex(
+            index,
+            getValue(
+              layer,
+              'layout',
+              'symbol-sort-key',
+              zoom,
+              f,
+              functionCache,
+              featureState
+            )
+          );
+
           if (haloColor) {
             textHalo.setColor(haloColor);
             // spec here : https://docs.mapbox.com/mapbox-gl-js/style-spec/#paint-symbol-text-halo-width
@@ -1561,7 +1618,7 @@ export function stylefunction(
             padding[2] = textPadding;
             padding[3] = textPadding;
           }
-          style.setZIndex(index);
+          style.setZIndex(zIndex);
         }
       }
     }

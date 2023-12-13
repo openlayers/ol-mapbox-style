@@ -400,6 +400,9 @@ export function drawSDF(image, area, color) {
 }
 
 /**
- * @typedef {import("./apply.js").Options} Options
- * @private
+ * @param {number} index
+ * @param {number} sortIndex
  */
+export function calcSortIndex(index, sortIndex) {
+  return index + (sortIndex === undefined ? 0 : sortIndex) * 0.00000000001;
+}
