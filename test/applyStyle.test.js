@@ -18,6 +18,20 @@ import {apply, applyStyle} from '../src/apply.js';
 import {get} from 'ol/proj.js';
 
 describe('applyStyle with source creation', function () {
+  let originalFetch;
+  const requests = [];
+  beforeEach(function () {
+    originalFetch = fetch;
+    window.fetch = (request) => {
+      requests.push(request);
+      return originalFetch(request);
+    };
+  });
+  afterEach(function () {
+    window.fetch = originalFetch;
+    requests.length = 0;
+  });
+
   it('accepts incorrect source with simple 3-parameter configuration', function (done) {
     const layer = new VectorLayer();
     applyStyle(layer, '/fixtures/geojson.json', {
@@ -63,21 +77,13 @@ describe('applyStyle with source creation', function () {
         return new Request(url);
       },
     }).then(function () {
-      const originalFetch = fetch;
-      /** @type {Array<Request>} */
-      const requests = [];
-      fetch = (request) => {
-        requests.push(request);
-        return originalFetch(request);
-      };
       layer
         .getSource()
         .loadFeatures([0, 0, 10000, 10000], 10, get('EPSG:3857'));
       layer.getSource().once('change', () => {
-        window.fetch = originalFetch;
         try {
           should(layer.getSource()).be.an.instanceOf(VectorSource);
-          should(requests[0].url).equal(
+          should(requests[requests.length - 1].url).equal(
             `${location.origin}/fixtures/states.geojson?foo=bar`
           );
           should(layer.getStyle()).be.an.instanceOf(Function);
