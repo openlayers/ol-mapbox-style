@@ -1170,6 +1170,10 @@ export function stylefunction(
             '.' +
             circleStrokeWidth +
             '.' +
+            circleTranslate[0] +
+            '.' +
+            circleTranslate[1] +
+            '.' +
             circleBlur;
           text = style.getText();
           style.setText(undefined);
