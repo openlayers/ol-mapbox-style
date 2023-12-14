@@ -639,29 +639,30 @@ export function stylefunction(
           }
         }
         if (type != 1 && layer.type == 'line') {
-          color =
-            !('line-pattern' in paint) && 'line-color' in paint
-              ? colorWithOpacity(
-                  getValue(
-                    layer,
-                    'paint',
-                    'line-color',
-                    zoom,
-                    f,
-                    functionCache,
-                    featureState
-                  ),
-                  getValue(
-                    layer,
-                    'paint',
-                    'line-opacity',
-                    zoom,
-                    f,
-                    functionCache,
-                    featureState
-                  )
-                )
-              : undefined;
+          if (!('line-pattern' in paint)) {
+            color = colorWithOpacity(
+              getValue(
+                layer,
+                'paint',
+                'line-color',
+                zoom,
+                f,
+                functionCache,
+                featureState
+              ),
+              getValue(
+                layer,
+                'paint',
+                'line-opacity',
+                zoom,
+                f,
+                functionCache,
+                featureState
+              )
+            );
+          } else {
+            color = undefined;
+          }
           const width = getValue(
             layer,
             'paint',
@@ -797,8 +798,9 @@ export function stylefunction(
                         'Point',
                         renderFeatureCoordinates,
                         [],
+                        2,
                         {},
-                        null
+                        undefined
                       );
                     }
                     styleGeom = renderFeature;
@@ -1111,6 +1113,16 @@ export function stylefunction(
               featureState
             )
           );
+
+          const circleTranslate = getValue(
+            layer,
+            'paint',
+            'circle-translate',
+            zoom,
+            f,
+            functionCache,
+            featureState
+          );
           const circleColor = colorWithOpacity(
             getValue(
               layer,
@@ -1147,11 +1159,17 @@ export function stylefunction(
             '.' +
             circleColor +
             '.' +
-            circleStrokeWidth;
+            circleStrokeWidth +
+            '.' +
+            circleTranslate[0] +
+            '.' +
+            circleTranslate[1];
+
           iconImg = iconImageCache[cache_key];
           if (!iconImg) {
             iconImg = new Circle({
               radius: circleRadius,
+              displacement: [circleTranslate[0], -circleTranslate[1]],
               stroke:
                 circleStrokeColor && circleStrokeWidth > 0
                   ? new Stroke({
