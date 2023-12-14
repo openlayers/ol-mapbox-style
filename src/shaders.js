@@ -278,7 +278,7 @@ export function raster(inputs, data) {
   // [end] from <https://stackoverflow.com/a/9493060>
 
   const hOffset = (1 / 360) * data.hue;
-  const sOffset = data.saturation;
+  // const sOffset = data.saturation;
 
   for (pixelY = 0; pixelY <= maxY; ++pixelY) {
     for (pixelX = 0; pixelX <= maxX; ++pixelX) {
@@ -297,8 +297,8 @@ export function raster(inputs, data) {
       h += hOffset;
       h = h % 1;
 
-      s += sOffset;
-      s = Math.max(0, Math.min(s, 1));
+      // s += sOffset;
+      // s = Math.max(0, Math.min(s, 1));
 
       const [r, g, b] = hslToRgb(h, s, l);
       shadeData[offset] = r;
