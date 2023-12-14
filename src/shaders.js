@@ -291,7 +291,8 @@ export function raster(inputs, data) {
       pixel[3] = imageData[offset + 3];
 
       const hsl = rgbToHsl(pixel[0], pixel[1], pixel[2]);
-      let [h, s] = hsl;
+      let h = hsl[0];
+      const s = hsl[1];
       const l = hsl[2];
 
       h += hOffset;
