@@ -400,8 +400,9 @@ export function drawSDF(image, area, color) {
 }
 
 /**
- * @param {number} index
- * @param {number} sortIndex
+ * @param {number} index render index of layer
+ * @param {number} sortIndex the sort index within that layer
+ * @return {number} newly calculated index
  */
 export function calcSortIndex(index, sortIndex) {
   return index + (sortIndex === undefined ? 0 : sortIndex) * 0.00000000001;
