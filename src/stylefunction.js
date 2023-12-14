@@ -520,18 +520,21 @@ export function stylefunction(
             featureState
           );
 
-          const zIndex = calcSortIndex(
-            index,
-            getValue(
-              layer,
-              'layout',
-              layer.type + '-sort-key',
-              zoom,
-              f,
-              functionCache,
-              featureState
-            )
-          );
+          let zIndex = index;
+          if (layer.type === 'fill') {
+            zIndex = calcSortIndex(
+              index,
+              getValue(
+                layer,
+                'layout',
+                'fill-sort-key',
+                zoom,
+                f,
+                functionCache,
+                featureState
+              )
+            );
+          }
 
           if (layer.type + '-pattern' in paint) {
             const fillIcon = getValue(
