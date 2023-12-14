@@ -913,7 +913,7 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
         functionCache
       );
       data.opacity =
-        'raster-opacity' in glLayer.paint
+        glLayer.paint && 'raster-opacity' in glLayer.paint
           ? getValue(
               glLayer,
               'paint',
