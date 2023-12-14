@@ -1061,7 +1061,11 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
     } else {
       id = glLayer.source || getSourceIdByRef(glLayers, glLayer.ref);
       // this technique assumes gl layers will be in a particular order
-      if (!id || id != glSourceId) {
+      if (
+        // This line is because rasters set properties on their source
+        glLayer.type === "raster" ||
+        !id || id != glSourceId
+      ) {
         if (layerIds.length) {
           promises.push(
             finalizeLayer(
