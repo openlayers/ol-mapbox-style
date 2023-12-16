@@ -1027,7 +1027,9 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
     const type = glLayer.type;
     if (type == 'heatmap') {
       //FIXME Unsupported layer type
-      throw new Error(`${type} layers are not supported`);
+      // eslint-disable-next-line no-console
+      console.debug(`layers[${i}].type "${type}" not supported`);
+      continue;
     } else {
       id = glLayer.source || getSourceIdByRef(glLayers, glLayer.ref);
       // this technique assumes gl layers will be in a particular order
