@@ -1030,9 +1030,7 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
     if (type == 'heatmap') {
       //FIXME Unsupported layer type
       // eslint-disable-next-line no-console
-      console.debug(
-        `[ol-mapbox-style] layers[${i}].type "${type}" not supported`
-      );
+      console.debug(`layers[${i}].type "${type}" not supported`);
       continue;
     } else {
       id = glLayer.source || getSourceIdByRef(glLayers, glLayer.ref);
