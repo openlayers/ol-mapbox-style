@@ -1175,19 +1175,61 @@ export function stylefunction(
             circleTranslate[1] +
             '.' +
             circleBlur;
-          text = style.getText();
-          style.setText(undefined);
-          style.setGeometry(undefined);
-          style.setZIndex(index);
-          style.setRenderer(([x, y], renderOpts) => {
+
+          const hit_cache_key = cache_key + '_hit';
+
+          const renderHitDetection = (
+            [x, y],
+            renderOpts,
+            pixelRatioOverride
+          ) => {
+            // NOTE: Hit detection rendering appears to assume pixelRatio of 1
+            // Allowing an `pixelRatioOverride` allows us debug by using this
+            // function in `setRenderer`
+            const pixelRatio = pixelRatioOverride || 1;
+            const r =
+              circleRadius * pixelRatio +
+              circleStrokeWidth * pixelRatio +
+              circleBlur * pixelRatio;
+            const sw = circleStrokeWidth * pixelRatio;
+            const cb = circleBlur * pixelRatio;
+            const xo = x + circleTranslate[0] * pixelRatio;
+            const yo = y + circleTranslate[1] * pixelRatio;
+
+            const w = r * 2 + sw * 2 + cb * 3 + 1;
+            const h = r * 2 + sw * 2 + cb * 3 + 1;
+
+            let bitmap = iconImageCache[hit_cache_key];
+            if (!bitmap) {
+              const offscreenBuffer = new OffscreenCanvas(w, h);
+              const ctx = offscreenBuffer.getContext('2d');
+
+              const ox = w / 2;
+              const oy = h / 2;
+
+              ctx.save();
+              ctx.beginPath();
+              ctx.arc(ox, oy, r, 0, 2 * Math.PI);
+              ctx.fillStyle = 'black';
+              ctx.fill();
+              ctx.closePath();
+              ctx.restore();
+
+              bitmap = offscreenBuffer.transferToImageBitmap();
+              iconImageCache[hit_cache_key] = bitmap;
+            }
+            renderOpts.context.drawImage(bitmap, xo - w / 2, yo - h / 2);
+          };
+
+          const styleRender = ([x, y], renderOpts) => {
             const r = circleRadius * renderOpts.pixelRatio;
             const sw = circleStrokeWidth * renderOpts.pixelRatio;
             const cb = circleBlur * renderOpts.pixelRatio;
             const xo = x + circleTranslate[0] * renderOpts.pixelRatio;
             const yo = y + circleTranslate[1] * renderOpts.pixelRatio;
 
-            const w = r * 2 + sw * 2 + sw / 2 + cb * 2;
-            const h = r * 2 + sw * 2 + sw / 2 + cb * 2;
+            const w = r * 2 + sw * 2 + cb * 4 + 1;
+            const h = r * 2 + sw * 2 + cb * 4 + 1;
 
             let bitmap = iconImageCache[cache_key];
             if (!bitmap) {
@@ -1204,23 +1246,34 @@ export function stylefunction(
               ctx.save();
               ctx.beginPath();
               ctx.arc(ox, oy, r, 0, 2 * Math.PI);
-              ctx.fillStyle = circleColor;
+              ctx.fillStyle = 'pink';
               ctx.fill();
+              ctx.closePath();
               ctx.restore();
 
-              ctx.save();
-              ctx.beginPath();
-              ctx.arc(ox, oy, r + sw / 2, 0, 2 * Math.PI);
-              ctx.strokeStyle = circleStrokeColor;
-              ctx.lineWidth = sw;
-              ctx.stroke();
-              ctx.restore();
-              ctx.restore();
+              if (circleStrokeWidth > 0) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(ox, oy, r + sw / 2, 0, 2 * Math.PI);
+                ctx.strokeStyle = circleStrokeColor;
+                ctx.lineWidth = sw;
+                ctx.stroke();
+                ctx.closePath();
+                ctx.restore();
+                ctx.restore();
+              }
               bitmap = offscreenBuffer.transferToImageBitmap();
               iconImageCache[cache_key] = bitmap;
             }
             renderOpts.context.drawImage(bitmap, xo - w / 2, yo - h / 2);
-          });
+          };
+
+          text = style.getText();
+          style.setText(undefined);
+          style.setGeometry(undefined);
+          style.setZIndex(index);
+          style.setHitDetectionRenderer(renderHitDetection);
+          style.setRenderer(styleRender);
         }
 
         let label, font, textLineHeight, textSize, letterSpacing, maxTextWidth;
