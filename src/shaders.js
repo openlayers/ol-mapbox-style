@@ -193,92 +193,41 @@ export function raster(inputs, data) {
 
   let pixelX, pixelY, x0, offset;
 
-  // [start] from <https://stackoverflow.com/a/9493060>
-  const hueToRgb = (p, q, t) => {
-    if (t < 0) {
-      t += 1;
-    }
-    if (t > 1) {
-      t -= 1;
-    }
-    if (t < 1 / 6) {
-      return p + (q - p) * 6 * t;
-    }
-    if (t < 1 / 2) {
-      return q;
-    }
-    if (t < 2 / 3) {
-      return p + (q - p) * (2 / 3 - t) * 6;
-    }
-    return p;
-  };
-
-  /**
-   * @param {number} h  The hue value
-   * @param {number} s  The saturation value
-   * @param {number} l  The lightness value
-   *
-   * @return {[number, number, number]} [r,g,b] 0-255
+  /*
+   * The following functions have the same math as <https://github.com/maplibre/maplibre-gl-js/blob/5518ede00ef769fed1ca4f54f6d970885987fb22/src/render/program/raster_program.ts#L76>
+   *   - calculateContrastFactor
+   *   - calculateSaturationFactor
+   *   - generateSpinWeights
    */
-  function hslToRgb(h, s, l) {
-    let r, g, b;
-
-    if (s === 0) {
-      r = l;
-      g = l;
-      b = l;
-    } else {
-      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-      const p = 2 * l - q;
-      r = hueToRgb(p, q, h + 1 / 3);
-      g = hueToRgb(p, q, h);
-      b = hueToRgb(p, q, h - 1 / 3);
-    }
-
-    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+  function calculateContrastFactor(contrast) {
+    return contrast > 0 ? 1 / (1 - contrast) : 1 + contrast;
   }
 
-  /**
-   * Converts an RGB color value to HSL. Conversion formula
-   * adapted from http://en.wikipedia.org/wiki/HSL_color_space.
-   * Assumes r, g, and b are contained in the set [0, 255] and
-   * returns h, s, and l in the set [0, 1].
-   *
-   * @param   {number}  r       The red color value
-   * @param   {number}  g       The green color value
-   * @param   {number}  b       The blue color value
-   * @return  {Array}           The HSL representation
-   */
-  function rgbToHsl(r, g, b) {
-    (r /= 255), (g /= 255), (b /= 255);
-    const vmax = Math.max(r, g, b),
-      vmin = Math.min(r, g, b);
-    let h;
-    const l = (vmax + vmin) / 2;
-
-    if (vmax === vmin) {
-      return [0, 0, l]; // achromatic
-    }
-
-    const d = vmax - vmin;
-    const s = l > 0.5 ? d / (2 - vmax - vmin) : d / (vmax + vmin);
-    if (vmax === r) {
-      h = (g - b) / d + (g < b ? 6 : 0);
-    }
-    if (vmax === g) {
-      h = (b - r) / d + 2;
-    }
-    if (vmax === b) {
-      h = (r - g) / d + 4;
-    }
-    h /= 6;
-
-    return [h, s, l];
+  function calculateSaturationFactor(saturation) {
+    return saturation > 0 ? 1 - 1 / (1.001 - saturation) : -saturation;
   }
-  // [end] from <https://stackoverflow.com/a/9493060>
 
-  const hOffset = (1 / 360) * data.hue;
-  // const sOffset = data.saturation;
+  function generateSpinWeights(angle) {
+    angle *= Math.PI / 180;
+    const s = Math.sin(angle);
+    const c = Math.cos(angle);
+    return [
+      (2 * c + 1) / 3,
+      (-Math.sqrt(3) * s - c + 1) / 3,
+      (Math.sqrt(3) * s - c + 1) / 3,
+    ];
+  }
+
+  const sFactor = calculateSaturationFactor(data.saturation);
+  const cFactor = calculateContrastFactor(data.contrast);
+
+  const cSpinWeights = generateSpinWeights(data.hueRotate);
+  const cSpinWeightsXYZ = cSpinWeights;
+  const cSpinWeightsZXY = [cSpinWeights[2], cSpinWeights[0], cSpinWeights[1]];
+  const cSpinWeightsYZX = [cSpinWeights[1], cSpinWeights[2], cSpinWeights[0]];
+
+  const bLow = data.brightnessLow;
+  const bHigh = data.brightnessHigh;
 
   for (pixelY = 0; pixelY <= maxY; ++pixelY) {
     for (pixelX = 0; pixelX <= maxX; ++pixelX) {
@@ -290,18 +239,39 @@ export function raster(inputs, data) {
       pixel[2] = imageData[offset + 2];
       pixel[3] = imageData[offset + 3];
 
-      const hsl = rgbToHsl(pixel[0], pixel[1], pixel[2]);
-      let h = hsl[0];
-      const s = hsl[1];
-      const l = hsl[2];
+      const or = pixel[0];
+      const og = pixel[1];
+      const ob = pixel[2];
 
-      h += hOffset;
-      h = h % 1;
+      const dotProduct = (vector1, vector2) => {
+        let result = 0;
+        for (let i = 0; i < vector1.length; i++) {
+          result += vector1[i] * vector2[i];
+        }
+        return result;
+      };
 
-      // s += sOffset;
-      // s = Math.max(0, Math.min(s, 1));
+      // hue-rotate
+      let r = dotProduct([or, og, ob], cSpinWeightsXYZ);
+      let g = dotProduct([or, og, ob], cSpinWeightsZXY);
+      let b = dotProduct([or, og, ob], cSpinWeightsYZX);
 
-      const [r, g, b] = hslToRgb(h, s, l);
+      // saturation
+      const average = (r + g + b) / 3;
+      r += (average - r) * sFactor;
+      g += (average - g) * sFactor;
+      b += (average - b) * sFactor;
+
+      // contrast
+      r = (r - 0.5) * cFactor + 0.5;
+      g = (g - 0.5) * cFactor + 0.5;
+      b = (b - 0.5) * cFactor + 0.5;
+
+      // brightness
+      r = bLow * (1 - r) + bHigh * r;
+      g = bLow * (1 - r) + bHigh * g;
+      b = bLow * (1 - r) + bHigh * b;
+
       shadeData[offset] = r;
       shadeData[offset + 1] = g;
       shadeData[offset + 2] = b;
