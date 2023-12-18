@@ -954,14 +954,6 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
       );
 
       const data = event.data;
-      data.hue = getValue(
-        glLayer,
-        'paint',
-        'raster-hue-rotate',
-        zoom,
-        emptyObj,
-        functionCache
-      );
       data.opacity =
         glLayer.paint && 'raster-opacity' in glLayer.paint
           ? getValue(
@@ -977,6 +969,41 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
         glLayer,
         'paint',
         'raster-saturation',
+        zoom,
+        emptyObj,
+        functionCache
+      );
+      data.contrast = getValue(
+        glLayer,
+        'paint',
+        'raster-contrast',
+        zoom,
+        emptyObj,
+        functionCache
+      );
+
+      data.brightnessHigh = getValue(
+        glLayer,
+        'paint',
+        'raster-brightness-max',
+        zoom,
+        emptyObj,
+        functionCache
+      );
+
+      data.brightnessLow = getValue(
+        glLayer,
+        'paint',
+        'raster-brightness-min',
+        zoom,
+        emptyObj,
+        functionCache
+      );
+
+      data.hueRotate = getValue(
+        glLayer,
+        'paint',
+        'raster-hue-rotate',
         zoom,
         emptyObj,
         functionCache
