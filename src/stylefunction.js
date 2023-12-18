@@ -21,7 +21,6 @@ import mb2css from 'mapbox-to-css-font';
 import spec from '@mapbox/mapbox-gl-style-spec/reference/v8.json';
 import {applyLetterSpacing, wrapText} from './text.js';
 import {
-  calcSortIndex,
   clearFunctionCache,
   createCanvas,
   defaultResolutions,
@@ -46,7 +45,7 @@ import {isFunction} from '@mapbox/mapbox-gl-style-spec/function/index.js';
  * @typedef {import('./util.js').ResourceType} ResourceType
  */
 
-const types = {
+export const types = {
   'Point': 1,
   'MultiPoint': 1,
   'LineString': 2,
@@ -520,22 +519,6 @@ export function stylefunction(
             featureState
           );
 
-          let zIndex = index;
-          if (layer.type === 'fill') {
-            zIndex = calcSortIndex(
-              index,
-              getValue(
-                layer,
-                'layout',
-                'fill-sort-key',
-                zoom,
-                f,
-                functionCache,
-                featureState
-              )
-            );
-          }
-
           if (layer.type + '-pattern' in paint) {
             const fillIcon = getValue(
               layer,
@@ -566,7 +549,7 @@ export function stylefunction(
                   styles[stylesLength] = style;
                 }
                 fill = style.getFill();
-                style.setZIndex(zIndex);
+                style.setZIndex(index);
                 const icon_cache_key = icon + '.' + opacity;
                 let pattern = patternCache[icon_cache_key];
                 if (!pattern) {
@@ -652,7 +635,8 @@ export function stylefunction(
                 stroke.setColor(strokeColor);
                 stroke.setWidth(0.5);
               }
-              style.setZIndex(zIndex);
+
+              style.setZIndex(index);
             }
           }
         }
@@ -741,19 +725,6 @@ export function stylefunction(
             stroke.setColor(color);
             stroke.setWidth(width);
 
-            const zIndex = calcSortIndex(
-              index,
-              getValue(
-                layer,
-                'layout',
-                'line-sort-key',
-                zoom,
-                f,
-                functionCache,
-                featureState
-              )
-            );
-
             stroke.setLineDash(
               paint['line-dasharray']
                 ? getValue(
@@ -769,7 +740,7 @@ export function stylefunction(
                   })
                 : null
             );
-            style.setZIndex(zIndex);
+            style.setZIndex(index);
           }
         }
 
@@ -1088,23 +1059,11 @@ export function stylefunction(
                     ]
                   );
 
-                  const zIndex = calcSortIndex(
-                    index,
-                    getValue(
-                      layer,
-                      'layout',
-                      'symbol-sort-key',
-                      zoom,
-                      f,
-                      functionCache,
-                      featureState
-                    )
-                  );
-
                   style.setImage(iconImg);
                   text = style.getText();
                   style.setText(undefined);
-                  style.setZIndex(zIndex);
+
+                  style.setZIndex(index);
                   hasImage = true;
                   skipLabel = false;
                 }
@@ -1578,19 +1537,6 @@ export function stylefunction(
             opacity
           );
 
-          const zIndex = calcSortIndex(
-            index,
-            getValue(
-              layer,
-              'layout',
-              'symbol-sort-key',
-              zoom,
-              f,
-              functionCache,
-              featureState
-            )
-          );
-
           if (haloColor) {
             textHalo.setColor(haloColor);
             // spec here : https://docs.mapbox.com/mapbox-gl-js/style-spec/#paint-symbol-text-halo-width
@@ -1621,7 +1567,7 @@ export function stylefunction(
             padding[2] = textPadding;
             padding[3] = textPadding;
           }
-          style.setZIndex(zIndex);
+          style.setZIndex(index);
         }
       }
     }
