@@ -1093,7 +1093,7 @@ export function stylefunction(
                     getValue(
                       layer,
                       'layout',
-                      'line-sort-key',
+                      'symbol-sort-key',
                       zoom,
                       f,
                       functionCache,
