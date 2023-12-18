@@ -518,7 +518,6 @@ export function stylefunction(
             functionCache,
             featureState
           );
-
           if (layer.type + '-pattern' in paint) {
             const fillIcon = getValue(
               layer,
@@ -635,7 +634,6 @@ export function stylefunction(
                 stroke.setColor(strokeColor);
                 stroke.setWidth(0.5);
               }
-
               style.setZIndex(index);
             }
           }
@@ -724,7 +722,6 @@ export function stylefunction(
             );
             stroke.setColor(color);
             stroke.setWidth(width);
-
             stroke.setLineDash(
               paint['line-dasharray']
                 ? getValue(
@@ -1058,11 +1055,9 @@ export function stylefunction(
                       )
                     ]
                   );
-
                   style.setImage(iconImg);
                   text = style.getText();
                   style.setText(undefined);
-
                   style.setZIndex(index);
                   hasImage = true;
                   skipLabel = false;
@@ -1536,7 +1531,6 @@ export function stylefunction(
             ),
             opacity
           );
-
           if (haloColor) {
             textHalo.setColor(haloColor);
             // spec here : https://docs.mapbox.com/mapbox-gl-js/style-spec/#paint-symbol-text-halo-width
