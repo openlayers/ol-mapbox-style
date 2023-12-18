@@ -933,6 +933,7 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
           }
           return sortOrder;
         }
+        return parseInt(getUid(feature), 10);
       };
 
       return getRenderOrder(f1) - getRenderOrder(f2);
