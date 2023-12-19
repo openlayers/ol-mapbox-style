@@ -275,8 +275,7 @@ export function raster(inputs, data) {
       shadeData[offset] = r;
       shadeData[offset + 1] = g;
       shadeData[offset + 2] = b;
-      shadeData[offset + 3] =
-        data.opacity !== undefined ? data.opacity * 255 : pixel[3];
+      shadeData[offset + 3] = pixel[3];
     }
   }
 
