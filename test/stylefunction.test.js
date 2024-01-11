@@ -129,6 +129,13 @@ describe('stylefunction', function () {
       should(style(feature, 1)).be.undefined();
     });
 
+    it('Don not match layer ids to string `sourceOrLayers`', function () {
+      const style = applyStyleFunction(layer, states, 'population_lt_2m');
+      should(style).be.a.Function;
+      feature.set('PERSONS', 2000000);
+      should(style(feature, 1)).be.undefined();
+    });
+
     it('should handle has and !has', function () {
       const style = applyStyleFunction(layer, states, ['has_male']);
       should(style).be.a.Function;
