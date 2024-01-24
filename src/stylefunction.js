@@ -420,7 +420,7 @@ export function stylefunction(
     const layerId = layer.id;
     if (
       (typeof sourceOrLayers == 'string' && layer.source == sourceOrLayers) ||
-      (sourceOrLayers instanceof Array) && sourceOrLayers.indexOf(layerId) !== -1
+      Array.isArray(sourceOrLayers) && sourceOrLayers.indexOf(layerId) !== -1
     ) {
       const sourceLayer = layer['source-layer'];
       if (!mapboxSource) {
