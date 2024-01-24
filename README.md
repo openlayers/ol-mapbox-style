@@ -848,7 +848,7 @@ parameter of the style url.
 
 #### background
 
-• **background**: `false` \| `BackgroundColor`
+• **background**: `string` \| `false` \| (`arg0`: `number`) => `string`
 
 Background color for the layer.
 If not specified, the background from the Mapbox style object will be used. Set to `false` to prevent
@@ -1117,6 +1117,10 @@ Access token param. For internal use.
 
 • **getImage**: (`arg0`: `VectorLayer`\\&lt;`any`> \| `VectorTileLayer`, `arg1`: `string`) => `string` \| `HTMLCanvasElement` \| `HTMLImageElement`
 
+Function that returns an image for an icon name. If the result is an HTMLImageElement, it must already be
+loaded. The layer can be used to call layer.changed() when the loading and processing of the image has finished.
+This function be used for icons not in the sprite or to override sprite icons.
+
 ##### Type declaration
 
 ▸ (`arg0`, `arg1`): `string` \| `HTMLCanvasElement` \| `HTMLImageElement`
@@ -1172,6 +1176,11 @@ as object, when they contain a relative sprite url, or sources referencing data 
 #### transformRequest
 
 • **transformRequest**: (`arg0`: `string`, `arg1`: [`ResourceType`](#ResourceType)) => `string` \| `void` \| `Request` \| `Promise`\\&lt;`string` \| `Request`>
+
+Function for controlling how `ol-mapbox-style` fetches resources. Can be used for modifying
+the url, adding headers or setting credentials options. Called with the url and the resource
+type as arguments, this function is supposed to return a `Request` or a url `string`, or a promise tehereof.
+Without a return value the original request will not be modified.
 
 ##### Type declaration
 

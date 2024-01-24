@@ -912,7 +912,8 @@ export function stylefunction(
                         functionCache,
                         featureState
                       ).slice(0);
-                      displacement[1] *= -1;
+                      displacement[0] *= iconSize;
+                      displacement[1] *= -iconSize;
                     }
                     let color = iconColor
                       ? [
