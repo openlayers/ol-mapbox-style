@@ -1534,7 +1534,7 @@ export function stylefunction(
             ),
             opacity,
           );
-          if (haloColor) {
+          if (haloColor && textHaloWidth > 0) {
             textHalo.setColor(haloColor);
             // spec here : https://docs.mapbox.com/mapbox-gl-js/style-spec/#paint-symbol-text-halo-width
             // Halo width must be doubled because it is applied around the center of the text outline
