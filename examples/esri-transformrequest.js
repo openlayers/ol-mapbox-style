@@ -8,9 +8,9 @@ olms(
     transformRequest(url, type) {
       if (type === 'Source') {
         return new Request(
-          url.replace('/VectorTileServer', '/VectorTileServer/')
+          url.replace('/VectorTileServer', '/VectorTileServer/'),
         );
       }
     },
-  }
+  },
 );

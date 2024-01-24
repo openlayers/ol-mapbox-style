@@ -68,13 +68,13 @@ const anchor = {
 const expressionData = function (rawExpression, propertySpec) {
   const compiledExpression = createPropertyExpression(
     rawExpression,
-    propertySpec
+    propertySpec,
   );
   if (compiledExpression.result === 'error') {
     throw new Error(
       compiledExpression.value
         .map((err) => `${err.key}: ${err.message}`)
-        .join(', ')
+        .join(', '),
     );
   }
   return compiledExpression.value;
@@ -102,7 +102,7 @@ export function getValue(
   zoom,
   feature,
   functionCache,
-  featureState
+  featureState,
 ) {
   const layerId = layer.id;
   if (!functionCache) {
@@ -156,7 +156,7 @@ function getIconDeclutterMode(layer, zoom, feature, functionCache) {
     'icon-allow-overlap',
     zoom,
     feature,
-    functionCache
+    functionCache,
   );
   if (!allowOverlap) {
     return 'declutter';
@@ -167,7 +167,7 @@ function getIconDeclutterMode(layer, zoom, feature, functionCache) {
     'icon-ignore-placement',
     zoom,
     feature,
-    functionCache
+    functionCache,
   );
   if (!ignorePlacement) {
     return 'obstacle';
@@ -344,7 +344,7 @@ export function stylefunction(
   spriteData = undefined,
   spriteImageUrl = undefined,
   getFonts = undefined,
-  getImage = undefined
+  getImage = undefined,
 ) {
   if (typeof glStyle == 'string') {
     glStyle = JSON.parse(glStyle);
@@ -432,12 +432,12 @@ export function stylefunction(
         const type = source.type;
         if (type !== 'vector' && type !== 'geojson') {
           throw new Error(
-            `Source "${mapboxSource}" is not of type "vector" or "geojson", but "${type}"`
+            `Source "${mapboxSource}" is not of type "vector" or "geojson", but "${type}"`,
           );
         }
       } else if (layer.source !== mapboxSource) {
         throw new Error(
-          `Layer "${layerId}" does not use source "${mapboxSource}`
+          `Layer "${layerId}" does not use source "${mapboxSource}`,
         );
       }
       let layers = layersBySourceLayer[sourceLayer];
@@ -516,7 +516,7 @@ export function stylefunction(
             zoom,
             f,
             functionCache,
-            featureState
+            featureState,
           );
           if (layer.type + '-pattern' in paint) {
             const fillIcon = getValue(
@@ -526,7 +526,7 @@ export function stylefunction(
               zoom,
               f,
               functionCache,
-              featureState
+              featureState,
             );
             if (fillIcon) {
               const icon =
@@ -555,7 +555,7 @@ export function stylefunction(
                   const spriteImageData = spriteData[icon];
                   const canvas = createCanvas(
                     spriteImageData.width,
-                    spriteImageData.height
+                    spriteImageData.height,
                   );
                   const ctx = /** @type {CanvasRenderingContext2D} */ (
                     canvas.getContext('2d')
@@ -570,7 +570,7 @@ export function stylefunction(
                     0,
                     0,
                     spriteImageData.width,
-                    spriteImageData.height
+                    spriteImageData.height,
                   );
                   pattern = ctx.createPattern(canvas, 'repeat');
                   patternCache[icon_cache_key] = pattern;
@@ -587,9 +587,9 @@ export function stylefunction(
                 zoom,
                 f,
                 functionCache,
-                featureState
+                featureState,
               ),
-              opacity
+              opacity,
             );
             if (layer.type + '-outline-color' in paint) {
               strokeColor = colorWithOpacity(
@@ -600,9 +600,9 @@ export function stylefunction(
                   zoom,
                   f,
                   functionCache,
-                  featureState
+                  featureState,
                 ),
-                opacity
+                opacity,
               );
             }
             if (!strokeColor) {
@@ -648,7 +648,7 @@ export function stylefunction(
                 zoom,
                 f,
                 functionCache,
-                featureState
+                featureState,
               ),
               getValue(
                 layer,
@@ -657,8 +657,8 @@ export function stylefunction(
                 zoom,
                 f,
                 functionCache,
-                featureState
-              )
+                featureState,
+              ),
             );
           } else {
             color = undefined;
@@ -670,7 +670,7 @@ export function stylefunction(
             zoom,
             f,
             functionCache,
-            featureState
+            featureState,
           );
           if (color && width > 0) {
             ++stylesLength;
@@ -695,8 +695,8 @@ export function stylefunction(
                 zoom,
                 f,
                 functionCache,
-                featureState
-              )
+                featureState,
+              ),
             );
             stroke.setLineJoin(
               getValue(
@@ -706,8 +706,8 @@ export function stylefunction(
                 zoom,
                 f,
                 functionCache,
-                featureState
-              )
+                featureState,
+              ),
             );
             stroke.setMiterLimit(
               getValue(
@@ -717,8 +717,8 @@ export function stylefunction(
                 zoom,
                 f,
                 functionCache,
-                featureState
-              )
+                featureState,
+              ),
             );
             stroke.setColor(color);
             stroke.setWidth(width);
@@ -731,11 +731,11 @@ export function stylefunction(
                     zoom,
                     f,
                     functionCache,
-                    featureState
+                    featureState,
                   ).map(function (x) {
                     return x * width;
                   })
-                : null
+                : null,
             );
             style.setZIndex(index);
           }
@@ -753,7 +753,7 @@ export function stylefunction(
             zoom,
             f,
             functionCache,
-            featureState
+            featureState,
           );
           if (iconImage) {
             icon =
@@ -773,7 +773,7 @@ export function stylefunction(
                 zoom,
                 f,
                 functionCache,
-                featureState
+                featureState,
               );
               if (type == 2) {
                 const geom = /** @type {*} */ (feature.getGeometry());
@@ -783,8 +783,8 @@ export function stylefunction(
                   const size = Math.sqrt(
                     Math.max(
                       Math.pow((extent[2] - extent[0]) / resolution, 2),
-                      Math.pow((extent[3] - extent[1]) / resolution, 2)
-                    )
+                      Math.pow((extent[3] - extent[1]) / resolution, 2),
+                    ),
                   );
                   if (size > 150) {
                     //FIXME Do not hard-code a size of 150
@@ -800,7 +800,7 @@ export function stylefunction(
                         [],
                         2,
                         {},
-                        undefined
+                        undefined,
                       );
                     }
                     styleGeom = renderFeature;
@@ -813,7 +813,7 @@ export function stylefunction(
                       zoom,
                       f,
                       functionCache,
-                      featureState
+                      featureState,
                     );
                     if (
                       placement === 'line' &&
@@ -856,7 +856,7 @@ export function stylefunction(
                   zoom,
                   f,
                   functionCache,
-                  featureState
+                  featureState,
                 );
                 const iconColor =
                   paint['icon-color'] !== undefined
@@ -867,7 +867,7 @@ export function stylefunction(
                         zoom,
                         f,
                         functionCache,
-                        featureState
+                        featureState,
                       )
                     : null;
                 if (!iconColor || iconColor.a !== 0) {
@@ -878,7 +878,7 @@ export function stylefunction(
                     zoom,
                     f,
                     functionCache,
-                    featureState
+                    featureState,
                   );
                   const haloWidth = getValue(
                     layer,
@@ -887,7 +887,7 @@ export function stylefunction(
                     zoom,
                     f,
                     functionCache,
-                    featureState
+                    featureState,
                   );
                   let iconCacheKey = `${icon}.${iconSize}.${haloWidth}.${haloColor}`;
                   if (iconColor !== null) {
@@ -899,7 +899,7 @@ export function stylefunction(
                       layer,
                       zoom,
                       f,
-                      functionCache
+                      functionCache,
                     );
                     let displacement;
                     if ('icon-offset' in layout) {
@@ -910,7 +910,7 @@ export function stylefunction(
                         zoom,
                         f,
                         functionCache,
-                        featureState
+                        featureState,
                       ).slice(0);
                       displacement[1] *= -1;
                     }
@@ -956,7 +956,7 @@ export function stylefunction(
                               pixelRatio: spriteImageData.pixelRatio,
                             },
                             haloWidth,
-                            haloColor
+                            haloColor,
                           );
                           color = undefined; // do not tint haloed icons
                         } else {
@@ -964,7 +964,7 @@ export function stylefunction(
                             spriteImage,
                             spriteImageData,
                             haloWidth,
-                            haloColor
+                            haloColor,
                           );
                         }
                       } else {
@@ -978,7 +978,7 @@ export function stylefunction(
                                 width: spriteImageSize[0],
                                 height: spriteImageSize[1],
                               },
-                              {r: 1, g: 1, b: 1, a: 1}
+                              {r: 1, g: 1, b: 1, a: 1},
                             );
                           }
                           img = spriteImageUnSDFed;
@@ -1027,9 +1027,9 @@ export function stylefunction(
                           zoom,
                           f,
                           functionCache,
-                          featureState
-                        )
-                      )
+                          featureState,
+                        ),
+                      ),
                   );
                   iconImg.setOpacity(
                     getValue(
@@ -1039,8 +1039,8 @@ export function stylefunction(
                       zoom,
                       f,
                       functionCache,
-                      featureState
-                    )
+                      featureState,
+                    ),
                   );
                   iconImg.setAnchor(
                     anchor[
@@ -1051,9 +1051,9 @@ export function stylefunction(
                         zoom,
                         f,
                         functionCache,
-                        featureState
+                        featureState,
                       )
-                    ]
+                    ],
                   );
                   style.setImage(iconImg);
                   text = style.getText();
@@ -1090,7 +1090,7 @@ export function stylefunction(
                   zoom,
                   f,
                   functionCache,
-                  featureState
+                  featureState,
                 )
               : 5;
           const circleStrokeColor = colorWithOpacity(
@@ -1101,7 +1101,7 @@ export function stylefunction(
               zoom,
               f,
               functionCache,
-              featureState
+              featureState,
             ),
             getValue(
               layer,
@@ -1110,8 +1110,8 @@ export function stylefunction(
               zoom,
               f,
               functionCache,
-              featureState
-            )
+              featureState,
+            ),
           );
 
           const circleTranslate = getValue(
@@ -1121,7 +1121,7 @@ export function stylefunction(
             zoom,
             f,
             functionCache,
-            featureState
+            featureState,
           );
           const circleColor = colorWithOpacity(
             getValue(
@@ -1131,7 +1131,7 @@ export function stylefunction(
               zoom,
               f,
               functionCache,
-              featureState
+              featureState,
             ),
             getValue(
               layer,
@@ -1140,8 +1140,8 @@ export function stylefunction(
               zoom,
               f,
               functionCache,
-              featureState
-            )
+              featureState,
+            ),
           );
           const circleStrokeWidth = getValue(
             layer,
@@ -1150,7 +1150,7 @@ export function stylefunction(
             zoom,
             f,
             functionCache,
-            featureState
+            featureState,
           );
           const cache_key =
             circleRadius +
@@ -1204,8 +1204,8 @@ export function stylefunction(
               zoom,
               f,
               functionCache,
-              featureState
-            )
+              featureState,
+            ),
           );
           const fontArray = getValue(
             layer,
@@ -1214,7 +1214,7 @@ export function stylefunction(
             zoom,
             f,
             functionCache,
-            featureState
+            featureState,
           );
           textLineHeight = getValue(
             layer,
@@ -1223,17 +1223,19 @@ export function stylefunction(
             zoom,
             f,
             functionCache,
-            featureState
+            featureState,
           );
           font = mb2css(
             getFonts
               ? getFonts(
                   fontArray,
-                  glStyle.metadata ? glStyle.metadata['ol:webfonts'] : undefined
+                  glStyle.metadata
+                    ? glStyle.metadata['ol:webfonts']
+                    : undefined,
                 )
               : fontArray,
             textSize,
-            textLineHeight
+            textLineHeight,
           );
           if (!font.includes('sans-serif')) {
             font += ',sans-serif';
@@ -1245,7 +1247,7 @@ export function stylefunction(
             zoom,
             f,
             functionCache,
-            featureState
+            featureState,
           );
           maxTextWidth = getValue(
             layer,
@@ -1254,7 +1256,7 @@ export function stylefunction(
             zoom,
             f,
             functionCache,
-            featureState
+            featureState,
           );
           const textField = getValue(
             layer,
@@ -1263,7 +1265,7 @@ export function stylefunction(
             zoom,
             f,
             functionCache,
-            featureState
+            featureState,
           );
           if (typeof textField === 'object' && textField.sections) {
             if (textField.sections.length === 1) {
@@ -1276,7 +1278,7 @@ export function stylefunction(
                 const chunkFont = mb2css(
                   getFonts ? getFonts(fonts) : fonts,
                   textSize * (chunk.scale || 1),
-                  textLineHeight
+                  textLineHeight,
                 );
                 let text = chunk.text;
                 if (text === '\n') {
@@ -1291,7 +1293,7 @@ export function stylefunction(
                   text,
                   chunkFont,
                   maxTextWidth,
-                  letterSpacing
+                  letterSpacing,
                 ).split('\n');
                 for (let i = 0, ii = text.length; i < ii; ++i) {
                   if (i > 0) {
@@ -1312,7 +1314,7 @@ export function stylefunction(
             zoom,
             f,
             functionCache,
-            featureState
+            featureState,
           );
         }
         if (label && opacity && !skipLabel) {
@@ -1336,7 +1338,7 @@ export function stylefunction(
               text ||
                 new Text({
                   padding: [2, 2, 2, 2],
-                })
+                }),
             );
           }
           text = style.getText();
@@ -1353,8 +1355,8 @@ export function stylefunction(
           const wrappedLabel = Array.isArray(label)
             ? label
             : type == 2
-            ? applyLetterSpacing(label, letterSpacing)
-            : wrapText(label, font, maxTextWidth, letterSpacing);
+              ? applyLetterSpacing(label, letterSpacing)
+              : wrapText(label, font, maxTextWidth, letterSpacing);
           text.setText(wrappedLabel);
           text.setFont(font);
           text.setRotation(
@@ -1366,9 +1368,9 @@ export function stylefunction(
                 zoom,
                 f,
                 functionCache,
-                featureState
-              )
-            )
+                featureState,
+              ),
+            ),
           );
           const textAnchor = getValue(
             layer,
@@ -1377,7 +1379,7 @@ export function stylefunction(
             zoom,
             f,
             functionCache,
-            featureState
+            featureState,
           );
           const placement =
             hasImage || type == 1
@@ -1389,7 +1391,7 @@ export function stylefunction(
                   zoom,
                   f,
                   functionCache,
-                  featureState
+                  featureState,
                 );
           let textAlign;
           if (placement === 'line-center') {
@@ -1406,7 +1408,7 @@ export function stylefunction(
               zoom,
               f,
               functionCache,
-              featureState
+              featureState,
             );
             text.setRepeat(symbolSpacing * 2);
           }
@@ -1418,7 +1420,7 @@ export function stylefunction(
             zoom,
             f,
             functionCache,
-            featureState
+            featureState,
           );
           const textOffset = getValue(
             layer,
@@ -1427,7 +1429,7 @@ export function stylefunction(
             zoom,
             f,
             functionCache,
-            featureState
+            featureState,
           );
           const textTranslate = getValue(
             layer,
@@ -1436,7 +1438,7 @@ export function stylefunction(
             zoom,
             f,
             functionCache,
-            featureState
+            featureState,
           );
           // Text offset has to take halo width and line height into account
           let vOffset = 0;
@@ -1457,7 +1459,7 @@ export function stylefunction(
               zoom,
               f,
               functionCache,
-              featureState
+              featureState,
             );
             text.setRotateWithView(textRotationAlignment == 'map');
           } else {
@@ -1470,11 +1472,11 @@ export function stylefunction(
                   zoom,
                   f,
                   functionCache,
-                  featureState
-                )
+                  featureState,
+                ),
               ) *
                 label.length) /
-                wrappedLabel.length
+                wrappedLabel.length,
             );
             text.setRotateWithView(false);
           }
@@ -1495,14 +1497,14 @@ export function stylefunction(
             zoom,
             f,
             functionCache,
-            featureState
+            featureState,
           );
           text.setJustify(textJustify === 'auto' ? undefined : textJustify);
           text.setOffsetX(
-            textOffset[0] * textSize + hOffset + textTranslate[0]
+            textOffset[0] * textSize + hOffset + textTranslate[0],
           );
           text.setOffsetY(
-            textOffset[1] * textSize + vOffset + textTranslate[1]
+            textOffset[1] * textSize + vOffset + textTranslate[1],
           );
           textColor.setColor(
             colorWithOpacity(
@@ -1513,10 +1515,10 @@ export function stylefunction(
                 zoom,
                 f,
                 functionCache,
-                featureState
+                featureState,
               ),
-              opacity
-            )
+              opacity,
+            ),
           );
           text.setFill(textColor);
           const haloColor = colorWithOpacity(
@@ -1527,9 +1529,9 @@ export function stylefunction(
               zoom,
               f,
               functionCache,
-              featureState
+              featureState,
             ),
-            opacity
+            opacity,
           );
           if (haloColor) {
             textHalo.setColor(haloColor);
@@ -1539,7 +1541,7 @@ export function stylefunction(
             // 1/4 of text size (spec) x 2
             const halfTextSize = 0.5 * textSize;
             textHalo.setWidth(
-              textHaloWidth <= halfTextSize ? textHaloWidth : halfTextSize
+              textHaloWidth <= halfTextSize ? textHaloWidth : halfTextSize,
             );
             text.setStroke(textHalo);
           } else {
@@ -1552,7 +1554,7 @@ export function stylefunction(
             zoom,
             f,
             functionCache,
-            featureState
+            featureState,
           );
           const padding = text.getPadding();
           if (textPadding !== padding[0]) {

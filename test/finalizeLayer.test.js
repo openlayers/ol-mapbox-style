@@ -36,7 +36,7 @@ describe('finalizeLayer promise', function () {
       ['natural_earth'],
       glStyle,
       'fixtures/osm-liberty/',
-      map
+      map,
     )
       .then(done)
       .catch(function (err) {

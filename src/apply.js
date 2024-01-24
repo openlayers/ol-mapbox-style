@@ -184,7 +184,7 @@ export function applyStyle(
   glStyle,
   sourceOrLayersOrOptions = '',
   optionsOrPath = {},
-  resolutions = undefined
+  resolutions = undefined,
 ) {
   let styleUrl, sourceId;
   /** @type {Options&ApplyStyleOptions} */
@@ -241,7 +241,7 @@ export function applyStyle(
           !(layer instanceof VectorLayer || layer instanceof VectorTileLayer)
         ) {
           return reject(
-            new Error('Can only apply to VectorLayer or VectorTileLayer')
+            new Error('Can only apply to VectorLayer or VectorTileLayer'),
           );
         }
 
@@ -270,7 +270,7 @@ export function applyStyle(
             return setupVectorSource(
               glStyle.sources[sourceId],
               styleUrl,
-              options
+              options,
             ).then(function (source) {
               const targetSource = layer.getSource();
               if (!targetSource) {
@@ -296,13 +296,13 @@ export function applyStyle(
                   targetSource.getTileLoadFunction() === defaultLoadFunction
                 ) {
                   targetSource.setTileLoadFunction(
-                    source.getTileLoadFunction()
+                    source.getTileLoadFunction(),
                   );
                 }
                 if (
                   equivalent(
                     targetSource.getProjection(),
-                    source.getProjection()
+                    source.getProjection(),
                   )
                 ) {
                   targetSource.tileGrid = source.getTileGrid();
@@ -314,7 +314,7 @@ export function applyStyle(
               ) {
                 const tileGrid = layer.getSource().getTileGrid();
                 layer.setMaxResolution(
-                  tileGrid.getResolution(tileGrid.getMinZoom())
+                  tileGrid.getResolution(tileGrid.getMinZoom()),
                 );
               }
             });
@@ -350,7 +350,7 @@ export function applyStyle(
               const units = projection.getUnits();
               if (units !== 'm') {
                 resolutions = defaultResolutions.map(
-                  (resolution) => resolution / METERS_PER_UNIT[units]
+                  (resolution) => resolution / METERS_PER_UNIT[units],
                 );
               }
             }
@@ -362,7 +362,7 @@ export function applyStyle(
               spriteData,
               spriteImageUrl,
               getFonts,
-              options.getImage
+              options.getImage,
             );
             if (!layer.getStyle()) {
               reject(new Error(`Nothing to show for source [${sourceId}]`));
@@ -382,8 +382,8 @@ export function applyStyle(
             normalizeSpriteUrl(
               glStyle.sprite,
               options.accessToken,
-              styleUrl || location.href
-            )
+              styleUrl || location.href,
+            ),
           );
           spriteScale = window.devicePixelRatio >= 1.5 ? 0.5 : 1;
           const sizeFactor = spriteScale == 0.5 ? '@2x' : '';
@@ -432,8 +432,8 @@ export function applyStyle(
             .catch(function (err) {
               reject(
                 new Error(
-                  `Sprites cannot be loaded: ${spriteUrl}: ${err.message}`
-                )
+                  `Sprites cannot be loaded: ${spriteUrl}: ${err.message}`,
+                ),
               );
             });
         } else {
@@ -533,7 +533,7 @@ function sourceOptionsFromTileJSON(glSource, tileJSON, options) {
       minZoom: minZoom,
       resolutions: getTileResolutions(projection, tileJSON.tileSize).slice(
         0,
-        maxZoom + 1
+        maxZoom + 1,
       ),
       tileSize: tileGrid.getTileSize(0),
     }),
@@ -556,7 +556,7 @@ function getBackgroundColor(glLayer, resolution, options, functionCache) {
   background['paint'] = paint;
   const zoom = getZoomForResolution(
     resolution,
-    options.resolutions || defaultResolutions
+    options.resolutions || defaultResolutions,
   );
   let opacity;
   const bg = getValue(
@@ -565,7 +565,7 @@ function getBackgroundColor(glLayer, resolution, options, functionCache) {
     'background-color',
     zoom,
     emptyObj,
-    functionCache
+    functionCache,
   );
   if (paint['background-opacity'] !== undefined) {
     opacity = getValue(
@@ -574,7 +574,7 @@ function getBackgroundColor(glLayer, resolution, options, functionCache) {
       'background-opacity',
       zoom,
       emptyObj,
-      functionCache
+      functionCache,
     );
   }
   return layout.visibility == 'none'
@@ -601,7 +601,7 @@ function setupBackgroundLayer(glLayer, options, functionCache) {
         glLayer,
         frameState.viewState.resolution,
         options,
-        functionCache
+        functionCache,
       );
       div.style.backgroundColor = color;
       return div;
@@ -625,7 +625,7 @@ export function setupVectorSource(glSource, styleUrl, options) {
         const sourceOptions = sourceOptionsFromTileJSON(
           glSource,
           tileJson,
-          options
+          options,
         );
         sourceOptions.tileLoadFunction = tileLoadFunction;
         sourceOptions.format = new MVT();
@@ -670,7 +670,7 @@ function setupRasterSource(glSource, styleUrl, options) {
         source.tileGrid = sourceOptionsFromTileJSON(
           glSource,
           tileJson,
-          options
+          options,
         ).tileGrid;
         if (options.projection) {
           //@ts-ignore
@@ -747,7 +747,7 @@ function setupGeoJSONSource(glSource, styleUrl, options) {
       data,
       options.accessToken,
       options.accessTokenParam || 'access_token',
-      styleUrl || location.href
+      styleUrl || location.href,
     );
     if (/\{bbox-[0-9a-z-]+\}/.test(geoJsonUrl)) {
       const extentUrl = (extent, resolution, projection) => {
@@ -815,8 +815,8 @@ function setupGeoJSONSource(glSource, styleUrl, options) {
         attributions: glSource.attribution,
         format: geoJsonFormat,
       },
-      sourceOptions
-    )
+      sourceOptions,
+    ),
   );
   source.set('mapbox-source', glSource);
   return /** @type {VectorSource} */ (source);
@@ -852,7 +852,7 @@ function updateRasterLayerProperties(glLayer, layer, zoom, functionCache) {
     'raster-opacity',
     zoom,
     emptyObj,
-    functionCache
+    functionCache,
   );
   layer.setOpacity(opacity);
 }
@@ -899,7 +899,7 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
   } else if (glSource.type == 'raster') {
     layer = setupRasterLayer(glSource, styleUrl, options);
     layer.setVisible(
-      glLayer.layout ? glLayer.layout.visibility !== 'none' : true
+      glLayer.layout ? glLayer.layout.visibility !== 'none' : true,
     );
     layer.on('prerender', prerenderRasterLayer(glLayer, layer, functionCache));
   } else if (glSource.type == 'geojson') {
@@ -912,7 +912,7 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
       data.resolution = event.resolution;
       const zoom = getZoomForResolution(
         event.resolution,
-        options.resolutions || defaultResolutions
+        options.resolutions || defaultResolutions,
       );
       data.encoding = glSource.encoding;
       data.vert =
@@ -923,7 +923,7 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
           'hillshade-exaggeration',
           zoom,
           emptyObj,
-          functionCache
+          functionCache,
         );
       data.sunAz = getValue(
         glLayer,
@@ -931,7 +931,7 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
         'hillshade-illumination-direction',
         zoom,
         emptyObj,
-        functionCache
+        functionCache,
       );
       data.sunEl = 35;
       data.opacity = 0.3;
@@ -941,7 +941,7 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
         'hillshade-highlight-color',
         zoom,
         emptyObj,
-        functionCache
+        functionCache,
       );
       data.shadowColor = getValue(
         glLayer,
@@ -949,7 +949,7 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
         'hillshade-shadow-color',
         zoom,
         emptyObj,
-        functionCache
+        functionCache,
       );
       data.accentColor = getValue(
         glLayer,
@@ -957,11 +957,11 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
         'hillshade-accent-color',
         zoom,
         emptyObj,
-        functionCache
+        functionCache,
       );
     });
     layer.setVisible(
-      glLayer.layout ? glLayer.layout.visibility !== 'none' : true
+      glLayer.layout ? glLayer.layout.visibility !== 'none' : true,
     );
   }
   const glSourceId = id;
@@ -993,7 +993,7 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
           maxResolution:
             defaultResolutions[0] / METERS_PER_UNIT[projection.getUnits()],
           projection: options.projection || view.getProjection(),
-        })
+        }),
       );
       mapOrGroup.setView(view);
     }
@@ -1005,7 +1005,7 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
       view.setResolution(
         defaultResolutions[0] /
           METERS_PER_UNIT[view.getProjection().getUnits()] /
-          Math.pow(2, glStyle.zoom)
+          Math.pow(2, glStyle.zoom),
       );
     }
     if (!view.getCenter() || view.getZoom() === undefined) {
@@ -1042,8 +1042,8 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
               glStyle,
               styleUrl,
               mapOrGroup,
-              options
-            )
+              options,
+            ),
           );
           layerIds = [];
         }
@@ -1060,7 +1060,7 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
     }
   }
   promises.push(
-    finalizeLayer(layer, layerIds, glStyle, styleUrl, mapOrGroup, options)
+    finalizeLayer(layer, layerIds, glStyle, styleUrl, mapOrGroup, options),
   );
   return Promise.all(promises);
 }
@@ -1156,7 +1156,7 @@ export function apply(mapOrGroupOrElement, style, options = {}) {
         !options.styleUrl || options.styleUrl.startsWith('data:')
           ? location.href
           : normalizeStyleUrl(options.styleUrl, options.accessToken),
-        options
+        options,
       )
         .then(function () {
           resolve(mapOrGroup);
@@ -1191,7 +1191,7 @@ export function finalizeLayer(
   glStyle,
   styleUrl,
   mapOrGroup,
-  options = {}
+  options = {},
 ) {
   let minZoom = 24;
   let maxZoom = 0;
@@ -1209,8 +1209,8 @@ export function finalizeLayer(
       if (!source || source.getState() === 'error') {
         reject(
           new Error(
-            'Error accessing data for source ' + layer.get('mapbox-source')
-          )
+            'Error accessing data for source ' + layer.get('mapbox-source'),
+          ),
         );
         return;
       }
@@ -1225,13 +1225,13 @@ export function finalizeLayer(
             layer.setMaxResolution(
               Math.min(
                 defaultTileGrid.getResolution(minZoom),
-                tileGrid.getResolution(sourceMinZoom)
-              ) + 1e-9
+                tileGrid.getResolution(sourceMinZoom),
+              ) + 1e-9,
             );
           }
           if (maxZoom < 24) {
             layer.setMinResolution(
-              defaultTileGrid.getResolution(maxZoom) + 1e-9
+              defaultTileGrid.getResolution(maxZoom) + 1e-9,
             );
           }
         }
@@ -1250,7 +1250,7 @@ export function finalizeLayer(
           ),
           glStyle,
           layerIds,
-          Object.assign({styleUrl: styleUrl}, options)
+          Object.assign({styleUrl: styleUrl}, options),
         )
           .then(function () {
             manageVisibility(layer, mapOrGroup);
@@ -1343,7 +1343,7 @@ export function addMapboxLayer(mapOrGroup, mapboxLayer, beforeLayerId) {
       glStyle,
       styleUrl,
       mapOrGroup,
-      options
+      options,
     );
   }
 
@@ -1355,7 +1355,7 @@ export function addMapboxLayer(mapOrGroup, mapboxLayer, beforeLayerId) {
     styleFunctionArgs[
       getStyleFunctionKey(
         mapOrGroup.get('mapbox-style'),
-        getLayer(mapOrGroup, sourceLayerId)
+        getLayer(mapOrGroup, sourceLayerId),
       )
     ];
   mapboxLayers.splice(spliceIndex, 0, mapboxLayer);
@@ -1382,7 +1382,7 @@ export function addMapboxLayer(mapOrGroup, mapboxLayer, beforeLayerId) {
       spriteData,
       spriteImageUrl,
       getFonts,
-      getImage
+      getImage,
     );
   } else {
     getLayer(mapOrGroup, mapboxLayers[sourceIndex].id).changed();
@@ -1407,7 +1407,7 @@ export function updateMapboxLayer(mapOrGroup, mapboxLayer) {
   const oldLayer = mapboxLayers[index];
   if (oldLayer.source !== mapboxLayer.source) {
     throw new Error(
-      'Updated layer and previous version must use the same source.'
+      'Updated layer and previous version must use the same source.',
     );
   }
   delete getFunctionCache(glStyle)[mapboxLayer.id];
@@ -1417,7 +1417,7 @@ export function updateMapboxLayer(mapOrGroup, mapboxLayer) {
     styleFunctionArgs[
       getStyleFunctionKey(
         mapOrGroup.get('mapbox-style'),
-        getLayer(mapOrGroup, mapboxLayer.id)
+        getLayer(mapOrGroup, mapboxLayer.id),
       )
     ];
   if (args) {
@@ -1457,12 +1457,12 @@ export function updateMapboxSource(mapOrGroup, id, mapboxSource) {
       newSourcePromise = setupVectorSource(
         mapboxSource,
         metadata.styleUrl,
-        metadata.options
+        metadata.options,
       );
       break;
     case 'geojson':
       newSourcePromise = Promise.resolve(
-        setupGeoJSONSource(mapboxSource, metadata.styleUrl, metadata.options)
+        setupGeoJSONSource(mapboxSource, metadata.styleUrl, metadata.options),
       );
       break;
     case 'raster':
@@ -1470,12 +1470,12 @@ export function updateMapboxSource(mapOrGroup, id, mapboxSource) {
       newSourcePromise = setupRasterSource(
         mapboxSource,
         metadata.styleUrl,
-        metadata.options
+        metadata.options,
       );
       break;
     default:
       return Promise.reject(
-        new Error('Unsupported source type ' + mapboxSource.type)
+        new Error('Unsupported source type ' + mapboxSource.type),
       );
   }
   newSourcePromise.then(function (newSource) {
@@ -1501,7 +1501,7 @@ export function removeMapboxLayer(mapOrGroup, mapboxLayerIdOrLayer) {
   const layerMapboxLayers = layer.get('mapbox-layers');
   if (layerMapboxLayers.length === 1) {
     throw new Error(
-      'Cannot remove last Mapbox layer from an OpenLayers layer.'
+      'Cannot remove last Mapbox layer from an OpenLayers layer.',
     );
   }
   layerMapboxLayers.splice(layerMapboxLayers.indexOf(mapboxLayerId), 1);
@@ -1509,7 +1509,7 @@ export function removeMapboxLayer(mapOrGroup, mapboxLayerIdOrLayer) {
   const layers = glStyle.layers;
   layers.splice(
     layers.findIndex((layer) => layer.id === mapboxLayerId),
-    1
+    1,
   );
   const args = styleFunctionArgs[getStyleFunctionKey(glStyle, layer)];
   if (args) {
@@ -1526,7 +1526,7 @@ export function removeMapboxLayer(mapOrGroup, mapboxLayerIdOrLayer) {
     if (Array.isArray(sourceOrLayers)) {
       sourceOrLayers.splice(
         sourceOrLayers.findIndex((layer) => layer === mapboxLayerId),
-        1
+        1,
       );
     }
     applyStylefunction(
@@ -1537,7 +1537,7 @@ export function removeMapboxLayer(mapOrGroup, mapboxLayerIdOrLayer) {
       spriteData,
       spriteImageUrl,
       getFonts,
-      getImage
+      getImage,
     );
   } else {
     getLayer(mapOrGroup, mapboxLayerId).changed();

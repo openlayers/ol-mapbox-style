@@ -1,10 +1,13 @@
 {
   "extends": "openlayers",
+  "plugins": [
+    "@openlayers"
+  ],
   "globals": {
     "Promise": false
   },
   "parserOptions": {
-    "ecmaVersion": 6,
+    "ecmaVersion": 2017,
     "sourceType": "module"
   },
   "settings": {
