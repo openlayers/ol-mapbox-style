@@ -347,23 +347,22 @@ describe('stylefunction', function () {
         });
     });
 
-    it('Zero width text halo should be no halo', function(done){
+    it('Zero width text halo should be no halo', function (done) {
       style.layers[0].paint['text-halo-color'] = 'red';
       style.layers[0].paint['text-halo-width'] = 0;
       apply(document.createElement('div'), style)
-      .then(function (map) {
-        const layer = map.getLayers().item(0);
-        const styleFunction = layer.getStyle();
-        const feature = layer.getSource().getFeatures()[0];
-        const styles = styleFunction(feature, 1);
-        const text = styles[0].getText();
-        console.log(text.getStroke());
-        should(text.getStroke()).be.undefined();
-        done();
-      })
-      .catch(function (err) {
-        done(err);
-      });
+        .then(function (map) {
+          const layer = map.getLayers().item(0);
+          const styleFunction = layer.getStyle();
+          const feature = layer.getSource().getFeatures()[0];
+          const styles = styleFunction(feature, 1);
+          const text = styles[0].getText();
+          should(text.getStroke()).be.undefined();
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
     });
   });
 
