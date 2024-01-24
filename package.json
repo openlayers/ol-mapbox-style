@@ -46,6 +46,7 @@
   },
   "devDependencies": {
     "@mapbox/flow-remove-types": "^2.0.0",
+    "@openlayers/eslint-plugin": "^4.0.0",
     "@rollup/plugin-commonjs": "^25.0.0",
     "@rollup/plugin-node-resolve": "^15.0.1",
     "@types/arcgis-rest-api": "^10.4.4",
@@ -60,8 +61,8 @@
     "cross-env": "^7.0.3",
     "css-loader": "^6.5.1",
     "deep-freeze": "0.0.1",
-    "eslint": "^8.2.0",
-    "eslint-config-openlayers": "^18.0.0",
+    "eslint": "^8.56.0",
+    "eslint-config-openlayers": "^19.0.0",
     "eslint-import-resolver-alias": "^1.1.2",
     "html-webpack-plugin": "^5.5.0",
     "karma": "^6.3.4",

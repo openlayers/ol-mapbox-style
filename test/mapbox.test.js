@@ -83,8 +83,8 @@ describe('Mapbox utilities', function () {
           normalizeSpriteUrl(
             c.url,
             token,
-            'https://example.com:8000/mystyle/style.json'
-          )
+            'https://example.com:8000/mystyle/style.json',
+          ),
         ).equal(c.expected);
       });
     }
@@ -118,7 +118,7 @@ describe('Mapbox utilities', function () {
     for (const c of cases) {
       it(`works for ${c.url}`, () => {
         should(
-          normalizeSourceUrl(c.url, token, tokenParam, location.href)
+          normalizeSourceUrl(c.url, token, tokenParam, location.href),
         ).equal(c.expected);
       });
     }

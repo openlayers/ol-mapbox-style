@@ -20,7 +20,7 @@ describe('ol/layer/MapboxVector', () => {
                 },
               },
               layers: [],
-            })
+            }),
           ),
       });
       layer.on('error', function (e) {
@@ -31,7 +31,7 @@ describe('ol/layer/MapboxVector', () => {
         if (source.getState() === 'ready') {
           unByKey(key);
           should(source.getTileUrlFunction()([0, 0, 0])).eql(
-            'http://a.tiles.mapbox.com/v3/mapbox.geography-class/0/0/0.png'
+            'http://a.tiles.mapbox.com/v3/mapbox.geography-class/0/0/0.png',
           );
           done();
         }
@@ -53,7 +53,7 @@ describe('ol/layer/MapboxVector', () => {
             },
           },
           layers: [],
-        })
+        }),
       );
 
     it('accepts minZoom from configuration', function (done) {
@@ -83,7 +83,7 @@ describe('ol/layer/MapboxVector', () => {
         if (source.getState() === 'ready') {
           source.un('change', onchange);
           should(layer.getMaxResolution()).eql(
-            source.getTileGrid().getResolution(6)
+            source.getTileGrid().getResolution(6),
           );
           done();
         }
@@ -136,7 +136,7 @@ describe('ol/layer/MapboxVector', () => {
                   },
                 },
               ],
-            })
+            }),
           ),
       });
       map.addLayer(layer);
@@ -170,7 +170,7 @@ describe('ol/layer/MapboxVector', () => {
         .getSource()
         .once('change', () => {
           should(fetchUrl.url).eql(
-            'https://api.mapbox.com/styles/v1/mapbox/streets-v7?&access_token=123'
+            'https://api.mapbox.com/styles/v1/mapbox/streets-v7?&access_token=123',
           );
           done();
         });

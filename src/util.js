@@ -150,7 +150,7 @@ export function fetchResource(resourceType, url, options = {}, metadata) {
           delete pendingRequests[url];
           return Promise.reject(new Error('Error fetching source ' + url));
         });
-    }
+    },
   );
   pendingRequests[url] = [transformedRequest, pendingRequest];
   return pendingRequest;
@@ -234,7 +234,7 @@ export function getTileJson(glSource, styleUrl, options = {}) {
         url,
         options.accessToken,
         options.accessTokenParam || 'access_token',
-        styleUrl || location.href
+        styleUrl || location.href,
       );
       if (url.startsWith('mapbox://')) {
         promise = Promise.resolve({
@@ -250,7 +250,7 @@ export function getTileJson(glSource, styleUrl, options = {}) {
           'Source',
           normalizedSourceUrl,
           options,
-          metadata
+          metadata,
         ).then(function (tileJson) {
           tileJson.tiles = tileJson.tiles.map(function (tileUrl) {
             if (tileJson.scheme === 'tms') {
@@ -260,7 +260,7 @@ export function getTileJson(glSource, styleUrl, options = {}) {
               tileUrl,
               options.accessToken,
               options.accessTokenParam || 'access_token',
-              metadata.request.url
+              metadata.request.url,
             );
           });
           return Promise.resolve({tileJson, tileLoadFunction});
@@ -276,7 +276,7 @@ export function getTileJson(glSource, styleUrl, options = {}) {
             tileUrl,
             options.accessToken,
             options.accessTokenParam || 'access_token',
-            styleUrl || location.href
+            styleUrl || location.href,
           );
         }),
       });
@@ -301,7 +301,7 @@ export function drawIconHalo(
   spriteImage,
   spriteImageData,
   haloWidth,
-  haloColor
+  haloColor,
 ) {
   const imageCanvas = document.createElement('canvas');
   const imgSize = [
@@ -320,7 +320,7 @@ export function drawIconHalo(
     haloWidth * spriteImageData.pixelRatio,
     haloWidth * spriteImageData.pixelRatio,
     spriteImageData.width,
-    spriteImageData.height
+    spriteImageData.height,
   );
   const imageData = imageContext.getImageData(0, 0, imgSize[0], imgSize[1]);
   imageContext.globalCompositeOperation = 'destination-over';
@@ -338,7 +338,7 @@ export function drawIconHalo(
           j,
           haloWidth * spriteImageData.pixelRatio,
           0,
-          2 * Math.PI
+          2 * Math.PI,
         );
       }
     }
@@ -372,7 +372,7 @@ export function drawSDF(image, area, color) {
     0,
     0,
     area.width,
-    area.height
+    area.height,
   );
   const imageData = imageContext.getImageData(0, 0, area.width, area.height);
   const data = imageData.data;

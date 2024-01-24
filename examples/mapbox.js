@@ -3,7 +3,7 @@ import olms from 'ol-mapbox-style';
 
 let key = document.cookie.replace(
   /(?:(?:^|.*;\s*)mapbox_access_token\s*\=\s*([^;]*).*$)|^.*$/,
-  '$1'
+  '$1',
 );
 if (!key) {
   key = window.prompt('Enter your Mapbox API access token:');

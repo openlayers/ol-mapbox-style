@@ -61,7 +61,7 @@ describe('ol-mapbox-style', function () {
             })
             .catch(function (err) {
               should(err.message).be.exactly(
-                'Error accessing data for source osm'
+                'Error accessing data for source osm',
               );
               done();
             });
@@ -70,14 +70,14 @@ describe('ol-mapbox-style', function () {
     });
 
     it('supports feature-state (map)', function () {
-      return apply(target, './fixtures/hot-osm/hot-osm.json').then(function (
-        map
-      ) {
-        setFeatureState(map, {id: '1', source: 'osm'}, {hover: true});
-        should(getFeatureState(map, {id: '1', source: 'osm'})).be.eql({
-          hover: true,
-        });
-      });
+      return apply(target, './fixtures/hot-osm/hot-osm.json').then(
+        function (map) {
+          setFeatureState(map, {id: '1', source: 'osm'}, {hover: true});
+          should(getFeatureState(map, {id: '1', source: 'osm'})).be.eql({
+            hover: true,
+          });
+        },
+      );
     });
 
     it('adds a background layer', function (done) {
@@ -86,7 +86,7 @@ describe('ol-mapbox-style', function () {
           should(map).be.instanceof(Map);
           const layer = map.getLayers().item(0);
           should(
-            layer.render({viewState: {resolution: 1}}).className
+            layer.render({viewState: {resolution: 1}}).className,
           ).be.exactly('ol-mapbox-style-background');
           done();
         })
@@ -133,7 +133,7 @@ describe('ol-mapbox-style', function () {
           'https://a.tile.openstreetmap.org/1/1/1.png',
         ]);
         should(osm.getSource().getAttributions()({extent: extent})[0]).equal(
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors.'
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors.',
         );
         should(wms.getSource().getTileGrid().getTileSize()).eql(256);
         should(wms.getSource().getTileGrid().getMaxZoom()).eql(12);
@@ -253,7 +253,7 @@ describe('ol-mapbox-style', function () {
                 source.loadFeatures(
                   map.getView().calculateExtent(),
                   1,
-                  map.getView().getProjection()
+                  map.getView().getProjection(),
                 );
               })
               .catch(done);
@@ -277,13 +277,13 @@ describe('ol-mapbox-style', function () {
             source.loadFeatures(
               map.getView().calculateExtent(),
               1,
-              get('EPSG:3857')
+              get('EPSG:3857'),
             );
             source.once('change', () => {
               try {
                 const url = new URL(requests[requests.length - 1].url);
                 should(url.searchParams.get('transformRequest')).be.equal(
-                  'true'
+                  'true',
                 );
                 should(source).be.instanceof(VectorSource);
                 should(layer.getStyle()).be.a.Function();
@@ -351,12 +351,12 @@ describe('ol-mapbox-style', function () {
             },
           ],
         },
-        {projection: 'EPSG:31287'}
+        {projection: 'EPSG:31287'},
       )
         .then(function (map) {
           const source = map.getLayers().item(0).getSource();
           should(source.getFormat().readProjectionFromObject(geojson)).eql(
-            epsg31287
+            epsg31287,
           );
           done();
         })
@@ -415,7 +415,7 @@ describe('ol-mapbox-style', function () {
         .then(function (map) {
           const source = map.getLayers().item(0).getSource();
           should(source.tileJSON_.tiles[0]).be.equal(
-            'https://ahocevar.com/geoserver/gwc/service/tms/1.0.0/topp:states@EPSG%3A900913@pbf/{z}/{x}/{-y}.png'
+            'https://ahocevar.com/geoserver/gwc/service/tms/1.0.0/topp:states@EPSG%3A900913@pbf/{z}/{x}/{-y}.png',
           );
           done();
         })
@@ -430,7 +430,7 @@ describe('ol-mapbox-style', function () {
           should(center[1]).be.approximately(47.37180823552663, 1e-8);
           should(map.getView().getZoom()).equal(12.241790506353492);
           should(map.getView().getResolution()).equal(
-            defaultResolutions[0] / Math.pow(2, 12.241790506353492)
+            defaultResolutions[0] / Math.pow(2, 12.241790506353492),
           );
           const layer = map.getLayers().item(1);
           const source = layer.getSource();
@@ -469,7 +469,7 @@ describe('ol-mapbox-style', function () {
         .then(function (map) {
           const source = map.getLayers().item(0).getSource();
           should(source.getUrls()[0]).be.equal(
-            'https://ahocevar.com/geoserver/gwc/service/tms/1.0.0/topp:states@EPSG%3A900913@pbf/{z}/{x}/{-y}.pbf'
+            'https://ahocevar.com/geoserver/gwc/service/tms/1.0.0/topp:states@EPSG%3A900913@pbf/{z}/{x}/{-y}.pbf',
           );
           done();
         })
@@ -510,14 +510,14 @@ describe('ol-mapbox-style', function () {
         },
         {
           projection: 'EPSG:4326',
-        }
+        },
       )
         .then(function (map) {
           should(map.getView().getProjection().getCode()).eql('EPSG:4326');
           should(map.getView().getCenter()).eql([16, 48]);
           should(map.getView().getZoom()).eql(14);
           should(map.getView().getMaxResolution()).eql(
-            defaultResolutions[0] / METERS_PER_UNIT.degrees
+            defaultResolutions[0] / METERS_PER_UNIT.degrees,
           );
           done();
         })
@@ -531,7 +531,7 @@ describe('ol-mapbox-style', function () {
         new Map({
           target: target,
         }),
-        './fixtures/hot-osm/hot-osm.json'
+        './fixtures/hot-osm/hot-osm.json',
       )
         .then(function (map) {
           should(map.getView().getMaxResolution()).eql(defaultResolutions[0]);
@@ -550,7 +550,7 @@ describe('ol-mapbox-style', function () {
             maxZoom: 11,
           }),
         }),
-        './fixtures/hot-osm/hot-osm.json'
+        './fixtures/hot-osm/hot-osm.json',
       )
         .then(function (map) {
           should(map.getView().getMaxZoom()).eql(11);
@@ -638,10 +638,10 @@ describe('ol-mapbox-style', function () {
               statesSource.getTileUrlFunction()(
                 [0, 0, 0],
                 1,
-                map.getView().getProjection()
-              )
+                map.getView().getProjection(),
+              ),
             ).eql(
-              'https://ahocevar.com/geoserver/gwc/service/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image/png&SRS=EPSG:900913&LAYERS=topp:states&STYLES=&WIDTH=256&HEIGHT=256&BBOX=-20037508.342789244,-20037508.342789244,20037508.342789244,20037508.342789244'
+              'https://ahocevar.com/geoserver/gwc/service/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image/png&SRS=EPSG:900913&LAYERS=topp:states&STYLES=&WIDTH=256&HEIGHT=256&BBOX=-20037508.342789244,-20037508.342789244,20037508.342789244,20037508.342789244',
             );
             done();
           })
@@ -676,10 +676,10 @@ describe('ol-mapbox-style', function () {
               statesSource.getTileUrlFunction()(
                 [0, 0, 0],
                 1,
-                map.getView().getProjection()
-              )
+                map.getView().getProjection(),
+              ),
             ).eql(
-              'https://ahocevar.com/geoserver/gwc/service/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image/png&SRS=EPSG:4326&LAYERS=topp:states&STYLES=&WIDTH=256&HEIGHT=256&BBOX=-180,-270,180,90'
+              'https://ahocevar.com/geoserver/gwc/service/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image/png&SRS=EPSG:4326&LAYERS=topp:states&STYLES=&WIDTH=256&HEIGHT=256&BBOX=-180,-270,180,90',
             );
             done();
           })
@@ -693,7 +693,7 @@ describe('ol-mapbox-style', function () {
         apply(target, context)
           .then(function (map) {
             should(map.getLayers().item(0).getMaxResolution()).eql(
-              defaultResolutions[9] + 1e-9
+              defaultResolutions[9] + 1e-9,
             );
             done();
           })
@@ -708,10 +708,10 @@ describe('ol-mapbox-style', function () {
         apply(target, context)
           .then(function (map) {
             should(map.getLayers().item(0).getMaxResolution()).eql(
-              defaultResolutions[10] + 1e-9
+              defaultResolutions[10] + 1e-9,
             );
             should(map.getLayers().item(0).getMinResolution()).eql(
-              defaultResolutions[12] + 1e-9
+              defaultResolutions[12] + 1e-9,
             );
             done();
           })
@@ -851,7 +851,7 @@ describe('ol-mapbox-style', function () {
         apply(target, context)
           .then(function (map) {
             should(map.getLayers().item(0).getMaxResolution()).eql(
-              defaultResolutions[8] + 1e-9
+              defaultResolutions[8] + 1e-9,
             );
             done();
           })
@@ -870,7 +870,7 @@ describe('ol-mapbox-style', function () {
         apply(target, context)
           .then(function (map) {
             should(map.getLayers().item(0).getMaxResolution()).eql(
-              defaultResolutions[8] + 1e-9
+              defaultResolutions[8] + 1e-9,
             );
             done();
           })
@@ -883,10 +883,10 @@ describe('ol-mapbox-style', function () {
         apply(target, context)
           .then(function (map) {
             should(map.getLayers().item(0).getMaxResolution()).eql(
-              defaultResolutions[7] + 1e-9
+              defaultResolutions[7] + 1e-9,
             );
             should(map.getLayers().item(0).getMinResolution()).eql(
-              defaultResolutions[23] + 1e-9
+              defaultResolutions[23] + 1e-9,
             );
             done();
           })
@@ -1003,7 +1003,7 @@ describe('ol-mapbox-style', function () {
             map
               .getLayers()
               .item(0)
-              .render({viewState: {resolution: 1}}).style.backgroundColor
+              .render({viewState: {resolution: 1}}).style.backgroundColor,
           ).be.exactly('rgba(248, 244, 240, 0.75)');
           done();
         })
@@ -1017,7 +1017,7 @@ describe('ol-mapbox-style', function () {
             layerGroup
               .getLayers()
               .item(0)
-              .render({viewState: {resolution: 1}}).style.backgroundColor
+              .render({viewState: {resolution: 1}}).style.backgroundColor,
           ).be.exactly('rgba(248, 244, 240, 0.75)');
           done();
         })
@@ -1071,7 +1071,7 @@ describe('ol-mapbox-style', function () {
               map
                 .getLayers()
                 .item(0)
-                .render({viewState: {resolution: 1}}).style.backgroundColor
+                .render({viewState: {resolution: 1}}).style.backgroundColor,
             ).be.exactly('rgba(248, 244, 240, 0.75)');
             done();
           } catch (e) {
@@ -1126,7 +1126,7 @@ describe('ol-mapbox-style', function () {
           const stylesheets = document.querySelectorAll('link[rel=stylesheet]');
           should(stylesheets.length).eql(1);
           should(stylesheets.item(0).href).eql(
-            'https://fonts.openmaptiles.org/open-sans/400.css'
+            'https://fonts.openmaptiles.org/open-sans/400.css',
           );
           done();
         })

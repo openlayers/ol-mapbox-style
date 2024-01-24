@@ -58,7 +58,7 @@ describe('applyStyle with source creation', function () {
       try {
         should(layer.getSource()).be.an.instanceOf(VectorSource);
         should(layer.getSource().getUrl()).equal(
-          `${location.origin}/fixtures/states.geojson`
+          `${location.origin}/fixtures/states.geojson`,
         );
         should(layer.getStyle()).be.an.instanceOf(Function);
         done();
@@ -84,7 +84,7 @@ describe('applyStyle with source creation', function () {
         try {
           should(layer.getSource()).be.an.instanceOf(VectorSource);
           should(requests[requests.length - 1].url).equal(
-            `${location.origin}/fixtures/states.geojson?foo=bar`
+            `${location.origin}/fixtures/states.geojson?foo=bar`,
           );
           should(layer.getStyle()).be.an.instanceOf(Function);
           done();
@@ -107,7 +107,7 @@ describe('applyStyle with source creation', function () {
               featureProjection: projection,
             });
             success(
-              /** @type {Array<import("ol/Feature").default>} */ (features)
+              /** @type {Array<import("ol/Feature").default>} */ (features),
             );
           });
         })
@@ -121,7 +121,7 @@ describe('applyStyle with source creation', function () {
       try {
         should(layer.getSource()).equal(source);
         should(layer.getSource().getUrl()).equal(
-          `${location.origin}/fixtures/states.geojson`
+          `${location.origin}/fixtures/states.geojson`,
         );
         should(layer.getSource().loader_).equal(loader);
         should(layer.getStyle()).be.an.instanceOf(Function);
@@ -138,7 +138,7 @@ describe('applyStyle with source creation', function () {
         try {
           should(layer.getSource()).be.an.instanceOf(VectorTileSource);
           should(layer.getSource().getUrls()[0]).equal(
-            `${location.origin}/fixtures/osm-liberty/tiles/v3/{z}/{x}/{y}.pbf`
+            `${location.origin}/fixtures/osm-liberty/tiles/v3/{z}/{x}/{y}.pbf`,
           );
           should(layer.getStyle()).be.an.instanceOf(Function);
           should(layer.get('mapbox-source')).equal('openmaptiles');
@@ -169,7 +169,7 @@ describe('applyStyle with source creation', function () {
           Object.defineProperty(image, 'src', {
             set: function (src) {
               should(src).equal(
-                `${location.origin}/fixtures/osm-liberty/tiles/v3/0/0/0.pbf?foo=bar`
+                `${location.origin}/fixtures/osm-liberty/tiles/v3/0/0/0.pbf?foo=bar`,
               );
               should(layer.getStyle()).be.an.instanceOf(Function);
               done();
@@ -178,7 +178,7 @@ describe('applyStyle with source creation', function () {
           const img = {getImage: () => image};
           layer.getSource().getTileLoadFunction()(
             img,
-            `${location.origin}/fixtures/osm-liberty/tiles/v3/0/0/0.pbf`
+            `${location.origin}/fixtures/osm-liberty/tiles/v3/0/0/0.pbf`,
           );
         } catch (e) {
           done(e);
@@ -250,7 +250,7 @@ describe('applyStyle without source creation', function () {
               featureProjection: projection,
             });
             success(
-              /** @type {Array<import("ol/Feature").default>} */ (features)
+              /** @type {Array<import("ol/Feature").default>} */ (features),
             );
           });
         })
@@ -351,7 +351,7 @@ describe('maxResolution', function () {
     applyStyle(layer, glStyle)
       .then(function () {
         should(layer.getMaxResolution()).equal(
-          layer.getSource().getTileGrid().getResolution(6)
+          layer.getSource().getTileGrid().getResolution(6),
         );
         done();
       })
@@ -402,7 +402,7 @@ describe('applyStyle style argument validation', function () {
       layer,
       glStyle,
       'natural_earth_shaded_relief',
-      'fixtures/osm-liberty/'
+      'fixtures/osm-liberty/',
     )
       .then(function () {
         done(new Error('invalid ol layer source promise should reject'));
@@ -526,7 +526,7 @@ describe('applyStyle functionality', function () {
       function () {
         should(layer.getStyle()).be.a.Function();
         done();
-      }
+      },
     );
   });
 });
@@ -553,10 +553,10 @@ describe('applyStyle supports transformRequest object', function () {
             expectedRequestTypes,
             seenRequestTypes,
             `Request types seen by transformRequest: ${Array.from(
-              seenRequestTypes
+              seenRequestTypes,
             )} do not match those expected for a Vector Tile style: ${Array.from(
-              expectedRequestTypes
-            )}`
+              expectedRequestTypes,
+            )}`,
           );
           done();
         });
@@ -587,10 +587,10 @@ describe('applyStyle supports transformRequest object', function () {
             expectedRequestTypes,
             seenRequestTypes,
             `Request types seen by transformRequest: ${Array.from(
-              seenRequestTypes
+              seenRequestTypes,
             )} do not match those expected for a Vector Tile style: ${Array.from(
-              expectedRequestTypes
-            )}`
+              expectedRequestTypes,
+            )}`,
           );
           done();
         });
@@ -615,10 +615,10 @@ describe('applyStyle supports transformRequest object', function () {
             expectedRequestTypes,
             seenRequestTypes,
             `Request types seen by transformRequest: ${Array.from(
-              seenRequestTypes
+              seenRequestTypes,
             )} do not match those expected for a GeoJSON style: ${Array.from(
-              expectedRequestTypes
-            )}`
+              expectedRequestTypes,
+            )}`,
           );
           done();
         });
@@ -643,10 +643,10 @@ describe('applyStyle supports transformRequest object', function () {
             expectedRequestTypes,
             seenRequestTypes,
             `Request types seen by transformRequest: ${Array.from(
-              seenRequestTypes
+              seenRequestTypes,
             )} do not match those expected for a GeoJSON style: ${Array.from(
-              expectedRequestTypes
-            )}`
+              expectedRequestTypes,
+            )}`,
           );
           done();
         });

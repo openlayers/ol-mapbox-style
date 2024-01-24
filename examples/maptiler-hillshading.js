@@ -3,7 +3,7 @@ import olms from 'ol-mapbox-style';
 
 let key = document.cookie.replace(
   /(?:(?:^|.*;\s*)maptiler_access_token\s*\=\s*([^;]*).*$)|^.*$/,
-  '$1'
+  '$1',
 );
 if (!key) {
   key = window.prompt('Enter your MapTiler API access token:');
@@ -23,6 +23,6 @@ fetch(`https://api.maptiler.com/maps/outdoor-v2/style.json?key=${key}`)
           'ol:webfonts':
             'https://fonts.googleapis.com/css?family={Font+Family}:{fontweight}{fontstyle}',
         }),
-      })
+      }),
     );
   });

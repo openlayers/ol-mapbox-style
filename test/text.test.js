@@ -61,40 +61,40 @@ describe('text', function () {
           'Noto Sans Regular Italic',
           'Averia Sans Libre Bold',
         ],
-        'https://fonts.googleapis.com/css?family={Font+Family}:{fontweight}{fontstyle}'
+        'https://fonts.googleapis.com/css?family={Font+Family}:{fontweight}{fontstyle}',
       );
       const stylesheets = document.querySelectorAll('link[rel=stylesheet]');
       should(stylesheets.length).eql(3);
       should(stylesheets.item(0).href).eql(
-        'https://fonts.googleapis.com/css?family=Noto+Sans:700normal'
+        'https://fonts.googleapis.com/css?family=Noto+Sans:700normal',
       );
       should(stylesheets.item(1).href).eql(
-        'https://fonts.googleapis.com/css?family=Noto+Sans:400italic'
+        'https://fonts.googleapis.com/css?family=Noto+Sans:400italic',
       );
       should(stylesheets.item(2).href).eql(
-        'https://fonts.googleapis.com/css?family=Averia+Sans+Libre:700normal'
+        'https://fonts.googleapis.com/css?family=Averia+Sans+Libre:700normal',
       );
     });
 
     it('loads fonts with a template using {font-family} and {-fontstyle}', function () {
       getFonts(
         ['Noto Sans Regular', 'Averia Sans Libre Bold Italic'],
-        './fonts/{font-family}/{fontweight}{-fontstyle}.css'
+        './fonts/{font-family}/{fontweight}{-fontstyle}.css',
       );
       const stylesheets = document.querySelectorAll('link[rel=stylesheet]');
       should(stylesheets.length).eql(5);
       should(stylesheets.item(3).href).eql(
-        location.origin + '/fonts/noto-sans/400.css'
+        location.origin + '/fonts/noto-sans/400.css',
       );
       should(stylesheets.item(4).href).eql(
-        location.origin + '/fonts/averia-sans-libre/700-italic.css'
+        location.origin + '/fonts/averia-sans-libre/700-italic.css',
       );
     });
 
     it('does not load fonts twice', function () {
       getFonts(
         ['Noto Sans Bold'],
-        'https://fonts.googleapis.com/css?family={Font+Family}:{fontweight}{fontstyle}'
+        'https://fonts.googleapis.com/css?family={Font+Family}:{fontweight}{fontstyle}',
       );
       const stylesheets = document.querySelectorAll('link[rel=stylesheet]');
       should(stylesheets.length).eql(5);
@@ -105,7 +105,7 @@ describe('text', function () {
       const stylesheets = document.querySelectorAll('link[rel=stylesheet]');
       should(stylesheets.length).eql(6);
       should(stylesheets.item(5).href).eql(
-        'https://cdn.jsdelivr.net/npm/@fontsource/averia-sans-libre/400.css'
+        'https://cdn.jsdelivr.net/npm/@fontsource/averia-sans-libre/400.css',
       );
     });
   });

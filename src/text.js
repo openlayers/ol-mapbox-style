@@ -9,7 +9,7 @@ export function applyLetterSpacing(text, letterSpacing) {
     const lines = text.split('\n');
     const joinSpaceString = hairSpacePool.slice(
       0,
-      Math.round(letterSpacing / 0.1)
+      Math.round(letterSpacing / 0.1),
     );
     for (let l = 0, ll = lines.length; l < ll; ++l) {
       if (l > 0) {
@@ -157,7 +157,7 @@ const processedFontFamilies = {};
  */
 export function getFonts(
   fonts,
-  templateUrl = 'https://cdn.jsdelivr.net/npm/@fontsource/{font-family}/{fontweight}{-fontstyle}.css'
+  templateUrl = 'https://cdn.jsdelivr.net/npm/@fontsource/{font-family}/{fontweight}{-fontstyle}.css',
 ) {
   const fontsKey = fonts.toString();
   if (fontsKey in processedFontFamilies) {
@@ -182,7 +182,7 @@ export function getFonts(
     if (!hasFontFamily(family)) {
       if (
         checkedFonts.get(
-          `${fontDescription[2]}\n${fontDescription[1]} \n${family}`
+          `${fontDescription[2]}\n${fontDescription[1]} \n${family}`,
         ) !== 100
       ) {
         const fontUrl = templateUrl
@@ -191,7 +191,7 @@ export function getFonts(
           .replace('{fontweight}', fontDescription[1])
           .replace(
             '{-fontstyle}',
-            fontDescription[2].replace('normal', '').replace(/(.+)/, '-$1')
+            fontDescription[2].replace('normal', '').replace(/(.+)/, '-$1'),
           )
           .replace('{fontstyle}', fontDescription[2]);
         if (!document.querySelector('link[href="' + fontUrl + '"]')) {

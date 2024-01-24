@@ -17,7 +17,7 @@ describe('utility functions currently in stylefunction.js', function () {
     it('should parse Color instances', function () {
       should(colorWithOpacity(new Color(1, 0, 0, 1), 1)).eql('rgba(255,0,0,1)');
       should(colorWithOpacity(new Color(1, 0, 0, 1), 0.25)).eql(
-        'rgba(255,0,0,0.25)'
+        'rgba(255,0,0,0.25)',
       );
       should(colorWithOpacity(new Color(1, 0, 0, 1))).eql('rgba(255,0,0,1)');
       should(colorWithOpacity(new Color(1, 0, 0, 1))).eql('rgba(255,0,0,1)');
@@ -75,7 +75,7 @@ describe('utility functions currently in stylefunction.js', function () {
       const tmpl = 'blah, blah, blah {de} blah fun fun {fun}';
       should.equal(
         tmpl.replace('{de}', 'BLAH').replace('{fun}', 'not fun'),
-        fromTemplate(tmpl, props)
+        fromTemplate(tmpl, props),
       );
     });
 
@@ -130,7 +130,7 @@ describe('utility functions currently in stylefunction.js', function () {
 
       should.equal(
         getValue(glLayer2, 'layout', 'line-cap', zoom, feature, functionCache),
-        d
+        d,
       );
       should(functionCache).have.key(glLayer2.id);
     });
@@ -138,7 +138,7 @@ describe('utility functions currently in stylefunction.js', function () {
     it('should get simple layout property', function () {
       should.equal(
         getValue(glLayer, 'layout', 'visibility', zoom, feature, functionCache),
-        'visible'
+        'visible',
       );
       should(functionCache).have.key(glLayer.id);
     });
@@ -146,7 +146,7 @@ describe('utility functions currently in stylefunction.js', function () {
     it('should get simple paint property', function () {
       should.equal(
         getValue(glLayer, 'paint', 'fill-opacity', zoom, feature),
-        0.7
+        0.7,
       );
     });
 

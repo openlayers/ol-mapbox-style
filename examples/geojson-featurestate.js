@@ -34,7 +34,7 @@ fetch(styleUrl)
         setFeatureState(
           map,
           {source: 'states', id: hoveredStateId},
-          {hover: true}
+          {hover: true},
         );
       } else if (hoveredStateId !== null) {
         setFeatureState(map, {source: 'states', id: hoveredStateId}, null);

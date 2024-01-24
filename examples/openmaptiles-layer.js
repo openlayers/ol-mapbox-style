@@ -7,7 +7,7 @@ const baseUrl = 'https://api.maptiler.com/maps/basic/style.json';
 
 let key = document.cookie.replace(
   /(?:(?:^|.*;\s*)maptiler_access_token\s*\=\s*([^;]*).*$)|^.*$/,
-  '$1'
+  '$1',
 );
 if (!key) {
   key = window.prompt('Enter your MapTiler API access token:');

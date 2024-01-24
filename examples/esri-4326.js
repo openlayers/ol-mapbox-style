@@ -6,5 +6,5 @@ apply(
   'https://basemaps.arcgis.com/arcgis/rest/services/World_Basemap_GCS_v2/VectorTileServer/resources/styles/',
   {
     projection: 'EPSG:4326',
-  }
+  },
 );

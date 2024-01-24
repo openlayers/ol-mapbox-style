@@ -27,7 +27,7 @@ describe('stylefunction', function () {
             [1, -1],
             [-1, -1],
           ],
-        ])
+        ]),
       );
       layer = new VectorLayer();
     });
@@ -322,7 +322,7 @@ describe('stylefunction', function () {
           const textSize = style.layers[0].layout['text-size'];
           // offsetY is the halo width plus half the distance between two lines
           should(text.getOffsetY()).eql(
-            -textHaloWidth - 0.5 * (textLineHeight - 1) * textSize
+            -textHaloWidth - 0.5 * (textLineHeight - 1) * textSize,
           );
           done();
         })
@@ -928,7 +928,7 @@ describe('stylefunction', function () {
             layer.getSource().getFeatures()[0],
             1,
             layer,
-            'test1'
+            'test1',
           );
           should(style1.getFill().getColor()).eql('rgba(166,206,227,1)');
           // same as above fo the 2nd layer
@@ -936,7 +936,7 @@ describe('stylefunction', function () {
             layer.getSource().getFeatures()[0],
             1,
             layer,
-            'test2'
+            'test2',
           );
           should(style2.getFill().getColor()).eql('rgba(178,223,138,1)');
           done();

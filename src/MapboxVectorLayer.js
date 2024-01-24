@@ -188,7 +188,7 @@ export default class MapboxVectorLayer extends VectorTileLayer {
       promises.push(
         applyBackground(this, options.styleUrl, {
           accessToken: this.accessToken,
-        })
+        }),
       );
     }
     Promise.all(promises)

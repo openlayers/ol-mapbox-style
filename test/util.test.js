@@ -48,7 +48,7 @@ describe('util', function () {
               return new Request('/fixtures/sprites.json');
             },
           },
-          metadataNotPending
+          metadataNotPending,
         ),
         fetchResource(
           'Sprite',
@@ -60,7 +60,7 @@ describe('util', function () {
               return new Request('/fixtures/sprites.json');
             },
           },
-          metadataPending
+          metadataPending,
         ),
       ])
         .then(() => {
@@ -81,12 +81,12 @@ describe('util', function () {
         location.href + '?getTileJson',
         {
           accessToken: 'mytoken',
-        }
+        },
       )
         .then(function (source) {
           const url = source.getTileUrlFunction()([0, 0, 0]);
           should(url).eql(
-            'https://a.tiles.mapbox.com/v4/mapbox.mapbox-streets-v7/0/0/0.vector.pbf?access_token=mytoken'
+            'https://a.tiles.mapbox.com/v4/mapbox.mapbox-streets-v7/0/0/0.vector.pbf?access_token=mytoken',
           );
           done();
         })
@@ -108,7 +108,7 @@ describe('util', function () {
           should(
             getLayer(map, 'landuse_park')
               .get('mapbox-layers')
-              .indexOf('landuse_park')
+              .indexOf('landuse_park'),
           ).equal(1);
           done();
         })
@@ -200,7 +200,7 @@ describe('util', function () {
         map
           .get('mapbox-style')
           .layers.findIndex((l) => l.id === 'landuse_park'),
-        2
+        2,
       );
       const oldRevision = layer.getRevision();
       addMapboxLayer(
@@ -209,7 +209,7 @@ describe('util', function () {
           id: 'inserted',
           source: 'mapbox',
         },
-        'landuse_park'
+        'landuse_park',
       )
         .then(() => {
           should.deepEqual(getMapboxLayer(map, 'inserted'), {
@@ -221,14 +221,14 @@ describe('util', function () {
             map
               .get('mapbox-style')
               .layers.findIndex((l) => l.id === 'landuse_park'),
-            3
+            3,
           );
           should.equal(layer.get('mapbox-layers').indexOf('inserted'), 1);
           should.equal(
             map
               .get('mapbox-style')
               .layers.findIndex((l) => l.id === 'inserted'),
-            2
+            2,
           );
           should.equal(layer.getRevision(), oldRevision + 1);
           done();
@@ -247,11 +247,11 @@ describe('util', function () {
             map
               .get('mapbox-style')
               .layers.findIndex((l) => l.id === 'inserted'),
-            map.get('mapbox-style').layers.length - 1
+            map.get('mapbox-style').layers.length - 1,
           );
           should.equal(
             layer.get('mapbox-layers').indexOf('inserted'),
-            layer.get('mapbox-layers').length - 1
+            layer.get('mapbox-layers').length - 1,
           );
           done();
         })
@@ -323,7 +323,7 @@ describe('util', function () {
           id: 'inserted',
           source: 'source1',
         },
-        'layer1'
+        'layer1',
       )
         .then(() => {
           const layer = getLayer(map, 'inserted');
@@ -331,7 +331,7 @@ describe('util', function () {
             map
               .get('mapbox-style')
               .layers.findIndex((l) => l.id === 'inserted'),
-            0
+            0,
           );
           should.equal(layer.get('mapbox-layers').indexOf('inserted'), 0);
           done();
@@ -346,7 +346,7 @@ describe('util', function () {
           id: 'inserted',
           source: 'source1',
         },
-        'layer2'
+        'layer2',
       )
         .then(() => {
           const layer = getLayer(map, 'inserted');
@@ -355,7 +355,7 @@ describe('util', function () {
             map
               .get('mapbox-style')
               .layers.findIndex((l) => l.id === 'inserted'),
-            1
+            1,
           );
           should.equal(layer.get('mapbox-layers').indexOf('inserted'), 1);
           done();
@@ -370,7 +370,7 @@ describe('util', function () {
           id: 'inserted',
           source: 'source2',
         },
-        'layer2'
+        'layer2',
       )
         .then(() => {
           const layer = getLayer(map, 'inserted');
@@ -379,7 +379,7 @@ describe('util', function () {
             map
               .get('mapbox-style')
               .layers.findIndex((l) => l.id === 'inserted'),
-            1
+            1,
           );
           should.equal(layer.get('mapbox-layers').indexOf('inserted'), 0);
           done();
@@ -425,7 +425,7 @@ describe('util', function () {
           id: 'inserted',
           source: 'source3',
         },
-        'layer2'
+        'layer2',
       )
         .then(() => {
           const layer = getLayer(map, 'inserted');
@@ -495,7 +495,7 @@ describe('util', function () {
     });
     it('updates a geojson source', function (done) {
       should(getSource(map, 'source1').getFeatures()[0].get('modified')).eql(
-        undefined
+        undefined,
       );
       source1.data.features[0].properties.modified = true;
       updateMapboxSource(map, 'source1', source1).then(function () {
@@ -512,7 +512,7 @@ describe('util', function () {
     });
     it('updates a vector source', function (done) {
       should(getSource(map, 'source2').getUrls()[0]).eql(
-        'http://example.com/{z}/{x}/{y}.pbf'
+        'http://example.com/{z}/{x}/{y}.pbf',
       );
       source2.tiles[0] = 'http://example.com/{z}/{x}/{y}.mvt';
       updateMapboxSource(map, 'source2', source2).then(function () {
@@ -528,7 +528,7 @@ describe('util', function () {
     });
     it('updates a raster source', function (done) {
       should(getSource(map, 'source3').getTileUrlFunction()([0, 0, 0])).eql(
-        'http://example.com/0/0/0.png'
+        'http://example.com/0/0/0.png',
       );
       source3.tiles[0] = 'http://example.com/{z}/{x}/{y}.jpg';
       updateMapboxSource(map, 'source3', source3).then(function () {
@@ -536,7 +536,7 @@ describe('util', function () {
           const source = getSource(map, 'source3');
           should(source).eql(getLayer(map, 'layer3').getSource());
           should(source.getTileUrlFunction()([0, 0, 0])).eql(
-            'http://example.com/0/0/0.jpg'
+            'http://example.com/0/0/0.jpg',
           );
           done();
         } catch (err) {
@@ -591,7 +591,7 @@ describe('util', function () {
           // add another layer that has no 'mapbox-layers' set
           map.addLayer(new VectorTileLayer());
           const layer = JSON.parse(
-            JSON.stringify(getMapboxLayer(map, 'landuse_park'))
+            JSON.stringify(getMapboxLayer(map, 'landuse_park')),
           );
           layer.paint['fill-color'] = 'red';
           updateMapboxLayer(map, layer);
@@ -658,7 +658,7 @@ describe('util', function () {
                 'fill-color': 'red',
               },
             },
-            'landuse_park'
+            'landuse_park',
           );
           should(getLayer(map, 'inserted')).eql(getLayer(map, 'landuse_park'));
           let getStyle = getLayer(map, 'inserted').getStyle();
