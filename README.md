@@ -848,7 +848,7 @@ parameter of the style url.
 
 #### background
 
-• **background**: `string` \| `false` \| (`arg0`: `number`) => `string`
+• **background**: `false` \| `BackgroundColor`
 
 Background color for the layer.
 If not specified, the background from the Mapbox style object will be used. Set to `false` to prevent
