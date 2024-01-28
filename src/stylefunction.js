@@ -146,14 +146,15 @@ export function getValue(
  * @param {Object} layer Gl object layer.
  * @param {number} zoom Zoom.
  * @param {Object} feature Gl feature.
+ * @param {"icon"|"text"} prefix Style property prefix.
  * @param {Object} [functionCache] Function cache.
  * @return {"declutter"|"obstacle"|"none"} Value.
  */
-function getIconDeclutterMode(layer, zoom, feature, functionCache) {
+function getDeclutterMode(layer, zoom, feature, prefix, functionCache) {
   const allowOverlap = getValue(
     layer,
     'layout',
-    'icon-allow-overlap',
+    `${prefix}-allow-overlap`,
     zoom,
     feature,
     functionCache,
@@ -164,7 +165,7 @@ function getIconDeclutterMode(layer, zoom, feature, functionCache) {
   const ignorePlacement = getValue(
     layer,
     'layout',
-    'icon-ignore-placement',
+    `${prefix}-ignore-placement`,
     zoom,
     feature,
     functionCache,
@@ -895,10 +896,11 @@ export function stylefunction(
                   }
                   iconImg = iconImageCache[iconCacheKey];
                   if (!iconImg) {
-                    const declutterMode = getIconDeclutterMode(
+                    const declutterMode = getDeclutterMode(
                       layer,
                       zoom,
                       f,
+                      'icon',
                       functionCache,
                     );
                     let displacement;
@@ -1334,15 +1336,29 @@ export function stylefunction(
             style.setImage(undefined);
             style.setGeometry(undefined);
           }
+          const declutterMode = getDeclutterMode(
+            layer,
+            zoom,
+            f,
+            'text',
+            functionCache,
+          );
           if (!style.getText()) {
-            style.setText(
-              text ||
-                new Text({
-                  padding: [2, 2, 2, 2],
-                }),
-            );
+            style.setText(text);
           }
           text = style.getText();
+          if (
+            !text ||
+            ('getDeclutterMode' in text &&
+              text.getDeclutterMode() !== declutterMode)
+          ) {
+            text = new Text({
+              padding: [2, 2, 2, 2],
+              // @ts-ignore
+              declutterMode: declutterMode,
+            });
+            style.setText(text);
+          }
           const textTransform = getValue(
             layer,
             'layout',
