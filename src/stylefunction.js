@@ -1343,7 +1343,15 @@ export function stylefunction(
             );
           }
           text = style.getText();
-          const textTransform = layout['text-transform'];
+          const textTransform = getValue(
+            layer,
+            'layout',
+            'text-transform',
+            zoom,
+            f,
+            functionCache,
+            featureState,
+          );
           if (textTransform == 'uppercase') {
             label = Array.isArray(label)
               ? label.map((t, i) => (i % 2 ? t : t.toUpperCase()))
