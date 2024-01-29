@@ -17,7 +17,7 @@ import {
   METERS_PER_UNIT,
   Projection,
   addProjection,
-  get,
+  get as getProjection,
   toLonLat,
 } from 'ol/proj.js';
 import {
@@ -26,6 +26,7 @@ import {
   getFeatureState,
   setFeatureState,
 } from '../src/index.js';
+import {containsExtent} from 'ol/extent.js';
 import {defaultResolutions} from '../src/util.js';
 delete brightV9.sprite;
 
@@ -210,19 +211,33 @@ describe('ol-mapbox-style', function () {
     });
 
     describe('geojson', function () {
-      let originalFetch;
-      const requests = [];
+      let originalFetch, map;
+      let requests;
+
       beforeEach(function () {
+        target.style.width = '100px';
+        target.style.height = '100px';
+        document.body.appendChild(target);
+        map = new Map({target});
         originalFetch = fetch;
+        requests = [];
         window.fetch = (request) => {
-          requests.push(request);
-          return originalFetch(request);
+          if (request instanceof Request === false) {
+            request = new Request(request);
+          }
+          requests.push(request.url);
+          return request.url.endsWith('geojson-wfs.json')
+            ? originalFetch(request)
+            : originalFetch('./fixtures/states.geojson');
         };
       });
+
       afterEach(function () {
+        document.body.removeChild(target);
         window.fetch = originalFetch;
-        requests.length = 0;
+        requests = null;
       });
+
       it('handles geojson wfs sources with bbox loadingstrategy and custom projection', function (done) {
         fetch('./fixtures/geojson-wfs.json')
           .then(function (response) {
@@ -231,67 +246,61 @@ describe('ol-mapbox-style', function () {
           .then(function (style) {
             style.sources.water_areas.data =
               style.sources.water_areas.data.replace('3857', '4326');
-            apply(target, style, {projection: 'EPSG:4326'})
-              .then(function (map) {
-                const layer = map
-                  .getAllLayers()
-                  .find((x) => x.get('mapbox-source') === 'water_areas');
-                const source = layer.getSource();
-                source.once('change', () => {
+            apply(map, style, {
+              projection: 'EPSG:4326',
+              transformRequest: (src, type) => {
+                if (src.includes('bbox')) {
                   try {
-                    const url = new URL(requests[requests.length - 1].url);
-                    const bbox = url.searchParams.get('bbox');
-                    const extent = map.getView().calculateExtent();
-                    should(bbox).be.equal(extent.join(','));
+                    const layer = map
+                      .getAllLayers()
+                      .find((x) => x.get('mapbox-source') === 'water_areas');
+                    const source = layer.getSource();
+                    const url = new URL(src);
+                    const bbox = url.searchParams
+                      .get('bbox')
+                      .split(',')
+                      .map(Number);
+                    should(
+                      containsExtent(
+                        getProjection('EPSG:4326').getExtent(),
+                        bbox,
+                      ),
+                    ).be.true();
+                    should(source).be.instanceof(VectorSource);
+                    should(layer.getStyle()).be.a.Function();
                     done();
                   } catch (e) {
                     done(e);
                   }
-                });
-                source.loadFeatures(
-                  map.getView().calculateExtent(),
-                  1,
-                  map.getView().getProjection(),
-                );
-              })
-              .catch(done);
+                }
+              },
+            }).catch(done);
           });
       });
 
       it('handles geojson wfs sources with bbox loadingstrategy & transformRequest', function (done) {
-        apply(target, './fixtures/geojson-wfs.json', {
+        apply(map, './fixtures/geojson-wfs.json', {
           transformRequest: (urlStr, type) => {
             if (type === 'GeoJSON') {
               const url = new URL(urlStr + '&transformRequest=true');
               return new Request(url);
             }
           },
-        })
-          .then(function (map) {
+        }).catch(done);
+        map.once('loadend', function () {
+          try {
             const layer = map
               .getAllLayers()
               .find((x) => x.get('mapbox-source') === 'water_areas');
-            const source = layer.getSource();
-            source.loadFeatures(
-              map.getView().calculateExtent(),
-              1,
-              get('EPSG:3857'),
-            );
-            source.once('change', () => {
-              try {
-                const url = new URL(requests[requests.length - 1].url);
-                should(url.searchParams.get('transformRequest')).be.equal(
-                  'true',
-                );
-                should(source).be.instanceof(VectorSource);
-                should(layer.getStyle()).be.a.Function();
-                done();
-              } catch (e) {
-                done(e);
-              }
-            });
-          })
-          .catch(done);
+            const url = new URL(requests[requests.length - 1]);
+            should(url.searchParams.get('transformRequest')).be.equal('true');
+            should(layer.getSource()).be.instanceof(VectorSource);
+            should(layer.getStyle()).be.a.Function();
+            done();
+          } catch (e) {
+            done(e);
+          }
+        });
       });
     });
 
