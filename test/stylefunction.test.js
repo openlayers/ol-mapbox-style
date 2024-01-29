@@ -424,84 +424,170 @@ describe('stylefunction', function () {
       };
     });
 
-    it('sets the declutter-mode "declutter" if not allow-overlap', function (done) {
-      style.layers[0].layout['icon-allow-overlap'] = false;
-      style.layers[0].layout['icon-ignore-placement'] = false;
-      apply(document.createElement('div'), style)
-        .then(function (map) {
-          const layer = map.getLayers().item(0);
-          layer.once('change', () => {
-            const styleFunction = layer.getStyle();
-            const feature = layer.getSource().getFeatures()[0];
-            const styles = styleFunction(feature, 1);
-            const image = styles[0].getImage();
-            should(image.getDeclutterMode()).eql('declutter');
-            done();
+    describe('icon decluttering', function () {
+      it('sets the declutter-mode "declutter" if not allow-overlap', function (done) {
+        style.layers[0].layout['icon-allow-overlap'] = false;
+        style.layers[0].layout['icon-ignore-placement'] = false;
+        apply(document.createElement('div'), style)
+          .then(function (map) {
+            const layer = map.getLayers().item(0);
+            layer.once('change', () => {
+              const styleFunction = layer.getStyle();
+              const feature = layer.getSource().getFeatures()[0];
+              const styles = styleFunction(feature, 1);
+              const image = styles[0].getImage();
+              should(image.getDeclutterMode()).eql('declutter');
+              done();
+            });
+          })
+          .catch(function (err) {
+            done(err);
           });
-        })
-        .catch(function (err) {
-          done(err);
-        });
+      });
+
+      it('sets the declutter-mode "declutter" if not allow-overlap even if ignore-placement', function (done) {
+        style.layers[0].layout['icon-allow-overlap'] = false;
+        style.layers[0].layout['icon-ignore-placement'] = true;
+        apply(document.createElement('div'), style)
+          .then(function (map) {
+            const layer = map.getLayers().item(0);
+            layer.once('change', () => {
+              const styleFunction = layer.getStyle();
+              const feature = layer.getSource().getFeatures()[0];
+              const styles = styleFunction(feature, 1);
+              const image = styles[0].getImage();
+              should(image.getDeclutterMode()).eql('declutter');
+              done();
+            });
+          })
+          .catch(function (err) {
+            done(err);
+          });
+      });
+
+      it('sets the declutter-mode "obstacle" if allow-overlap and not ignore-placement', function (done) {
+        style.layers[0].layout['icon-allow-overlap'] = true;
+        style.layers[0].layout['icon-ignore-placement'] = false;
+        apply(document.createElement('div'), style)
+          .then(function (map) {
+            const layer = map.getLayers().item(0);
+            layer.once('change', () => {
+              const styleFunction = layer.getStyle();
+              const feature = layer.getSource().getFeatures()[0];
+              const styles = styleFunction(feature, 1);
+              const image = styles[0].getImage();
+              should(image.getDeclutterMode()).eql('obstacle');
+              done();
+            });
+          })
+          .catch(function (err) {
+            done(err);
+          });
+      });
+
+      it('sets the declutter-mode "none" if allow-overlap and ignore-placement', function (done) {
+        style.layers[0].layout['icon-allow-overlap'] = true;
+        style.layers[0].layout['icon-ignore-placement'] = true;
+        apply(document.createElement('div'), style)
+          .then(function (map) {
+            const layer = map.getLayers().item(0);
+            layer.once('change', () => {
+              const styleFunction = layer.getStyle();
+              const feature = layer.getSource().getFeatures()[0];
+              const styles = styleFunction(feature, 1);
+              const image = styles[0].getImage();
+              should(image.getDeclutterMode()).eql('none');
+              done();
+            });
+          })
+          .catch(function (err) {
+            done(err);
+          });
+      });
     });
 
-    it('sets the declutter-mode "declutter" if not allow-overlap even if ignore-placement', function (done) {
-      style.layers[0].layout['icon-allow-overlap'] = false;
-      style.layers[0].layout['icon-ignore-placement'] = true;
-      apply(document.createElement('div'), style)
-        .then(function (map) {
-          const layer = map.getLayers().item(0);
-          layer.once('change', () => {
-            const styleFunction = layer.getStyle();
-            const feature = layer.getSource().getFeatures()[0];
-            const styles = styleFunction(feature, 1);
-            const image = styles[0].getImage();
-            should(image.getDeclutterMode()).eql('declutter');
-            done();
-          });
-        })
-        .catch(function (err) {
-          done(err);
+    describe('text decluttering', function () {
+      if ('getDeclutterMode' in Text.prototype) {
+        it('sets the declutter-mode "declutter" if not allow-overlap', function (done) {
+          style.layers[0].layout['text-allow-overlap'] = false;
+          style.layers[0].layout['text-ignore-placement'] = false;
+          apply(document.createElement('div'), style)
+            .then(function (map) {
+              const layer = map.getLayers().item(0);
+              layer.once('change', () => {
+                const styleFunction = layer.getStyle();
+                const feature = layer.getSource().getFeatures()[0];
+                const styles = styleFunction(feature, 1);
+                const text = styles[0].getText();
+                should(text.getDeclutterMode()).eql('declutter');
+                done();
+              });
+            })
+            .catch(function (err) {
+              done(err);
+            });
         });
-    });
 
-    it('sets the declutter-mode "obstacle" if allow-overlap and not ignore-placement', function (done) {
-      style.layers[0].layout['icon-allow-overlap'] = true;
-      style.layers[0].layout['icon-ignore-placement'] = false;
-      apply(document.createElement('div'), style)
-        .then(function (map) {
-          const layer = map.getLayers().item(0);
-          layer.once('change', () => {
-            const styleFunction = layer.getStyle();
-            const feature = layer.getSource().getFeatures()[0];
-            const styles = styleFunction(feature, 1);
-            const image = styles[0].getImage();
-            should(image.getDeclutterMode()).eql('obstacle');
-            done();
-          });
-        })
-        .catch(function (err) {
-          done(err);
+        it('sets the declutter-mode "declutter" if not allow-overlap even if ignore-placement', function (done) {
+          style.layers[0].layout['text-allow-overlap'] = false;
+          style.layers[0].layout['text-ignore-placement'] = true;
+          apply(document.createElement('div'), style)
+            .then(function (map) {
+              const layer = map.getLayers().item(0);
+              layer.once('change', () => {
+                const styleFunction = layer.getStyle();
+                const feature = layer.getSource().getFeatures()[0];
+                const styles = styleFunction(feature, 1);
+                const text = styles[0].getText();
+                should(text.getDeclutterMode()).eql('declutter');
+                done();
+              });
+            })
+            .catch(function (err) {
+              done(err);
+            });
         });
-    });
 
-    it('sets the declutter-mode "none" if allow-overlap and ignore-placement', function (done) {
-      style.layers[0].layout['icon-allow-overlap'] = true;
-      style.layers[0].layout['icon-ignore-placement'] = true;
-      apply(document.createElement('div'), style)
-        .then(function (map) {
-          const layer = map.getLayers().item(0);
-          layer.once('change', () => {
-            const styleFunction = layer.getStyle();
-            const feature = layer.getSource().getFeatures()[0];
-            const styles = styleFunction(feature, 1);
-            const image = styles[0].getImage();
-            should(image.getDeclutterMode()).eql('none');
-            done();
-          });
-        })
-        .catch(function (err) {
-          done(err);
+        it('sets the declutter-mode "obstacle" if allow-overlap and not ignore-placement', function (done) {
+          style.layers[0].layout['text-allow-overlap'] = true;
+          style.layers[0].layout['text-ignore-placement'] = false;
+          apply(document.createElement('div'), style)
+            .then(function (map) {
+              const layer = map.getLayers().item(0);
+              layer.once('change', () => {
+                const styleFunction = layer.getStyle();
+                const feature = layer.getSource().getFeatures()[0];
+                const styles = styleFunction(feature, 1);
+                const text = styles[0].getText();
+                should(text.getDeclutterMode()).eql('obstacle');
+                done();
+              });
+            })
+            .catch(function (err) {
+              done(err);
+            });
         });
+
+        it('sets the declutter-mode "none" if allow-overlap and ignore-placement', function (done) {
+          style.layers[0].layout['text-allow-overlap'] = true;
+          style.layers[0].layout['text-ignore-placement'] = true;
+          apply(document.createElement('div'), style)
+            .then(function (map) {
+              const layer = map.getLayers().item(0);
+              layer.once('change', () => {
+                const styleFunction = layer.getStyle();
+                const feature = layer.getSource().getFeatures()[0];
+                const styles = styleFunction(feature, 1);
+                const text = styles[0].getText();
+                should(text.getDeclutterMode()).eql('none');
+                done();
+              });
+            })
+            .catch(function (err) {
+              done(err);
+            });
+        });
+      }
     });
   });
 
