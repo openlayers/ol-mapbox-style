@@ -107,11 +107,9 @@ describe('ol-mapbox-style', function () {
 
     describe('raster sources', function () {
       let map;
-      this.beforeEach(function (done) {
-        apply(target, './fixtures/wms.json').then((olMap) => {
-          map = olMap;
-          done();
-        });
+      beforeEach(function (done) {
+        map = new Map({target});
+        apply(map, './fixtures/wms.json').then(() => done());
       });
 
       it('handles raster sources', function () {

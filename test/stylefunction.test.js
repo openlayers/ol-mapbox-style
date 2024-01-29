@@ -1,5 +1,6 @@
 import Feature from 'ol/Feature.js';
 import Polygon from 'ol/geom/Polygon.js';
+import Text from 'ol/style/Text.js';
 import VectorLayer from 'ol/layer/Vector.js';
 import deepFreeze from 'deep-freeze';
 import should from 'should';
