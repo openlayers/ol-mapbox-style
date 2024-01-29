@@ -1,5 +1,16 @@
 # Changelog
 
+## 12.2.0
+
+* Fix zIndex of background layer when applying style to an existing map
+* Use correct `line-color` and `background-color` defaults
+* Add support for `circle-translate`
+* Do not throw when style contains an unsupported layer type
+* Fix rendering for zero text halo
+* Fix scaling of `icon-offset`
+* Allow computed values for `text-tranform`
+* Add support for `text-ignore-placement` and `text-allow-overlap`
+
 ## 12.1.1
 
 * Consider the `icon-size` layout property also for icons not provided by the stylesheet
