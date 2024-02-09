@@ -90,7 +90,7 @@ The following placeholders can be used in the `ol:webfonts` url:
 - `{fontstyle}`: CSS font style, e.g. normal, italic
 - `{-fontstyle}`: CSS font style other than normal, e.g. -italic or empty string for normal
 
-If no `metadata['ol:webfonts']` property is available on the Style object, [Fontsource Fonts](https://fontsource.org/fonts) will be used. It is also possible for the application to load other fonts. If a font is already available in the browser, `ol-mapbox-style` will not load it.
+If no `metadata['ol:webfonts']` property is available on the Style object, [Fontsource Fonts](https://fontsource.org/) will be used. It is also possible for the application to load other fonts. If a font is already available in the browser, `ol-mapbox-style` will not load it.
 
 Because of this difference, the [font stack](https://www.mapbox.com/help/manage-fontstacks/) is treated a little different than defined in the spec: style and weight are taken from the primary font (i.e. the first one in the font stack). Subsequent fonts in the font stack are only used if the primary font is not available/loaded, and they will be used with the style and weight of the primary font.
 
