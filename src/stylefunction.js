@@ -950,7 +950,11 @@ export function stylefunction(
                       if (haloWidth) {
                         if (spriteImageData.sdf) {
                           img = drawIconHalo(
-                            drawSDF(spriteImage, spriteImageData, iconColor),
+                            drawSDF(
+                              spriteImage,
+                              spriteImageData,
+                              iconColor || [0, 0, 0, 1],
+                            ),
                             {
                               x: 0,
                               y: 0,
