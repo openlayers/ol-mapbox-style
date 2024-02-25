@@ -1,0 +1,14 @@
+$id: 'nimbus' !default;
+$family: 'Nimbus' !default;
+$category: sans-serif !default;
+$subsets: (latin) !default;
+$weights: (900) !default;
+$styles: (normal) !default;
+$axes: null !default;
+$defaults: (
+  subset: latin,
+  weight: 900,
+  style: normal,
+  axis: null,
+) !default;
+$unicode: null !default;

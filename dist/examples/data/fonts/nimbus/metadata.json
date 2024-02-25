@@ -1,0 +1,19 @@
+{
+  "id": "nimbus",
+  "family": "Nimbus",
+  "subsets": ["latin"],
+  "weights": [900],
+  "styles": ["normal"],
+  "defSubset": "latin",
+  "variable": false,
+  "lastModified": "2024-02-10",
+  "version": "v1.0",
+  "category": "sans-serif",
+  "license": {
+    "type": "other",
+    "url": "https://www.myfonts.com/pages/license-agreement?id=eula_2266&eula_lang=eula_en",
+    "attribution": "URW++"
+  },
+  "source": "https://www.myfonts.com/collections/nimbus-sans-font-urw",
+  "type": "other"
+}

@@ -1,0 +1,8 @@
+/* nimbus-condensed-latin-500-italic */
+@font-face {
+  font-family: 'Nimbus Condensed';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 500;
+  src: url(./files/NimbusSanNovCon-MedIta.woff2) format('woff2'), url(./files/NimbusSanNovCon-MedIta.woff) format('woff');
+}

@@ -1,0 +1,8 @@
+/* nimbus-latin-900-normal */
+@font-face {
+  font-family: 'Nimbus';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 900;
+  src: url(./files/NimbusSanNov-Bla.woff2) format('woff2'), url(./files/NimbusSanNov-Bla.woff) format('woff');
+}

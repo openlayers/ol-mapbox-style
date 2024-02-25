@@ -1,0 +1,29 @@
+{
+  "name": "@fontsource/nimbus",
+  "version": "5.0.0",
+  "description": "Self-host the Nimbus font in a neatly bundled NPM package.",
+  "main": "index.css",
+  "publishConfig": {"access": "public"},
+  "keywords": [
+    "fontsource",
+    "font",
+    "font family",
+    "google fonts",
+    "nimbus",
+    "Nimbus",
+    "css",
+    "sass",
+    "front-end",
+    "web",
+    "typeface",
+    "variable"
+  ],
+  "author": "URW++",
+  "license": "other",
+  "homepage": "https://fontsource.org/fonts/nimbus",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fontsource/font-files.git",
+    "directory": "fonts/other/nimbus"
+  }
+}
