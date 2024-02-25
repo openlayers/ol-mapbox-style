@@ -1,5 +1,9 @@
 # Changelog
 
+## 12.2.1
+
+* Fall back to default icon-color when drawing SDF
+
 ## 12.2.0
 
 * Fix zIndex of background layer when applying style to an existing map
