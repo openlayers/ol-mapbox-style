@@ -75,7 +75,7 @@
     "mini-css-extract-plugin": "^2.4.4",
     "mocha": "^10.0.0",
     "nanoassert": "^2.0.0",
-    "puppeteer": "^21.0.1",
+    "puppeteer": "^22.1.0",
     "remove-flow-types-loader": "^1.1.0",
     "rollup": "^2.70.2",
     "rollup-plugin-terser": "^7.0.2",
