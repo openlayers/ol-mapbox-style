@@ -50,7 +50,7 @@ import {
 } from 'ol/proj.js';
 import {getFonts} from './text.js';
 import {getTopLeft} from 'ol/extent.js';
-import {hillshade} from './shaders.js';
+import {hillshade, raster as rasterShader} from './shaders.js';
 import {
   normalizeSourceUrl,
   normalizeSpriteUrl,
@@ -689,6 +689,7 @@ function setupRasterSource(glSource, styleUrl, options) {
           }
           return src;
         });
+
         source.set('mapbox-source', glSource);
         resolve(source);
       })
@@ -698,7 +699,7 @@ function setupRasterSource(glSource, styleUrl, options) {
   });
 }
 
-function setupRasterLayer(glSource, styleUrl, options) {
+function setupRasterLayerAbstract(glSource, styleUrl, options) {
   const layer = new TileLayer();
   setupRasterSource(glSource, styleUrl, options)
     .then(function (source) {
@@ -715,10 +716,42 @@ function setupRasterLayer(glSource, styleUrl, options) {
  * @param {Object} glSource "source" entry from a Mapbox Style object.
  * @param {string} styleUrl Style url
  * @param {Options} options ol-mapbox-style options.
+ * @return {TileLayer} The raster layer
+ */
+function setupRasterLayer(glSource, styleUrl, options) {
+  const tileLayer = setupRasterLayerAbstract(glSource, styleUrl, options);
+  return tileLayer;
+}
+
+/**
+ *
+ * @param {Object} glSource "source" entry from a Mapbox Style object.
+ * @param {string} styleUrl Style url
+ * @param {Options} options ol-mapbox-style options.
+ * @return {ImageLayer<Raster>} The raster layer
+ */
+function setupRasterOpLayer(glSource, styleUrl, options) {
+  const tileLayer = setupRasterLayerAbstract(glSource, styleUrl, options);
+  /** @type {ImageLayer<Raster>} */
+  const layer = new ImageLayer({
+    source: new Raster({
+      operationType: 'image',
+      operation: rasterShader,
+      sources: [tileLayer],
+    }),
+  });
+  return layer;
+}
+
+/**
+ *
+ * @param {Object} glSource "source" entry from a Mapbox Style object.
+ * @param {string} styleUrl Style url
+ * @param {Options} options ol-mapbox-style options.
  * @return {ImageLayer<Raster>} The raster layer
  */
 function setupHillshadeLayer(glSource, styleUrl, options) {
-  const tileLayer = setupRasterLayer(glSource, styleUrl, options);
+  const tileLayer = setupRasterLayerAbstract(glSource, styleUrl, options);
   /** @type {ImageLayer<Raster>} */
   const layer = new ImageLayer({
     source: new Raster({
@@ -897,10 +930,79 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
   } else if (glSource.type == 'vector') {
     layer = setupVectorLayer(glSource, styleUrl, options);
   } else if (glSource.type == 'raster') {
-    layer = setupRasterLayer(glSource, styleUrl, options);
+    const keys = [
+      'raster-saturation',
+      'raster-contrast',
+      'raster-brightness-max',
+      'raster-brightness-min',
+      'raster-hue-rotate',
+    ];
+    const requiresOperations = !!Object.keys(glLayer.paint || {}).find(
+      (key) => {
+        return keys.includes(key);
+      }
+    );
+
+    if (requiresOperations) {
+      layer = setupRasterOpLayer(glSource, styleUrl, options);
+      layer.getSource().on('beforeoperations', function (event) {
+        const zoom = getZoomForResolution(
+          event.resolution,
+          options.resolutions || defaultResolutions
+        );
+
+        const data = event.data;
+        data.saturation = getValue(
+          glLayer,
+          'paint',
+          'raster-saturation',
+          zoom,
+          emptyObj,
+          functionCache
+        );
+        data.contrast = getValue(
+          glLayer,
+          'paint',
+          'raster-contrast',
+          zoom,
+          emptyObj,
+          functionCache
+        );
+
+        data.brightnessHigh = getValue(
+          glLayer,
+          'paint',
+          'raster-brightness-max',
+          zoom,
+          emptyObj,
+          functionCache
+        );
+
+        data.brightnessLow = getValue(
+          glLayer,
+          'paint',
+          'raster-brightness-min',
+          zoom,
+          emptyObj,
+          functionCache
+        );
+
+        data.hueRotate = getValue(
+          glLayer,
+          'paint',
+          'raster-hue-rotate',
+          zoom,
+          emptyObj,
+          functionCache
+        );
+      });
+    } else {
+      layer = setupRasterLayer(glSource, styleUrl, options);
+    }
     layer.setVisible(
       glLayer.layout ? glLayer.layout.visibility !== 'none' : true,
     );
+
     layer.on('prerender', prerenderRasterLayer(glLayer, layer, functionCache));
   } else if (glSource.type == 'geojson') {
     layer = setupGeoJSONLayer(glSource, styleUrl, options);
@@ -1033,7 +1135,12 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
     } else {
       id = glLayer.source || getSourceIdByRef(glLayers, glLayer.ref);
       // this technique assumes gl layers will be in a particular order
-      if (!id || id != glSourceId) {
+      if (
+        // This line is because rasters set properties on their source
+        glLayer.type === 'raster' ||
+        !id ||
+        id != glSourceId
+      ) {
         if (layerIds.length) {
           promises.push(
             finalizeLayer(
