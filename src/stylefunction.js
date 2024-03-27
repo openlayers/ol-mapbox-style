@@ -45,7 +45,7 @@ import {isFunction} from '@mapbox/mapbox-gl-style-spec/function/index.js';
  * @typedef {import('./util.js').ResourceType} ResourceType
  */
 
-const types = {
+export const types = {
   'Point': 1,
   'MultiPoint': 1,
   'LineString': 2,

@@ -28,6 +28,7 @@ import {
   stylefunction as applyStylefunction,
   getValue,
   styleFunctionArgs,
+  types,
 } from './stylefunction.js';
 import {bbox as bboxStrategy} from 'ol/loadingstrategy.js';
 import {createXYZ} from 'ol/tilegrid.js';
@@ -50,6 +51,7 @@ import {
 } from 'ol/proj.js';
 import {getFonts} from './text.js';
 import {getTopLeft} from 'ol/extent.js';
+import {getUid} from 'ol';
 import {hillshade} from './shaders.js';
 import {
   normalizeSourceUrl,
@@ -904,6 +906,38 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
     layer.on('prerender', prerenderRasterLayer(glLayer, layer, functionCache));
   } else if (glSource.type == 'geojson') {
     layer = setupGeoJSONLayer(glSource, styleUrl, options);
+    layer.setRenderOrder((f1, f2) => {
+      const getRenderOrder = (feature) => {
+        if (['fill', 'line', 'symbol', 'circle'].includes(glLayer.type)) {
+          const f = {
+            id: feature.getId(),
+            type: types[feature.getGeometry().getType()],
+            properties: feature.getProperties(),
+          };
+
+          const featureState = layer.get('mapbox-featurestate')[
+            feature.getId()
+          ];
+
+          const sortOrder = getValue(
+            glLayer,
+            'layout',
+            `${glLayer.type}-sort-key`,
+            null,
+            f,
+            functionCache,
+            featureState
+          );
+          if (sortOrder === null) {
+            return parseInt(getUid(feature), 10);
+          }
+          return sortOrder;
+        }
+        return parseInt(getUid(feature), 10);
+      };
+
+      return getRenderOrder(f1) - getRenderOrder(f2);
+    });
   } else if (glSource.type == 'raster-dem' && glLayer.type == 'hillshade') {
     const hillshadeLayer = setupHillshadeLayer(glSource, styleUrl, options);
     layer = hillshadeLayer;
