@@ -1125,10 +1125,6 @@ This function be used for icons not in the sprite or to override sprite icons.
 
 ▸ (`arg0`, `arg1`): `string` \| `HTMLCanvasElement` \| `HTMLImageElement`
 
-Function that returns an image for an icon name. If the result is an HTMLImageElement, it must already be
-loaded. The layer can be used to call layer.changed() when the loading and processing of the image has finished.
-This function be used for icons not in the sprite or to override sprite icons.
-
 ###### Parameters
 
 | Name   | Type                                           |
@@ -1185,11 +1181,6 @@ Without a return value the original request will not be modified.
 ##### Type declaration
 
 ▸ (`arg0`, `arg1`): `string` \| `void` \| `Request` \| `Promise`\\&lt;`string` \| `Request`>
-
-Function for controlling how `ol-mapbox-style` fetches resources. Can be used for modifying
-the url, adding headers or setting credentials options. Called with the url and the resource
-type as arguments, this function is supposed to return a `Request` or a url `string`, or a promise tehereof.
-Without a return value the original request will not be modified.
 
 ###### Parameters
 
