@@ -1,5 +1,9 @@
 # Changelog
 
+## 12.2.2
+
+* Generous peer dependency range for ol
+
 ## 12.2.1
 
 * Fall back to default icon-color when drawing SDF
