@@ -32,11 +32,11 @@ import {bbox as bboxStrategy} from 'ol/loadingstrategy.js';
 import {createXYZ} from 'ol/tilegrid.js';
 import {
   defaultResolutions,
-  defaultTileGrid,
   fetchResource,
   getFilterCache,
   getFunctionCache,
   getGlStyle,
+  getResolutionForZoom,
   getStyleFunctionKey,
   getTileJson,
   getZoomForResolution,
@@ -317,7 +317,10 @@ export function applyStyle(
                 tileGrid.getMinZoom() > 0
               ) {
                 layer.setMaxResolution(
-                  tileGrid.getResolution(tileGrid.getMinZoom()) + 1e-15,
+                  getResolutionForZoom(
+                    tileGrid.getMinZoom(),
+                    defaultResolutions,
+                  ) + 1e-15,
                 );
               }
             });
@@ -1233,21 +1236,21 @@ export function finalizeLayer(
           if (minZoom > 0 || sourceMinZoom > 0) {
             layer.setMaxResolution(
               Math.min(
-                defaultTileGrid.getResolution(minZoom),
+                getResolutionForZoom(minZoom, defaultResolutions),
                 tileGrid.getResolution(sourceMinZoom),
               ) + 1e-15,
             );
           }
           if (maxZoom < 24) {
             layer.setMinResolution(
-              defaultTileGrid.getResolution(maxZoom) + 1e-15,
+              getResolutionForZoom(maxZoom, defaultResolutions),
             );
           }
         }
       } else {
         if (minZoom > 0) {
           layer.setMaxResolution(
-            defaultTileGrid.getResolution(minZoom) + 1e-15,
+            getResolutionForZoom(minZoom, defaultResolutions) + 1e-15,
           );
         }
       }
