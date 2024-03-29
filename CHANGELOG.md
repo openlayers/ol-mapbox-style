@@ -1,5 +1,12 @@
 # Changelog
 
+## 12.3.0
+
+* Use point resolution for hillshade calculation
+* Fix layer minzoom
+* Add webfonts option to override ol:webfonts
+* Properly handle fractional layer minzoom and maxzoom
+
 ## 12.2.2
 
 * Generous peer dependency range for ol

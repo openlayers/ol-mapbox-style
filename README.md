@@ -1094,6 +1094,7 @@ method was used.
 - [resolutions](#resolutions)
 - [styleUrl](#styleUrl)
 - [transformRequest](#transformRequest)
+- [webfonts](#webfonts)
 
 ### Properties
 
@@ -1192,6 +1193,15 @@ Without a return value the original request will not be modified.
 ###### Returns
 
 `string` \| `void` \| `Request` \| `Promise`\\&lt;`string` \| `Request`>
+
+* * *
+
+#### webfonts
+
+• **webfonts**: `string`
+
+Template for resolving webfonts. See `getFonts()` or the "Font handling" section
+in `README.md` for details.
 
 <a name="modulesinternal_md"></a>
 
