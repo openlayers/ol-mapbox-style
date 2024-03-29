@@ -45,11 +45,12 @@ import {
 import {
   equivalent,
   fromLonLat,
+  getPointResolution,
   get as getProjection,
   getUserProjection,
 } from 'ol/proj.js';
+import {getCenter, getTopLeft} from 'ol/extent.js';
 import {getFonts} from './text.js';
-import {getTopLeft} from 'ol/extent.js';
 import {hillshade} from './shaders.js';
 import {
   normalizeSourceUrl,
@@ -909,7 +910,12 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
     layer = hillshadeLayer;
     hillshadeLayer.getSource().on('beforeoperations', function (event) {
       const data = event.data;
-      data.resolution = event.resolution;
+      data.resolution = getPointResolution(
+        options.projection || 'EPSG:3857',
+        event.resolution,
+        getCenter(event.extent),
+        'm',
+      );
       const zoom = getZoomForResolution(
         event.resolution,
         options.resolutions || defaultResolutions,
