@@ -320,17 +320,20 @@ describe('applyStyle without source creation', function () {
 });
 
 describe('maxResolution', function () {
-  const glStyle = {
-    version: 8,
-    sources: {
-      'foo': {
-        tiles: ['/fixtures/{z}-{x}-{y}.vector.pbf'],
-        type: 'vector',
-        minzoom: 6,
+  let glStyle;
+  beforeEach(function () {
+    glStyle = {
+      version: 8,
+      sources: {
+        'foo': {
+          tiles: ['/fixtures/{z}-{x}-{y}.vector.pbf'],
+          type: 'vector',
+          minzoom: 6,
+        },
       },
-    },
-    layers: [],
-  };
+      layers: [],
+    };
+  });
 
   it('accepts minZoom from configuration', function (done) {
     const layer = new VectorTileLayer({
@@ -351,8 +354,21 @@ describe('maxResolution', function () {
     applyStyle(layer, glStyle)
       .then(function () {
         should(layer.getMaxResolution()).equal(
-          layer.getSource().getTileGrid().getResolution(6),
+          layer.getSource().getTileGrid().getResolution(6) - 1e-15,
         );
+        done();
+      })
+      .catch(function (e) {
+        done(e);
+      });
+  });
+
+  it('but not when tilegrid starts at zoom 0', function (done) {
+    glStyle.sources.foo.minzoom = 0;
+    const layer = new VectorTileLayer();
+    applyStyle(layer, glStyle)
+      .then(function () {
+        should(layer.getMaxResolution()).equal(Infinity);
         done();
       })
       .catch(function (e) {

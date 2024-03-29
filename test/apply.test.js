@@ -700,7 +700,7 @@ describe('ol-mapbox-style', function () {
         apply(target, context)
           .then(function (map) {
             should(map.getLayers().item(0).getMaxResolution()).eql(
-              defaultResolutions[9] + 1e-9,
+              defaultResolutions[9] + 1e-15,
             );
             done();
           })
@@ -715,10 +715,10 @@ describe('ol-mapbox-style', function () {
         apply(target, context)
           .then(function (map) {
             should(map.getLayers().item(0).getMaxResolution()).eql(
-              defaultResolutions[10] + 1e-9,
+              defaultResolutions[10] + 1e-15,
             );
             should(map.getLayers().item(0).getMinResolution()).eql(
-              defaultResolutions[12] + 1e-9,
+              defaultResolutions[12] + 1e-15,
             );
             done();
           })
@@ -731,7 +731,7 @@ describe('ol-mapbox-style', function () {
         apply(target, './fixtures/geojson-wfs.json')
           .then(function (map) {
             const layer = map.getAllLayers()[1];
-            should(layer.getMaxResolution()).eql(defaultResolutions[5] + 1e-9);
+            should(layer.getMaxResolution()).eql(defaultResolutions[5] + 1e-15);
             done();
           })
           .catch(function (err) {
@@ -858,7 +858,7 @@ describe('ol-mapbox-style', function () {
         apply(target, context)
           .then(function (map) {
             should(map.getLayers().item(0).getMaxResolution()).eql(
-              defaultResolutions[8] + 1e-9,
+              defaultResolutions[8] + 1e-15,
             );
             done();
           })
@@ -877,7 +877,7 @@ describe('ol-mapbox-style', function () {
         apply(target, context)
           .then(function (map) {
             should(map.getLayers().item(0).getMaxResolution()).eql(
-              defaultResolutions[8] + 1e-9,
+              defaultResolutions[8] + 1e-15,
             );
             done();
           })
@@ -890,10 +890,10 @@ describe('ol-mapbox-style', function () {
         apply(target, context)
           .then(function (map) {
             should(map.getLayers().item(0).getMaxResolution()).eql(
-              defaultResolutions[7] + 1e-9,
+              defaultResolutions[7] + 1e-15,
             );
             should(map.getLayers().item(0).getMinResolution()).eql(
-              defaultResolutions[23] + 1e-9,
+              defaultResolutions[23] + 1e-15,
             );
             done();
           })
