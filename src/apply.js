@@ -24,7 +24,6 @@ import derefLayers from '@mapbox/mapbox-gl-style-spec/deref.js';
 import {METERS_PER_UNIT} from 'ol/proj/Units.js';
 import {
   _colorWithOpacity,
-  stylefunction as applyStyleFunction,
   stylefunction as applyStylefunction,
   getValue,
   styleFunctionArgs,
@@ -82,6 +81,8 @@ import {
  * Resolutions for mapping resolution to the `zoom` used in the Mapbox style.
  * @property {string} [styleUrl] URL of the Mapbox GL style. Required for styles that were provided
  * as object, when they contain a relative sprite url, or sources referencing data by relative url.
+ * @property {string} [webfonts] Template for resolving webfonts. See `getFonts()` or the "Font handling" section
+ * in `README.md` for details.
  * @property {function(VectorLayer|VectorTileLayer, string):HTMLImageElement|HTMLCanvasElement|string|undefined} [getImage=undefined]
  * Function that returns an image for an icon name. If the result is an HTMLImageElement, it must already be
  * loaded. The layer can be used to call layer.changed() when the loading and processing of the image has finished.
@@ -356,14 +357,15 @@ export function applyStyle(
                 );
               }
             }
-            style = applyStyleFunction(
+            style = applyStylefunction(
               layer,
               glStyle,
               sourceOrLayers,
               resolutions,
               spriteData,
               spriteImageUrl,
-              getFonts,
+              (fonts, templateUrl = options.webfonts) =>
+                getFonts(fonts, templateUrl),
               options.getImage,
             );
             if (!layer.getStyle()) {
@@ -1383,7 +1385,7 @@ export function addMapboxLayer(mapOrGroup, mapboxLayer, beforeLayerId) {
       const layerIndex = sourceOrLayers.indexOf(sourceLayerId) + sourceOffset;
       sourceOrLayers.splice(layerIndex, 0, mapboxLayer.id);
     }
-    applyStyleFunction(
+    applyStylefunction(
       olLayer,
       glStyle,
       sourceOrLayers,

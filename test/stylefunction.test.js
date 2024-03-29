@@ -7,7 +7,7 @@ import should from 'should';
 import states from './fixtures/states.json';
 import {
   apply,
-  stylefunction as applyStyleFunction,
+  stylefunction as applyStylefunction,
   getFeatureState,
   getStyleForLayer,
   recordStyleLayer,
@@ -43,7 +43,7 @@ describe('stylefunction', function () {
       style.id = 'states';
       deepFreeze(style);
       should.doesNotThrow(function () {
-        applyStyleFunction(layer, style, 'states');
+        applyStylefunction(layer, style, 'states');
       });
     });
 
@@ -104,12 +104,12 @@ describe('stylefunction', function () {
     it('adds an id to the style object when none is set', function () {
       const style = JSON.parse(JSON.stringify(states));
       style.id = undefined;
-      applyStyleFunction(layer, style, 'states');
+      applyStylefunction(layer, style, 'states');
       should.notEqual(style.id, undefined);
     });
 
     it('creates a style function with all layers of a source', function () {
-      const style = applyStyleFunction(layer, states, 'states');
+      const style = applyStylefunction(layer, states, 'states');
       should(style).be.a.Function();
       feature.set('PERSONS', 2000000);
       should(style(feature, 1)).be.an.Array();
@@ -120,7 +120,7 @@ describe('stylefunction', function () {
     });
 
     it('creates a style function with some layers of a source', function () {
-      const style = applyStyleFunction(layer, states, ['population_lt_2m']);
+      const style = applyStylefunction(layer, states, ['population_lt_2m']);
       should(style).be.a.Function;
       feature.set('PERSONS', 2000000);
       should(style(feature, 1)).be.an.Array();
@@ -131,31 +131,31 @@ describe('stylefunction', function () {
     });
 
     it('Don not match layer ids to string `sourceOrLayers`', function () {
-      const style = applyStyleFunction(layer, states, 'population_lt_2m');
+      const style = applyStylefunction(layer, states, 'population_lt_2m');
       should(style).be.a.Function;
       feature.set('PERSONS', 2000000);
       should(style(feature, 1)).be.undefined();
     });
 
     it('should handle has and !has', function () {
-      const style = applyStyleFunction(layer, states, ['has_male']);
+      const style = applyStylefunction(layer, states, ['has_male']);
       should(style).be.a.Function;
       should(style(feature, 1)).be.undefined();
       feature.set('MALE', 20000);
       should(style(feature, 1)).be.an.Array();
-      const style2 = applyStyleFunction(layer, states, ['not_has_male']);
+      const style2 = applyStylefunction(layer, states, ['not_has_male']);
       should(style2(feature, 1)).be.undefined();
       feature.unset('MALE');
       should(style2(feature, 1)).be.an.Array();
     });
 
     it('should handle layer visibility', function () {
-      const style = applyStyleFunction(layer, states, ['state_names']);
+      const style = applyStylefunction(layer, states, ['state_names']);
       should(style(feature, 1)).be.undefined();
     });
 
     it('records the style layer the feature belongs to', function () {
-      const style = applyStyleFunction(layer, states, [
+      const style = applyStylefunction(layer, states, [
         'population_lt_2m',
         'population_gt_4m',
       ]);
@@ -178,7 +178,7 @@ describe('stylefunction', function () {
           'fill-color': 'rgba(0,0,0,0)',
         },
       });
-      const styleFn = applyStyleFunction(layer, styleObject, ['transparent']);
+      const styleFn = applyStylefunction(layer, styleObject, ['transparent']);
       const style = styleFn(feature, 1);
       should(style).be.undefined;
     });
@@ -194,7 +194,7 @@ describe('stylefunction', function () {
         },
       });
       renderTransparent(true);
-      const styleFn = applyStyleFunction(layer, styleObject, ['transparent']);
+      const styleFn = applyStylefunction(layer, styleObject, ['transparent']);
       const style = styleFn(feature, 1);
       should(style).be.an.Array();
       should(style[0].getFill().getColor()).eql('transparent');
@@ -211,7 +211,7 @@ describe('stylefunction', function () {
         },
       });
       renderTransparent(true);
-      const styleFn = applyStyleFunction(layer, styleObject, ['transparent']);
+      const styleFn = applyStylefunction(layer, styleObject, ['transparent']);
       const style = styleFn(feature, 1);
       should(style).be.an.Array();
       should(style[0].getFill().getColor()).eql('rgba(16,234,42,0.5)');
@@ -229,7 +229,7 @@ describe('stylefunction', function () {
         },
       });
       renderTransparent(false);
-      const styleFn = applyStyleFunction(layer, styleObject, ['transparent']);
+      const styleFn = applyStylefunction(layer, styleObject, ['transparent']);
       const style = styleFn(feature, 1);
       should(style).be.an.Array();
       should(style[0].getFill()).eql(null);
@@ -252,7 +252,7 @@ describe('stylefunction', function () {
           ],
         },
       });
-      const styleFn = applyStyleFunction(layer, styleObject, ['red_blue']);
+      const styleFn = applyStylefunction(layer, styleObject, ['red_blue']);
       let style = styleFn(feature, 1);
       should(style).be.an.Array();
       should(style[0].getFill().getColor()).eql('rgba(255,0,0,1)');
