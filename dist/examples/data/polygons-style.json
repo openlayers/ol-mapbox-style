@@ -1,0 +1,20 @@
+{
+  "version": 8,
+  "sources": {
+    "Wasserschongebiete": {
+      "type": "geojson",
+      "data": "https://sos-at-vie-1.exo.io/w3geo/waldgis/data/Wasserschongebiete.geojson"
+    }
+  },
+  "layers": [
+    {
+      "id": "Wasserschongebiete",
+      "type": "fill",
+      "source": "Wasserschongebiete",
+      "paint": {
+        "fill-color": "#37c0eb",
+        "fill-outline-color": "#4444ce"
+      }
+    }
+  ]
+}

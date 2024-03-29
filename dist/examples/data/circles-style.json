@@ -1,0 +1,111 @@
+{
+  "version": 8,
+  "zoom": 7,
+  "sources": {
+    "fwp_land": {
+      "type": "geojson",
+      "data": "https://sos-at-vie-1.exo.io/w3geo/waldgis/data/fwp_land.geojson"
+    }
+  },
+  "layers": [
+    {
+      "id": "Mehr als 2 FWP des Landes",
+      "type": "circle",
+      "source": "fwp_land",
+      "filter": [
+        "all",
+        [
+          ">",
+          [
+            "get",
+            "#FWPLand"
+          ],
+          2
+        ],
+        [
+          "<=",
+          [
+            "get",
+            "#FWPLand"
+          ],
+          4
+        ]
+      ],
+      "paint": {
+        "circle-radius": [
+          "/",
+          17.857142857142854,
+          2
+        ],
+        "circle-color": "#df4f06",
+        "circle-stroke-width": 1
+      }
+    },
+    {
+      "id": "Zwei FWP des Landes",
+      "type": "circle",
+      "source": "fwp_land",
+      "filter": [
+        "all",
+        [
+          ">",
+          [
+            "get",
+            "#FWPLand"
+          ],
+          1
+        ],
+        [
+          "<=",
+          [
+            "get",
+            "#FWPLand"
+          ],
+          2
+        ]
+      ],
+      "paint": {
+        "circle-radius": [
+          "/",
+          14.285714285714285,
+          2
+        ],
+        "circle-color": "#fd9242",
+        "circle-stroke-width": 1
+      }
+    },
+    {
+      "id": "Ein FWP des Landes",
+      "type": "circle",
+      "source": "fwp_land",
+      "filter": [
+        "all",
+        [
+          ">=",
+          [
+            "get",
+            "#FWPLand"
+          ],
+          0
+        ],
+        [
+          "<=",
+          [
+            "get",
+            "#FWPLand"
+          ],
+          1
+        ]
+      ],
+      "paint": {
+        "circle-radius": [
+          "/",
+          10.714285714285714,
+          2
+        ],
+        "circle-color": "#fed1a7",
+        "circle-stroke-width": 1
+      }
+    }
+  ]
+}
