@@ -82,7 +82,9 @@ Note that this low-level API does not create a source for the layer, and extra w
 }
 ```
 
-The following placeholders can be used in the `ol:webfonts` url:
+As an alternative, the `webfonts` option of the `apply()` or `applyStyle()` functions can be used.
+
+The following placeholders can be used in the template url:
 
 - `{font-family}`: CSS font family converted to lowercase, blanks replaced with -, e.g. noto-sans
 - `{Font+Family}`: CSS font family in original case, blanks replaced with +, e.g. Noto+Sans
@@ -1200,8 +1202,9 @@ Without a return value the original request will not be modified.
 
 • **webfonts**: `string`
 
-Template for resolving webfonts. See `getFonts()` or the "Font handling" section
-in `README.md` for details.
+Template for resolving webfonts. Can be used to specify where to fetch
+web fonts when no `ol:webfonts` metadata is set in the style object. See `getFonts()` and the
+"Font handling" section in `README.md` for details.
 
 <a name="modulesinternal_md"></a>
 
