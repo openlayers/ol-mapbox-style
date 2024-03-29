@@ -309,13 +309,14 @@ export function applyStyle(
                   targetSource.tileGrid = source.getTileGrid();
                 }
               }
+              const tileGrid = layer.getSource().getTileGrid();
               if (
                 !isFinite(layer.getMaxResolution()) &&
-                !isFinite(layer.getMinZoom())
+                !isFinite(layer.getMinZoom()) &&
+                tileGrid.getMinZoom() > 0
               ) {
-                const tileGrid = layer.getSource().getTileGrid();
                 layer.setMaxResolution(
-                  tileGrid.getResolution(tileGrid.getMinZoom()),
+                  tileGrid.getResolution(tileGrid.getMinZoom()) + 1e-15,
                 );
               }
             });
@@ -1232,18 +1233,20 @@ export function finalizeLayer(
               Math.min(
                 defaultTileGrid.getResolution(minZoom),
                 tileGrid.getResolution(sourceMinZoom),
-              ) + 1e-9,
+              ) + 1e-15,
             );
           }
           if (maxZoom < 24) {
             layer.setMinResolution(
-              defaultTileGrid.getResolution(maxZoom) + 1e-9,
+              defaultTileGrid.getResolution(maxZoom) + 1e-15,
             );
           }
         }
       } else {
         if (minZoom > 0) {
-          layer.setMaxResolution(defaultTileGrid.getResolution(minZoom) + 1e-9);
+          layer.setMaxResolution(
+            defaultTileGrid.getResolution(minZoom) + 1e-15,
+          );
         }
       }
       if (
