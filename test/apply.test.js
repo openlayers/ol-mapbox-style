@@ -718,7 +718,31 @@ describe('ol-mapbox-style', function () {
               defaultResolutions[10] + 1e-15,
             );
             should(map.getLayers().item(0).getMinResolution()).eql(
-              defaultResolutions[12] + 1e-15,
+              defaultResolutions[12],
+            );
+            done();
+          })
+          .catch(function (err) {
+            done(err);
+          });
+      });
+
+      it('respects fractional layer minzoom and maxzoom', function (done) {
+        context.layers[0].minzoom = 10.5;
+        context.layers[0].maxzoom = 12.5;
+        apply(target, context)
+          .then(function (map) {
+            should(map.getLayers().item(0).getMaxResolution()).greaterThan(
+              defaultResolutions[11],
+            );
+            should(map.getLayers().item(0).getMaxResolution()).lessThan(
+              defaultResolutions[10],
+            );
+            should(map.getLayers().item(0).getMinResolution()).greaterThan(
+              defaultResolutions[13],
+            );
+            should(map.getLayers().item(0).getMinResolution()).lessThan(
+              defaultResolutions[12],
             );
             done();
           })
@@ -893,7 +917,7 @@ describe('ol-mapbox-style', function () {
               defaultResolutions[7] + 1e-15,
             );
             should(map.getLayers().item(0).getMinResolution()).eql(
-              defaultResolutions[23] + 1e-15,
+              defaultResolutions[23],
             );
             done();
           })
