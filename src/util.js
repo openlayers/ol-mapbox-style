@@ -302,13 +302,11 @@ export function drawIconHalo(
   haloWidth,
   haloColor,
 ) {
-  const imageCanvas = document.createElement('canvas');
   const imgSize = [
     2 * haloWidth * spriteImageData.pixelRatio + spriteImageData.width,
     2 * haloWidth * spriteImageData.pixelRatio + spriteImageData.height,
   ];
-  imageCanvas.width = imgSize[0];
-  imageCanvas.height = imgSize[1];
+  const imageCanvas = createCanvas(imgSize[0], imgSize[1]);
   const imageContext = imageCanvas.getContext('2d');
   imageContext.drawImage(
     spriteImage,
@@ -358,9 +356,7 @@ function smoothstep(min, max, value) {
  * @return {HTMLCanvasElement} Regular image
  */
 export function drawSDF(image, area, color) {
-  const imageCanvas = document.createElement('canvas');
-  imageCanvas.width = area.width;
-  imageCanvas.height = area.height;
+  const imageCanvas = createCanvas(area.width, area.height);
   const imageContext = imageCanvas.getContext('2d');
   imageContext.drawImage(
     image,
