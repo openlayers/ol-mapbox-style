@@ -1,5 +1,10 @@
 # Changelog
 
+## 12.3.1
+
+* Improved docs and examples
+* Avoid `document.createElement()` for more web worker friendliness
+
 ## 12.3.0
 
 * Use point resolution for hillshade calculation
