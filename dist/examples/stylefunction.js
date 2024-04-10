@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkol_mapbox_style=self.webpackChunkol_mapbox_style||[]).push([[70],{6055:(e,t,s)=>{s(8508);var a=s(1365),n=s(3317),o=s(2757),r=s(8738),c=s(1765),l=s(4316);const w=new o.A({declutter:!0,source:new r.A({format:new a.A,url:"data/states.geojson"})}),u=new n.A({target:"map",view:new c.Ay({center:[-13603186.115192635,6785744.563386],zoom:2})});fetch("data/states.json").then((e=>e.json())).then((e=>{(0,l.mt)(w,e,"states"),-1===u.getLayers().getArray().indexOf(w)&&u.addLayer(w)}))}},e=>{e(e.s=6055)}]);
+//# sourceMappingURL=stylefunction.js.map
