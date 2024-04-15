@@ -82,7 +82,7 @@
     "rollup-plugin-unassert": "^0.6.0",
     "should": "^13.2.3",
     "sinon": "^17.0.0",
-    "style-loader": "^3.3.1",
+    "style-loader": "^4.0.0",
     "typedoc": "^0.25.12",
     "typedoc-plugin-markdown": "^3.17.1",
     "typedoc-plugin-missing-exports": "^2.2.0",
