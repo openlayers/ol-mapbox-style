@@ -5,6 +5,7 @@ coverage/
 docs/
 examples/
 test/
+dist/examples/
 .editorconfig
 .eslintrc
 webpack.*.cjs

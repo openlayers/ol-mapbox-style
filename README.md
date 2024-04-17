@@ -4,7 +4,7 @@ Create [OpenLayers](https://openlayers.org/) maps from [Mapbox Style Specificati
 
 ## Getting started
 
-Get an impression of what this library does by exploring the [live examples](https://unpkg.com/ol-mapbox-style/dist/examples/index.html). 
+Get an impression of what this library does by exploring the [live examples](https://openlayers.org/ol-mapbox-style/examples/). 
 
 ### Installation
 
