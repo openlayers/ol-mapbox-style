@@ -6,7 +6,7 @@
   "sources": {
     "tilejson": {
       "type": "raster",
-      "url": "https://a.tiles.mapbox.com/v3/aj.1x1-degrees.json"
+      "url": "https://maps.gnosis.earth/ogcapi/collections/NaturalEarth:raster:HYP_HR_SR_OB_DR/map/tiles/WebMercatorQuad?f=tilejson"
     }
   },
   "layers": [
