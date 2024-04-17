@@ -18,14 +18,13 @@ jobs:
         with:
           node-version: 20
 
-      - name: Build and deploy to GitHub Pages
+      - name: Build
         run: |
           npm install
           npm run build
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          git checkout gh-pages
-          cp -R dist/examples/* .
-          git add .
-          git commit -m "Deploy to GitHub Pages"
-          git push origin gh-pages
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
