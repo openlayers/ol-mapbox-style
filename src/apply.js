@@ -319,9 +319,9 @@ export function applyStyle(
               ) {
                 layer.setMaxResolution(
                   getResolutionForZoom(
-                    tileGrid.getMinZoom(),
-                    defaultResolutions,
-                  ) + 1e-15,
+                    Math.max(0, tileGrid.getMinZoom() - 1e-12),
+                    tileGrid.getResolutions(),
+                  ),
                 );
               }
             });
@@ -1237,9 +1237,15 @@ export function finalizeLayer(
           if (minZoom > 0 || sourceMinZoom > 0) {
             layer.setMaxResolution(
               Math.min(
-                getResolutionForZoom(minZoom, defaultResolutions),
-                tileGrid.getResolution(sourceMinZoom),
-              ) + 1e-15,
+                getResolutionForZoom(
+                  Math.max(0, minZoom - 1e-12),
+                  defaultResolutions,
+                ),
+                getResolutionForZoom(
+                  Math.max(0, sourceMinZoom - 1e-12),
+                  tileGrid.getResolutions(),
+                ),
+              ),
             );
           }
           if (maxZoom < 24) {
@@ -1251,7 +1257,10 @@ export function finalizeLayer(
       } else {
         if (minZoom > 0) {
           layer.setMaxResolution(
-            getResolutionForZoom(minZoom, defaultResolutions) + 1e-15,
+            getResolutionForZoom(
+              Math.max(0, minZoom - 1e-12),
+              defaultResolutions,
+            ),
           );
         }
       }

@@ -15,6 +15,7 @@ import styleMissingSprite from './fixtures/style-missing-sprite.json';
 
 import VectorSource from 'ol/source/Vector.js';
 import {apply, applyStyle} from '../src/apply.js';
+import {defaultResolutions, getZoomForResolution} from '../src/util.js';
 import {get} from 'ol/proj.js';
 
 describe('applyStyle with source creation', function () {
@@ -353,9 +354,10 @@ describe('maxResolution', function () {
     const layer = new VectorTileLayer();
     applyStyle(layer, glStyle)
       .then(function () {
-        should(layer.getMaxResolution()).equal(
-          layer.getSource().getTileGrid().getResolution(6) - 1e-15,
-        );
+        should(
+          getZoomForResolution(layer.getMaxResolution(), defaultResolutions) +
+            1e-12,
+        ).eql(6);
         done();
       })
       .catch(function (e) {

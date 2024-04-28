@@ -2,6 +2,7 @@ import Map from 'ol/Map.js';
 import MapboxVectorLayer from '../src/MapboxVectorLayer.js';
 import View from 'ol/View.js';
 import should from 'should';
+import {defaultResolutions, getZoomForResolution} from '../src/util.js';
 import {unByKey} from 'ol/Observable.js';
 
 describe('ol/layer/MapboxVector', () => {
@@ -49,6 +50,7 @@ describe('ol/layer/MapboxVector', () => {
             'foo': {
               tiles: ['/spec/ol/data/{z}-{x}-{y}.vector.pbf'],
               type: 'vector',
+              tileSize: 256,
               minzoom: 6,
             },
           },
@@ -82,9 +84,10 @@ describe('ol/layer/MapboxVector', () => {
       source.on('change', function onchange() {
         if (source.getState() === 'ready') {
           source.un('change', onchange);
-          should(layer.getMaxResolution()).eql(
-            source.getTileGrid().getResolution(6),
-          );
+          should(
+            getZoomForResolution(layer.getMaxResolution(), defaultResolutions) +
+              1e-12,
+          ).eql(5);
           done();
         }
       });
