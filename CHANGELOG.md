@@ -1,5 +1,9 @@
 # Changelog
 
+## 12.3.2
+
+* Make minZoom inclusive by zoom instead of resolution internally
+
 ## 12.3.1
 
 * Improved docs and examples
