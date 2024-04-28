@@ -16,7 +16,7 @@ Edit `CHANGELOG.md`: Add the version you are about to release just below the `##
 Commit the changes.
 
     git add package.json package-lock.json CHANGELOG.md
-    git commit -m "Set version to 2.11.0"
+    git commit -m "Changes for 2.11.0"
 
 ### Update README when API docs changed
 
@@ -31,7 +31,11 @@ When the above results in changes to README.md, commit these changes to master:
 
 ### Merge the release branch
 
-Create a pull request and merge the release branch. This allows for any final review of upgrade notes or other parts of the changelog.
+Create a pull request
+
+    git push origin release-v2.10.0
+
+and merge the release branch. This allows for any final review of upgrade notes or other parts of the changelog.
 
 ### Publish to npm
 
@@ -39,7 +43,7 @@ Create a pull request and merge the release branch. This allows for any final re
 
 ### Commit release artifacts
 
-    git add -f dist
+    git add -f dist/*
     git commit -m "Add dist for v2.11.0"
 
 ### Create and push a tag
