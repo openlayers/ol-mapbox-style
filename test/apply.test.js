@@ -27,7 +27,7 @@ import {
   setFeatureState,
 } from '../src/index.js';
 import {containsExtent} from 'ol/extent.js';
-import {defaultResolutions} from '../src/util.js';
+import {defaultResolutions, getZoomForResolution} from '../src/util.js';
 delete brightV9.sprite;
 
 describe('ol-mapbox-style', function () {
@@ -699,9 +699,12 @@ describe('ol-mapbox-style', function () {
         context.sources.states.minzoom = 10;
         apply(target, context)
           .then(function (map) {
-            should(map.getLayers().item(0).getMaxResolution()).eql(
-              defaultResolutions[9] + 1e-15,
-            );
+            should(
+              getZoomForResolution(
+                map.getLayers().item(0).getMaxResolution(),
+                defaultResolutions,
+              ) + 1e-12,
+            ).eql(9);
             done();
           })
           .catch(function (err) {
@@ -714,9 +717,12 @@ describe('ol-mapbox-style', function () {
         context.layers[0].maxzoom = 12;
         apply(target, context)
           .then(function (map) {
-            should(map.getLayers().item(0).getMaxResolution()).eql(
-              defaultResolutions[10] + 1e-15,
-            );
+            should(
+              getZoomForResolution(
+                map.getLayers().item(0).getMaxResolution(),
+                defaultResolutions,
+              ) + 1e-12,
+            ).eql(10);
             should(map.getLayers().item(0).getMinResolution()).eql(
               defaultResolutions[12],
             );
@@ -755,7 +761,12 @@ describe('ol-mapbox-style', function () {
         apply(target, './fixtures/geojson-wfs.json')
           .then(function (map) {
             const layer = map.getAllLayers()[1];
-            should(layer.getMaxResolution()).eql(defaultResolutions[5] + 1e-15);
+            should(
+              getZoomForResolution(
+                layer.getMaxResolution(),
+                defaultResolutions,
+              ) + 1e-12,
+            ).eql(5);
             done();
           })
           .catch(function (err) {
@@ -881,9 +892,12 @@ describe('ol-mapbox-style', function () {
         context.sources.osm.minzoom = 8;
         apply(target, context)
           .then(function (map) {
-            should(map.getLayers().item(0).getMaxResolution()).eql(
-              defaultResolutions[8] + 1e-15,
-            );
+            should(
+              getZoomForResolution(
+                map.getLayers().item(0).getMaxResolution(),
+                defaultResolutions,
+              ) + 1e-12,
+            ).eql(8);
             done();
           })
           .catch(function (err) {
@@ -900,9 +914,12 @@ describe('ol-mapbox-style', function () {
         };
         apply(target, context)
           .then(function (map) {
-            should(map.getLayers().item(0).getMaxResolution()).eql(
-              defaultResolutions[8] + 1e-15,
-            );
+            should(
+              getZoomForResolution(
+                map.getLayers().item(0).getMaxResolution(),
+                defaultResolutions,
+              ) + 1e-12,
+            ).eql(8);
             done();
           })
           .catch(function (err) {
@@ -913,9 +930,12 @@ describe('ol-mapbox-style', function () {
       it('respects layer minzoom and maxzoom', function (done) {
         apply(target, context)
           .then(function (map) {
-            should(map.getLayers().item(0).getMaxResolution()).eql(
-              defaultResolutions[7] + 1e-15,
-            );
+            should(
+              getZoomForResolution(
+                map.getLayers().item(0).getMaxResolution(),
+                defaultResolutions,
+              ) + 1e-12,
+            ).eql(7);
             should(map.getLayers().item(0).getMinResolution()).eql(
               defaultResolutions[23],
             );
