@@ -7676,7 +7676,7 @@ function applyStyle(layer, glStyle, sourceOrLayersOrOptions = '', optionsOrPath 
                         }
                         const tileGrid = layer.getSource().getTileGrid();
                         if (!isFinite(layer.getMaxResolution()) && !isFinite(layer.getMinZoom()) && tileGrid.getMinZoom() > 0) {
-                            layer.setMaxResolution(getResolutionForZoom(tileGrid.getMinZoom(), defaultResolutions) + 1e-15);
+                            layer.setMaxResolution(getResolutionForZoom(Math.max(0, tileGrid.getMinZoom() - 1e-12), tileGrid.getResolutions()));
                         }
                     });
                 }
@@ -8324,7 +8324,7 @@ function finalizeLayer(layer, layerIds, glStyle, styleUrl, mapOrGroup, options =
                 if (tileGrid) {
                     const sourceMinZoom = tileGrid.getMinZoom();
                     if (minZoom > 0 || sourceMinZoom > 0) {
-                        layer.setMaxResolution(Math.min(getResolutionForZoom(minZoom, defaultResolutions), tileGrid.getResolution(sourceMinZoom)) + 1e-15);
+                        layer.setMaxResolution(Math.min(getResolutionForZoom(Math.max(0, minZoom - 1e-12), defaultResolutions), getResolutionForZoom(Math.max(0, sourceMinZoom - 1e-12), tileGrid.getResolutions())));
                     }
                     if (maxZoom < 24) {
                         layer.setMinResolution(getResolutionForZoom(maxZoom, defaultResolutions));
@@ -8332,7 +8332,7 @@ function finalizeLayer(layer, layerIds, glStyle, styleUrl, mapOrGroup, options =
                 }
             } else {
                 if (minZoom > 0) {
-                    layer.setMaxResolution(getResolutionForZoom(minZoom, defaultResolutions) + 1e-15);
+                    layer.setMaxResolution(getResolutionForZoom(Math.max(0, minZoom - 1e-12), defaultResolutions));
                 }
             }
             if (source instanceof VectorSource || source instanceof VectorTileSource) {
