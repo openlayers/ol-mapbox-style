@@ -529,7 +529,7 @@ function sourceOptionsFromTileJSON(glSource, tileJSON, options) {
   const projectionExtent = projection.getExtent();
   const minZoom = tileJSONDoc.minzoom || 0;
   const maxZoom = tileJSONDoc.maxzoom || 22;
-  /** @type {import("ol/source/VectorTile.js").Options} */
+  /** @type {import("ol/source/VectorTile.js").Options<import("ol/render/Feature.js").default>} */
   const sourceOptions = {
     attributions: tileJSONSource.getAttributions(),
     projection: projection,
