@@ -1,5 +1,9 @@
 # Changelog
 
+## 12.3.3
+
+* Type updates for OpenLayers 9.2.x
+
 ## 12.3.2
 
 * Make minZoom inclusive by zoom instead of resolution internally
