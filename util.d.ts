@@ -85,6 +85,6 @@ export type Map = import("ol").Map;
 export type Layer = import("ol/layer").Layer;
 export type LayerGroup = import("ol/layer").Group;
 export type VectorLayer = import("ol/layer").Vector<any>;
-export type VectorTileLayer = import("ol/layer").VectorTile;
+export type VectorTileLayer = import("ol/layer").VectorTile<any>;
 export type Source = import("ol/source").Source;
 export type Options = import("./apply.js").Options;

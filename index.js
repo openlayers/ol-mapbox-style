@@ -7838,7 +7838,7 @@ function sourceOptionsFromTileJSON(glSource, tileJSON, options) {
     const projectionExtent = projection.getExtent();
     const minZoom = tileJSONDoc.minzoom || 0;
     const maxZoom = tileJSONDoc.maxzoom || 22;
-    /** @type {import("ol/source/VectorTile.js").Options} */
+    /** @type {import("ol/source/VectorTile.js").Options<import("ol/render/Feature.js").default>} */
     const sourceOptions = {
         attributions: tileJSONSource.getAttributions(),
         projection: projection,
@@ -8745,7 +8745,7 @@ class ErrorEvent extends BaseEvent {
  * [ol-mapbox-style](https://github.com/openlayers/ol-mapbox-style) library to be loaded as well.
  *
  * @param {Options} options Options.
- * @extends {VectorTileLayer}
+ * @extends {VectorTileLayer<import("ol/render/Feature.js").default>}
  * @fires module:ol/events/Event~BaseEvent#event:error
  * @api
  */
@@ -8762,7 +8762,7 @@ class MapboxVectorLayer extends VectorTileLayer {
         });
         super({
             source: source,
-            background: options.background,
+            background: options.background === false ? null : options.background,
             declutter: declutter,
             className: options.className,
             opacity: options.opacity,

@@ -46,7 +46,7 @@
  * @return {Promise} Promise which will be resolved when the style can be used
  * for rendering.
  */
-export function applyStyle(layer: VectorTileLayer | VectorLayer<any>, glStyle: string | any, sourceOrLayersOrOptions?: string | string[] | (Options & ApplyStyleOptions) | undefined, optionsOrPath?: string | (Options & ApplyStyleOptions) | undefined, resolutions?: number[] | undefined): Promise<any>;
+export function applyStyle(layer: VectorTileLayer<any> | VectorLayer<any>, glStyle: string | any, sourceOrLayersOrOptions?: string | string[] | (Options & ApplyStyleOptions) | undefined, optionsOrPath?: string | (Options & ApplyStyleOptions) | undefined, resolutions?: number[] | undefined): Promise<any>;
 /**
  * Applies properties of the Mapbox Style's first `background` layer to the
  * provided map or layer (group).
@@ -215,7 +215,7 @@ export function getSource(map: Map | LayerGroup, sourceId: string): Source;
  * @param {FeatureIdentifier} feature Feature identifier.
  * @param {Object|null} state Feature state. Set to `null` to remove the feature state.
  */
-export function setFeatureState(mapOrLayer: Map | VectorLayer<any> | VectorTileLayer, feature: FeatureIdentifier, state: any | null): void;
+export function setFeatureState(mapOrLayer: Map | VectorLayer<any> | VectorTileLayer<any>, feature: FeatureIdentifier, state: any | null): void;
 /**
  * Sets or removes a feature state. The feature state is taken into account for styling,
  * just like the feature's properties, and can be used e.g. to conditionally render selected
@@ -225,7 +225,7 @@ export function setFeatureState(mapOrLayer: Map | VectorLayer<any> | VectorTileL
  * @return {Object|null} Feature state or `null` when no feature state is set for the given
  * feature identifier.
  */
-export function getFeatureState(mapOrLayer: Map | VectorLayer<any> | VectorTileLayer, feature: FeatureIdentifier): any | null;
+export function getFeatureState(mapOrLayer: Map | VectorLayer<any> | VectorTileLayer<any>, feature: FeatureIdentifier): any | null;
 export type FeatureIdentifier = {
     /**
      * The feature id.
@@ -278,7 +278,7 @@ export type Options = {
      * loaded. The layer can be used to call layer.changed() when the loading and processing of the image has finished.
      * This function be used for icons not in the sprite or to override sprite icons.
      */
-    getImage?: ((arg0: VectorLayer<any> | VectorTileLayer, arg1: string) => HTMLImageElement | HTMLCanvasElement | string | undefined) | undefined;
+    getImage?: ((arg0: VectorLayer<any> | VectorTileLayer<any>, arg1: string) => HTMLImageElement | HTMLCanvasElement | string | undefined) | undefined;
     /**
      * Access token param. For internal use.
      */
