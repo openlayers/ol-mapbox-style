@@ -1,0 +1,61 @@
+{
+  "version": 8,
+  "name": "states",
+  "center": [-122.19952899999998, 51.920367528011525],
+  "zoom": 3,
+  "glyphs": "{fontstack}/{range}",
+  "sources": {
+    "states": {
+      "type": "geojson",
+      "data": "./states.geojson"
+    },
+    "osm": {
+      "type": "raster",
+      "attribution": "&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors.",
+      "tileSize": 256,
+      "tiles": [
+        "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "https://b.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      ]
+    },
+    "spatial-org-osm": {
+      "type": "vector",
+      "url": "https://tegola-osm-demo.go-spatial.org/v1/capabilities/osm.json"
+    }    
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "rgba(255,255,0,0.2)"
+      }
+    },
+    {
+      "id": "osm",
+      "type": "raster",
+      "source": "osm"
+    },
+    {
+      "id": "land",
+      "type": "fill",
+      "source": "spatial-org-osm",
+      "source-layer": "land",
+      "minzoom": 0,
+      "maxzoom": 24,
+      "paint": {
+        "fill-color": "rgba(247, 246, 241, 0.6)"
+      }
+    },
+    {
+      "id": "states",
+      "type": "fill",
+      "source": "states",
+      "paint": {
+        "fill-color": "#A6CEE3",
+        "fill-opacity": 0.4
+      }
+    }
+  ]
+}
