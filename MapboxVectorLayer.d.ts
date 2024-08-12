@@ -108,11 +108,11 @@
  * [ol-mapbox-style](https://github.com/openlayers/ol-mapbox-style) library to be loaded as well.
  *
  * @param {Options} options Options.
- * @extends {VectorTileLayer<import("ol/render/Feature.js").default>}
+ * @extends {VectorTileLayer<import("ol/source/VectorTile.js").default>}
  * @fires module:ol/events/Event~BaseEvent#event:error
  * @api
  */
-export default class MapboxVectorLayer extends VectorTileLayer<import("ol/render/Feature.js").default> {
+export default class MapboxVectorLayer extends VectorTileLayer<VectorTileSource<import("ol/render/Feature.js").default>, import("ol/render/Feature.js").default> {
     /**
      * @param {Options} options Layer options.  At a minimum, `styleUrl` and `accessToken`
      * must be provided.
@@ -271,4 +271,5 @@ export type Options = {
         [x: string]: any;
     } | undefined;
 };
+import VectorTileSource from 'ol/source/VectorTile.js';
 import VectorTileLayer from 'ol/layer/VectorTile.js';

@@ -349,5 +349,9 @@
   cursor: move;
 }
 
+.ol-overviewmap .ol-viewport:hover {
+  cursor: pointer;
+}
+
 
 /*# sourceMappingURL=tilejson.css.map*/

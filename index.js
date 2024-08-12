@@ -8745,7 +8745,7 @@ class ErrorEvent extends BaseEvent {
  * [ol-mapbox-style](https://github.com/openlayers/ol-mapbox-style) library to be loaded as well.
  *
  * @param {Options} options Options.
- * @extends {VectorTileLayer<import("ol/render/Feature.js").default>}
+ * @extends {VectorTileLayer<import("ol/source/VectorTile.js").default>}
  * @fires module:ol/events/Event~BaseEvent#event:error
  * @api
  */
