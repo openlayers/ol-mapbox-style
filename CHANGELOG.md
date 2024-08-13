@@ -1,5 +1,13 @@
 # Changelog
 
+## 12.3.5
+
+* Adjust `MapboxVectorLayer` type generics for OpenLayers v10
+
+## 12.3.4
+
+* Remove polyfill.io from examples, no code changes
+
 ## 12.3.3
 
 * Type updates for OpenLayers 9.2.x
