@@ -1388,19 +1388,6 @@ export function stylefunction(
               : wrapText(label, font, maxTextWidth, letterSpacing);
           text.setText(wrappedLabel);
           text.setFont(font);
-          text.setRotation(
-            deg2rad(
-              getValue(
-                layer,
-                'layout',
-                'text-rotate',
-                zoom,
-                f,
-                functionCache,
-                featureState,
-              ),
-            ),
-          );
           const textAnchor = getValue(
             layer,
             'layout',
@@ -1441,6 +1428,66 @@ export function stylefunction(
             );
             text.setRepeat(symbolSpacing * 2);
           }
+          
+          const textKeepUpright = getValue(
+            layer,
+            'layout',
+            'text-keep-upright',
+            zoom,
+            f,
+            functionCache,
+            featureState,
+          );
+
+          placementAngle = 0;
+          if ( textKeepUpright === false ) {
+            text.setPlacement('point');
+
+            const geom = /** @type {*} */ (feature.getGeometry());
+            const stride = geom.getStride();
+            const coordinates = geom.getFlatCoordinates();
+            const midpoint =
+              geom.getType() === 'MultiLineString'
+                ? geom.getFlatMidpoints()
+                : geom.getFlatMidpoint();
+            for (
+              let i = 0, ii = coordinates.length - stride;
+              i < ii;
+              i += stride
+            ) {
+              const x1 = coordinates[i];
+              const y1 = coordinates[i + 1];
+              const x2 = coordinates[i + stride];
+              const y2 = coordinates[i + stride + 1];
+              const minX = Math.min(x1, x2);
+              const maxX = Math.max(x1, x2);
+              const xM = midpoint[0];
+              const yM = midpoint[1];
+              if (
+                Math.abs((y2-y1)*(xM-x1) - (x2-x1)*(yM-y1))<0.001 //midpoint is aligned with the segment
+                && xM<=maxX && xM>=minX
+              ) {
+                placementAngle = Math.atan2(y1 - y2, x2 - x1);
+                break;
+              }
+            }
+          }
+        
+          text.setRotation(
+            placementAngle+
+            deg2rad(
+              getValue(
+                layer,
+                'layout',
+                'text-rotate',
+                zoom,
+                f,
+                functionCache,
+                featureState,
+              ),
+            ),
+          );
+
           text.setOverflow(placement === 'point');
           let textHaloWidth = getValue(
             layer,
