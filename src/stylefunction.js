@@ -835,11 +835,11 @@ export function stylefunction(
                         const minY = Math.min(y1, y2);
                         const maxX = Math.max(x1, x2);
                         const maxY = Math.max(y1, y2);
+                        const xM = midpoint[0];
+                        const yM = midpoint[1];
                         if (
-                          midpoint[0] >= minX &&
-                          midpoint[0] <= maxX &&
-                          midpoint[1] >= minY &&
-                          midpoint[1] <= maxY
+                          Math.abs((y2-y1)*(xM-x1) - (x2-x1)*(yM-y1))<0.001 //midpoint is aligned with the segment
+                          && xM<=maxX && xM>=minX
                         ) {
                           placementAngle = Math.atan2(y1 - y2, x2 - x1);
                           break;
