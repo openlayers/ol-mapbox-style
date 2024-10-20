@@ -6947,10 +6947,13 @@ function stylefunction(olLayer, glStyle, sourceOrLayers, resolutions = defaultRe
                                                 const x2 = coordinates[i + stride];
                                                 const y2 = coordinates[i + stride + 1];
                                                 const minX = Math.min(x1, x2);
-                                                const minY = Math.min(y1, y2);
                                                 const maxX = Math.max(x1, x2);
-                                                const maxY = Math.max(y1, y2);
-                                                if (midpoint[0] >= minX && midpoint[0] <= maxX && midpoint[1] >= minY && midpoint[1] <= maxY) {
+                                                const xM = midpoint[0];
+                                                const yM = midpoint[1];
+                                                const dotProduct = (y2 - y1) * (xM - x1) - (x2 - x1) * (yM - y1);
+                                                if (Math.abs(dotProduct) < 0.001 && //midpoint is aligned with the segment
+                                                    xM <= maxX && xM >= minX    //midpoint is on the segment and not outside it
+) {
                                                     placementAngle = Math.atan2(y1 - y2, x2 - x1);
                                                     break;
                                                 }
