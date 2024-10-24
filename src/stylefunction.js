@@ -1402,16 +1402,18 @@ export function stylefunction(
               ),
             ),
           );
-          const keepUpright = getValue(
-            layer,
-            'layout',
-            'text-keep-upright',
-            zoom,
-            f,
-            functionCache,
-            featureState,
-          );
-          text.setKeepUpright(keepUpright);
+          if (typeof text.setKeepUpright === 'function') {
+            const keepUpright = getValue(
+              layer,
+              'layout',
+              'text-keep-upright',
+              zoom,
+              f,
+              functionCache,
+              featureState,
+            );
+            text.setKeepUpright(keepUpright);
+          }
           const textAnchor = getValue(
             layer,
             'layout',
