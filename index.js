@@ -7214,6 +7214,10 @@ function stylefunction(olLayer, glStyle, sourceOrLayers, resolutions = defaultRe
                     text.setText(wrappedLabel);
                     text.setFont(font);
                     text.setRotation(deg2rad(getValue(layer, 'layout', 'text-rotate', zoom, f, functionCache, featureState)));
+                    if (typeof text.setKeepUpright === 'function') {
+                        const keepUpright = getValue(layer, 'layout', 'text-keep-upright', zoom, f, functionCache, featureState);
+                        text.setKeepUpright(keepUpright);
+                    }
                     const textAnchor = getValue(layer, 'layout', 'text-anchor', zoom, f, functionCache, featureState);
                     const placement = hasImage || type == 1 ? 'point' : getValue(layer, 'layout', 'symbol-placement', zoom, f, functionCache, featureState);
                     let textAlign;
