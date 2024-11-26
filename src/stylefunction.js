@@ -1295,7 +1295,7 @@ export function stylefunction(
                 }
                 if (type == 2) {
                   acc.push(applyLetterSpacing(text, letterSpacing), chunkFont);
-                  return;
+                  return acc;
                 }
                 text = wrapText(
                   text,
