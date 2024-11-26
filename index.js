@@ -7158,7 +7158,7 @@ function stylefunction(olLayer, glStyle, sourceOrLayers, resolutions = defaultRe
                                 }
                                 if (type == 2) {
                                     acc.push(applyLetterSpacing(text, letterSpacing), chunkFont);
-                                    return;
+                                    return acc;
                                 }
                                 text = wrapText(text, chunkFont, maxTextWidth, letterSpacing).split('\n');
                                 for (let i = 0, ii = text.length; i < ii; ++i) {
