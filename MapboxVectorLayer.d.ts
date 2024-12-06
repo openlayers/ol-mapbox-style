@@ -1,14 +1,14 @@
 /**
  * @typedef {Object} Options
- * @property {string} styleUrl The URL of the Mapbox style object to use for this layer.  For a
+ * @property {string} styleUrl The URL of the Mapbox/MapLibre Style object to use for this layer.  For a
  * style created with Mapbox Studio and hosted on Mapbox, this will look like
  * 'mapbox://styles/you/your-style'.
- * @property {string} [accessToken] The access token for your Mapbox style. This has to be provided
+ * @property {string} [accessToken] The access token for your Mapbox/MapLibre style. This has to be provided
  * for `mapbox://` style urls. For `https://` and other urls, any access key must be the last query
  * parameter of the style url.
  * @property {string} [source] If your style uses more than one source, you need to use either the
  * `source` property or the `layers` property to limit rendering to a single vector source.  The
- * `source` property corresponds to the id of a vector source in your Mapbox style.
+ * `source` property corresponds to the id of a vector source in your Mapbox/MapLibre style.
  * @property {Array<string>} [layers] Limit rendering to the list of included layers.  All layers
  * must share the same vector source.  If your style uses more than one source, you need to use
  * either the `source` property or the `layers` property to limit rendering to a single vector
@@ -24,8 +24,8 @@
  * behavior and place declutterd features with their own layer configure the layer with a `className`
  * other than `ol-layer`.
  * @property {import("ol/layer/Base.js").BackgroundColor|false} [background] Background color for the layer.
- * If not specified, the background from the Mapbox style object will be used. Set to `false` to prevent
- * the Mapbox style's background from being used.
+ * If not specified, the background from the Mapbox/MapLibre Style object will be used. Set to `false` to prevent
+ * the Mapbox/MapLibre style's background from being used.
  * @property {string} [className='ol-layer'] A CSS class name to set to the layer element.
  * @property {number} [opacity=1] Opacity (0, 1).
  * @property {boolean} [visible=true] Visibility.
@@ -80,7 +80,7 @@
  * ```js
  * import {MapboxVectorLayer} from 'ol-mapbox-style';
  * ```
- * A vector tile layer based on a Mapbox style that uses a single vector source.  Configure
+ * A vector tile layer based on a Mapbox/MapLibre style that uses a single vector source.  Configure
  * the layer with the `styleUrl` and `accessToken` shown in Mapbox Studio's share panel.
  * If the style uses more than one source, use the `source` property to choose a single
  * vector source.  If you want to render a subset of the layers in the style, use the `layers`
@@ -123,13 +123,13 @@ export default class MapboxVectorLayer extends VectorTileLayer<VectorTileSource<
 export type Map = import("ol/Map.js").default;
 export type Options = {
     /**
-     * The URL of the Mapbox style object to use for this layer.  For a
+     * The URL of the Mapbox/MapLibre Style object to use for this layer.  For a
      * style created with Mapbox Studio and hosted on Mapbox, this will look like
      * 'mapbox://styles/you/your-style'.
      */
     styleUrl: string;
     /**
-     * The access token for your Mapbox style. This has to be provided
+     * The access token for your Mapbox/MapLibre style. This has to be provided
      * for `mapbox://` style urls. For `https://` and other urls, any access key must be the last query
      * parameter of the style url.
      */
@@ -137,7 +137,7 @@ export type Options = {
     /**
      * If your style uses more than one source, you need to use either the
      * `source` property or the `layers` property to limit rendering to a single vector source.  The
-     * `source` property corresponds to the id of a vector source in your Mapbox style.
+     * `source` property corresponds to the id of a vector source in your Mapbox/MapLibre style.
      */
     source?: string | undefined;
     /**
@@ -162,8 +162,8 @@ export type Options = {
     declutter?: boolean | undefined;
     /**
      * Background color for the layer.
-     * If not specified, the background from the Mapbox style object will be used. Set to `false` to prevent
-     * the Mapbox style's background from being used.
+     * If not specified, the background from the Mapbox/MapLibre Style object will be used. Set to `false` to prevent
+     * the Mapbox/MapLibre style's background from being used.
      */
     background?: false | import("ol/layer/Base.js").BackgroundColor | undefined;
     /**

@@ -19,11 +19,11 @@
  *
  * Two additional properties will be set on the provided layer:
  *
- *  * `mapbox-source`: The `id` of the Mapbox Style document's source that the
+ *  * `mapbox-source`: The `id` of the Mapbox/MapLibre Style document's source that the
  *    OpenLayers layer was created from. Usually `apply()` creates one
- *    OpenLayers layer per Mapbox Style source, unless the layer stack has
+ *    OpenLayers layer per Mapbox/MapLibre Style source, unless the layer stack has
  *    layers from different sources in between.
- *  * `mapbox-layers`: The `id`s of the Mapbox Style document's layers that are
+ *  * `mapbox-layers`: The `id`s of the Mapbox/MapLibre Style document's layers that are
  *    included in the OpenLayers layer.
  *
  * @param {VectorTileLayer|VectorLayer} layer OpenLayers layer. When the layer has a source configured,
@@ -32,9 +32,9 @@
  * `tileUrlFunction`. When the source projection is the default (`EPSG:3857`), the `tileGrid` will
  * also be overridden. If you'd rather not have ol-mapbox-style modify the source, configure `applyStyle()`
  * with the `updateSource: false` option.
- * @param {string|Object} glStyle Mapbox Style object.
+ * @param {string|Object} glStyle Mapbox/MapLibre Style object.
  * @param {string|Array<string>|Options&ApplyStyleOptions} [sourceOrLayersOrOptions] Options or
- * `source` key or an array of layer `id`s from the Mapbox Style object. When a `source` key is
+ * `source` key or an array of layer `id`s from the Mapbox/MapLibre Style object. When a `source` key is
  * provided, all layers for the specified source will be included in the style function. When layer
  * `id`s are provided, they must be from layers that use the same source. When not provided or a falsey
  * value, all layers using the first source specified in the glStyle will be rendered.
@@ -48,7 +48,7 @@
  */
 export function applyStyle(layer: VectorTileLayer | VectorLayer, glStyle: string | any, sourceOrLayersOrOptions?: string | string[] | (Options & ApplyStyleOptions) | undefined, optionsOrPath?: string | (Options & ApplyStyleOptions) | undefined, resolutions?: number[] | undefined): Promise<any>;
 /**
- * Applies properties of the Mapbox Style's first `background` layer to the
+ * Applies properties of the Mapbox/MapLibre Style's first `background` layer to the
  * provided map or layer (group).
  *
  * **Example:**
@@ -60,14 +60,14 @@ export function applyStyle(layer: VectorTileLayer | VectorLayer, glStyle: string
  * applyBackground(map, 'https://api.maptiler.com/maps/basic/style.json?key=YOUR_OPENMAPTILES_TOKEN');
  * ```
  * @param {Map|import("ol/layer/Base.js").default} mapOrLayer OpenLayers Map or layer (group).
- * @param {Object|string} glStyle Mapbox Style object or url.
+ * @param {Object|string} glStyle Mapbox/MapLibre Style object or url.
  * @param {Options} options Options.
  * @return {Promise} Promise that resolves when the background is applied.
  */
 export function applyBackground(mapOrLayer: Map | import("ol/layer/Base.js").default, glStyle: any | string, options?: Options): Promise<any>;
 /**
  * Creates an OpenLayers VectorTile source for a gl source entry.
- * @param {Object} glSource "source" entry from a Mapbox Style object.
+ * @param {Object} glSource "source" entry from a Mapbox/MapLibre Style object.
  * @param {string|undefined} styleUrl URL to use for the source. This is expected to be the complete http(s) url,
  * with access key applied.
  * @param {Options} options Options.
@@ -77,7 +77,7 @@ export function applyBackground(mapOrLayer: Map | import("ol/layer/Base.js").def
 export function setupVectorSource(glSource: any, styleUrl: string | undefined, options: Options): Promise<import("ol/source/VectorTile").default>;
 export function setupLayer(glStyle: any, styleUrl: any, glLayer: any, options: any): Layer<Source, import("ol/renderer/Layer.js").default<any>> | undefined;
 /**
- * Loads and applies a Mapbox Style object into an OpenLayers Map or LayerGroup.
+ * Loads and applies a Mapbox/MapLibre Style object into an OpenLayers Map or LayerGroup.
  * This includes the map background, the layers, and for Map instances that did not
  * have a View defined yet also the center and the zoom.
  *
@@ -88,7 +88,7 @@ export function setupLayer(glStyle: any, styleUrl: any, glLayer: any, options: a
  * apply('map', 'mapbox://styles/mapbox/bright-v9', {accessToken: 'YOUR_MAPBOX_TOKEN'});
  * ```
  *
- * The center and zoom will only be set if present in the Mapbox Style document,
+ * The center and zoom will only be set if present in the Mapbox/MapLibre Style document,
  * and if not already set on the OpenLayers map.
  *
  * Layers will be added to the OpenLayers map, without affecting any layers that
@@ -96,28 +96,28 @@ export function setupLayer(glStyle: any, styleUrl: any, glLayer: any, options: a
  *
  * Layers added by `apply()` will have two additional properties:
  *
- *  * `mapbox-source`: The `id` of the Mapbox Style document's source that the
+ *  * `mapbox-source`: The `id` of the Mapbox/MapLibre Style document's source that the
  *    OpenLayers layer was created from. Usually `apply()` creates one
- *    OpenLayers layer per Mapbox Style source, unless the layer stack has
+ *    OpenLayers layer per Mapbox/MapLibre Style source, unless the layer stack has
  *    layers from different sources in between.
- *  * `mapbox-layers`: The `id`s of the Mapbox Style document's layers that are
+ *  * `mapbox-layers`: The `id`s of the Mapbox/MapLibre Style document's layers that are
  *    included in the OpenLayers layer.
  *
  * This function sets an additional `mapbox-style` property on the OpenLayers
- * Map or LayerGroup instance, which holds the Mapbox Style object.
+ * Map or LayerGroup instance, which holds the Mapbox/MapLibre Style object.
  *
  * @param {Map|HTMLElement|string|LayerGroup} mapOrGroupOrElement Either an existing
  * OpenLayers Map instance, or a HTML element, or the id of a HTML element that will be
  * the target of a new OpenLayers Map, or a layer group. If layer group, styles
  * releated to the map and view will be ignored.
  * @param {string|Object} style JSON style object or style url pointing to a
- * Mapbox Style object. When using Mapbox APIs, the url is the `styleUrl`
+ * Mapbox/MapLibre Style object. When using Mapbox APIs, the url is the `styleUrl`
  * shown in Mapbox Studio's "share" panel. In addition, the `accessToken` option
  * (see below) must be set.
  * When passed as JSON style object, all OpenLayers layers created by `apply()`
  * will be immediately available, but they may not have a source yet (i.e. when
- * they are defined by a TileJSON url in the Mapbox Style document). When passed
- * as style url, layers will be added to the map when the Mapbox Style document
+ * they are defined by a TileJSON url in the Mapbox/MapLibre Style document). When passed
+ * as style url, layers will be added to the map when the Mapbox/MapLibre Style document
  * is loaded and parsed.
  * @param {Options} options Options.
  * @return {Promise<Map|LayerGroup>} A promise that resolves after all layers have been added to
@@ -181,25 +181,25 @@ export function updateMapboxSource(mapOrGroup: Map | LayerGroup, id: string, map
  */
 export function removeMapboxLayer(mapOrGroup: Map | LayerGroup, mapboxLayerIdOrLayer: string | any): void;
 /**
- * Get the OpenLayers layer instance that contains the provided Mapbox Style
- * `layer`. Note that multiple Mapbox Style layers are combined in a single
- * OpenLayers layer instance when they use the same Mapbox Style `source`.
+ * Get the OpenLayers layer instance that contains the provided Mapbox/MapLibre Style
+ * `layer`. Note that multiple Mapbox/MapLibre Style layers are combined in a single
+ * OpenLayers layer instance when they use the same Mapbox/MapLibre Style `source`.
  * @param {Map|LayerGroup} map OpenLayers Map or LayerGroup.
- * @param {string} layerId Mapbox Style layer id.
+ * @param {string} layerId Mapbox/MapLibre Style layer id.
  * @return {Layer} OpenLayers layer instance.
  */
 export function getLayer(map: Map | LayerGroup, layerId: string): Layer;
 /**
- * Get the OpenLayers layer instances for the provided Mapbox Style `source`.
+ * Get the OpenLayers layer instances for the provided Mapbox/MapLibre Style `source`.
  * @param {Map|LayerGroup} map OpenLayers Map or LayerGroup.
- * @param {string} sourceId Mapbox Style source id.
+ * @param {string} sourceId Mapbox/MapLibre Style source id.
  * @return {Array<Layer>} OpenLayers layer instances.
  */
 export function getLayers(map: Map | LayerGroup, sourceId: string): Array<Layer>;
 /**
- * Get the OpenLayers source instance for the provided Mapbox Style `source`.
+ * Get the OpenLayers source instance for the provided Mapbox/MapLibre Style `source`.
  * @param {Map|LayerGroup} map OpenLayers Map or LayerGroup.
- * @param {string} sourceId Mapbox Style source id.
+ * @param {string} sourceId Mapbox/MapLibre Style source id.
  * @return {Source} OpenLayers source instance.
  */
 export function getSource(map: Map | LayerGroup, sourceId: string): Source;
@@ -259,7 +259,7 @@ export type Options = {
     projection?: string | undefined;
     /**
      * Only useful when working with non-standard projections.
-     * Resolutions for mapping resolution to the `zoom` used in the Mapbox style.
+     * Resolutions for mapping resolution to the `zoom` used in the Mapbox/MapLibre style.
      */
     resolutions?: number[] | undefined;
     /**

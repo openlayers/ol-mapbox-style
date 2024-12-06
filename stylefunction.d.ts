@@ -20,7 +20,7 @@ export function getValue(layer: any, layoutOrPaint: string, property: string, zo
  */
 export function renderTransparent(enabled: boolean): void;
 /**
- * Turns recording of the Mapbox Style's `layer` on and off. When turned on,
+ * Turns recording of the Mapbox/MapLibre Style's `layer` on and off. When turned on,
  * the layer that a rendered feature belongs to will be set as the feature's
  * `mapbox-layer` property.
  * @param {boolean} record Recording of the style layer is on.
@@ -33,11 +33,11 @@ export function recordStyleLayer(record?: boolean): void;
  *
  * Two additional properties will be set on the provided layer:
  *
- *  * `mapbox-source`: The `id` of the Mapbox Style document's source that the
+ *  * `mapbox-source`: The `id` of the Mapbox/MapLibre Style document's source that the
  *    OpenLayers layer was created from. Usually `apply()` creates one
- *    OpenLayers layer per Mapbox Style source, unless the layer stack has
+ *    OpenLayers layer per Mapbox/MapLibre Style source, unless the layer stack has
  *    layers from different sources in between.
- *  * `mapbox-layers`: The `id`s of the Mapbox Style document's layers that are
+ *  * `mapbox-layers`: The `id`s of the Mapbox/MapLibre Style document's layers that are
  *    included in the OpenLayers layer.
  *
  * This function also works in a web worker. In worker mode, the main thread needs
@@ -68,23 +68,23 @@ export function recordStyleLayer(record?: boolean): void;
  * properties: `mapbox-source` will be the `id` of the `glStyle`'s source used
  * for the layer, and `mapbox-layers` will be an array of the `id`s of the
  * `glStyle`'s layers.
- * @param {string|Object} glStyle Mapbox Style object.
+ * @param {string|Object} glStyle Mapbox/MapLibre Style object.
  * @param {string|Array<string>} sourceOrLayers `source` key or an array of layer `id`s
- * from the Mapbox Style object. When a `source` key is provided, all layers for
+ * from the Mapbox/MapLibre Style object. When a `source` key is provided, all layers for
  * the specified source will be included in the style function. When layer `id`s
  * are provided, they must be from layers that use the same source.
  * @param {Array<number>} resolutions
  * Resolutions for mapping resolution to zoom level.
  * @param {Object} spriteData Sprite data from the url specified in
- * the Mapbox Style object's `sprite` property. Only required if a `sprite`
- * property is specified in the Mapbox Style object.
+ * the Mapbox/MapLibre Style object's `sprite` property. Only required if a `sprite`
+ * property is specified in the Mapbox/MapLibre Style object.
  * @param {string|Request|Promise<string|Request>} spriteImageUrl Sprite image url for the sprite
- * specified in the Mapbox Style object's `sprite` property. Only required if a
- * `sprite` property is specified in the Mapbox Style object.
+ * specified in the Mapbox/MapLibre Style object's `sprite` property. Only required if a
+ * `sprite` property is specified in the Mapbox/MapLibre Style object.
  * @param {function(Array<string>, string=):Array<string>} getFonts Function that
  * receives a font stack and the url template from the GL style's `metadata['ol:webfonts']`
  * property (if set) as arguments, and returns a (modified) font stack that
- * is available. Font names are the names used in the Mapbox Style object. If
+ * is available. Font names are the names used in the Mapbox/MapLibre Style object. If
  * not provided, the font stack will be used as-is. This function can also be
  * used for loading web fonts.
  * @param {function(VectorLayer|VectorTileLayer, string):HTMLImageElement|HTMLCanvasElement|string|undefined} [getImage=undefined]
