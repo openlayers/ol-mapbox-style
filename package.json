@@ -85,7 +85,7 @@
     "should": "^13.2.3",
     "sinon": "^18.0.0",
     "style-loader": "^4.0.0",
-    "typedoc": "^0.27.3",
+    "typedoc": "^0.25.13",
     "typedoc-plugin-markdown": "^4.0.3",
     "typedoc-plugin-missing-exports": "^2.2.0",
     "typescript": "^5.4.3",
