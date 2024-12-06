@@ -23,6 +23,7 @@
   "keywords": [
     "openlayers",
     "mapbox",
+    "maplibre",
     "vector tiles"
   ],
   "license": "BSD-2-Clause",

@@ -1,6 +1,6 @@
 # ol-mapbox-style
 
-Create [OpenLayers](https://openlayers.org/) maps from [Mapbox Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/) objects.
+Create [OpenLayers](https://openlayers.org/) maps from [Mapbox Style](https://docs.mapbox.com/mapbox-gl-js/style-spec/) or [MapLibre Style](https://maplibre.org/maplibre-style-spec/) objects.
 
 ## Getting started
 
@@ -40,7 +40,7 @@ const layer = new VectorTileLayer({declutter: true});
 applyStyle(layer, 'mapbox://styles/mapbox/bright-v9', {accessToken: 'YOUR_MAPBOX_TOKEN'});
 ```
 
-To apply the properties of the Mapbox Style's `background` layer to the map or a `VectorTile` layer, use the `applyBackground()` function.
+To apply the properties of the Mapbox/MapLibre Style's `background` layer to the map or a `VectorTile` layer, use the `applyBackground()` function.
 
 There is also a low-level API available. To create a style function for individual OpenLayers vector or vector tile layers, use the `stylefunction` module:
 
@@ -70,7 +70,7 @@ Note that this low-level API does not create a source for the layer, and extra w
 
 ### Font handling
 
-`ol-mapbox-style` cannot use PBF/SDF glyphs for `text-font` layout property, as defined in the Mapbox Style specification. Instead, it relies on web fonts. A `ol:webfonts` metadata property can be set on the root of the Style object to specify a location for webfonts, e.g.
+`ol-mapbox-style` cannot use PBF/SDF glyphs for `text-font` layout property, as defined in the Mapbox/MapLibre Style specification. Instead, it relies on web fonts. A `ol:webfonts` metadata property can be set on the root of the Style object to specify a location for webfonts, e.g.
 
 ```js
 {
@@ -210,7 +210,7 @@ The source id.
 
 > **accessToken**: `string`
 
-The access token for your Mapbox style. This has to be provided
+The access token for your Mapbox/MapLibre style. This has to be provided
 for `mapbox://` style urls. For `https://` and other urls, any access key must be the last query
 parameter of the style url.
 
@@ -221,8 +221,8 @@ parameter of the style url.
 > **background**: `false` \| `BackgroundColor`
 
 Background color for the layer.
-If not specified, the background from the Mapbox style object will be used. Set to `false` to prevent
-the Mapbox style's background from being used.
+If not specified, the background from the Mapbox/MapLibre Style object will be used. Set to `false` to prevent
+the Mapbox/MapLibre style's background from being used.
 
 * * *
 
@@ -388,7 +388,7 @@ features before rendering. By default features are drawn in the order that they 
 
 If your style uses more than one source, you need to use either the
 `source` property or the `layers` property to limit rendering to a single vector source.  The
-`source` property corresponds to the id of a vector source in your Mapbox style.
+`source` property corresponds to the id of a vector source in your Mapbox/MapLibre style.
 
 * * *
 
@@ -396,7 +396,7 @@ If your style uses more than one source, you need to use either the
 
 > **styleUrl**: `string`
 
-The URL of the Mapbox style object to use for this layer.  For a
+The URL of the Mapbox/MapLibre Style object to use for this layer.  For a
 style created with Mapbox Studio and hosted on Mapbox, this will look like
 'mapbox://styles/you/your-style'.
 
@@ -511,7 +511,7 @@ set to `EPSG:4326`, the bbox placeholder will be `{bbox-epsg-4326}`.
 > **resolutions**: `number`\[]
 
 Only useful when working with non-standard projections.
-Resolutions for mapping resolution to the `zoom` used in the Mapbox style.
+Resolutions for mapping resolution to the `zoom` used in the Mapbox/MapLibre style.
 
 * * *
 
@@ -621,7 +621,7 @@ Renames and re-exports [apply](#functionsapplymd)
 import {MapboxVectorLayer} from 'ol-mapbox-style';
 ```
 
-A vector tile layer based on a Mapbox style that uses a single vector source.  Configure
+A vector tile layer based on a Mapbox/MapLibre style that uses a single vector source.  Configure
 the layer with the `styleUrl` and `accessToken` shown in Mapbox Studio's share panel.
 If the style uses more than one source, use the `source` property to choose a single
 vector source.  If you want to render a subset of the layers in the style, use the `layers`
@@ -731,7 +731,7 @@ Resolves when the added layer is available.
 
 > **apply**(`mapOrGroupOrElement`, `style`, `options`): `Promise`\\&lt;`Map` \| `LayerGroup`>
 
-Loads and applies a Mapbox Style object into an OpenLayers Map or LayerGroup.
+Loads and applies a Mapbox/MapLibre Style object into an OpenLayers Map or LayerGroup.
 This includes the map background, the layers, and for Map instances that did not
 have a View defined yet also the center and the zoom.
 
@@ -743,7 +743,7 @@ import apply from 'ol-mapbox-style';
 apply('map', 'mapbox://styles/mapbox/bright-v9', {accessToken: 'YOUR_MAPBOX_TOKEN'});
 ```
 
-The center and zoom will only be set if present in the Mapbox Style document,
+The center and zoom will only be set if present in the Mapbox/MapLibre Style document,
 and if not already set on the OpenLayers map.
 
 Layers will be added to the OpenLayers map, without affecting any layers that
@@ -751,15 +751,15 @@ might already be set on the map.
 
 Layers added by `apply()` will have two additional properties:
 
-- `mapbox-source`: The `id` of the Mapbox Style document's source that the
+- `mapbox-source`: The `id` of the Mapbox/MapLibre Style document's source that the
   OpenLayers layer was created from. Usually `apply()` creates one
-  OpenLayers layer per Mapbox Style source, unless the layer stack has
+  OpenLayers layer per Mapbox/MapLibre Style source, unless the layer stack has
   layers from different sources in between.
-- `mapbox-layers`: The `id`s of the Mapbox Style document's layers that are
+- `mapbox-layers`: The `id`s of the Mapbox/MapLibre Style document's layers that are
   included in the OpenLayers layer.
 
 This function sets an additional `mapbox-style` property on the OpenLayers
-Map or LayerGroup instance, which holds the Mapbox Style object.
+Map or LayerGroup instance, which holds the Mapbox/MapLibre Style object.
 
 ### Parameters
 
@@ -773,13 +773,13 @@ releated to the map and view will be ignored.
 • **style**: `any`
 
 JSON style object or style url pointing to a
-Mapbox Style object. When using Mapbox APIs, the url is the `styleUrl`
+Mapbox/MapLibre Style object. When using Mapbox APIs, the url is the `styleUrl`
 shown in Mapbox Studio's "share" panel. In addition, the `accessToken` option
 (see below) must be set.
 When passed as JSON style object, all OpenLayers layers created by `apply()`
 will be immediately available, but they may not have a source yet (i.e. when
-they are defined by a TileJSON url in the Mapbox Style document). When passed
-as style url, layers will be added to the map when the Mapbox Style document
+they are defined by a TileJSON url in the Mapbox/MapLibre Style document). When passed
+as style url, layers will be added to the map when the Mapbox/MapLibre Style document
 is loaded and parsed.
 
 • **options**: [`Options`](#-internal-interfacesoptionsmd)= `{}`
@@ -805,7 +805,7 @@ argument.
 
 > **applyBackground**(`mapOrLayer`, `glStyle`, `options`): `Promise`\\&lt;`any`>
 
-Applies properties of the Mapbox Style's first `background` layer to the
+Applies properties of the Mapbox/MapLibre Style's first `background` layer to the
 provided map or layer (group).
 
 **Example:**
@@ -826,7 +826,7 @@ OpenLayers Map or layer (group).
 
 • **glStyle**: `any`
 
-Mapbox Style object or url.
+Mapbox/MapLibre Style object or url.
 
 • **options**: [`Options`](#-internal-interfacesoptionsmd)= `{}`
 
@@ -869,11 +869,11 @@ source needs to be a `"type": "vector"` or `"type": "geojson"` source.
 
 Two additional properties will be set on the provided layer:
 
-- `mapbox-source`: The `id` of the Mapbox Style document's source that the
+- `mapbox-source`: The `id` of the Mapbox/MapLibre Style document's source that the
   OpenLayers layer was created from. Usually `apply()` creates one
-  OpenLayers layer per Mapbox Style source, unless the layer stack has
+  OpenLayers layer per Mapbox/MapLibre Style source, unless the layer stack has
   layers from different sources in between.
-- `mapbox-layers`: The `id`s of the Mapbox Style document's layers that are
+- `mapbox-layers`: The `id`s of the Mapbox/MapLibre Style document's layers that are
   included in the OpenLayers layer.
 
 ### Parameters
@@ -889,12 +889,12 @@ with the `updateSource: false` option.
 
 • **glStyle**: `any`
 
-Mapbox Style object.
+Mapbox/MapLibre Style object.
 
 • **sourceOrLayersOrOptions?**: `string` \| `string`\[] \| [`Options`](#-internal-interfacesoptionsmd) & [`ApplyStyleOptions`](#-internal-interfacesapplystyleoptionsmd)= `''`
 
 Options or
-`source` key or an array of layer `id`s from the Mapbox Style object. When a `source` key is
+`source` key or an array of layer `id`s from the Mapbox/MapLibre Style object. When a `source` key is
 provided, all layers for the specified source will be included in the style function. When layer
 `id`s are provided, they must be from layers that use the same source. When not provided or a falsey
 value, all layers using the first source specified in the glStyle will be rendered.
@@ -958,9 +958,9 @@ feature identifier.
 
 > **getLayer**(`map`, `layerId`): `Layer`\\&lt;`Source`, `LayerRenderer`\\&lt;`any`>>
 
-Get the OpenLayers layer instance that contains the provided Mapbox Style
-`layer`. Note that multiple Mapbox Style layers are combined in a single
-OpenLayers layer instance when they use the same Mapbox Style `source`.
+Get the OpenLayers layer instance that contains the provided Mapbox/MapLibre Style
+`layer`. Note that multiple Mapbox/MapLibre Style layers are combined in a single
+OpenLayers layer instance when they use the same Mapbox/MapLibre Style `source`.
 
 ### Parameters
 
@@ -970,7 +970,7 @@ OpenLayers Map or LayerGroup.
 
 • **layerId**: `string`
 
-Mapbox Style layer id.
+Mapbox/MapLibre Style layer id.
 
 ### Returns
 
@@ -988,7 +988,7 @@ OpenLayers layer instance.
 
 > **getLayers**(`map`, `sourceId`): `Layer`\\&lt;`Source`, `LayerRenderer`\\&lt;`any`>>\[]
 
-Get the OpenLayers layer instances for the provided Mapbox Style `source`.
+Get the OpenLayers layer instances for the provided Mapbox/MapLibre Style `source`.
 
 ### Parameters
 
@@ -998,7 +998,7 @@ OpenLayers Map or LayerGroup.
 
 • **sourceId**: `string`
 
-Mapbox Style source id.
+Mapbox/MapLibre Style source id.
 
 ### Returns
 
@@ -1044,7 +1044,7 @@ Mapbox Layer object.
 
 > **getSource**(`map`, `sourceId`): `Source`
 
-Get the OpenLayers source instance for the provided Mapbox Style `source`.
+Get the OpenLayers source instance for the provided Mapbox/MapLibre Style `source`.
 
 ### Parameters
 
@@ -1054,7 +1054,7 @@ OpenLayers Map or LayerGroup.
 
 • **sourceId**: `string`
 
-Mapbox Style source id.
+Mapbox/MapLibre Style source id.
 
 ### Returns
 
@@ -1108,7 +1108,7 @@ Styles for the provided Mapbox layer.
 
 > **recordStyleLayer**(`record`): `void`
 
-Turns recording of the Mapbox Style's `layer` on and off. When turned on,
+Turns recording of the Mapbox/MapLibre Style's `layer` on and off. When turned on,
 the layer that a rendered feature belongs to will be set as the feature's
 `mapbox-layer` property.
 
@@ -1226,11 +1226,11 @@ the specified `source`, which needs to be a `"type": "vector"` or
 
 Two additional properties will be set on the provided layer:
 
-- `mapbox-source`: The `id` of the Mapbox Style document's source that the
+- `mapbox-source`: The `id` of the Mapbox/MapLibre Style document's source that the
   OpenLayers layer was created from. Usually `apply()` creates one
-  OpenLayers layer per Mapbox Style source, unless the layer stack has
+  OpenLayers layer per Mapbox/MapLibre Style source, unless the layer stack has
   layers from different sources in between.
-- `mapbox-layers`: The `id`s of the Mapbox Style document's layers that are
+- `mapbox-layers`: The `id`s of the Mapbox/MapLibre Style document's layers that are
   included in the OpenLayers layer.
 
 This function also works in a web worker. In worker mode, the main thread needs
@@ -1268,12 +1268,12 @@ for the layer, and `mapbox-layers` will be an array of the `id`s of the
 
 • **glStyle**: `any`
 
-Mapbox Style object.
+Mapbox/MapLibre Style object.
 
 • **sourceOrLayers**: `string` \| `string`\[]
 
 `source` key or an array of layer `id`s
-from the Mapbox Style object. When a `source` key is provided, all layers for
+from the Mapbox/MapLibre Style object. When a `source` key is provided, all layers for
 the specified source will be included in the style function. When layer `id`s
 are provided, they must be from layers that use the same source.
 
@@ -1284,21 +1284,21 @@ Resolutions for mapping resolution to zoom level.
 • **spriteData**: `any`= `undefined`
 
 Sprite data from the url specified in
-the Mapbox Style object's `sprite` property. Only required if a `sprite`
-property is specified in the Mapbox Style object.
+the Mapbox/MapLibre Style object's `sprite` property. Only required if a `sprite`
+property is specified in the Mapbox/MapLibre Style object.
 
 • **spriteImageUrl**: `string` \| `Request` \| `Promise`\\&lt;`string` \| `Request`>= `undefined`
 
 Sprite image url for the sprite
-specified in the Mapbox Style object's `sprite` property. Only required if a
-`sprite` property is specified in the Mapbox Style object.
+specified in the Mapbox/MapLibre Style object's `sprite` property. Only required if a
+`sprite` property is specified in the Mapbox/MapLibre Style object.
 
 • **getFonts**= `undefined`
 
 Function that
 receives a font stack and the url template from the GL style's `metadata['ol:webfonts']`
 property (if set) as arguments, and returns a (modified) font stack that
-is available. Font names are the names used in the Mapbox Style object. If
+is available. Font names are the names used in the Mapbox/MapLibre Style object. If
 not provided, the font stack will be used as-is. This function can also be
 used for loading web fonts.
 
