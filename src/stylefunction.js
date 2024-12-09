@@ -4,26 +4,26 @@ Copyright 2016-present ol-mapbox-style contributors
 License: https://raw.githubusercontent.com/openlayers/ol-mapbox-style/master/LICENSE
 */
 
-import Circle from 'ol/style/Circle.js';
-import Fill from 'ol/style/Fill.js';
-import Icon from 'ol/style/Icon.js';
-import RenderFeature from 'ol/render/Feature.js';
-import Stroke from 'ol/style/Stroke.js';
-import Style from 'ol/style/Style.js';
-import Text from 'ol/style/Text.js';
-import {toPromise} from 'ol/functions.js';
-
-import mb2css from 'mapbox-to-css-font';
 import {
   Color,
   convertFunction,
-  featureFilter as createFilter,
   createPropertyExpression,
   derefLayers,
+  featureFilter as createFilter,
   isExpression,
   isFunction,
   v8 as spec,
 } from '@maplibre/maplibre-gl-style-spec';
+import mb2css from 'mapbox-to-css-font';
+import {toPromise} from 'ol/functions.js';
+import RenderFeature from 'ol/render/Feature.js';
+import Circle from 'ol/style/Circle.js';
+import Fill from 'ol/style/Fill.js';
+import Icon from 'ol/style/Icon.js';
+import Stroke from 'ol/style/Stroke.js';
+import Style from 'ol/style/Style.js';
+import Text from 'ol/style/Text.js';
+
 import {applyLetterSpacing, wrapText} from './text.js';
 import {
   clearFunctionCache,
@@ -330,7 +330,7 @@ export const styleFunctionArgs = {};
  * is available. Font names are the names used in the Mapbox/MapLibre Style object. If
  * not provided, the font stack will be used as-is. This function can also be
  * used for loading web fonts.
- * @param {function(VectorLayer|VectorTileLayer, string):HTMLImageElement|HTMLCanvasElement|string|undefined} [getImage=undefined]
+ * @param {function(VectorLayer|VectorTileLayer, string):HTMLImageElement|HTMLCanvasElement|string|undefined} [getImage]
  * Function that returns an image or a URL for an image name. If the result is an HTMLImageElement, it must already be
  * loaded. The layer can be used to call layer.changed() when the loading and processing of the image has finished.
  * This function can be used for icons not in the sprite or to override sprite icons.

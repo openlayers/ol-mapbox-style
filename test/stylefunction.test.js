@@ -1,19 +1,19 @@
+import deepFreeze from 'deep-freeze';
 import Feature from 'ol/Feature.js';
 import Polygon from 'ol/geom/Polygon.js';
-import Text from 'ol/style/Text.js';
 import VectorLayer from 'ol/layer/Vector.js';
-import deepFreeze from 'deep-freeze';
+import Text from 'ol/style/Text.js';
 import should from 'should';
-import states from './fixtures/states.json';
 import {
   apply,
-  stylefunction as applyStylefunction,
   getFeatureState,
   getStyleForLayer,
   recordStyleLayer,
   renderTransparent,
   setFeatureState,
+  stylefunction as applyStylefunction,
 } from '../src/index.js';
+import states from './fixtures/states.json';
 
 describe('stylefunction', function () {
   describe('OpenLayers Style object creation', function () {

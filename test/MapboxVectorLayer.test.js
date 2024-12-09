@@ -1,9 +1,9 @@
 import Map from 'ol/Map.js';
-import MapboxVectorLayer from '../src/MapboxVectorLayer.js';
+import {unByKey} from 'ol/Observable.js';
 import View from 'ol/View.js';
 import should from 'should';
+import MapboxVectorLayer from '../src/MapboxVectorLayer.js';
 import {defaultResolutions, getZoomForResolution} from '../src/util.js';
-import {unByKey} from 'ol/Observable.js';
 
 describe('ol/layer/MapboxVector', () => {
   describe('TileJSON', function () {

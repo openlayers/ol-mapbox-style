@@ -139,7 +139,7 @@ function hasFontFamily(family) {
             }
           }
         }
-      } catch (e) {
+      } catch {
         // empty catch block
       }
     }

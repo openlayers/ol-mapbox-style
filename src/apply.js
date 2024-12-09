@@ -4,31 +4,47 @@ Copyright 2016-present ol-mapbox-style contributors
 License: https://raw.githubusercontent.com/openlayers/ol-mapbox-style/master/LICENSE
 */
 
+import {derefLayers} from '@maplibre/maplibre-gl-style-spec';
+import Map from 'ol/Map.js';
+import View from 'ol/View.js';
+import {getCenter, getTopLeft} from 'ol/extent.js';
 import GeoJSON from 'ol/format/GeoJSON.js';
+import MVT from 'ol/format/MVT.js';
+import LayerGroup from 'ol/layer/Group.js';
 import ImageLayer from 'ol/layer/Image.js';
 import Layer from 'ol/layer/Layer.js';
-import LayerGroup from 'ol/layer/Group.js';
-import MVT from 'ol/format/MVT.js';
-import Map from 'ol/Map.js';
-import Raster from 'ol/source/Raster.js';
-import Source from 'ol/source/Source.js';
-import TileGrid from 'ol/tilegrid/TileGrid.js';
-import TileJSON from 'ol/source/TileJSON.js';
 import TileLayer from 'ol/layer/Tile.js';
 import VectorLayer from 'ol/layer/Vector.js';
-import VectorSource from 'ol/source/Vector.js';
 import VectorTileLayer from 'ol/layer/VectorTile.js';
-import VectorTileSource, {defaultLoadFunction} from 'ol/source/VectorTile.js';
-import View from 'ol/View.js';
+import {bbox as bboxStrategy} from 'ol/loadingstrategy.js';
 import {METERS_PER_UNIT} from 'ol/proj/Units.js';
 import {
+  equivalent,
+  fromLonLat,
+  get as getProjection,
+  getPointResolution,
+  getUserProjection,
+} from 'ol/proj.js';
+import Raster from 'ol/source/Raster.js';
+import Source from 'ol/source/Source.js';
+import TileJSON from 'ol/source/TileJSON.js';
+import VectorSource from 'ol/source/Vector.js';
+import VectorTileSource, {defaultLoadFunction} from 'ol/source/VectorTile.js';
+import TileGrid from 'ol/tilegrid/TileGrid.js';
+import {createXYZ} from 'ol/tilegrid.js';
+import {
+  normalizeSourceUrl,
+  normalizeSpriteUrl,
+  normalizeStyleUrl,
+} from './mapbox.js';
+import {hillshade} from './shaders.js';
+import {
   _colorWithOpacity,
-  stylefunction as applyStylefunction,
   getValue,
   styleFunctionArgs,
+  stylefunction as applyStylefunction,
 } from './stylefunction.js';
-import {bbox as bboxStrategy} from 'ol/loadingstrategy.js';
-import {createXYZ} from 'ol/tilegrid.js';
+import {getFonts} from './text.js';
 import {
   defaultResolutions,
   fetchResource,
@@ -40,22 +56,6 @@ import {
   getTileJson,
   getZoomForResolution,
 } from './util.js';
-import {derefLayers} from '@maplibre/maplibre-gl-style-spec';
-import {
-  equivalent,
-  fromLonLat,
-  getPointResolution,
-  get as getProjection,
-  getUserProjection,
-} from 'ol/proj.js';
-import {getCenter, getTopLeft} from 'ol/extent.js';
-import {getFonts} from './text.js';
-import {hillshade} from './shaders.js';
-import {
-  normalizeSourceUrl,
-  normalizeSpriteUrl,
-  normalizeStyleUrl,
-} from './mapbox.js';
 
 /**
  * @typedef {Object} FeatureIdentifier
@@ -103,7 +103,7 @@ import {
 
 /**
  * @param {import("ol/proj/Projection.js").default} projection Projection.
- * @param {number} [tileSize=512] Tile size.
+ * @param {number} [tileSize] Tile size.
  * @return {Array<number>} Resolutions.
  */
 function getTileResolutions(projection, tileSize = 512) {

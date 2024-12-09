@@ -1,11 +1,11 @@
+import brightV9 from 'mapbox-gl-styles/styles/bright-v9.json';
+import {Feature} from 'ol';
 import Map from 'ol/Map.js';
+import {Polygon} from 'ol/geom.js';
 import VectorLayer from 'ol/layer/Vector.js';
 import VectorTileLayer from 'ol/layer/VectorTile.js';
 import VectorTileSource from 'ol/source/VectorTile.js';
-import brightV9 from 'mapbox-gl-styles/styles/bright-v9.json';
 import should from 'should';
-import {Feature} from 'ol';
-import {Polygon} from 'ol/geom.js';
 import {
   addMapboxLayer,
   apply,
