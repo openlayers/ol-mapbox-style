@@ -1,6 +1,5 @@
 import TileState from 'ol/TileState.js';
 import {VectorTile} from 'ol';
-import {expandUrl} from 'ol/tileurlfunction.js';
 import {getUid} from 'ol/util.js';
 import {normalizeSourceUrl, normalizeStyleUrl} from './mapbox.js';
 import {toPromise} from 'ol/functions.js';
@@ -239,7 +238,7 @@ export function getTileJson(glSource, styleUrl, options = {}) {
         promise = Promise.resolve({
           tileJson: Object.assign({}, glSource, {
             url: undefined,
-            tiles: expandUrl(normalizedSourceUrl),
+            tiles: normalizedSourceUrl,
           }),
           tileLoadFunction,
         });
@@ -247,7 +246,7 @@ export function getTileJson(glSource, styleUrl, options = {}) {
         const metadata = {};
         promise = fetchResource(
           'Source',
-          normalizedSourceUrl,
+          normalizedSourceUrl[0],
           options,
           metadata,
         ).then(function (tileJson) {
@@ -260,7 +259,7 @@ export function getTileJson(glSource, styleUrl, options = {}) {
               options.accessToken,
               options.accessTokenParam || 'access_token',
               metadata.request.url,
-            );
+            )[0];
           });
           return Promise.resolve({tileJson, tileLoadFunction});
         });
@@ -276,7 +275,7 @@ export function getTileJson(glSource, styleUrl, options = {}) {
             options.accessToken,
             options.accessTokenParam || 'access_token',
             styleUrl || location.href,
-          );
+          )[0];
         }),
       });
       promise = Promise.resolve({
