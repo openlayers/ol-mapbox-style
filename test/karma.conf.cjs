@@ -1,9 +1,23 @@
 const {join} = require('path');
 const path = require('path');
+const puppeteer = require('puppeteer');
+
+process.env.CHROME_BIN = puppeteer.executablePath();
+
+const flags = ['--headless=new'];
+if (process.env.CI) {
+  flags.push('--no-sandbox');
+}
 
 module.exports = function (karma) {
   karma.set({
     browsers: ['ChromeHeadless'],
+    customLaunchers: {
+      ChromeHeadless: {
+        base: 'Chrome',
+        flags,
+      },
+    },
     browserDisconnectTolerance: 2,
     frameworks: ['webpack', 'mocha'],
     client: {
@@ -62,7 +76,7 @@ module.exports = function (karma) {
               '..',
               'node_modules',
               '@mapbox',
-              'mapbox-gl-style-spec'
+              'mapbox-gl-style-spec',
             ),
           },
         ],
