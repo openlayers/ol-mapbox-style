@@ -63,7 +63,7 @@
     "css-loader": "^7.0.0",
     "deep-freeze": "0.0.1",
     "eslint": "^8.56.0",
-    "eslint-config-openlayers": "^19.0.0",
+    "eslint-config-openlayers": "^20.0.0",
     "eslint-import-resolver-alias": "^1.1.2",
     "html-webpack-plugin": "^5.5.0",
     "karma": "^6.3.4",
