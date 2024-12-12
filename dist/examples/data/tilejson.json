@@ -1,0 +1,26 @@
+{
+  "version": 8,
+  "name": "tilejson",
+  "center": [0, 0],
+  "zoom": 2,
+  "sources": {
+    "tilejson": {
+      "type": "raster",
+      "url": "https://maps.gnosis.earth/ogcapi/collections/NaturalEarth:raster:HYP_HR_SR_OB_DR/map/tiles/WebMercatorQuad?f=tilejson"
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "rgba(0,0,0,0)"
+      }
+    },
+    {
+      "id": "tilejson-layer",
+      "type": "raster",
+      "source": "tilejson"
+    }
+  ]
+}
