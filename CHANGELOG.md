@@ -1,5 +1,13 @@
 # Changelog
 
+## 12.4.0
+
+* More precise angle computation for line labels
+* Add support for `"text-keep-upright": false`
+* Fix `text-field` value issues
+* Update examples and add references to MapLibre
+* Fix issue with missing `expandUrl` from OpenLayers
+
 ## 12.3.5
 
 * Adjust `MapboxVectorLayer` type generics for OpenLayers v10
