@@ -57,13 +57,15 @@ export function normalizeStyleUrl(url, token) {
   return `${mapboxBaseUrl}/styles/v1/${style}?&access_token=${token}`;
 }
 
+const mapboxSubdomains = ['a', 'b', 'c', 'd'];
+
 /**
  * Turns mapbox:// source URLs into vector tile URL templates.
  * @param {string} url The source URL.
  * @param {string} token The access token.
  * @param {string} tokenParam The access token key.
  * @param {string} styleUrl The style URL.
- * @return {string} A vector tile template.
+ * @return {Array<string>} A vector tile template.
  * @private
  */
 export function normalizeSourceUrl(url, token, tokenParam, styleUrl) {
@@ -71,17 +73,22 @@ export function normalizeSourceUrl(url, token, tokenParam, styleUrl) {
   const mapboxPath = getMapboxPath(url);
   if (!mapboxPath) {
     if (!token) {
-      return decodeURI(urlObject.href);
+      return [decodeURI(urlObject.href)];
     }
     if (!urlObject.searchParams.has(tokenParam)) {
       urlObject.searchParams.set(tokenParam, token);
     }
-    return decodeURI(urlObject.href);
+    return [decodeURI(urlObject.href)];
   }
 
   if (mapboxPath === 'mapbox.satellite') {
     const sizeFactor = window.devicePixelRatio >= 1.5 ? '@2x' : '';
-    return `https://api.mapbox.com/v4/${mapboxPath}/{z}/{x}/{y}${sizeFactor}.webp?access_token=${token}`;
+    return [
+      `https://api.mapbox.com/v4/${mapboxPath}/{z}/{x}/{y}${sizeFactor}.webp?access_token=${token}`,
+    ];
   }
-  return `https://{a-d}.tiles.mapbox.com/v4/${mapboxPath}/{z}/{x}/{y}.vector.pbf?access_token=${token}`;
+  return mapboxSubdomains.map(
+    (sub) =>
+      `https://${sub}.tiles.mapbox.com/v4/${mapboxPath}/{z}/{x}/{y}.vector.pbf?access_token=${token}`,
+  );
 }

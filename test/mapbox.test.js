@@ -94,22 +94,32 @@ describe('Mapbox utilities', function () {
     const cases = [
       {
         url: 'mapbox://mapbox.mapbox-streets-v7',
-        expected:
-          'https://{a-d}.tiles.mapbox.com/v4/mapbox.mapbox-streets-v7/{z}/{x}/{y}.vector.pbf?access_token=test-token',
+        expected: [
+          'https://a.tiles.mapbox.com/v4/mapbox.mapbox-streets-v7/{z}/{x}/{y}.vector.pbf?access_token=test-token',
+          'https://b.tiles.mapbox.com/v4/mapbox.mapbox-streets-v7/{z}/{x}/{y}.vector.pbf?access_token=test-token',
+          'https://c.tiles.mapbox.com/v4/mapbox.mapbox-streets-v7/{z}/{x}/{y}.vector.pbf?access_token=test-token',
+          'https://d.tiles.mapbox.com/v4/mapbox.mapbox-streets-v7/{z}/{x}/{y}.vector.pbf?access_token=test-token',
+        ],
       },
       {
         url: 'https://example.com/source/{z}/{x}/{y}.pbf',
-        expected: 'https://example.com/source/{z}/{x}/{y}.pbf?token=test-token',
+        expected: [
+          'https://example.com/source/{z}/{x}/{y}.pbf?token=test-token',
+        ],
       },
       {
         url: 'https://example.com/source/{z}/{x}/{y}.pbf?foo=bar',
-        expected:
+        expected: [
           'https://example.com/source/{z}/{x}/{y}.pbf?foo=bar&token=test-token',
+        ],
       },
       {
-        url: 'https://example.com/source/{z}/{x}/{y}.pbf?token=override-token',
-        expected:
+        url: [
           'https://example.com/source/{z}/{x}/{y}.pbf?token=override-token',
+        ],
+        expected: [
+          'https://example.com/source/{z}/{x}/{y}.pbf?token=override-token',
+        ],
       },
     ];
 
@@ -119,7 +129,7 @@ describe('Mapbox utilities', function () {
       it(`works for ${c.url}`, () => {
         should(
           normalizeSourceUrl(c.url, token, tokenParam, location.href),
-        ).equal(c.expected);
+        ).deepEqual(c.expected);
       });
     }
   });

@@ -751,7 +751,7 @@ function setupGeoJSONSource(glSource, styleUrl, options) {
   const data = glSource.data;
   const sourceOptions = {};
   if (typeof data == 'string') {
-    const geoJsonUrl = normalizeSourceUrl(
+    const [geoJsonUrl] = normalizeSourceUrl(
       data,
       options.accessToken,
       options.accessTokenParam || 'access_token',
