@@ -9,7 +9,6 @@ import { toPromise } from 'ol/functions.js';
 import { registerFont, checkedFonts } from 'ol/render/canvas.js';
 import TileState from 'ol/TileState.js';
 import { VectorTile } from 'ol';
-import { expandUrl } from 'ol/tileurlfunction.js';
 import { getUid } from 'ol/util.js';
 import GeoJSON from 'ol/format/GeoJSON.js';
 import ImageLayer from 'ol/layer/Image.js';
@@ -5891,13 +5890,19 @@ function normalizeStyleUrl(url, token) {
     const style = mapboxPath.slice(startsWith.length);
     return `${ mapboxBaseUrl }/styles/v1/${ style }?&access_token=${ token }`;
 }
+const mapboxSubdomains = [
+    'a',
+    'b',
+    'c',
+    'd'
+];
 /**
  * Turns mapbox:// source URLs into vector tile URL templates.
  * @param {string} url The source URL.
  * @param {string} token The access token.
  * @param {string} tokenParam The access token key.
  * @param {string} styleUrl The style URL.
- * @return {string} A vector tile template.
+ * @return {Array<string>} A vector tile template.
  * @private
  */
 function normalizeSourceUrl(url, token, tokenParam, styleUrl) {
@@ -5905,18 +5910,18 @@ function normalizeSourceUrl(url, token, tokenParam, styleUrl) {
     const mapboxPath = getMapboxPath(url);
     if (!mapboxPath) {
         if (!token) {
-            return decodeURI(urlObject.href);
+            return [decodeURI(urlObject.href)];
         }
         if (!urlObject.searchParams.has(tokenParam)) {
             urlObject.searchParams.set(tokenParam, token);
         }
-        return decodeURI(urlObject.href);
+        return [decodeURI(urlObject.href)];
     }
     if (mapboxPath === 'mapbox.satellite') {
         const sizeFactor = window.devicePixelRatio >= 1.5 ? '@2x' : '';
-        return `https://api.mapbox.com/v4/${ mapboxPath }/{z}/{x}/{y}${ sizeFactor }.webp?access_token=${ token }`;
+        return [`https://api.mapbox.com/v4/${ mapboxPath }/{z}/{x}/{y}${ sizeFactor }.webp?access_token=${ token }`];
     }
-    return `https://{a-d}.tiles.mapbox.com/v4/${ mapboxPath }/{z}/{x}/{y}.vector.pbf?access_token=${ token }`;
+    return mapboxSubdomains.map(sub => `https://${ sub }.tiles.mapbox.com/v4/${ mapboxPath }/{z}/{x}/{y}.vector.pbf?access_token=${ token }`);
 }
 
 /** @typedef {'Style'|'Source'|'Sprite'|'SpriteImage'|'Tiles'|'GeoJSON'} ResourceType */
@@ -6124,18 +6129,18 @@ function getTileJson(glSource, styleUrl, options = {}) {
                 promise = Promise.resolve({
                     tileJson: Object.assign({}, glSource, {
                         url: undefined,
-                        tiles: expandUrl(normalizedSourceUrl)
+                        tiles: normalizedSourceUrl
                     }),
                     tileLoadFunction
                 });
             } else {
                 const metadata = {};
-                promise = fetchResource('Source', normalizedSourceUrl, options, metadata).then(function (tileJson) {
+                promise = fetchResource('Source', normalizedSourceUrl[0], options, metadata).then(function (tileJson) {
                     tileJson.tiles = tileJson.tiles.map(function (tileUrl) {
                         if (tileJson.scheme === 'tms') {
                             tileUrl = tileUrl.replace('{y}', '{-y}');
                         }
-                        return normalizeSourceUrl(tileUrl, options.accessToken, options.accessTokenParam || 'access_token', metadata.request.url);
+                        return normalizeSourceUrl(tileUrl, options.accessToken, options.accessTokenParam || 'access_token', metadata.request.url)[0];
                     });
                     return Promise.resolve({
                         tileJson,
@@ -6149,7 +6154,7 @@ function getTileJson(glSource, styleUrl, options = {}) {
                     if (glSource.scheme === 'tms') {
                         tileUrl = tileUrl.replace('{y}', '{-y}');
                     }
-                    return normalizeSourceUrl(tileUrl, options.accessToken, options.accessTokenParam || 'access_token', styleUrl || location.href);
+                    return normalizeSourceUrl(tileUrl, options.accessToken, options.accessTokenParam || 'access_token', styleUrl || location.href)[0];
                 })
             });
             promise = Promise.resolve({
@@ -8010,7 +8015,7 @@ function setupGeoJSONSource(glSource, styleUrl, options) {
     const data = glSource.data;
     const sourceOptions = {};
     if (typeof data == 'string') {
-        const geoJsonUrl = normalizeSourceUrl(data, options.accessToken, options.accessTokenParam || 'access_token', styleUrl || location.href);
+        const [geoJsonUrl] = normalizeSourceUrl(data, options.accessToken, options.accessTokenParam || 'access_token', styleUrl || location.href);
         if (/\{bbox-[0-9a-z-]+\}/.test(geoJsonUrl)) {
             const extentUrl = (extent, resolution, projection) => {
                 const bboxTemplate = getBboxTemplate(projection);

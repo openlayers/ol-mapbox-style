@@ -28,7 +28,7 @@ export function normalizeStyleUrl(url: string, token: string): string;
  * @param {string} token The access token.
  * @param {string} tokenParam The access token key.
  * @param {string} styleUrl The style URL.
- * @return {string} A vector tile template.
+ * @return {Array<string>} A vector tile template.
  * @private
  */
-export function normalizeSourceUrl(url: string, token: string, tokenParam: string, styleUrl: string): string;
+export function normalizeSourceUrl(url: string, token: string, tokenParam: string, styleUrl: string): Array<string>;
