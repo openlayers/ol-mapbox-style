@@ -120,28 +120,26 @@ and open a browser on the host and port indicated in the console output (usually
 
 <a name="-internal-readmemd"></a>
 
-[**ol-mapbox-style**](#readmemd) • **Docs**
+[**ol-mapbox-style**](#readmemd)
 
 * * *
 
 ## \\&lt;internal>
 
-### Index
-
-#### Interfaces
+### Interfaces
 
 - [ApplyStyleOptions](#-internal-interfacesapplystyleoptionsmd)
 - [FeatureIdentifier](#-internal-interfacesfeatureidentifiermd)
 - [Options](#-internal-interfacesoptionsmd)
-- [Options](#-internal-interfacesoptions-1md)
+- [Options](#-internal-interfacesoptionsmd)
 
-#### Type Aliases
+### Type Aliases
 
 - [ResourceType](#-internal-type-aliasesresourcetypemd)
 
 <a name="-internal-interfacesapplystyleoptionsmd"></a>
 
-[**ol-mapbox-style**](#readmemd) • **Docs**
+[**ol-mapbox-style**](#readmemd)
 
 * * *
 
@@ -149,34 +147,34 @@ and open a browser on the host and port indicated in the console output (usually
 
 ### Properties
 
-#### layers
+#### layers?
 
-> **layers**: `string`\[]
+> `optional` **layers**: `string`\[]
 
 Layers. If no source is provided, the layers with the
 provided ids will be used from the style's `layers` array. All layers need to use the same source.
 
 * * *
 
-#### source
+#### source?
 
-> **source**: `string`
+> `optional` **source**: `string`
 
 Source. Default is `''`, which causes the first source in the
 style to be used.
 
 * * *
 
-#### updateSource
+#### updateSource?
 
-> **updateSource**: `boolean`
+> `optional` **updateSource**: `boolean`
 
 Update or create vector (tile) layer source with parameters
 specified for the source in the mapbox style definition.
 
 <a name="-internal-interfacesfeatureidentifiermd"></a>
 
-[**ol-mapbox-style**](#readmemd) • **Docs**
+[**ol-mapbox-style**](#readmemd)
 
 * * *
 
@@ -198,9 +196,9 @@ The feature id.
 
 The source id.
 
-<a name="-internal-interfacesoptions-1md"></a>
+<a name="-internal-interfacesoptionsmd"></a>
 
-[**ol-mapbox-style**](#readmemd) • **Docs**
+[**ol-mapbox-style**](#readmemd)
 
 * * *
 
@@ -208,9 +206,9 @@ The source id.
 
 ### Properties
 
-#### accessToken
+#### accessToken?
 
-> **accessToken**: `string`
+> `optional` **accessToken**: `string`
 
 The access token for your Mapbox/MapLibre style. This has to be provided
 for `mapbox://` style urls. For `https://` and other urls, any access key must be the last query
@@ -218,9 +216,9 @@ parameter of the style url.
 
 * * *
 
-#### background
+#### background?
 
-> **background**: `false` \| `BackgroundColor`
+> `optional` **background**: `false` \| `BackgroundColor`
 
 Background color for the layer.
 If not specified, the background from the Mapbox/MapLibre Style object will be used. Set to `false` to prevent
@@ -228,17 +226,17 @@ the Mapbox/MapLibre style's background from being used.
 
 * * *
 
-#### className
+#### className?
 
-> **className**: `string`
+> `optional` **className**: `string`
 
 A CSS class name to set to the layer element.
 
 * * *
 
-#### declutter
+#### declutter?
 
-> **declutter**: `boolean`
+> `optional` **declutter**: `boolean`
 
 Declutter images and text. Decluttering is applied to all
 image and text styles of all Vector and VectorTile layers that have set this to `true`. The priority
@@ -253,18 +251,18 @@ other than `ol-layer`.
 
 * * *
 
-#### extent
+#### extent?
 
-> **extent**: `Extent`
+> `optional` **extent**: `Extent`
 
 The bounding extent for layer rendering.  The layer will not be
 rendered outside of this extent.
 
 * * *
 
-#### layers
+#### layers?
 
-> **layers**: `string`\[]
+> `optional` **layers**: `string`\[]
 
 Limit rendering to the list of included layers.  All layers
 must share the same vector source.  If your style uses more than one source, you need to use
@@ -273,9 +271,9 @@ source.
 
 * * *
 
-#### map
+#### map?
 
-> **map**: `Map`
+> `optional` **map**: `Map`
 
 Sets the layer as overlay on a map. The map will not manage
 this layer in its layers collection, and the layer will be rendered on top. This is useful for
@@ -284,9 +282,9 @@ use `map.addLayer()`.
 
 * * *
 
-#### maxResolution
+#### maxResolution?
 
-> **maxResolution**: `number`
+> `optional` **maxResolution**: `number`
 
 The maximum resolution (exclusive) below which this layer will
 be visible. If neither `maxResolution` nor `minZoom` are defined, the layer's `maxResolution` will
@@ -294,27 +292,27 @@ match the style source's `minzoom`.
 
 * * *
 
-#### maxZoom
+#### maxZoom?
 
-> **maxZoom**: `number`
+> `optional` **maxZoom**: `number`
 
 The maximum view zoom level (inclusive) at which this layer will
 be visible.
 
 * * *
 
-#### minResolution
+#### minResolution?
 
-> **minResolution**: `number`
+> `optional` **minResolution**: `number`
 
 The minimum resolution (inclusive) at which this layer will be
 visible.
 
 * * *
 
-#### minZoom
+#### minZoom?
 
-> **minZoom**: `number`
+> `optional` **minZoom**: `number`
 
 The minimum view zoom level (exclusive) above which this layer will
 be visible. If neither `maxResolution` nor `minZoom` are defined, the layer's `minZoom` will match
@@ -322,34 +320,34 @@ the style source's `minzoom`.
 
 * * *
 
-#### opacity
+#### opacity?
 
-> **opacity**: `number`
+> `optional` **opacity**: `number`
 
 Opacity (0, 1).
 
 * * *
 
-#### preload
+#### preload?
 
-> **preload**: `number`
+> `optional` **preload**: `number`
 
 Preload. Load low-resolution tiles up to `preload` levels. `0`
 means no preloading.
 
 * * *
 
-#### properties
+#### properties?
 
-> **properties**: `object`
+> `optional` **properties**: `object`
 
 Arbitrary observable properties. Can be accessed with `#get()` and `#set()`.
 
 * * *
 
-#### renderBuffer
+#### renderBuffer?
 
-> **renderBuffer**: `number`
+> `optional` **renderBuffer**: `number`
 
 The buffer in pixels around the tile extent used by the
 renderer when getting features from the vector tile for the rendering or hit-detection.
@@ -359,9 +357,9 @@ point symbol or line width.
 
 * * *
 
-#### renderMode
+#### renderMode?
 
-> **renderMode**: `VectorTileRenderType`
+> `optional` **renderMode**: `VectorTileRenderType`
 
 Render mode for vector tiles:
 
@@ -374,9 +372,9 @@ Render mode for vector tiles:
 
 * * *
 
-#### renderOrder
+#### renderOrder?
 
-> **renderOrder**: `OrderFunction`
+> `optional` **renderOrder**: `OrderFunction`
 
 Render order. Function to be used when sorting
 features before rendering. By default features are drawn in the order that they are created. Use
@@ -384,9 +382,9 @@ features before rendering. By default features are drawn in the order that they 
 
 * * *
 
-#### source
+#### source?
 
-> **source**: `string`
+> `optional` **source**: `string`
 
 If your style uses more than one source, you need to use either the
 `source` property or the `layers` property to limit rendering to a single vector source.  The
@@ -404,9 +402,9 @@ style created with Mapbox Studio and hosted on Mapbox, this will look like
 
 * * *
 
-#### updateWhileAnimating
+#### updateWhileAnimating?
 
-> **updateWhileAnimating**: `boolean`
+> `optional` **updateWhileAnimating**: `boolean`
 
 When set to `true`, feature batches will be
 recreated during animations. This means that no vectors will be shown clipped, but the setting
@@ -415,165 +413,65 @@ will be recreated when no animation is active.
 
 * * *
 
-#### updateWhileInteracting
+#### updateWhileInteracting?
 
-> **updateWhileInteracting**: `boolean`
+> `optional` **updateWhileInteracting**: `boolean`
 
 When set to `true`, feature batches will be
 recreated during interactions. See also `updateWhileAnimating`.
 
 * * *
 
-#### useInterimTilesOnError
+#### useInterimTilesOnError?
 
-> **useInterimTilesOnError**: `boolean`
+> `optional` **useInterimTilesOnError**: `boolean`
 
 Use interim tiles on error.
 
 * * *
 
-#### visible
+#### visible?
 
-> **visible**: `boolean`
+> `optional` **visible**: `boolean`
 
 Visibility.
 
 * * *
 
-#### zIndex
+#### zIndex?
 
-> **zIndex**: `number`
+> `optional` **zIndex**: `number`
 
 The z-index for layer rendering.  At rendering time, the layers
 will be ordered, first by Z-index and then by position. When `undefined`, a `zIndex` of 0 is assumed
 for layers that are added to the map's `layers` collection, or `Infinity` when the layer's `setMap()`
 method was used.
 
-<a name="-internal-interfacesoptionsmd"></a>
-
-[**ol-mapbox-style**](#readmemd) • **Docs**
-
-* * *
-
-## Interface: Options
-
-### Properties
-
-#### accessToken
-
-> **accessToken**: `string`
-
-Access token for 'mapbox://' urls.
-
-* * *
-
-#### accessTokenParam
-
-> **accessTokenParam**: `string`
-
-Access token param. For internal use.
-
-* * *
-
-#### getImage()
-
-> **getImage**: (`arg0`, `arg1`) => `string` \| `HTMLCanvasElement` \| `HTMLImageElement`
-
-Function that returns an image for an icon name. If the result is an HTMLImageElement, it must already be
-loaded. The layer can be used to call layer.changed() when the loading and processing of the image has finished.
-This function be used for icons not in the sprite or to override sprite icons.
-
-##### Parameters
-
-• **arg0**: `VectorLayer`\\&lt;`VectorSource`\\&lt;`any`>, `any`> \| `VectorTileLayer`\\&lt;`VectorTile`\\&lt;`any`>, `any`>
-
-• **arg1**: `string`
-
-##### Returns
-
-`string` \| `HTMLCanvasElement` \| `HTMLImageElement`
-
-* * *
-
-#### projection
-
-> **projection**: `string`
-
-Only useful when working with non-standard projections.
-Code of a projection registered with OpenLayers. All sources of the style must be provided in this
-projection. The projection must also have a valid extent defined, which will be used to determine the
-origin and resolutions of the tile grid for all tiled sources of the style. When provided, the bbox
-placeholder in tile and geojson urls changes: the default is `{bbox-epsg-3857}`, when projection is e.g.
-set to `EPSG:4326`, the bbox placeholder will be `{bbox-epsg-4326}`.
-
-* * *
-
-#### resolutions
-
-> **resolutions**: `number`\[]
-
-Only useful when working with non-standard projections.
-Resolutions for mapping resolution to the `zoom` used in the Mapbox/MapLibre style.
-
-* * *
-
-#### styleUrl
-
-> **styleUrl**: `string`
-
-URL of the Mapbox GL style. Required for styles that were provided
-as object, when they contain a relative sprite url, or sources referencing data by relative url.
-
-* * *
-
-#### transformRequest()
-
-> **transformRequest**: (`arg0`, `arg1`) => `string` \| `void` \| `Request` \| `Promise`\\&lt;`string` \| `Request`>
-
-Function for controlling how `ol-mapbox-style` fetches resources. Can be used for modifying
-the url, adding headers or setting credentials options. Called with the url and the resource
-type as arguments, this function is supposed to return a `Request` or a url `string`, or a promise tehereof.
-Without a return value the original request will not be modified.
-
-##### Parameters
-
-• **arg0**: `string`
-
-• **arg1**: [`ResourceType`](#-internal-type-aliasesresourcetypemd)
-
-##### Returns
-
-`string` \| `void` \| `Request` \| `Promise`\\&lt;`string` \| `Request`>
-
-* * *
-
-#### webfonts
-
-> **webfonts**: `string`
-
-Template for resolving webfonts. Can be used to specify where to fetch
-web fonts when no `ol:webfonts` metadata is set in the style object. See `getFonts()` and the
-"Font handling" section in `README.md` for details.
-
 <a name="-internal-type-aliasesresourcetypemd"></a>
 
-[**ol-mapbox-style**](#readmemd) • **Docs**
+[**ol-mapbox-style**](#readmemd)
 
 * * *
 
-## Type alias: ResourceType
+## Type Alias: ResourceType
 
 > **ResourceType**\\&lt;>: `"Style"` \| `"Source"` \| `"Sprite"` \| `"SpriteImage"` \| `"Tiles"` \| `"GeoJSON"`
 
-### Type parameters
+### Type Parameters
 
 <a name="readmemd"></a>
 
-**ol-mapbox-style** • **Docs**
+**ol-mapbox-style**
 
 * * *
 
 ## ol-mapbox-style
+
+### References
+
+#### default
+
+Renames and re-exports [apply](#functionsapplymd)
 
 ### Modules
 
@@ -603,21 +501,13 @@ web fonts when no `ol:webfonts` metadata is set in the style object. See `getFon
 - [updateMapboxLayer](#functionsupdatemapboxlayermd)
 - [updateMapboxSource](#functionsupdatemapboxsourcemd)
 
-### References
-
-#### default
-
-Renames and re-exports [apply](#functionsapplymd)
-
 <a name="classesmapboxvectorlayermd"></a>
 
-[**ol-mapbox-style**](#readmemd) • **Docs**
+[**ol-mapbox-style**](#readmemd)
 
 * * *
 
 ## Class: MapboxVectorLayer
-
-### Classdesc
 
 ```js
 import {MapboxVectorLayer} from 'ol-mapbox-style';
@@ -647,18 +537,18 @@ more detail.
 On configuration or loading error, the layer will trigger an `'error'` event.  Listeners
 will receive an object with an `error` property that can be used to diagnose the problem.
 
+Instances of this class emit an `error` event when an error occurs during style loading:
+
+    layer.on('error', function() {
+      console.error('Error loading style');
+    }
+
 **Note for users of the full build**: The `MapboxVectorLayer` requires the
 [ol-mapbox-style](https://github.com/openlayers/ol-mapbox-style) library to be loaded as well.
 
 ### Param
 
 Options.
-
-### Fires
-
-module:ol/events/Event~BaseEvent#event:error
-
-### Api
 
 ### Extends
 
@@ -672,7 +562,9 @@ module:ol/events/Event~BaseEvent#event:error
 
 ##### Parameters
 
-• **options**: [`Options`](#-internal-interfacesoptions-1md)
+###### options
+
+[`Options`](#-internal-interfacesoptionsmd)
 
 Layer options.  At a minimum, `styleUrl` and `accessToken`
 must be provided.
@@ -693,7 +585,7 @@ must be provided.
 
 <a name="functionsaddmapboxlayermd"></a>
 
-[**ol-mapbox-style**](#readmemd) • **Docs**
+[**ol-mapbox-style**](#readmemd)
 
 * * *
 
@@ -705,15 +597,21 @@ Add a new Mapbox Layer object to the style. The map will be re-rendered.
 
 ### Parameters
 
-• **mapOrGroup**: `Map` \| `LayerGroup`
+#### mapOrGroup
 
 The Map or LayerGroup `apply` was called on.
 
-• **mapboxLayer**: `any`
+`Map` \| `LayerGroup`
+
+#### mapboxLayer
+
+`any`
 
 Mapbox Layer object.
 
-• **beforeLayerId?**: `string`
+#### beforeLayerId?
+
+`string`
 
 Optional id of the Mapbox Layer before the new layer that will be added.
 
@@ -725,7 +623,7 @@ Resolves when the added layer is available.
 
 <a name="functionsapplymd"></a>
 
-[**ol-mapbox-style**](#readmemd) • **Docs**
+[**ol-mapbox-style**](#readmemd)
 
 * * *
 
@@ -765,14 +663,18 @@ Map or LayerGroup instance, which holds the Mapbox/MapLibre Style object.
 
 ### Parameters
 
-• **mapOrGroupOrElement**: `string` \| `Map` \| `LayerGroup` \| `HTMLElement`
+#### mapOrGroupOrElement
 
 Either an existing
 OpenLayers Map instance, or a HTML element, or the id of a HTML element that will be
 the target of a new OpenLayers Map, or a layer group. If layer group, styles
 releated to the map and view will be ignored.
 
-• **style**: `any`
+`string` \| `Map` \| `LayerGroup` \| `HTMLElement`
+
+#### style
+
+`any`
 
 JSON style object or style url pointing to a
 Mapbox/MapLibre Style object. When using Mapbox APIs, the url is the `styleUrl`
@@ -784,7 +686,9 @@ they are defined by a TileJSON url in the Mapbox/MapLibre Style document). When 
 as style url, layers will be added to the map when the Mapbox/MapLibre Style document
 is loaded and parsed.
 
-• **options**: [`Options`](#-internal-interfacesoptionsmd)= `{}`
+#### options
+
+[`Options`](#-internal-interfacesoptionsmd) = `{}`
 
 Options.
 
@@ -799,7 +703,7 @@ argument.
 
 <a name="functionsapplybackgroundmd"></a>
 
-[**ol-mapbox-style**](#readmemd) • **Docs**
+[**ol-mapbox-style**](#readmemd)
 
 * * *
 
@@ -822,15 +726,21 @@ applyBackground(map, 'https://api.maptiler.com/maps/basic/style.json?key=YOUR_OP
 
 ### Parameters
 
-• **mapOrLayer**: `Map` \| `BaseLayer`
+#### mapOrLayer
 
 OpenLayers Map or layer (group).
 
-• **glStyle**: `any`
+`Map` \| `BaseLayer`
+
+#### glStyle
+
+`any`
 
 Mapbox/MapLibre Style object or url.
 
-• **options**: [`Options`](#-internal-interfacesoptionsmd)= `{}`
+#### options
+
+[`Options`](#-internal-interfacesoptionsmd) = `{}`
 
 Options.
 
@@ -842,7 +752,7 @@ Promise that resolves when the background is applied.
 
 <a name="functionsapplystylemd"></a>
 
-[**ol-mapbox-style**](#readmemd) • **Docs**
+[**ol-mapbox-style**](#readmemd)
 
 * * *
 
@@ -880,7 +790,7 @@ Two additional properties will be set on the provided layer:
 
 ### Parameters
 
-• **layer**: `VectorLayer`\\&lt;`VectorSource`\\&lt;`any`>, `any`> \| `VectorTileLayer`\\&lt;`VectorTile`\\&lt;`any`>, `any`>
+#### layer
 
 OpenLayers layer. When the layer has a source configured,
 it will be modified to use the configuration from the glStyle's `source`. Options specified on the
@@ -889,11 +799,15 @@ layer's source will override those from the glStyle's `source`, except for `url`
 also be overridden. If you'd rather not have ol-mapbox-style modify the source, configure `applyStyle()`
 with the `updateSource: false` option.
 
-• **glStyle**: `any`
+`VectorLayer`\\&lt;`any`> \| `VectorTileLayer`\\&lt;`any`>
+
+#### glStyle
+
+`any`
 
 Mapbox/MapLibre Style object.
 
-• **sourceOrLayersOrOptions?**: `string` \| `string`\[] \| [`Options`](#-internal-interfacesoptionsmd) & [`ApplyStyleOptions`](#-internal-interfacesapplystyleoptionsmd)= `''`
+#### sourceOrLayersOrOptions?
 
 Options or
 `source` key or an array of layer `id`s from the Mapbox/MapLibre Style object. When a `source` key is
@@ -901,12 +815,18 @@ provided, all layers for the specified source will be included in the style func
 `id`s are provided, they must be from layers that use the same source. When not provided or a falsey
 value, all layers using the first source specified in the glStyle will be rendered.
 
-• **optionsOrPath?**: `string` \| [`Options`](#-internal-interfacesoptionsmd) & [`ApplyStyleOptions`](#-internal-interfacesapplystyleoptionsmd)= `{}`
+`string` \| `string`\[] | [`Options`](#-internal-interfacesoptionsmd) & [`ApplyStyleOptions`](#-internal-interfacesapplystyleoptionsmd)
+
+#### optionsOrPath?
 
 **Deprecated**. Options. Alternatively the path of the style file
 (only required when a relative path is used for the `"sprite"` property of the style).
 
-• **resolutions?**: `number`\[]= `undefined`
+`string` \| [`Options`](#-internal-interfacesoptionsmd) & [`ApplyStyleOptions`](#-internal-interfacesapplystyleoptionsmd)
+
+#### resolutions?
+
+`number`\[] = `undefined`
 
 **Deprecated**. Resolutions for mapping resolution to zoom level.
 Only needed when working with non-standard tile grids or projections, can also be supplied with
@@ -921,7 +841,7 @@ for rendering.
 
 <a name="functionsgetfeaturestatemd"></a>
 
-[**ol-mapbox-style**](#readmemd) • **Docs**
+[**ol-mapbox-style**](#readmemd)
 
 * * *
 
@@ -935,11 +855,15 @@ features differently.
 
 ### Parameters
 
-• **mapOrLayer**: `Map` \| `VectorLayer`\\&lt;`VectorSource`\\&lt;`any`>, `any`> \| `VectorTileLayer`\\&lt;`VectorTile`\\&lt;`any`>, `any`>
+#### mapOrLayer
 
 Map or layer to set the feature state on.
 
-• **feature**: [`FeatureIdentifier`](#-internal-interfacesfeatureidentifiermd)
+`Map` \| `VectorLayer`\\&lt;`any`> \| `VectorTileLayer`\\&lt;`any`>
+
+#### feature
+
+[`FeatureIdentifier`](#-internal-interfacesfeatureidentifiermd)
 
 Feature identifier.
 
@@ -952,13 +876,13 @@ feature identifier.
 
 <a name="functionsgetlayermd"></a>
 
-[**ol-mapbox-style**](#readmemd) • **Docs**
+[**ol-mapbox-style**](#readmemd)
 
 * * *
 
 ## Function: getLayer()
 
-> **getLayer**(`map`, `layerId`): `Layer`\\&lt;`Source`, `LayerRenderer`\\&lt;`any`>>
+> **getLayer**(`map`, `layerId`): `Layer`
 
 Get the OpenLayers layer instance that contains the provided Mapbox/MapLibre Style
 `layer`. Note that multiple Mapbox/MapLibre Style layers are combined in a single
@@ -966,51 +890,59 @@ OpenLayers layer instance when they use the same Mapbox/MapLibre Style `source`.
 
 ### Parameters
 
-• **map**: `Map` \| `LayerGroup`
+#### map
 
 OpenLayers Map or LayerGroup.
 
-• **layerId**: `string`
+`Map` \| `LayerGroup`
+
+#### layerId
+
+`string`
 
 Mapbox/MapLibre Style layer id.
 
 ### Returns
 
-`Layer`\\&lt;`Source`, `LayerRenderer`\\&lt;`any`>>
+`Layer`
 
 OpenLayers layer instance.
 
 <a name="functionsgetlayersmd"></a>
 
-[**ol-mapbox-style**](#readmemd) • **Docs**
+[**ol-mapbox-style**](#readmemd)
 
 * * *
 
 ## Function: getLayers()
 
-> **getLayers**(`map`, `sourceId`): `Layer`\\&lt;`Source`, `LayerRenderer`\\&lt;`any`>>\[]
+> **getLayers**(`map`, `sourceId`): `Layer`\[]
 
 Get the OpenLayers layer instances for the provided Mapbox/MapLibre Style `source`.
 
 ### Parameters
 
-• **map**: `Map` \| `LayerGroup`
+#### map
 
 OpenLayers Map or LayerGroup.
 
-• **sourceId**: `string`
+`Map` \| `LayerGroup`
+
+#### sourceId
+
+`string`
 
 Mapbox/MapLibre Style source id.
 
 ### Returns
 
-`Layer`\\&lt;`Source`, `LayerRenderer`\\&lt;`any`>>\[]
+`Layer`\[]
 
 OpenLayers layer instances.
 
 <a name="functionsgetmapboxlayermd"></a>
 
-[**ol-mapbox-style**](#readmemd) • **Docs**
+[**ol-mapbox-style**](#readmemd)
 
 * * *
 
@@ -1022,11 +954,15 @@ Get the Mapbox Layer object for the provided `layerId`.
 
 ### Parameters
 
-• **mapOrGroup**: `Map` \| `LayerGroup`
+#### mapOrGroup
 
 Map or LayerGroup.
 
-• **layerId**: `string`
+`Map` \| `LayerGroup`
+
+#### layerId
+
+`string`
 
 Mapbox Layer id.
 
@@ -1038,7 +974,7 @@ Mapbox Layer object.
 
 <a name="functionsgetsourcemd"></a>
 
-[**ol-mapbox-style**](#readmemd) • **Docs**
+[**ol-mapbox-style**](#readmemd)
 
 * * *
 
@@ -1050,11 +986,15 @@ Get the OpenLayers source instance for the provided Mapbox/MapLibre Style `sourc
 
 ### Parameters
 
-• **map**: `Map` \| `LayerGroup`
+#### map
 
 OpenLayers Map or LayerGroup.
 
-• **sourceId**: `string`
+`Map` \| `LayerGroup`
+
+#### sourceId
+
+`string`
 
 Mapbox/MapLibre Style source id.
 
@@ -1066,7 +1006,7 @@ OpenLayers source instance.
 
 <a name="functionsgetstyleforlayermd"></a>
 
-[**ol-mapbox-style**](#readmemd) • **Docs**
+[**ol-mapbox-style**](#readmemd)
 
 * * *
 
@@ -1078,19 +1018,27 @@ Get the the style for a specific Mapbox layer only. This can be useful for creat
 
 ### Parameters
 
-• **feature**: `RenderFeature` \| `Feature`\\&lt;`Geometry`>
+#### feature
 
 OpenLayers feature.
 
-• **resolution**: `number`
+`RenderFeature` \| `Feature`
+
+#### resolution
+
+`number`
 
 View resolution.
 
-• **olLayer**: `VectorLayer`\\&lt;`VectorSource`\\&lt;`any`>, `any`> \| `VectorTileLayer`\\&lt;`VectorTile`\\&lt;`any`>, `any`>
+#### olLayer
 
 OpenLayers layer.
 
-• **layerId**: `string`
+`VectorLayer`\\&lt;`any`> \| `VectorTileLayer`\\&lt;`any`>
+
+#### layerId
+
+`string`
 
 Id of the Mapbox layer to get the style for
 
@@ -1102,7 +1050,7 @@ Styles for the provided Mapbox layer.
 
 <a name="functionsrecordstylelayermd"></a>
 
-[**ol-mapbox-style**](#readmemd) • **Docs**
+[**ol-mapbox-style**](#readmemd)
 
 * * *
 
@@ -1116,7 +1064,9 @@ the layer that a rendered feature belongs to will be set as the feature's
 
 ### Parameters
 
-• **record**: `boolean`= `false`
+#### record
+
+`boolean` = `false`
 
 Recording of the style layer is on.
 
@@ -1126,7 +1076,7 @@ Recording of the style layer is on.
 
 <a name="functionsremovemapboxlayermd"></a>
 
-[**ol-mapbox-style**](#readmemd) • **Docs**
+[**ol-mapbox-style**](#readmemd)
 
 * * *
 
@@ -1138,11 +1088,15 @@ Remove a Mapbox Layer object from the style. The map will be re-rendered.
 
 ### Parameters
 
-• **mapOrGroup**: `Map` \| `LayerGroup`
+#### mapOrGroup
 
 The Map or LayerGroup `apply` was called on.
 
-• **mapboxLayerIdOrLayer**: `any`
+`Map` \| `LayerGroup`
+
+#### mapboxLayerIdOrLayer
+
+`any`
 
 Mapbox Layer id or Mapbox Layer object.
 
@@ -1152,7 +1106,7 @@ Mapbox Layer id or Mapbox Layer object.
 
 <a name="functionsrendertransparentmd"></a>
 
-[**ol-mapbox-style**](#readmemd) • **Docs**
+[**ol-mapbox-style**](#readmemd)
 
 * * *
 
@@ -1167,7 +1121,9 @@ like transparent fills of polygons, using `ol/layer/Layer#getFeatures()` or
 
 ### Parameters
 
-• **enabled**: `boolean`
+#### enabled
+
+`boolean`
 
 Rendering of transparent elements is enabled.
 Default is `false`.
@@ -1178,7 +1134,7 @@ Default is `false`.
 
 <a name="functionssetfeaturestatemd"></a>
 
-[**ol-mapbox-style**](#readmemd) • **Docs**
+[**ol-mapbox-style**](#readmemd)
 
 * * *
 
@@ -1195,16 +1151,22 @@ The feature state will be stored on the OpenLayers layer matching the feature id
 
 ### Parameters
 
-• **mapOrLayer**: `Map` \| `VectorLayer`\\&lt;`VectorSource`\\&lt;`any`>, `any`> \| `VectorTileLayer`\\&lt;`VectorTile`\\&lt;`any`>, `any`>
+#### mapOrLayer
 
 OpenLayers Map or layer to set the feature
 state on.
 
-• **feature**: [`FeatureIdentifier`](#-internal-interfacesfeatureidentifiermd)
+`Map` \| `VectorLayer`\\&lt;`any`> \| `VectorTileLayer`\\&lt;`any`>
+
+#### feature
+
+[`FeatureIdentifier`](#-internal-interfacesfeatureidentifiermd)
 
 Feature identifier.
 
-• **state**: `any`
+#### state
+
+`any`
 
 Feature state. Set to `null` to remove the feature state.
 
@@ -1214,7 +1176,7 @@ Feature state. Set to `null` to remove the feature state.
 
 <a name="functionsstylefunctionmd"></a>
 
-[**ol-mapbox-style**](#readmemd) • **Docs**
+[**ol-mapbox-style**](#readmemd)
 
 * * *
 
@@ -1260,7 +1222,7 @@ sure that sprite image loading works:
 
 ### Parameters
 
-• **olLayer**: `VectorLayer`\\&lt;`VectorSource`\\&lt;`any`>, `any`> \| `VectorTileLayer`\\&lt;`VectorTile`\\&lt;`any`>, `any`>
+#### olLayer
 
 OpenLayers layer to
 apply the style to. In addition to the style, the layer will get two
@@ -1268,34 +1230,48 @@ properties: `mapbox-source` will be the `id` of the `glStyle`'s source used
 for the layer, and `mapbox-layers` will be an array of the `id`s of the
 `glStyle`'s layers.
 
-• **glStyle**: `any`
+`VectorLayer`\\&lt;`any`> \| `VectorTileLayer`\\&lt;`any`>
+
+#### glStyle
+
+`any`
 
 Mapbox/MapLibre Style object.
 
-• **sourceOrLayers**: `string` \| `string`\[]
+#### sourceOrLayers
 
 `source` key or an array of layer `id`s
 from the Mapbox/MapLibre Style object. When a `source` key is provided, all layers for
 the specified source will be included in the style function. When layer `id`s
 are provided, they must be from layers that use the same source.
 
-• **resolutions**: `number`\[]= `defaultResolutions`
+`string` \| `string`\[]
+
+#### resolutions
+
+`number`\[]
 
 Resolutions for mapping resolution to zoom level.
 
-• **spriteData**: `any`= `undefined`
+#### spriteData
+
+`any` = `defaultResolutions`
 
 Sprite data from the url specified in
 the Mapbox/MapLibre Style object's `sprite` property. Only required if a `sprite`
 property is specified in the Mapbox/MapLibre Style object.
 
-• **spriteImageUrl**: `string` \| `Request` \| `Promise`\\&lt;`string` \| `Request`>= `undefined`
+#### spriteImageUrl
 
 Sprite image url for the sprite
 specified in the Mapbox/MapLibre Style object's `sprite` property. Only required if a
 `sprite` property is specified in the Mapbox/MapLibre Style object.
 
-• **getFonts**= `undefined`
+`string` \| `Request` \| `Promise`\\&lt;`string` \| `Request`>
+
+#### getFonts
+
+(`arg0`, `arg1`) => `string`\[]
 
 Function that
 receives a font stack and the url template from the GL style's `metadata['ol:webfonts']`
@@ -1304,13 +1280,17 @@ is available. Font names are the names used in the Mapbox/MapLibre Style object.
 not provided, the font stack will be used as-is. This function can also be
 used for loading web fonts.
 
-• **getImage?**= `undefined`
+#### getImage?
+
+(`arg0`, `arg1`) => `string` \| `HTMLCanvasElement` \| `HTMLImageElement`
 
 Function that returns an image or a URL for an image name. If the result is an HTMLImageElement, it must already be
 loaded. The layer can be used to call layer.changed() when the loading and processing of the image has finished.
 This function can be used for icons not in the sprite or to override sprite icons.
 
-• ...**args?**: `any`
+#### args?
+
+...`any` = `undefined`
 
 ### Returns
 
@@ -1321,7 +1301,7 @@ Style function for use in
 
 <a name="functionsupdatemapboxlayermd"></a>
 
-[**ol-mapbox-style**](#readmemd) • **Docs**
+[**ol-mapbox-style**](#readmemd)
 
 * * *
 
@@ -1333,11 +1313,15 @@ Update a Mapbox Layer object in the style. The map will be re-rendered with the 
 
 ### Parameters
 
-• **mapOrGroup**: `Map` \| `LayerGroup`
+#### mapOrGroup
 
 The Map or LayerGroup `apply` was called on.
 
-• **mapboxLayer**: `any`
+`Map` \| `LayerGroup`
+
+#### mapboxLayer
+
+`any`
 
 Updated Mapbox Layer object.
 
@@ -1347,7 +1331,7 @@ Updated Mapbox Layer object.
 
 <a name="functionsupdatemapboxsourcemd"></a>
 
-[**ol-mapbox-style**](#readmemd) • **Docs**
+[**ol-mapbox-style**](#readmemd)
 
 * * *
 
@@ -1360,15 +1344,21 @@ and the map will be re-rendered.
 
 ### Parameters
 
-• **mapOrGroup**: `Map` \| `LayerGroup`
+#### mapOrGroup
 
 The Map or LayerGroup `apply` was called on.
 
-• **id**: `string`
+`Map` \| `LayerGroup`
+
+#### id
+
+`string`
 
 Key of the source in the `sources` object literal.
 
-• **mapboxSource**: `any`
+#### mapboxSource
+
+`any`
 
 Mapbox source object.
 

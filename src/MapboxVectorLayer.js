@@ -8,7 +8,6 @@ import {applyBackground, applyStyle} from './apply.js';
 /** @typedef {import("ol/Map.js").default} Map */
 
 /**
- * @classdesc
  * Event emitted on configuration or loading error.
  */
 class ErrorEvent extends BaseEvent {
@@ -104,7 +103,6 @@ class ErrorEvent extends BaseEvent {
  */
 
 /**
- * @classdesc
  * ```js
  * import {MapboxVectorLayer} from 'ol-mapbox-style';
  * ```
@@ -132,13 +130,17 @@ class ErrorEvent extends BaseEvent {
  * On configuration or loading error, the layer will trigger an `'error'` event.  Listeners
  * will receive an object with an `error` property that can be used to diagnose the problem.
  *
+ * Instances of this class emit an `error` event when an error occurs during style loading:
+ *
+ *     layer.on('error', function() {
+ *       console.error('Error loading style');
+ *     }
+ *
  * **Note for users of the full build**: The `MapboxVectorLayer` requires the
  * [ol-mapbox-style](https://github.com/openlayers/ol-mapbox-style) library to be loaded as well.
  *
  * @param {Options} options Options.
  * @extends {VectorTileLayer<import("ol/source/VectorTile.js").default>}
- * @fires module:ol/events/Event~BaseEvent#event:error
- * @api
  */
 export default class MapboxVectorLayer extends VectorTileLayer {
   /**
