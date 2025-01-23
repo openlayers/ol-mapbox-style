@@ -4,7 +4,6 @@ Copyright 2016-present ol-mapbox-style contributors
 License: https://raw.githubusercontent.com/openlayers/ol-mapbox-style/master/LICENSE
 */
 
-import Circle from 'ol/style/Circle.js';
 import Fill from 'ol/style/Fill.js';
 import Icon from 'ol/style/Icon.js';
 import RenderFeature from 'ol/render/Feature.js';
@@ -1160,6 +1159,16 @@ export function stylefunction(
             functionCache,
             featureState,
           );
+
+          const circleBlur = getValue(
+            layer,
+            'paint',
+            'circle-blur',
+            zoom,
+            f,
+            functionCache,
+            featureState
+          );
           const cache_key =
             circleRadius +
             '.' +
@@ -1171,35 +1180,108 @@ export function stylefunction(
             '.' +
             circleTranslate[0] +
             '.' +
-            circleTranslate[1];
+            circleTranslate[1] +
+            '.' +
+            circleBlur;
 
-          iconImg = iconImageCache[cache_key];
-          if (!iconImg) {
-            iconImg = new Circle({
-              radius: circleRadius,
-              displacement: [circleTranslate[0], -circleTranslate[1]],
-              stroke:
-                circleStrokeColor && circleStrokeWidth > 0
-                  ? new Stroke({
-                      width: circleStrokeWidth,
-                      color: circleStrokeColor,
-                    })
-                  : undefined,
-              fill: circleColor
-                ? new Fill({
-                    color: circleColor,
-                  })
-                : undefined,
-              declutterMode: 'none',
-            });
-            iconImageCache[cache_key] = iconImg;
-          }
-          style.setImage(iconImg);
+          const hit_cache_key = cache_key + '_hit';
+
+          const renderHitDetection = (
+            [x, y],
+            renderOpts,
+            pixelRatioOverride
+          ) => {
+            // NOTE: Hit detection rendering appears to assume pixelRatio of 1
+            // Allowing an `pixelRatioOverride` allows us debug by using this
+            // function in `setRenderer`
+            const pixelRatio = pixelRatioOverride || 1;
+            const r =
+              circleRadius * pixelRatio +
+              circleStrokeWidth * pixelRatio +
+              circleBlur * pixelRatio;
+            const sw = circleStrokeWidth * pixelRatio;
+            const cb = circleBlur * pixelRatio;
+            const xo = x + circleTranslate[0] * pixelRatio;
+            const yo = y + circleTranslate[1] * pixelRatio;
+
+            const w = r * 2 + sw * 2 + cb * 3 + 1;
+            const h = r * 2 + sw * 2 + cb * 3 + 1;
+
+            let bitmap = iconImageCache[hit_cache_key];
+            if (!bitmap) {
+              const offscreenBuffer = new OffscreenCanvas(w, h);
+              const ctx = offscreenBuffer.getContext('2d');
+
+              const ox = w / 2;
+              const oy = h / 2;
+
+              ctx.save();
+              ctx.beginPath();
+              ctx.arc(ox, oy, r, 0, 2 * Math.PI);
+              ctx.fillStyle = 'black';
+              ctx.fill();
+              ctx.closePath();
+              ctx.restore();
+
+              bitmap = offscreenBuffer.transferToImageBitmap();
+              iconImageCache[hit_cache_key] = bitmap;
+            }
+            renderOpts.context.drawImage(bitmap, xo - w / 2, yo - h / 2);
+          };
+
+          const styleRender = ([x, y], renderOpts) => {
+            const r = circleRadius * renderOpts.pixelRatio;
+            const sw = circleStrokeWidth * renderOpts.pixelRatio;
+            const cb = circleBlur * renderOpts.pixelRatio;
+            const xo = x + circleTranslate[0] * renderOpts.pixelRatio;
+            const yo = y + circleTranslate[1] * renderOpts.pixelRatio;
+
+            const w = r * 2 + sw * 2 + cb * 4 + 1;
+            const h = r * 2 + sw * 2 + cb * 4 + 1;
+
+            let bitmap = iconImageCache[cache_key];
+            if (!bitmap) {
+              const offscreenBuffer = new OffscreenCanvas(w, h);
+              const ctx = offscreenBuffer.getContext('2d');
+
+              if (cb !== 0) {
+                ctx.filter = `blur(${cb}px)`;
+              }
+
+              const ox = w / 2;
+              const oy = h / 2;
+
+              ctx.save();
+              ctx.beginPath();
+              ctx.arc(ox, oy, r, 0, 2 * Math.PI);
+              ctx.fillStyle = 'pink';
+              ctx.fill();
+              ctx.closePath();
+              ctx.restore();
+
+              if (circleStrokeWidth > 0) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(ox, oy, r + sw / 2, 0, 2 * Math.PI);
+                ctx.strokeStyle = circleStrokeColor;
+                ctx.lineWidth = sw;
+                ctx.stroke();
+                ctx.closePath();
+                ctx.restore();
+                ctx.restore();
+              }
+              bitmap = offscreenBuffer.transferToImageBitmap();
+              iconImageCache[cache_key] = bitmap;
+            }
+            renderOpts.context.drawImage(bitmap, xo - w / 2, yo - h / 2);
+          };
+
           text = style.getText();
           style.setText(undefined);
           style.setGeometry(undefined);
           style.setZIndex(index);
-          hasImage = true;
+          style.setHitDetectionRenderer(renderHitDetection);
+          style.setRenderer(styleRender);
         }
 
         let label, font, textLineHeight, textSize, letterSpacing, maxTextWidth;
