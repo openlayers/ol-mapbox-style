@@ -20,7 +20,6 @@ import VectorSource from 'ol/source/Vector.js';
 import VectorTileLayer from 'ol/layer/VectorTile.js';
 import VectorTileSource, {defaultLoadFunction} from 'ol/source/VectorTile.js';
 import View from 'ol/View.js';
-import derefLayers from '@mapbox/mapbox-gl-style-spec/deref.js';
 import {METERS_PER_UNIT} from 'ol/proj/Units.js';
 import {
   _colorWithOpacity,
@@ -41,6 +40,7 @@ import {
   getTileJson,
   getZoomForResolution,
 } from './util.js';
+import {derefLayers} from '@maplibre/maplibre-gl-style-spec';
 import {
   equivalent,
   fromLonLat,

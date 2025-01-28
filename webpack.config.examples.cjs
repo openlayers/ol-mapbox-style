@@ -3,7 +3,6 @@ const fs = require('fs');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const {join} = require('path');
 
 /** Get the list of examples from the examples directory.
  *
@@ -65,7 +64,7 @@ function getHtmlTemplates(dirName) {
         // without specifying chunks, all chunks are
         //  included with the file.
         chunks: ['common', entryName],
-      })
+      }),
     );
   });
   return html_conf;
@@ -110,17 +109,6 @@ module.exports = (env, argv) => {
             prod ? MiniCssExtractPlugin.loader : 'style-loader',
             'css-loader',
           ],
-        },
-        {
-          test: /\.js$/,
-          enforce: 'pre',
-          use: ['remove-flow-types-loader'],
-          include: join(
-            __dirname,
-            'node_modules',
-            '@mapbox',
-            'mapbox-gl-style-spec'
-          ),
         },
       ],
     },
