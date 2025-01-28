@@ -1,8 +1,8 @@
 /*eslint no-console: "off"*/
+import {Color, v8 as spec} from '@maplibre/maplibre-gl-style-spec';
 import Feature from 'ol/Feature.js';
 import Point from 'ol/geom/Point.js';
 import should from 'should';
-import {Color, v8 as spec} from '@maplibre/maplibre-gl-style-spec';
 
 import {
   _colorWithOpacity as colorWithOpacity,

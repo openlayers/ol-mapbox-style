@@ -1,22 +1,20 @@
-import should from 'should';
-import sinon from 'sinon';
-
 import ImageLayer from 'ol/layer/Image.js';
 import VectorLayer from 'ol/layer/Vector.js';
 import VectorTileLayer from 'ol/layer/VectorTile.js';
+import {get} from 'ol/proj.js';
+import VectorSource from 'ol/source/Vector.js';
 import VectorTileSource from 'ol/source/VectorTile.js';
 import {createXYZ} from 'ol/tilegrid.js';
+import should from 'should';
+import {spy} from 'sinon';
 
+import {apply, applyStyle} from '../src/apply.js';
+import {defaultResolutions, getZoomForResolution} from '../src/util.js';
 import glStyle from './fixtures/osm-liberty/style.json';
 import styleEmptySprite from './fixtures/style-empty-sprite.json';
 import styleInvalidSpriteURL from './fixtures/style-invalid-sprite-url.json';
 import styleInvalidVersion from './fixtures/style-invalid-version.json';
 import styleMissingSprite from './fixtures/style-missing-sprite.json';
-
-import VectorSource from 'ol/source/Vector.js';
-import {apply, applyStyle} from '../src/apply.js';
-import {defaultResolutions, getZoomForResolution} from '../src/util.js';
-import {get} from 'ol/proj.js';
 
 describe('applyStyle with source creation', function () {
   let originalFetch;
@@ -462,10 +460,10 @@ describe('applyStyle sprite retrieval', function () {
   const source = 'openmaptiles';
   const layer = new VectorTileLayer();
 
-  let origDevicePixelRatio, spy;
+  let origDevicePixelRatio, fetchSpy;
   beforeEach(function () {
     origDevicePixelRatio = self.devicePixelRatio;
-    spy = sinon.spy(self, 'fetch');
+    fetchSpy = spy(self, 'fetch');
   });
 
   afterEach(function () {
@@ -477,8 +475,8 @@ describe('applyStyle sprite retrieval', function () {
     devicePixelRatio = 2;
     applyStyle(layer, glStyle, source, 'fixtures/osm-liberty/')
       .then(function () {
-        should(spy.getCall(0).args[0].url).endWith('/osm-liberty@2x.json');
-        should(spy.callCount).be.exactly(1);
+        should(fetchSpy.getCall(0).args[0].url).endWith('/osm-liberty@2x.json');
+        should(fetchSpy.callCount).be.exactly(1);
         done();
       })
       .catch(function (error) {
@@ -490,8 +488,8 @@ describe('applyStyle sprite retrieval', function () {
     devicePixelRatio = 1;
     applyStyle(layer, glStyle, source, 'fixtures/osm-liberty/')
       .then(function () {
-        should(spy.getCall(0).args[0].url).endWith('/osm-liberty.json');
-        should(spy.callCount).be.exactly(1);
+        should(fetchSpy.getCall(0).args[0].url).endWith('/osm-liberty.json');
+        should(fetchSpy.callCount).be.exactly(1);
         done();
       })
       .catch(function (error) {

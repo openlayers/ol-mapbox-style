@@ -1,4 +1,4 @@
-const path = require('path');
+const {join} = require('path');
 const puppeteer = require('puppeteer');
 
 process.env.CHROME_BIN = puppeteer.executablePath();
@@ -52,7 +52,7 @@ module.exports = function (karma) {
     reporters: ['dots', 'coverage-istanbul'],
     coverageIstanbulReporter: {
       reports: ['html', 'text-summary'],
-      dir: path.join(__dirname, '..', 'coverage'),
+      dir: join(__dirname, '..', 'coverage'),
       fixWebpackSourcePaths: true,
     },
     webpack: {
@@ -64,13 +64,25 @@ module.exports = function (karma) {
             test: /\.js/,
             include: /src/,
             exclude: /node_modules|\.test\.js$/,
-            use: 'coverage-istanbul-loader',
+            use: '@jsdevtools/coverage-istanbul-loader',
+          },
+          {
+            test: /\.js$/,
+            enforce: 'pre',
+            use: ['remove-flow-types-loader'],
+            include: join(
+              __dirname,
+              '..',
+              'node_modules',
+              '@mapbox',
+              'mapbox-gl-style-spec',
+            ),
           },
         ],
       },
       resolve: {
         fallback: {
-          'assert': path.join(__dirname, '..', 'node_modules', 'nanoassert'),
+          'assert': join(__dirname, '..', 'node_modules', 'nanoassert'),
         },
       },
     },

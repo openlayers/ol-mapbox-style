@@ -1,15 +1,13 @@
-import should from 'should';
-
 import Map from 'ol/Map.js';
 import TileLayer from 'ol/layer/Tile.js';
+import VectorTileLayer from 'ol/layer/VectorTile.js';
 import TileSource from 'ol/source/Tile.js';
 import VectorTileSource from 'ol/source/VectorTile.js';
 
+import should from 'should';
+import {finalizeLayer} from '../src/apply.js';
 import glStyle from './fixtures/osm-liberty/style.json';
 import invalidStyle from './fixtures/style-invalid-version.json';
-
-import VectorTileLayer from 'ol/layer/VectorTile.js';
-import {finalizeLayer} from '../src/apply.js';
 
 describe('finalizeLayer promise', function () {
   it('should resolve with valid input and vector layer source', function (done) {

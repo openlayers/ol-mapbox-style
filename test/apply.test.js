@@ -1,18 +1,12 @@
-import Feature from 'ol/Feature.js';
-import LayerGroup from 'ol/layer/Group.js';
-import Map from 'ol/Map.js';
-import Point from 'ol/geom/Point.js';
-import RasterSource from 'ol/source/Raster.js';
-import TileSource from 'ol/source/Tile.js';
-import VectorLayer from 'ol/layer/Vector.js';
-import VectorSource from 'ol/source/Vector.js';
-import VectorTileLayer from 'ol/layer/VectorTile.js';
-import VectorTileSource from 'ol/source/VectorTile.js';
-import View from 'ol/View.js';
-import backgroundNoneStyle from './fixtures/background-none.json';
-import backgroundStyle from './fixtures/background.json';
 import brightV9 from 'mapbox-gl-styles/styles/bright-v9.json';
-import should from 'should';
+import Feature from 'ol/Feature.js';
+import Map from 'ol/Map.js';
+import View from 'ol/View.js';
+import {containsExtent} from 'ol/extent.js';
+import Point from 'ol/geom/Point.js';
+import LayerGroup from 'ol/layer/Group.js';
+import VectorLayer from 'ol/layer/Vector.js';
+import VectorTileLayer from 'ol/layer/VectorTile.js';
 import {
   METERS_PER_UNIT,
   Projection,
@@ -20,14 +14,20 @@ import {
   get as getProjection,
   toLonLat,
 } from 'ol/proj.js';
+import RasterSource from 'ol/source/Raster.js';
+import TileSource from 'ol/source/Tile.js';
+import VectorSource from 'ol/source/Vector.js';
+import VectorTileSource from 'ol/source/VectorTile.js';
+import should from 'should';
 import {
   apply,
   applyBackground,
   getFeatureState,
   setFeatureState,
 } from '../src/index.js';
-import {containsExtent} from 'ol/extent.js';
 import {defaultResolutions, getZoomForResolution} from '../src/util.js';
+import backgroundNoneStyle from './fixtures/background-none.json';
+import backgroundStyle from './fixtures/background.json';
 delete brightV9.sprite;
 
 describe('ol-mapbox-style', function () {

@@ -1,8 +1,8 @@
-import TileState from 'ol/TileState.js';
 import {VectorTile} from 'ol';
+import TileState from 'ol/TileState.js';
+import {toPromise} from 'ol/functions.js';
 import {getUid} from 'ol/util.js';
 import {normalizeSourceUrl, normalizeStyleUrl} from './mapbox.js';
-import {toPromise} from 'ol/functions.js';
 
 /** @typedef {'Style'|'Source'|'Sprite'|'SpriteImage'|'Tiles'|'GeoJSON'} ResourceType */
 
@@ -110,7 +110,7 @@ const pendingRequests = {};
 /**
  * @param {ResourceType} resourceType Type of resource to load.
  * @param {string} url Url of the resource.
- * @param {Options} [options={}] Options.
+ * @param {Options} [options] Options.
  * @param {{request?: Request}} [metadata] Object to be filled with the request.
  * @return {Promise<Object|Response>} Promise that resolves with the loaded resource
  * or rejects with the Response object.

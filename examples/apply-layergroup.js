@@ -1,6 +1,6 @@
 import 'ol/ol.css';
-import {Group as LayerGroup} from 'ol/layer.js';
 import {Map, View} from 'ol';
+import {Group as LayerGroup} from 'ol/layer.js';
 import {apply} from 'ol-mapbox-style';
 
 const layerGroup = new LayerGroup();
