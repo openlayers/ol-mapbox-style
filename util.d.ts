@@ -23,7 +23,7 @@ export function getResolutionForZoom(zoom: any, resolutions: any): number;
 /**
  * @param {ResourceType} resourceType Type of resource to load.
  * @param {string} url Url of the resource.
- * @param {Options} [options={}] Options.
+ * @param {Options} [options] Options.
  * @param {{request?: Request}} [metadata] Object to be filled with the request.
  * @return {Promise<Object|Response>} Promise that resolves with the loaded resource
  * or rejects with the Response object.

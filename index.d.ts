@@ -1,3 +1,3 @@
 export { default as MapboxVectorLayer } from "./MapboxVectorLayer.js";
-export { stylefunction, recordStyleLayer, renderTransparent, getStyleForLayer } from "./stylefunction.js";
-export { apply as default, apply, applyBackground, applyStyle, getLayer, getLayers, getSource, getMapboxLayer, updateMapboxSource, updateMapboxLayer, addMapboxLayer, removeMapboxLayer, getFeatureState, setFeatureState } from "./apply.js";
+export { getStyleForLayer, recordStyleLayer, renderTransparent, stylefunction } from "./stylefunction.js";
+export { addMapboxLayer, apply, apply as default, applyBackground, applyStyle, getFeatureState, getLayer, getLayers, getMapboxLayer, getSource, removeMapboxLayer, setFeatureState, updateMapboxLayer, updateMapboxSource } from "./apply.js";

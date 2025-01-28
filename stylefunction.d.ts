@@ -87,7 +87,7 @@ export function recordStyleLayer(record?: boolean): void;
  * is available. Font names are the names used in the Mapbox/MapLibre Style object. If
  * not provided, the font stack will be used as-is. This function can also be
  * used for loading web fonts.
- * @param {function(VectorLayer|VectorTileLayer, string):HTMLImageElement|HTMLCanvasElement|string|undefined} [getImage=undefined]
+ * @param {function(VectorLayer|VectorTileLayer, string):HTMLImageElement|HTMLCanvasElement|string|undefined} [getImage]
  * Function that returns an image or a URL for an image name. If the result is an HTMLImageElement, it must already be
  * loaded. The layer can be used to call layer.changed() when the loading and processing of the image has finished.
  * This function can be used for icons not in the sprite or to override sprite icons.
