@@ -1,5 +1,5 @@
-const path = require('path');
-const fs = require('fs');
+const {join, resolve} = require('path');
+const {readdirSync} = require('fs');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
@@ -12,7 +12,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
  *  @return {Object} Entries.
  */
 function getExamples(dirName, callback) {
-  const example_files = fs.readdirSync(dirName);
+  const example_files = readdirSync(dirName);
   const entries = {};
 
   // iterate through the list of files in the directory.
@@ -21,7 +21,7 @@ function getExamples(dirName, callback) {
     if (filename.endsWith('.js')) {
       // trim the entry name down to the file without the extension.
       const entry_name = filename.split('.')[0];
-      callback(entry_name, path.join(dirName, filename));
+      callback(entry_name, join(dirName, filename));
     }
   }
 
@@ -53,7 +53,7 @@ function getEntries(dirName) {
 function getHtmlTemplates(dirName) {
   const html_conf = [];
   // create the array of HTML plugins.
-  const template = path.join(dirName, '_template.html');
+  const template = join(dirName, '_template.html');
   getExamples(dirName, (entryName, filename) => {
     html_conf.push(
       new HtmlWebpackPlugin({
@@ -76,7 +76,7 @@ module.exports = (env, argv) => {
     context: __dirname,
     target: 'web',
     mode: prod ? 'production' : 'development',
-    entry: getEntries(path.resolve(path.join(__dirname, 'examples'))),
+    entry: getEntries(resolve(join(__dirname, 'examples'))),
     optimization: {
       runtimeChunk: {
         name: 'common',
@@ -89,15 +89,15 @@ module.exports = (env, argv) => {
     },
     output: {
       filename: '[name].js',
-      path: path.join(__dirname, 'dist', 'examples'),
+      path: join(__dirname, 'dist', 'examples'),
       publicPath: 'auto',
     },
     resolve: {
       alias: {
-        'ol-mapbox-style': path.join(__dirname, 'src'),
+        'ol-mapbox-style': join(__dirname, 'src'),
       },
       fallback: {
-        'assert': path.join(__dirname, 'node_modules', 'nanoassert'),
+        'assert': join(__dirname, 'node_modules', 'nanoassert'),
       },
     },
     devtool: 'source-map',
@@ -125,11 +125,11 @@ module.exports = (env, argv) => {
       new CopyWebpackPlugin({
         patterns: [
           {
-            from: path.resolve(__dirname, './examples/data'),
+            from: resolve(__dirname, './examples/data'),
             to: 'data',
           },
           {
-            from: path.resolve(__dirname, './examples/index.html'),
+            from: resolve(__dirname, './examples/index.html'),
             to: 'index.html',
           },
         ],
