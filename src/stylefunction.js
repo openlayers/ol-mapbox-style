@@ -13,12 +13,17 @@ import Style from 'ol/style/Style.js';
 import Text from 'ol/style/Text.js';
 import {toPromise} from 'ol/functions.js';
 
-import Color from '@mapbox/mapbox-gl-style-spec/util/color.js';
-import convertFunction from '@mapbox/mapbox-gl-style-spec/function/convert.js';
-import createFilter from '@mapbox/mapbox-gl-style-spec/feature_filter/index.js';
-import derefLayers from '@mapbox/mapbox-gl-style-spec/deref.js';
 import mb2css from 'mapbox-to-css-font';
-import spec from '@mapbox/mapbox-gl-style-spec/reference/v8.json';
+import {
+  Color,
+  convertFunction,
+  featureFilter as createFilter,
+  createPropertyExpression,
+  derefLayers,
+  isExpression,
+  isFunction,
+  v8 as spec,
+} from '@maplibre/maplibre-gl-style-spec';
 import {applyLetterSpacing, wrapText} from './text.js';
 import {
   clearFunctionCache,
@@ -32,11 +37,6 @@ import {
   getStyleFunctionKey,
   getZoomForResolution,
 } from './util.js';
-import {
-  createPropertyExpression,
-  isExpression,
-} from '@mapbox/mapbox-gl-style-spec/expression/index.js';
-import {isFunction} from '@mapbox/mapbox-gl-style-spec/function/index.js';
 
 /**
  * @typedef {import("ol/layer/Vector").default} VectorLayer

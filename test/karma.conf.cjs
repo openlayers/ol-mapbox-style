@@ -1,4 +1,3 @@
-const {join} = require('path');
 const path = require('path');
 const puppeteer = require('puppeteer');
 
@@ -66,18 +65,6 @@ module.exports = function (karma) {
             include: /src/,
             exclude: /node_modules|\.test\.js$/,
             use: 'coverage-istanbul-loader',
-          },
-          {
-            test: /\.js$/,
-            enforce: 'pre',
-            use: ['remove-flow-types-loader'],
-            include: join(
-              __dirname,
-              '..',
-              'node_modules',
-              '@mapbox',
-              'mapbox-gl-style-spec',
-            ),
           },
         ],
       },

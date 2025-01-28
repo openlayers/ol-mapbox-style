@@ -490,7 +490,7 @@ ol-mapbox-style now requires OpenLayers >= 6.13.
 
 ## 6.1.1
 
-* Fix version issue with @mapbox/mapbox-gl-style-spec
+* Fix version issue with @maplibre/maplibre-gl-style-spec
 
 ## 6.1.0
 
