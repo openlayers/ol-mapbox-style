@@ -29,9 +29,9 @@ export function getResolutionForZoom(zoom: any, resolutions: any): number;
  * or rejects with the Response object.
  * @private
  */
-export function fetchResource(resourceType: ResourceType, url: string, options?: import("./apply.js").Options | undefined, metadata?: {
-    request?: Request | undefined;
-} | undefined): Promise<any | Response>;
+export function fetchResource(resourceType: ResourceType, url: string, options?: Options, metadata?: {
+    request?: Request;
+}): Promise<any | Response>;
 export function getGlStyle(glStyleOrUrl: any, options: any): Promise<any>;
 /**
  * @param {Object} glSource glStyle source object.
@@ -41,7 +41,7 @@ export function getGlStyle(glStyleOrUrl: any, options: any): Promise<any>;
  */
 export function getTileJson(glSource: any, styleUrl: string, options?: Options): Promise<{
     tileJson: any;
-    tileLoadFunction: import('ol/Tile.js').LoadFunction;
+    tileLoadFunction: import("ol/Tile.js").LoadFunction;
 } | null>;
 /**
  * @param {HTMLImageElement|HTMLCanvasElement} spriteImage Sprite image id.
@@ -80,7 +80,7 @@ export function drawSDF(image: HTMLImageElement, area: {
     a: number;
 }): HTMLCanvasElement;
 export const defaultResolutions: number[];
-export type ResourceType = 'Style' | 'Source' | 'Sprite' | 'SpriteImage' | 'Tiles' | 'GeoJSON';
+export type ResourceType = "Style" | "Source" | "Sprite" | "SpriteImage" | "Tiles" | "GeoJSON";
 export type Map = import("ol").Map;
 export type Layer = import("ol/layer").Layer;
 export type LayerGroup = import("ol/layer").Group;

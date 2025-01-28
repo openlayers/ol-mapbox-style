@@ -6,4 +6,4 @@ export function wrapText(text: any, font: any, em: any, letterSpacing: any): any
  * @return {Array} Processed fonts.
  * @private
  */
-export function getFonts(fonts: any[], templateUrl?: string | undefined): any[];
+export function getFonts(fonts: any[], templateUrl?: string): any[];

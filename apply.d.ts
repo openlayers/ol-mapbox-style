@@ -46,7 +46,7 @@
  * @return {Promise} Promise which will be resolved when the style can be used
  * for rendering.
  */
-export function applyStyle(layer: VectorTileLayer | VectorLayer, glStyle: string | any, sourceOrLayersOrOptions?: string | string[] | (Options & ApplyStyleOptions) | undefined, optionsOrPath?: string | (Options & ApplyStyleOptions) | undefined, resolutions?: number[] | undefined): Promise<any>;
+export function applyStyle(layer: VectorTileLayer | VectorLayer, glStyle: string | any, sourceOrLayersOrOptions?: string | Array<string> | (Options & ApplyStyleOptions), optionsOrPath?: (Options & ApplyStyleOptions) | string, resolutions?: Array<number>): Promise<any>;
 /**
  * Applies properties of the Mapbox/MapLibre Style's first `background` layer to the
  * provided map or layer (group).
@@ -158,7 +158,7 @@ export function getMapboxLayer(mapOrGroup: Map | LayerGroup, layerId: string): a
  * @param {string} [beforeLayerId] Optional id of the Mapbox Layer before the new layer that will be added.
  * @return {Promise<void>} Resolves when the added layer is available.
  */
-export function addMapboxLayer(mapOrGroup: Map | LayerGroup, mapboxLayer: any, beforeLayerId?: string | undefined): Promise<void>;
+export function addMapboxLayer(mapOrGroup: Map | LayerGroup, mapboxLayer: any, beforeLayerId?: string): Promise<void>;
 /**
  * Update a Mapbox Layer object in the style. The map will be re-rendered with the new style.
  * @param {Map|LayerGroup} mapOrGroup The Map or LayerGroup `apply` was called on.

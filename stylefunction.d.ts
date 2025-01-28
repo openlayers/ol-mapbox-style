@@ -94,7 +94,7 @@ export function recordStyleLayer(record?: boolean): void;
  * @return {StyleFunction} Style function for use in
  * `ol.layer.Vector` or `ol.layer.VectorTile`.
  */
-export function stylefunction(olLayer: VectorLayer | VectorTileLayer, glStyle: string | any, sourceOrLayers: string | Array<string>, resolutions?: Array<number>, spriteData?: any, spriteImageUrl?: string | Request | Promise<string | Request>, getFonts?: (arg0: Array<string>, arg1: string | undefined) => Array<string>, getImage?: ((arg0: VectorLayer | VectorTileLayer, arg1: string) => HTMLImageElement | HTMLCanvasElement | string | undefined) | undefined, ...args: any[]): StyleFunction;
+export function stylefunction(olLayer: VectorLayer | VectorTileLayer, glStyle: string | any, sourceOrLayers: string | Array<string>, resolutions?: Array<number>, spriteData?: any, spriteImageUrl?: string | Request | Promise<string | Request>, getFonts?: (arg0: Array<string>, arg1: string | undefined) => Array<string>, getImage?: (arg0: VectorLayer | VectorTileLayer, arg1: string) => HTMLImageElement | HTMLCanvasElement | string | undefined, ...args: any[]): StyleFunction;
 /**
  * Get the the style for a specific Mapbox layer only. This can be useful for creating a legend.
  * @param {import("ol/Feature").default|import("ol/render/Feature").default} feature OpenLayers feature.
@@ -108,14 +108,14 @@ export const styleFunctionArgs: {};
 export type VectorLayer = import("ol/layer/Vector").default;
 export type VectorTileLayer = import("ol/layer/VectorTile").default;
 export type StyleFunction = import("ol/style/Style").StyleFunction;
-export type ResourceType = import('./util.js').ResourceType;
+export type ResourceType = import("./util.js").ResourceType;
 /**
  * @private
  * @param {?} color Color.
  * @param {number} [opacity] Opacity.
  * @return {string} Color.
  */
-declare function colorWithOpacity(color: unknown, opacity?: number | undefined): string;
+declare function colorWithOpacity(color: unknown, opacity?: number): string;
 /**
  * @private
  * @param {string} layerId Layer id.
