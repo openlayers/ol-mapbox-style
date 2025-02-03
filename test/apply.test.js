@@ -7,17 +7,13 @@ import Point from 'ol/geom/Point.js';
 import LayerGroup from 'ol/layer/Group.js';
 import VectorLayer from 'ol/layer/Vector.js';
 import VectorTileLayer from 'ol/layer/VectorTile.js';
-import {
-  METERS_PER_UNIT,
-  Projection,
-  addProjection,
-  get as getProjection,
-  toLonLat,
-} from 'ol/proj.js';
+import {register} from 'ol/proj/proj4.js';
+import {METERS_PER_UNIT, get as getProjection, toLonLat} from 'ol/proj.js';
 import RasterSource from 'ol/source/Raster.js';
 import TileSource from 'ol/source/Tile.js';
 import VectorSource from 'ol/source/Vector.js';
 import VectorTileSource from 'ol/source/VectorTile.js';
+import proj4 from 'proj4';
 import should from 'should';
 import {
   apply,
@@ -31,6 +27,14 @@ import backgroundStyle from './fixtures/background.json';
 delete brightV9.sprite;
 
 describe('ol-mapbox-style', function () {
+  before(function () {
+    proj4.defs(
+      'EPSG:31287',
+      'PROJCS["MGI / Austria Lambert",GEOGCS["MGI",DATUM["Militar-Geographische_Institut",SPHEROID["Bessel 1841",6377397.155,299.1528128,AUTHORITY["EPSG","7004"]],AUTHORITY["EPSG","6312"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4312"]],PROJECTION["Lambert_Conformal_Conic_2SP"],PARAMETER["latitude_of_origin",47.5],PARAMETER["central_meridian",13.3333333333333],PARAMETER["standard_parallel_1",49],PARAMETER["standard_parallel_2",46],PARAMETER["false_easting",400000],PARAMETER["false_northing",400000],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["Northing",NORTH],AXIS["Easting",EAST],AUTHORITY["EPSG","31287"]]',
+    );
+    register(proj4);
+  });
+
   describe('apply', function () {
     let target;
 
@@ -305,15 +309,10 @@ describe('ol-mapbox-style', function () {
     });
 
     it('sets the correct GeoJON data projection for custom projections', function (done) {
-      const epsg31287 = new Projection({
-        code: 'EPSG:31287',
-        extent: [
-          121983.868598955, 285075.189779654, 694938.749394035,
-          575854.254725608,
-        ],
-        units: 'm',
-      });
-      addProjection(epsg31287);
+      const epsg31287 = getProjection('EPSG:31287');
+      epsg31287.setExtent([
+        121983.868598955, 285075.189779654, 694938.749394035, 575854.254725608,
+      ]);
       const geojson = {
         'type': 'FeatureCollection',
         'features': [
