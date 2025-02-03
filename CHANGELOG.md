@@ -1,5 +1,11 @@
 # Changelog
 
+## 12.4.1
+
+* Switch from @mapbox/mapbox-gl-style-spec to @mapblibre/maplibre-gl-style-spec
+* Get rid of ESM bundle in `dist/index.js`, use `src/index.js` directly for ESM
+* New website and API docs
+
 ## 12.4.0
 
 * More precise angle computation for line labels
