@@ -10,7 +10,8 @@
   "exports": {
     ".": {
       "import": "./src/index.js",
-      "require": "./dist/olms.js"
+      "require": "./dist/olms.js",
+      "types": "./dist/index.d.ts"
     }
   },
   "repository": {
