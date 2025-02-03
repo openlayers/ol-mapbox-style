@@ -15,11 +15,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/openlayers/ol-mapbox-style.git"
+    "url": "https://github.com/openlayers/ol-mapbox-style.git"
   },
   "bugs": {
     "url": "https://github.com/openlayers/ol-mapbox-style/issues"
   },
+  "homepage": "https://openlayers.org/ol-mapbox-style/",
   "keywords": [
     "openlayers",
     "mapbox",
@@ -31,7 +32,7 @@
     "start": "webpack serve --config ./webpack.config.examples.cjs",
     "prepare": "npm run doc && npm run build",
     "build": "tsc --project tsconfig-build.json && rollup -c && webpack-cli --mode=production --config ./webpack.config.examples.cjs",
-    "doc": "typedoc --plugin typedoc-plugin-markdown --plugin typedoc-plugin-missing-exports src/index.js --readme none --excludeExternals --preserveAnchorCasing --hideBreadcrumbs --disableSources --tsconfig tsconfig-typecheck.json && npx concat-md docs --hide-anchor-links=false | npx add-text-to-markdown README.md --section \"API\" --write",
+    "doc": "typedoc --plugin typedoc-plugin-missing-exports src/index.js --excludeExternals --tsconfig tsconfig-typecheck.json",
     "karma": "karma start test/karma.conf.cjs",
     "lint": "eslint test examples src",
     "typecheck": "tsc --project tsconfig-typecheck.json",
@@ -54,8 +55,6 @@
     "@types/mocha": "^10.0.0",
     "@types/offscreencanvas": "^2019.6.4",
     "@types/topojson-specification": "^1.0.1",
-    "add-text-to-markdown": "^2.0.0",
-    "concat-md": "^0.5.0",
     "copy-webpack-plugin": "^12.0.2",
     "cross-env": "^7.0.3",
     "css-loader": "^7.0.0",

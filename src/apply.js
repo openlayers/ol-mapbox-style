@@ -308,6 +308,7 @@ export function applyStyle(
                     source.getProjection(),
                   )
                 ) {
+                  //@ts-ignore
                   targetSource.tileGrid = source.getTileGrid();
                 }
               }
@@ -675,6 +676,7 @@ function setupRasterSource(glSource, styleUrl, options) {
           crossOrigin: 'anonymous',
           tileJSON: tileJson,
         });
+        //@ts-ignore
         source.tileGrid = sourceOptionsFromTileJSON(
           glSource,
           tileJson,

@@ -1,10 +1,11 @@
-const {join, resolve} = require('path');
 const {readdirSync} = require('fs');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+const {join, resolve} = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
-/** Get the list of examples from the examples directory.
+/**
+ * Get the list of examples from the examples directory.
  *
  *  @param {string} dirName Name of the directory to read.
  *  @param {Function} callback Function to execute for each example.
@@ -28,7 +29,8 @@ function getExamples(dirName, callback) {
   return entries;
 }
 
-/** Creates an object with the entry names and file names
+/**
+ * Creates an object with the entry names and file names
  *  to be transformed.
  *
  *  @param {string} dirName Name of the directory to read.
@@ -43,7 +45,8 @@ function getEntries(dirName) {
   return entries;
 }
 
-/** Each example needs a dedicated HTML file.
+/**
+ * Each example needs a dedicated HTML file.
  *  This will create a "plugin" that outputs HTML from a template.
  *
  *  @param {string} dirName Name of the directory to read.
@@ -89,7 +92,7 @@ module.exports = (env, argv) => {
     },
     output: {
       filename: '[name].js',
-      path: join(__dirname, 'dist', 'examples'),
+      path: join(__dirname, 'docs', 'examples'),
       publicPath: 'auto',
     },
     resolve: {

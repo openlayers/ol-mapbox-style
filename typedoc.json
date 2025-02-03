@@ -1,0 +1,9 @@
+{
+  "headings": {
+    "readme": true,
+    "document": true
+  },
+  "sidebarLinks": {
+    "Examples": "https://openlayers.org/ol-mapbox-style/examples/"
+  }
+}

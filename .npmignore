@@ -11,3 +11,4 @@ dist/examples/
 webpack.*.cjs
 rollup.config.js
 tsconfig*.json
+typedoc.json
