@@ -2,7 +2,7 @@
 .git/
 .github/
 coverage/
-docs/
+_site/
 examples/
 test/
 dist/examples/

@@ -32,7 +32,7 @@
     "start": "webpack serve --config ./webpack.config.examples.cjs",
     "prepare": "npm run doc && npm run build",
     "build": "tsc --project tsconfig-build.json && rollup -c && webpack-cli --mode=production --config ./webpack.config.examples.cjs",
-    "doc": "typedoc --plugin typedoc-plugin-missing-exports src/index.js --excludeExternals --tsconfig tsconfig-typecheck.json",
+    "doc": "typedoc --plugin typedoc-plugin-missing-exports src/index.js --excludeExternals --tsconfig tsconfig-typecheck.json --out ./_site",
     "karma": "karma start test/karma.conf.cjs",
     "lint": "eslint test examples src",
     "typecheck": "tsc --project tsconfig-typecheck.json",

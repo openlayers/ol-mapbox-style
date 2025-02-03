@@ -92,7 +92,7 @@ module.exports = (env, argv) => {
     },
     output: {
       filename: '[name].js',
-      path: join(__dirname, 'docs', 'examples'),
+      path: join(__dirname, '_site', 'examples'),
       publicPath: 'auto',
     },
     resolve: {
