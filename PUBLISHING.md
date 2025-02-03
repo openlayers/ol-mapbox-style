@@ -18,16 +18,6 @@ Commit the changes.
     git add package.json package-lock.json CHANGELOG.md
     git commit -m "Changes for 2.11.0"
 
-### Update README when API docs changed
-
-To build the docs, run
-
-    npm run doc
-
-When the above results in changes to README.md, commit these changes to master:
-
-    git add README.md
-    git commit -m "Update API docs in README"
 
 ### Merge the release branch
 
