@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@maplibre/maplibre-gl-style-spec": "^23.1.0",
-    "mapbox-to-css-font": "^2.4.1"
+    "mapbox-to-css-font": "^3.0.2"
   },
   "peerDependencies": {
     "ol": "*"
