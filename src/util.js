@@ -111,7 +111,7 @@ const pendingRequests = {};
  * @param {ResourceType} resourceType Type of resource to load.
  * @param {string} url Url of the resource.
  * @param {Options} [options] Options.
- * @param {{request?: Request}} [metadata] Object to be filled with the request.
+ * @param {{url?: string}} [metadata] Object to be filled with the request.
  * @return {Promise<Object|Response>} Promise that resolves with the loaded resource
  * or rejects with the Response object.
  * @private
@@ -119,15 +119,31 @@ const pendingRequests = {};
 export function fetchResource(resourceType, url, options = {}, metadata) {
   if (url in pendingRequests) {
     if (metadata) {
-      metadata.request = pendingRequests[url][0];
+      metadata.url = pendingRequests[url][0].url;
     }
     return pendingRequests[url][1];
   }
   const transformedRequest = options.transformRequest
     ? options.transformRequest(url, resourceType) || url
     : url;
-  const pendingRequest = toPromise(() => transformedRequest).then(
-    (transformedRequest) => {
+  const handleError = function (error) {
+    delete pendingRequests[url];
+    return Promise.reject(new Error('Error fetching source ' + url));
+  };
+  const handleResponse = function (response) {
+    delete pendingRequests[url];
+    return response.ok
+      ? response.json()
+      : Promise.reject(new Error('Error fetching source ' + url));
+  };
+  const pendingRequest = toPromise(() => transformedRequest)
+    .then((transformedRequest) => {
+      if (transformedRequest instanceof Response) {
+        if (metadata) {
+          metadata.url = transformedRequest.url;
+        }
+        return handleResponse(transformedRequest);
+      }
       if (!(transformedRequest instanceof Request)) {
         transformedRequest = new Request(transformedRequest);
       }
@@ -135,21 +151,11 @@ export function fetchResource(resourceType, url, options = {}, metadata) {
         transformedRequest.headers.set('Accept', 'application/json');
       }
       if (metadata) {
-        metadata.request = transformedRequest;
+        metadata.url = transformedRequest.url;
       }
-      return fetch(transformedRequest)
-        .then(function (response) {
-          delete pendingRequests[url];
-          return response.ok
-            ? response.json()
-            : Promise.reject(new Error('Error fetching source ' + url));
-        })
-        .catch(function (error) {
-          delete pendingRequests[url];
-          return Promise.reject(new Error('Error fetching source ' + url));
-        });
-    },
-  );
+      return fetch(transformedRequest).then(handleResponse).catch(handleError);
+    })
+    .catch(handleError);
   pendingRequests[url] = [transformedRequest, pendingRequest];
   return pendingRequest;
 }
@@ -191,38 +197,51 @@ export function getTileJson(glSource, styleUrl, options = {}) {
           : src;
         if (tile instanceof VectorTile) {
           tile.setLoader((extent, resolution, projection) => {
-            toPromise(() => transformedRequest).then((transformedRequest) => {
-              fetch(transformedRequest)
-                .then((response) => response.arrayBuffer())
-                .then((data) => {
-                  const format = tile.getFormat();
-                  const features = format.readFeatures(data, {
-                    extent: extent,
-                    featureProjection: projection,
-                  });
-                  // @ts-ignore
-                  tile.setFeatures(features);
-                })
-                .catch((e) => tile.setState(TileState.ERROR));
-            });
+            const handleResponse = function (response) {
+              response.arrayBuffer().then((data) => {
+                const format = tile.getFormat();
+                const features = format.readFeatures(data, {
+                  extent: extent,
+                  featureProjection: projection,
+                });
+                // @ts-ignore
+                tile.setFeatures(features);
+              });
+            };
+            toPromise(() => transformedRequest)
+              .then((transformedRequest) => {
+                if (transformedRequest instanceof Response) {
+                  return handleResponse(transformedRequest);
+                }
+                fetch(transformedRequest)
+                  .then(handleResponse)
+                  .catch((e) => tile.setState(TileState.ERROR));
+              })
+              .catch((e) => tile.setState(TileState.ERROR));
           });
         } else {
           const img = tile.getImage();
-          toPromise(() => transformedRequest).then((transformedRequest) => {
-            if (transformedRequest instanceof Request) {
-              fetch(transformedRequest)
-                .then((response) => response.blob())
-                .then((blob) => {
+          toPromise(() => transformedRequest)
+            .then((transformedRequest) => {
+              if (typeof transformedRequest === 'string') {
+                img.src = transformedRequest;
+                return;
+              }
+              const handleResponse = (response) =>
+                response.blob().then((blob) => {
                   const url = URL.createObjectURL(blob);
                   img.addEventListener('load', () => URL.revokeObjectURL(url));
                   img.addEventListener('error', () => URL.revokeObjectURL(url));
                   img.src = url;
-                })
+                });
+              if (transformedRequest instanceof Response) {
+                return handleResponse(transformedRequest);
+              }
+              fetch(transformedRequest)
+                .then(handleResponse)
                 .catch((e) => tile.setState(TileState.ERROR));
-            } else {
-              img.src = transformedRequest;
-            }
-          });
+            })
+            .catch((e) => tile.setState(TileState.ERROR));
         }
       };
     }
@@ -258,7 +277,7 @@ export function getTileJson(glSource, styleUrl, options = {}) {
               tileUrl,
               options.accessToken,
               options.accessTokenParam || 'access_token',
-              metadata.request.url,
+              metadata.url,
             )[0];
           });
           return Promise.resolve({tileJson, tileLoadFunction});

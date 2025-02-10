@@ -66,10 +66,10 @@ import {
 /**
  * @typedef {Object} Options
  * @property {string} [accessToken] Access token for 'mapbox://' urls.
- * @property {function(string, import("./util.js").ResourceType): (Request|string|Promise<Request|string>|void)} [transformRequest]
+ * @property {function(string, import("./util.js").ResourceType): (Request|string|Response|Promise<Request|string|Response>|void)} [transformRequest]
  * Function for controlling how `ol-mapbox-style` fetches resources. Can be used for modifying
  * the url, adding headers or setting credentials options. Called with the url and the resource
- * type as arguments, this function is supposed to return a `Request` or a url `string`, or a promise tehereof.
+ * type as arguments, this function is supposed to return a `Request`, a url `string` or a `Response`, or a promise tehereof.
  * Without a return value the original request will not be modified.
  * @property {string} [projection='EPSG:3857'] Only useful when working with non-standard projections.
  * Code of a projection registered with OpenLayers. All sources of the style must be provided in this

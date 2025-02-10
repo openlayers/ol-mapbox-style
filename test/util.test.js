@@ -64,7 +64,7 @@ describe('util', function () {
         ),
       ])
         .then(() => {
-          should('request' in metadataPending).true();
+          should('url' in metadataPending).true();
           should(metadataPending.request).equal(metadataNotPending.request);
           done();
         })
