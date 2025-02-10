@@ -69,7 +69,7 @@ const mapboxSubdomains = ['a', 'b', 'c', 'd'];
  * @private
  */
 export function normalizeSourceUrl(url, token, tokenParam, styleUrl) {
-  const urlObject = new URL(url, styleUrl);
+  const urlObject = new URL(url, styleUrl || location.href);
   const mapboxPath = getMapboxPath(url);
   if (!mapboxPath) {
     if (!token) {

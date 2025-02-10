@@ -74,7 +74,7 @@
     "mini-css-extract-plugin": "^2.4.4",
     "mocha": "^11.1.0",
     "nanoassert": "^2.0.0",
-    "pmtiles-protocol": "^1.0.1",
+    "pmtiles-protocol": "^1.0.5",
     "proj4": "^2.15.0",
     "puppeteer": "^23.10.4",
     "rollup": "^2.70.2",

@@ -1,7 +1,7 @@
 import 'ol/ol.css';
 import {apply} from 'ol-mapbox-style';
-import {register as registerPMTiles} from 'pmtiles-protocol';
+import {fetch} from 'pmtiles-protocol';
 
-registerPMTiles();
-
-apply('map', 'data/protomaps-dark-style.json');
+apply('map', 'data/protomaps-dark-style.json', {
+  transformRequest: (url) => fetch(url),
+});
