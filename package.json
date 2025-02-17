@@ -80,7 +80,7 @@
     "puppeteer": "^24.2.0",
     "rollup": "^4.34.6",
     "should": "^13.2.3",
-    "sinon": "^18.0.0",
+    "sinon": "^19.0.2",
     "style-loader": "^4.0.0",
     "typedoc": "^0.27.6",
     "typedoc-plugin-markdown": "^4.4.1",
