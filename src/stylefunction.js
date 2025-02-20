@@ -321,7 +321,7 @@ export const styleFunctionArgs = {};
  * @param {Object} spriteData Sprite data from the url specified in
  * the Mapbox/MapLibre Style object's `sprite` property. Only required if a `sprite`
  * property is specified in the Mapbox/MapLibre Style object.
- * @param {string|Request|Promise<string|Request>} spriteImageUrl Sprite image url for the sprite
+ * @param {string|Request|Response|Promise<string|Request|Response>} spriteImageUrl Sprite image url for the sprite
  * specified in the Mapbox/MapLibre Style object's `sprite` property. Only required if a
  * `sprite` property is specified in the Mapbox/MapLibre Style object.
  * @param {function(Array<string>, string=):Array<string>} getFonts Function that
@@ -360,49 +360,58 @@ export function stylefunction(
   let spriteImageUnSDFed;
 
   if (spriteImageUrl) {
-    if (typeof Image !== 'undefined') {
-      const img = new Image();
+    toPromise(() => spriteImageUrl).then(async (spriteImageUrl) => {
       let blobUrl;
-      toPromise(() => spriteImageUrl).then((spriteImageUrl) => {
-        if (spriteImageUrl instanceof Request) {
-          fetch(spriteImageUrl)
-            .then((response) => response.blob())
-            .then((blob) => {
-              blobUrl = URL.createObjectURL(blob);
-              img.src = blobUrl;
-            })
-            .catch(() => {});
-        } else {
+      if (typeof Image !== 'undefined') {
+        const img = new Image();
+        if (typeof spriteImageUrl === 'string') {
           img.crossOrigin = 'anonymous';
           img.src = spriteImageUrl;
+        } else {
+          let response;
+          if (spriteImageUrl instanceof Request) {
+            response = await fetch(spriteImageUrl);
+          } else if (spriteImageUrl instanceof Response) {
+            response = spriteImageUrl;
+          }
+          const blob = await response.blob();
+          blobUrl = URL.createObjectURL(blob);
+          img.src = blobUrl;
+        }
+        img.addEventListener('load', function load() {
+          img.removeEventListener('load', load);
+          spriteImage = img;
+          spriteImageSize = [img.width, img.height];
+          olLayer.changed();
           if (blobUrl) {
             URL.revokeObjectURL(blobUrl);
           }
-        }
-      });
-      img.onload = function () {
-        spriteImage = img;
-        spriteImageSize = [img.width, img.height];
-        olLayer.changed();
-        img.onload = null;
-      };
-    } else if (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) { //eslint-disable-line
-      const worker = /** @type {*} */ (self);
-      // Main thread needs to handle 'loadImage' and dispatch 'imageLoaded'
-      worker.postMessage({
-        action: 'loadImage',
-        src: spriteImageUrl,
-      });
-      worker.addEventListener('message', function handler(event) {
-        if (
-          event.data.action === 'imageLoaded' &&
-          event.data.src === spriteImageUrl
-        ) {
-          spriteImage = event.data.image;
-          spriteImageSize = [spriteImage.width, spriteImage.height];
-        }
-      });
-    }
+        });
+        img.addEventListener('error', function error() {
+          URL.revokeObjectURL(blobUrl);
+          img.removeEventListener('error', error);
+        });
+      } else if (
+        typeof WorkerGlobalScope !== 'undefined' &&
+        self instanceof WorkerGlobalScope // eslint-disable-line
+      ) {
+        const worker = /** @type {*} */ (self);
+        // Main thread needs to handle 'loadImage' and dispatch 'imageLoaded'
+        worker.postMessage({
+          action: 'loadImage',
+          src: spriteImageUrl,
+        });
+        worker.addEventListener('message', function handler(event) {
+          if (
+            event.data.action === 'imageLoaded' &&
+            event.data.src === spriteImageUrl
+          ) {
+            spriteImage = event.data.image;
+            spriteImageSize = [spriteImage.width, spriteImage.height];
+          }
+        });
+      }
+    });
   }
 
   const allLayers = derefLayers(glStyle.layers);
