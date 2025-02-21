@@ -1321,6 +1321,10 @@ export function stylefunction(
                 return acc;
               }, []);
             }
+            // omit label until OL supports rich text with line placement (openlayers/openlayers#16497)
+            if (typeof label === 'object' && "symbol-placement" in layout && layout["symbol-placement"] == "line") {
+              label = null;
+            }
           } else {
             label = fromTemplate(textField, properties).trim();
           }
