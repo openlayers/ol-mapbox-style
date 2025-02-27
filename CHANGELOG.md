@@ -1,5 +1,10 @@
 # Changelog
 
+## 12.5.0
+
+* transformRequest can now also return a `Response` or a `Promise` thereof.
+* Fix `browser` and `module` entries in `package.json`.
+
 ## 12.4.1
 
 * Switch from @mapbox/mapbox-gl-style-spec to @mapblibre/maplibre-gl-style-spec
