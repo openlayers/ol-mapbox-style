@@ -1630,7 +1630,7 @@ export function getSource(map, sourceId) {
  *
  * The feature state will be stored on the OpenLayers layer matching the feature identifier, in the
  * `mapbox-featurestate` property.
- * @param {Map|VectorLayer|VectorTileLayer} mapOrLayer OpenLayers Map or layer to set the feature
+ * @param {Map|LayerGroup|VectorLayer|VectorTileLayer} mapOrLayer OpenLayers Map or layer to set the feature
  * state on.
  * @param {FeatureIdentifier} feature Feature identifier.
  * @param {Object|null} state Feature state. Set to `null` to remove the feature state.
@@ -1659,7 +1659,7 @@ export function setFeatureState(mapOrLayer, feature, state) {
  * Sets or removes a feature state. The feature state is taken into account for styling,
  * just like the feature's properties, and can be used e.g. to conditionally render selected
  * features differently.
- * @param {Map|VectorLayer|VectorTileLayer} mapOrLayer Map or layer to set the feature state on.
+ * @param {Map|LayerGroup|VectorLayer|VectorTileLayer} mapOrLayer Map or layer to set the feature state on.
  * @param {FeatureIdentifier} feature Feature identifier.
  * @return {Object|null} Feature state or `null` when no feature state is set for the given
  * feature identifier.
