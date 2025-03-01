@@ -38,6 +38,42 @@ describe('ol/layer/MapboxVector', () => {
         }
       });
     });
+
+    it('chooses the correct tile source heuristically', function (done) {
+      const layer = new MapboxVectorLayer({
+        styleUrl:
+          'data:,' +
+          encodeURIComponent(
+            JSON.stringify({
+              version: 8,
+              sources: {
+                'foo': {
+                  type: 'vector',
+                  attribution: 'test-source',
+                },
+                'bar': {
+                  url: './fixtures/tilejson-mapboxvector.json',
+                  type: 'vector',
+                },
+              },
+              layers: [],
+            }),
+          ),
+      });
+      layer.on('error', function (e) {
+        done(e.error);
+      });
+      const source = layer.getSource();
+      const key = source.on('change', function () {
+        if (source.getState() === 'ready') {
+          unByKey(key);
+          should(source.getTileUrlFunction()([0, 0, 0])).eql(
+            'http://a.tiles.mapbox.com/v3/mapbox.geography-class/0/0/0.png',
+          );
+          done();
+        }
+      });
+    });
   });
 
   describe('maxResolution', function () {
