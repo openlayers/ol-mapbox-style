@@ -248,10 +248,23 @@ export function applyStyle(
           );
         }
 
-        const type = layer instanceof VectorTileLayer ? 'vector' : 'geojson';
+        const desiredType =
+          layer instanceof VectorTileLayer ? 'vector' : 'geojson';
+        const requiredAttrs = {
+          // for the respective source tiles, we expect any of those attributes to be present
+          'vector': ['url', 'tiles'],
+          'geojson': ['data'],
+        };
         if (!sourceOrLayers) {
           sourceId = Object.keys(glStyle.sources).find(function (key) {
-            return glStyle.sources[key].type === type;
+            const sourceType = glStyle.sources[key].type;
+            const typeMatch = sourceType === desiredType;
+            const hasRequiredAttrs = requiredAttrs[sourceType].some(
+              function (attr) {
+                return Object.keys(glStyle.sources[key]).includes(attr);
+              },
+            );
+            return typeMatch && hasRequiredAttrs;
           });
           sourceOrLayers = sourceId;
         } else if (Array.isArray(sourceOrLayers)) {
@@ -262,7 +275,9 @@ export function applyStyle(
           sourceId = sourceOrLayers;
         }
         if (!sourceId) {
-          return reject(new Error(`No ${type} source found in the glStyle.`));
+          return reject(
+            new Error(`No ${desiredType} source found in the glStyle.`),
+          );
         }
 
         function assignSource() {
@@ -274,58 +289,60 @@ export function applyStyle(
               glStyle.sources[sourceId],
               styleUrl,
               options,
-            ).then(function (source) {
-              const targetSource = layer.getSource();
-              if (!targetSource) {
-                layer.setSource(source);
-              } else if (source !== targetSource) {
-                targetSource.setTileUrlFunction(source.getTileUrlFunction());
-                if (
-                  typeof targetSource.setUrls === 'function' &&
-                  typeof source.getUrls === 'function'
-                ) {
-                  // to get correct keys for tile cache and queue
-                  targetSource.setUrls(source.getUrls());
-                }
-                //@ts-ignore
-                if (!targetSource.format_) {
+            )
+              .then(function (source) {
+                const targetSource = layer.getSource();
+                if (!targetSource) {
+                  layer.setSource(source);
+                } else if (source !== targetSource) {
+                  targetSource.setTileUrlFunction(source.getTileUrlFunction());
+                  if (
+                    typeof targetSource.setUrls === 'function' &&
+                    typeof source.getUrls === 'function'
+                  ) {
+                    // to get correct keys for tile cache and queue
+                    targetSource.setUrls(source.getUrls());
+                  }
                   //@ts-ignore
-                  targetSource.format_ = source.format_;
+                  if (!targetSource.format_) {
+                    //@ts-ignore
+                    targetSource.format_ = source.format_;
+                  }
+                  if (!targetSource.getAttributions()) {
+                    targetSource.setAttributions(source.getAttributions());
+                  }
+                  if (
+                    targetSource.getTileLoadFunction() === defaultLoadFunction
+                  ) {
+                    targetSource.setTileLoadFunction(
+                      source.getTileLoadFunction(),
+                    );
+                  }
+                  if (
+                    equivalent(
+                      targetSource.getProjection(),
+                      source.getProjection(),
+                    )
+                  ) {
+                    //@ts-ignore
+                    targetSource.tileGrid = source.getTileGrid();
+                  }
                 }
-                if (!targetSource.getAttributions()) {
-                  targetSource.setAttributions(source.getAttributions());
-                }
+                const tileGrid = layer.getSource().getTileGrid();
                 if (
-                  targetSource.getTileLoadFunction() === defaultLoadFunction
+                  !isFinite(layer.getMaxResolution()) &&
+                  !isFinite(layer.getMinZoom()) &&
+                  tileGrid.getMinZoom() > 0
                 ) {
-                  targetSource.setTileLoadFunction(
-                    source.getTileLoadFunction(),
+                  layer.setMaxResolution(
+                    getResolutionForZoom(
+                      Math.max(0, tileGrid.getMinZoom() - 1e-12),
+                      tileGrid.getResolutions(),
+                    ),
                   );
                 }
-                if (
-                  equivalent(
-                    targetSource.getProjection(),
-                    source.getProjection(),
-                  )
-                ) {
-                  //@ts-ignore
-                  targetSource.tileGrid = source.getTileGrid();
-                }
-              }
-              const tileGrid = layer.getSource().getTileGrid();
-              if (
-                !isFinite(layer.getMaxResolution()) &&
-                !isFinite(layer.getMinZoom()) &&
-                tileGrid.getMinZoom() > 0
-              ) {
-                layer.setMaxResolution(
-                  getResolutionForZoom(
-                    Math.max(0, tileGrid.getMinZoom() - 1e-12),
-                    tileGrid.getResolutions(),
-                  ),
-                );
-              }
-            });
+              })
+              .catch(reject);
           }
           const glSource = glStyle.sources[sourceId];
           let source = layer.getSource();
