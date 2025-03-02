@@ -1,6 +1,12 @@
 const mapboxBaseUrl = 'https://api.mapbox.com';
 
 /**
+ * @typedef {Object} Sprite
+ * @property {string} id Id of the sprite source.
+ * @property {string} url URL to the sprite source.
+ */
+
+/**
  * Gets the path from a mapbox:// URL.
  * @param {string} url The Mapbox URL.
  * @return {string} The path.
@@ -12,6 +18,45 @@ export function getMapboxPath(url) {
     return '';
   }
   return url.slice(startsWith.length);
+}
+
+/**
+ * Normalizes legacy string-based or new-style array based sprite definitions into array-based.
+ * @param {string|Array<Sprite>} sprite the sprite source.
+ * @param {string} token The access token.
+ * @param {string} styleUrl The style URL.
+ * @return {Array<Sprite>} An array of sprite definitions with normalized URLs.
+ * @private
+ */
+export function normalizeSpriteDefinition(sprite, token, styleUrl) {
+  if (typeof sprite === 'string') {
+    return [
+      {
+        'id': 'default',
+        'url': normalizeSpriteUrl(sprite, token, styleUrl),
+      },
+    ];
+  }
+
+  if (!Array.isArray(sprite)) {
+    throw new Error(`unexpected sprites type: ${typeof sprite}`);
+  }
+
+  const hasRequiredAttrs = sprite.every(function (spriteObj) {
+    const attrs = Object.keys(spriteObj);
+    return attrs.includes('id') && attrs.includes('url');
+  });
+
+  if (!hasRequiredAttrs) {
+    throw new Error('Some sprite definitions lack url or id');
+  }
+
+  return sprite.map(function (spriteObj) {
+    return {
+      'id': spriteObj.id,
+      'url': normalizeSpriteUrl(spriteObj.url, token, styleUrl),
+    };
+  });
 }
 
 /**
