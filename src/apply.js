@@ -257,6 +257,7 @@ export function applyStyle(
         };
         if (!sourceOrLayers) {
           sourceId = Object.keys(glStyle.sources).find(function (key) {
+            // NOTE: this is mostly a heuristic way of picking the source, the TODO comment above still applies.
             const sourceType = glStyle.sources[key].type;
             const typeMatch = sourceType === desiredType;
             const hasRequiredAttrs = requiredAttrs[sourceType].some(
