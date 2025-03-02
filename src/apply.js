@@ -289,61 +289,60 @@ export function applyStyle(
               glStyle.sources[sourceId],
               styleUrl,
               options,
-            )
-              .then(function (source) {
-                const targetSource = layer.getSource();
-                if (!targetSource) {
-                  layer.setSource(source);
-                } else if (source !== targetSource) {
-                  targetSource.setTileUrlFunction(source.getTileUrlFunction());
-                  if (
-                    typeof targetSource.setUrls === 'function' &&
-                    typeof source.getUrls === 'function'
-                  ) {
-                    // to get correct keys for tile cache and queue
-                    targetSource.setUrls(source.getUrls());
-                  }
-                  //@ts-ignore
-                  if (!targetSource.format_) {
-                    //@ts-ignore
-                    targetSource.format_ = source.format_;
-                  }
-                  if (!targetSource.getAttributions()) {
-                    targetSource.setAttributions(source.getAttributions());
-                  }
-                  if (
-                    targetSource.getTileLoadFunction() === defaultLoadFunction
-                  ) {
-                    targetSource.setTileLoadFunction(
-                      source.getTileLoadFunction(),
-                    );
-                  }
-                  if (
-                    equivalent(
-                      targetSource.getProjection(),
-                      source.getProjection(),
-                    )
-                  ) {
-                    //@ts-ignore
-                    targetSource.tileGrid = source.getTileGrid();
-                  }
-                }
-                const tileGrid = layer.getSource().getTileGrid();
+            ).then(function (source) {
+              const targetSource = layer.getSource();
+              if (!targetSource) {
+                layer.setSource(source);
+              } else if (source !== targetSource) {
+                targetSource.setTileUrlFunction(source.getTileUrlFunction());
                 if (
-                  !isFinite(layer.getMaxResolution()) &&
-                  !isFinite(layer.getMinZoom()) &&
-                  tileGrid.getMinZoom() > 0
+                  typeof targetSource.setUrls === 'function' &&
+                  typeof source.getUrls === 'function'
                 ) {
-                  layer.setMaxResolution(
-                    getResolutionForZoom(
-                      Math.max(0, tileGrid.getMinZoom() - 1e-12),
-                      tileGrid.getResolutions(),
-                    ),
+                  // to get correct keys for tile cache and queue
+                  targetSource.setUrls(source.getUrls());
+                }
+                //@ts-ignore
+                if (!targetSource.format_) {
+                  //@ts-ignore
+                  targetSource.format_ = source.format_;
+                }
+                if (!targetSource.getAttributions()) {
+                  targetSource.setAttributions(source.getAttributions());
+                }
+                if (
+                  targetSource.getTileLoadFunction() === defaultLoadFunction
+                ) {
+                  targetSource.setTileLoadFunction(
+                    source.getTileLoadFunction(),
                   );
                 }
-              })
-              .catch(reject);
+                if (
+                  equivalent(
+                    targetSource.getProjection(),
+                    source.getProjection(),
+                  )
+                ) {
+                  //@ts-ignore
+                  targetSource.tileGrid = source.getTileGrid();
+                }
+              }
+              const tileGrid = layer.getSource().getTileGrid();
+              if (
+                !isFinite(layer.getMaxResolution()) &&
+                !isFinite(layer.getMinZoom()) &&
+                tileGrid.getMinZoom() > 0
+              ) {
+                layer.setMaxResolution(
+                  getResolutionForZoom(
+                    Math.max(0, tileGrid.getMinZoom() - 1e-12),
+                    tileGrid.getResolutions(),
+                  ),
+                );
+              }
+            });
           }
+
           const glSource = glStyle.sources[sourceId];
           let source = layer.getSource();
           if (!source || source.get('mapbox-source') !== glSource) {
