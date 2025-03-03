@@ -302,7 +302,7 @@ export function getTileJson(glSource, styleUrl, options = {}) {
         tileLoadFunction,
       });
     } else {
-      promise = Promise.reject('source has no tiles');
+      promise = Promise.reject(new Error('source has no tiles'));
     }
     tilejsonCache[cacheKey] = promise;
   }
