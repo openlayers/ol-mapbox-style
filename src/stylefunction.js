@@ -190,7 +190,14 @@ function evaluateFilter(layerId, filter, feature, zoom, filterCache) {
     console.warn('No filterCache provided to evaluateFilter()'); //eslint-disable-line no-console
   }
   if (!(layerId in filterCache)) {
-    filterCache[layerId] = createFilter(filter).filter;
+    try {
+      filterCache[layerId] = createFilter(filter).filter;
+    } catch (e) {
+      console.warn('Filter will evaluate to false: ' + e.message); //eslint-disable-line no-console
+      filterCache[layerId] = function () {
+        return false;
+      };
+    }
   }
   zoomObj.zoom = zoom;
   return filterCache[layerId](zoomObj, feature);
