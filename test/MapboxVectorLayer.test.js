@@ -20,7 +20,12 @@ describe('ol/layer/MapboxVector', () => {
                   type: 'vector',
                 },
               },
-              layers: [],
+              layers: [
+                {
+                  'id': 'mock',
+                  'source': 'foo',
+                },
+              ],
             }),
           ),
       });
@@ -56,7 +61,12 @@ describe('ol/layer/MapboxVector', () => {
                   type: 'vector',
                 },
               },
-              layers: [],
+              layers: [
+                {
+                  id: 'mock',
+                  source: 'bar',
+                },
+              ],
             }),
           ),
       });
@@ -90,7 +100,12 @@ describe('ol/layer/MapboxVector', () => {
               minzoom: 6,
             },
           },
-          layers: [],
+          layers: [
+            {
+              id: 'mock',
+              source: 'foo',
+            },
+          ],
         }),
       );
 
