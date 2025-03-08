@@ -38,25 +38,11 @@ export function normalizeSpriteDefinition(sprite, token, styleUrl) {
     ];
   }
 
-  if (!Array.isArray(sprite)) {
-    throw new Error(`unexpected sprites type: ${typeof sprite}`);
+  for (const spriteObj of sprite) {
+    spriteObj.url = normalizeSpriteUrl(spriteObj.url, token, styleUrl);
   }
 
-  const hasRequiredAttrs = sprite.every(function (spriteObj) {
-    const attrs = Object.keys(spriteObj);
-    return attrs.includes('id') && attrs.includes('url');
-  });
-
-  if (!hasRequiredAttrs) {
-    throw new Error('Some sprite definitions lack url or id');
-  }
-
-  return sprite.map(function (spriteObj) {
-    return {
-      'id': spriteObj.id,
-      'url': normalizeSpriteUrl(spriteObj.url, token, styleUrl),
-    };
-  });
+  return sprite;
 }
 
 /**
