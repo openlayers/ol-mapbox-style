@@ -248,8 +248,7 @@ export function applyStyle(
           );
         }
 
-        const type =
-          layer instanceof VectorTileLayer ? 'vector' : 'geojson';
+        const type = layer instanceof VectorTileLayer ? 'vector' : 'geojson';
         if (!sourceOrLayers) {
           sourceId = glStyle.layers.find(function (layer) {
             return layer.source && glStyle.sources[layer.source].type === type;
@@ -264,9 +263,7 @@ export function applyStyle(
           sourceId = sourceOrLayers;
         }
         if (!sourceId) {
-          return reject(
-            new Error(`No ${type} source found in the glStyle.`),
-          );
+          return reject(new Error(`No ${type} source found in the glStyle.`));
         }
 
         function assignSource() {
