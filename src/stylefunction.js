@@ -356,23 +356,32 @@ export function stylefunction(
   styleFunctionArgs[getStyleFunctionKey(glStyle, olLayer)] =
     Array.from(arguments);
 
-  let spriteImage, spriteImageSize;
-  let spriteImageUnSDFed;
+  const spriteImages = {};
+  const spriteImageSizes = {};
+  const spriteImagesUnSDFed = {};
 
-  if (spriteImageUrl) {
-    toPromise(() => spriteImageUrl).then(async (spriteImageUrl) => {
+  const spriteImageUrls = new Set(
+    Object.values(spriteData ?? {}).map(function (sprite) {
+      return sprite.imageUrl;
+    }),
+  );
+  spriteImageUrls.add(spriteImageUrl);
+  spriteImageUrls.delete(undefined);
+
+  spriteImageUrls.forEach(function (imageUrl) {
+    toPromise(() => imageUrl).then(async (imageUrl) => {
       let blobUrl;
       if (typeof Image !== 'undefined') {
         const img = new Image();
-        if (typeof spriteImageUrl === 'string') {
+        if (typeof imageUrl === 'string') {
           img.crossOrigin = 'anonymous';
-          img.src = spriteImageUrl;
+          img.src = imageUrl;
         } else {
           let response;
-          if (spriteImageUrl instanceof Request) {
-            response = await fetch(spriteImageUrl);
-          } else if (spriteImageUrl instanceof Response) {
-            response = spriteImageUrl;
+          if (imageUrl instanceof Request) {
+            response = await fetch(imageUrl);
+          } else if (imageUrl instanceof Response) {
+            response = imageUrl;
           }
           const blob = await response.blob();
           blobUrl = URL.createObjectURL(blob);
@@ -380,8 +389,8 @@ export function stylefunction(
         }
         img.addEventListener('load', function load() {
           img.removeEventListener('load', load);
-          spriteImage = img;
-          spriteImageSize = [img.width, img.height];
+          spriteImages[imageUrl] = img;
+          spriteImageSizes[imageUrl] = [img.width, img.height];
           olLayer.changed();
           if (blobUrl) {
             URL.revokeObjectURL(blobUrl);
@@ -399,20 +408,23 @@ export function stylefunction(
         // Main thread needs to handle 'loadImage' and dispatch 'imageLoaded'
         worker.postMessage({
           action: 'loadImage',
-          src: spriteImageUrl,
+          src: imageUrl,
         });
         worker.addEventListener('message', function handler(event) {
           if (
             event.data.action === 'imageLoaded' &&
-            event.data.src === spriteImageUrl
+            event.data.src === imageUrl
           ) {
-            spriteImage = event.data.image;
-            spriteImageSize = [spriteImage.width, spriteImage.height];
+            spriteImages[imageUrl] = event.data.image;
+            spriteImageSizes[imageUrl] = [
+              event.data.image.width,
+              event.data.image.height,
+            ];
           }
         });
       }
     });
-  }
+  });
 
   const allLayers = derefLayers(glStyle.layers);
 
@@ -543,7 +555,11 @@ export function stylefunction(
                 typeof fillIcon === 'string'
                   ? fromTemplate(fillIcon, properties)
                   : fillIcon.toString();
-              if (spriteImage && spriteData && spriteData[icon]) {
+              if (
+                spriteData &&
+                spriteData[icon] &&
+                spriteImages[spriteData[icon].imageUrl]
+              ) {
                 ++stylesLength;
                 style = styles[stylesLength];
                 if (
@@ -572,7 +588,7 @@ export function stylefunction(
                   );
                   ctx.globalAlpha = opacity;
                   ctx.drawImage(
-                    spriteImage,
+                    spriteImages[spriteImageData.imageUrl],
                     spriteImageData.x,
                     spriteImageData.y,
                     spriteImageData.width,
@@ -773,7 +789,9 @@ export function stylefunction(
             let styleGeom = undefined;
             const imageElement = getImage ? getImage(olLayer, icon) : undefined;
             if (
-              (spriteImage && spriteData && spriteData[icon]) ||
+              (spriteData &&
+                spriteData[icon] &&
+                spriteImages[spriteData[icon].imageUrl]) ||
               imageElement
             ) {
               const iconRotationAlignment = getValue(
@@ -961,7 +979,7 @@ export function stylefunction(
                         if (spriteImageData.sdf) {
                           img = drawIconHalo(
                             drawSDF(
-                              spriteImage,
+                              spriteImages[spriteImageData.imageUrl],
                               spriteImageData,
                               iconColor || [0, 0, 0, 1],
                             ),
@@ -978,7 +996,7 @@ export function stylefunction(
                           color = undefined; // do not tint haloed icons
                         } else {
                           img = drawIconHalo(
-                            spriteImage,
+                            spriteImages[spriteImageData.imageUrl],
                             spriteImageData,
                             haloWidth,
                             haloColor,
@@ -986,21 +1004,25 @@ export function stylefunction(
                         }
                       } else {
                         if (spriteImageData.sdf) {
-                          if (!spriteImageUnSDFed) {
-                            spriteImageUnSDFed = drawSDF(
-                              spriteImage,
+                          if (!spriteImagesUnSDFed[spriteImageData.imageUrl]) {
+                            const spriteImageUnSDFed = drawSDF(
+                              spriteImages[spriteImageData.imageUrl],
                               {
                                 x: 0,
                                 y: 0,
-                                width: spriteImageSize[0],
-                                height: spriteImageSize[1],
+                                width:
+                                  spriteImageSizes[spriteImageData.imageUrl][0],
+                                height:
+                                  spriteImageSizes[spriteImageData.imageUrl][1],
                               },
                               {r: 1, g: 1, b: 1, a: 1},
                             );
+                            spriteImagesUnSDFed[spriteImageData.imageUrl] =
+                              spriteImageUnSDFed;
                           }
-                          img = spriteImageUnSDFed;
+                          img = spriteImagesUnSDFed[spriteImageData.imageUrl];
                         } else {
-                          img = spriteImage;
+                          img = spriteImages[spriteImageData.imageUrl];
                         }
                         size = [spriteImageData.width, spriteImageData.height];
                         offset = [spriteImageData.x, spriteImageData.y];
@@ -1009,7 +1031,7 @@ export function stylefunction(
                         color: color,
                         img: img,
                         // @ts-ignore
-                        imgSize: spriteImageSize,
+                        imgSize: spriteImageSizes[spriteImageData.imageUrl],
                         size: size,
                         offset: offset,
                         rotateWithView: iconRotationAlignment === 'map',

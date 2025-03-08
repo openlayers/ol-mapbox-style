@@ -350,7 +350,7 @@ export function applyStyle(
           return Promise.resolve();
         }
 
-        let spriteScale, spriteImageUrl, style;
+        let spriteScale, style;
         const spriteData = {};
         function onChange() {
           if (!style && (!glStyle.sprite || spriteData)) {
@@ -369,7 +369,7 @@ export function applyStyle(
               sourceOrLayers,
               resolutions,
               spriteData,
-              spriteImageUrl,
+              undefined, // spriteImageUrl are passed via spriteData
               (fonts, templateUrl = options.webfonts) =>
                 getFonts(fonts, templateUrl),
               options.getImage,
@@ -395,69 +395,77 @@ export function applyStyle(
           );
           spriteScale = window.devicePixelRatio >= 1.5 ? 0.5 : 1;
           const sizeFactor = spriteScale == 0.5 ? '@2x' : '';
-          for (const sprite of sprites) {
-            const spriteBaseUrl = new URL(sprite.url);
-            let spriteUrl =
-              spriteBaseUrl.origin +
-              spriteBaseUrl.pathname +
-              sizeFactor +
-              '.json' +
-              spriteBaseUrl.search;
 
-            new Promise(function (resolve, reject) {
-              fetchResource('Sprite', spriteUrl, options)
-                .then(resolve)
-                .catch(function (error) {
-                  spriteUrl =
+          Promise.all(
+            sprites.map(function (sprite) {
+              const spriteBaseUrl = new URL(sprite.url);
+              let spriteUrl =
+                spriteBaseUrl.origin +
+                spriteBaseUrl.pathname +
+                sizeFactor +
+                '.json' +
+                spriteBaseUrl.search;
+
+              return new Promise(function (resolve, reject) {
+                fetchResource('Sprite', spriteUrl, options)
+                  .then(resolve)
+                  .catch(function (error) {
+                    spriteUrl =
+                      spriteBaseUrl.origin +
+                      spriteBaseUrl.pathname +
+                      '.json' +
+                      spriteBaseUrl.search;
+                    fetchResource('Sprite', spriteUrl, options)
+                      .then(resolve)
+                      .catch(reject);
+                  });
+              })
+                .then(function (spritesJson) {
+                  if (spritesJson === undefined) {
+                    reject(new Error('No sprites found.'));
+                  }
+
+                  let spriteImageUrl;
+                  spriteImageUrl =
                     spriteBaseUrl.origin +
                     spriteBaseUrl.pathname +
-                    '.json' +
+                    sizeFactor +
+                    '.png' +
                     spriteBaseUrl.search;
-                  fetchResource('Sprite', spriteUrl, options)
-                    .then(resolve)
-                    .catch(reject);
-                });
-            })
-              .then(function (spritesJson) {
-                if (spritesJson === undefined) {
-                  reject(new Error('No sprites found.'));
-                }
 
-                // add sprite data with prefix according to spec
-                for (const spriteName in spritesJson) {
-                  const key =
-                    sprite.id == 'default'
-                      ? spriteName
-                      : `${sprite.id}:${spriteName}`;
-                  spriteData[key] = spritesJson[spriteName];
-                }
-                spriteImageUrl =
-                  spriteBaseUrl.origin +
-                  spriteBaseUrl.pathname +
-                  sizeFactor +
-                  '.png' +
-                  spriteBaseUrl.search;
-                if (options.transformRequest) {
-                  const transformed =
-                    options.transformRequest(spriteImageUrl, 'SpriteImage') ||
-                    spriteImageUrl;
-                  if (
-                    transformed instanceof Request ||
-                    transformed instanceof Promise
-                  ) {
-                    spriteImageUrl = transformed;
+                  if (options.transformRequest) {
+                    const transformed =
+                      options.transformRequest(spriteImageUrl, 'SpriteImage') ||
+                      spriteImageUrl;
+                    if (
+                      transformed instanceof Request ||
+                      transformed instanceof Promise
+                    ) {
+                      spriteImageUrl = transformed;
+                    }
                   }
-                }
-                onChange();
-              })
-              .catch(function (err) {
-                reject(
-                  new Error(
-                    `Sprites cannot be loaded: ${spriteUrl}: ${err.message}`,
-                  ),
-                );
-              });
-          }
+
+                  // add sprite data with prefix according to spec
+                  for (const spriteName in spritesJson) {
+                    const key =
+                      sprite.id == 'default'
+                        ? spriteName
+                        : `${sprite.id}:${spriteName}`;
+                    spriteData[key] = spritesJson[spriteName];
+                    spriteData[key].imageUrl = spriteImageUrl;
+                  }
+
+                  onChange();
+                })
+                .catch(function (err) {
+                  reject(
+                    new Error(
+                      `Sprites cannot be loaded: ${spriteUrl}: ${err.message}`,
+                    ),
+                  );
+                });
+            }),
+          );
         } else {
           onChange();
         }
