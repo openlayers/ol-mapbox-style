@@ -1045,5 +1045,14 @@
   },
   "version": 8,
   "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
-  "sprite": "./sprites"
+  "sprite": [
+    {
+      "id": "default",
+      "url": "./sprites"
+    },
+    {
+      "id": "bw",
+      "url": "./sprites-bw"
+    }
+  ]
 }
