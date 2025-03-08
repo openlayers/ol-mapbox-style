@@ -3,7 +3,7 @@ import {Map, View} from 'ol';
 import VectorTileLayer from 'ol/layer/VectorTile.js';
 import {applyBackground, applyStyle} from 'ol-mapbox-style';
 
-const baseUrl = 'https://api.maptiler.com/maps/basic/style.json';
+const baseUrl = 'https://api.maptiler.com/maps/basic-v2/style.json';
 
 let key = document.cookie.replace(
   /(?:(?:^|.*;\s*)maptiler_access_token\s*\=\s*([^;]*).*$)|^.*$/,
