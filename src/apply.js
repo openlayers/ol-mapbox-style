@@ -248,25 +248,13 @@ export function applyStyle(
           );
         }
 
-        const desiredType =
+        const type =
           layer instanceof VectorTileLayer ? 'vector' : 'geojson';
-        const requiredAttrs = {
-          // for the respective source tiles, we expect any of those attributes to be present
-          'vector': ['url', 'tiles'],
-          'geojson': ['data'],
-        };
         if (!sourceOrLayers) {
-          sourceId = Object.keys(glStyle.sources).find(function (key) {
-            // NOTE: this is mostly a heuristic way of picking the source, the TODO comment above still applies.
-            const sourceType = glStyle.sources[key].type;
-            const typeMatch = sourceType === desiredType;
-            const hasRequiredAttrs = requiredAttrs[sourceType].some(
-              function (attr) {
-                return Object.keys(glStyle.sources[key]).includes(attr);
-              },
-            );
-            return typeMatch && hasRequiredAttrs;
-          });
+          sourceId = glStyle.layers.find(function (layer) {
+            return layer.source && glStyle.sources[layer.source].type === type;
+          }).source;
+
           sourceOrLayers = sourceId;
         } else if (Array.isArray(sourceOrLayers)) {
           sourceId = glStyle.layers.find(function (layer) {
@@ -277,7 +265,7 @@ export function applyStyle(
         }
         if (!sourceId) {
           return reject(
-            new Error(`No ${desiredType} source found in the glStyle.`),
+            new Error(`No ${type} source found in the glStyle.`),
           );
         }
 
