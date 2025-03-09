@@ -2,6 +2,7 @@ import should from 'should';
 import {
   getMapboxPath,
   normalizeSourceUrl,
+  normalizeSpriteDefinition,
   normalizeSpriteUrl,
   normalizeStyleUrl,
 } from '../src/mapbox.js';
@@ -86,6 +87,69 @@ describe('Mapbox utilities', function () {
             'https://example.com:8000/mystyle/style.json',
           ),
         ).equal(c.expected);
+      });
+    }
+  });
+
+  describe('normalizeSpriteDefinition()', () => {
+    const cases = [
+      {
+        sprite: 'mapbox://sprites/mapbox/bright-v9',
+        expected: [
+          {
+            id: 'default',
+            url: 'https://api.mapbox.com/styles/v1/mapbox/bright-v9/sprite?access_token=test-token',
+          },
+        ],
+      },
+      {
+        sprite: [
+          {
+            id: 'base',
+            url: 'mapbox://sprites/mapbox/bright-v9',
+          },
+        ],
+        expected: [
+          {
+            id: 'base',
+            url: 'https://api.mapbox.com/styles/v1/mapbox/bright-v9/sprite?access_token=test-token',
+          },
+        ],
+      },
+      {
+        sprite: [
+          {
+            id: 'example',
+            url: 'https://example.com/sprite',
+          },
+          {
+            id: 'local',
+            url: '../sprite',
+          },
+        ],
+        expected: [
+          {
+            id: 'example',
+            url: 'https://example.com/sprite',
+          },
+          {
+            id: 'local',
+            url: 'https://example.com:8000/sprite',
+          },
+        ],
+      },
+    ];
+
+    const token = 'test-token';
+    for (const c of cases) {
+      it(`works for ${c.sprite}`, () => {
+        should(
+          normalizeSpriteDefinition(
+            c.sprite,
+            token,
+            'https://example.com:8000/mystyle/style.json',
+          ),
+        ).deepEqual(c.expected);
       });
     }
   });
