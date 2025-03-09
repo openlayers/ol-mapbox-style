@@ -352,6 +352,8 @@ export function applyStyle(
 
         let spriteScale, style;
         const spriteData = {};
+        /** @type {import('./stylefunction.js').SpriteImageUrl} */
+        const spriteImageUrl = {};
         function onChange() {
           if (!style && (!glStyle.sprite || spriteData)) {
             if (options.projection && !resolutions) {
@@ -369,7 +371,7 @@ export function applyStyle(
               sourceOrLayers,
               resolutions,
               spriteData,
-              undefined, // spriteImageUrl are passed via spriteData
+              spriteImageUrl,
               (fonts, templateUrl = options.webfonts) =>
                 getFonts(fonts, templateUrl),
               options.getImage,
@@ -425,8 +427,8 @@ export function applyStyle(
                     reject(new Error('No sprites found.'));
                   }
 
-                  let spriteImageUrl;
-                  spriteImageUrl =
+                  let imageUrl;
+                  imageUrl =
                     spriteBaseUrl.origin +
                     spriteBaseUrl.pathname +
                     sizeFactor +
@@ -435,15 +437,16 @@ export function applyStyle(
 
                   if (options.transformRequest) {
                     const transformed =
-                      options.transformRequest(spriteImageUrl, 'SpriteImage') ||
-                      spriteImageUrl;
+                      options.transformRequest(imageUrl, 'SpriteImage') ||
+                      imageUrl;
                     if (
                       transformed instanceof Request ||
                       transformed instanceof Promise
                     ) {
-                      spriteImageUrl = transformed;
+                      imageUrl = transformed;
                     }
                   }
+                  spriteImageUrl[sprite.id] = imageUrl;
 
                   // add sprite data with prefix according to spec
                   for (const spriteName in spritesJson) {
@@ -452,10 +455,7 @@ export function applyStyle(
                         ? spriteName
                         : `${sprite.id}:${spriteName}`;
                     spriteData[key] = spritesJson[spriteName];
-                    spriteData[key].imageUrl = spriteImageUrl;
                   }
-
-                  onChange();
                 })
                 .catch(function (err) {
                   reject(
@@ -465,7 +465,9 @@ export function applyStyle(
                   );
                 });
             }),
-          );
+          )
+            .then(onChange)
+            .catch(reject);
         } else {
           onChange();
         }

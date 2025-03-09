@@ -11,6 +11,7 @@
     "source": "points",
     "type": "symbol",
     "id": "points",
+    "filter": ["<=", ["get", "n"], 50],
     "layout": {
       "icon-image": {
         "property": "cat",
@@ -19,6 +20,26 @@
         "stops": [
           [1, "accommodation_camping"],
           [2, "amenity_firestation"]
+        ]
+      }
+    },
+    "paint": {
+      "icon-halo-color": "#fff",
+      "icon-halo-width": 1
+    }
+  }, {
+    "source": "points",
+    "type": "symbol",
+    "id": "points-bw",
+    "filter": [">", ["get", "n"], 50],
+    "layout": {
+      "icon-image": {
+        "property": "cat",
+        "type": "categorical",
+        "default": "",
+        "stops": [
+          [1, "bw:accommodation_camping"],
+          [2, "bw:amenity_firestation"]
         ]
       }
     },

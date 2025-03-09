@@ -368,7 +368,7 @@ function smoothstep(min, max, value) {
 }
 
 /**
- * @param {HTMLImageElement} image SDF image
+ * @param {HTMLImageElement|HTMLCanvasElement} image SDF image
  * @param {{x: number, y: number, width: number, height: number}} area Area to unSDF
  * @param {{r: number, g: number, b: number, a: number}} color Color to use
  * @return {HTMLCanvasElement} Regular image
