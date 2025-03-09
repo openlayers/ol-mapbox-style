@@ -1,6 +1,12 @@
 const mapboxBaseUrl = 'https://api.mapbox.com';
 
 /**
+ * @typedef {Object} Sprite
+ * @property {string} id Id of the sprite source.
+ * @property {string} url URL to the sprite source.
+ */
+
+/**
  * Gets the path from a mapbox:// URL.
  * @param {string} url The Mapbox URL.
  * @return {string} The path.
@@ -12,6 +18,31 @@ export function getMapboxPath(url) {
     return '';
   }
   return url.slice(startsWith.length);
+}
+
+/**
+ * Normalizes legacy string-based or new-style array based sprite definitions into array-based.
+ * @param {string|Array<Sprite>} sprite the sprite source.
+ * @param {string} token The access token.
+ * @param {string} styleUrl The style URL.
+ * @return {Array<Sprite>} An array of sprite definitions with normalized URLs.
+ * @private
+ */
+export function normalizeSpriteDefinition(sprite, token, styleUrl) {
+  if (typeof sprite === 'string') {
+    return [
+      {
+        'id': 'default',
+        'url': normalizeSpriteUrl(sprite, token, styleUrl),
+      },
+    ];
+  }
+
+  for (const spriteObj of sprite) {
+    spriteObj.url = normalizeSpriteUrl(spriteObj.url, token, styleUrl);
+  }
+
+  return sprite;
 }
 
 /**

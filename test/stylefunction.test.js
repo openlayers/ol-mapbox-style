@@ -13,6 +13,7 @@ import {
   setFeatureState,
   stylefunction as applyStylefunction,
 } from '../src/index.js';
+import {getSpriteImageForIcon} from '../src/stylefunction.js';
 import states from './fixtures/states.json';
 
 describe('stylefunction', function () {
@@ -1056,6 +1057,29 @@ describe('stylefunction', function () {
         .catch(function (err) {
           done(err);
         });
+    });
+  });
+
+  describe('getSpriteImageForIcon()', function () {
+    const defaultSpriteImage = {
+      image: new Image(),
+      size: [100, 100],
+    };
+    const altImage = {
+      image: new Image(),
+      size: [100, 100],
+    };
+    const spriteImages = {
+      'default': defaultSpriteImage,
+      'alt': altImage,
+    };
+    it('returns the image for an icon from the default sprite', function () {
+      const image = getSpriteImageForIcon('firestation', spriteImages);
+      should(image).eql(defaultSpriteImage);
+    });
+    it('returns the image for an icon from the alt sprite', function () {
+      const image = getSpriteImageForIcon('alt:firestation', spriteImages);
+      should(image).eql(altImage);
     });
   });
 });

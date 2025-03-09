@@ -34,7 +34,7 @@ import TileGrid from 'ol/tilegrid/TileGrid.js';
 import {createXYZ} from 'ol/tilegrid.js';
 import {
   normalizeSourceUrl,
-  normalizeSpriteUrl,
+  normalizeSpriteDefinition,
   normalizeStyleUrl,
 } from './mapbox.js';
 import {hillshade} from './shaders.js';
@@ -350,7 +350,10 @@ export function applyStyle(
           return Promise.resolve();
         }
 
-        let spriteScale, spriteData, spriteImageUrl, style;
+        let spriteScale, style;
+        const spriteData = {};
+        /** @type {import('./stylefunction.js').SpriteImageUrl} */
+        const spriteImageUrl = {};
         function onChange() {
           if (!style && (!glStyle.sprite || spriteData)) {
             if (options.projection && !resolutions) {
@@ -387,64 +390,84 @@ export function applyStyle(
         }
 
         if (glStyle.sprite) {
-          const sprite = new URL(
-            normalizeSpriteUrl(
-              glStyle.sprite,
-              options.accessToken,
-              styleUrl || location.href,
-            ),
+          const sprites = normalizeSpriteDefinition(
+            glStyle.sprite,
+            options.accessToken,
+            styleUrl || location.href,
           );
           spriteScale = window.devicePixelRatio >= 1.5 ? 0.5 : 1;
           const sizeFactor = spriteScale == 0.5 ? '@2x' : '';
-          let spriteUrl =
-            sprite.origin +
-            sprite.pathname +
-            sizeFactor +
-            '.json' +
-            sprite.search;
 
-          new Promise(function (resolve, reject) {
-            fetchResource('Sprite', spriteUrl, options)
-              .then(resolve)
-              .catch(function (error) {
-                spriteUrl =
-                  sprite.origin + sprite.pathname + '.json' + sprite.search;
+          Promise.all(
+            sprites.map(function (sprite) {
+              const spriteBaseUrl = new URL(sprite.url);
+              let spriteUrl =
+                spriteBaseUrl.origin +
+                spriteBaseUrl.pathname +
+                sizeFactor +
+                '.json' +
+                spriteBaseUrl.search;
+
+              return new Promise(function (resolve, reject) {
                 fetchResource('Sprite', spriteUrl, options)
                   .then(resolve)
-                  .catch(reject);
-              });
-          })
-            .then(function (spritesJson) {
-              if (spritesJson === undefined) {
-                reject(new Error('No sprites found.'));
-              }
-              spriteData = spritesJson;
-              spriteImageUrl =
-                sprite.origin +
-                sprite.pathname +
-                sizeFactor +
-                '.png' +
-                sprite.search;
-              if (options.transformRequest) {
-                const transformed =
-                  options.transformRequest(spriteImageUrl, 'SpriteImage') ||
-                  spriteImageUrl;
-                if (
-                  transformed instanceof Request ||
-                  transformed instanceof Promise
-                ) {
-                  spriteImageUrl = transformed;
-                }
-              }
-              onChange();
-            })
-            .catch(function (err) {
-              reject(
-                new Error(
-                  `Sprites cannot be loaded: ${spriteUrl}: ${err.message}`,
-                ),
-              );
-            });
+                  .catch(function (error) {
+                    spriteUrl =
+                      spriteBaseUrl.origin +
+                      spriteBaseUrl.pathname +
+                      '.json' +
+                      spriteBaseUrl.search;
+                    fetchResource('Sprite', spriteUrl, options)
+                      .then(resolve)
+                      .catch(reject);
+                  });
+              })
+                .then(function (spritesJson) {
+                  if (spritesJson === undefined) {
+                    reject(new Error('No sprites found.'));
+                  }
+
+                  let imageUrl;
+                  imageUrl =
+                    spriteBaseUrl.origin +
+                    spriteBaseUrl.pathname +
+                    sizeFactor +
+                    '.png' +
+                    spriteBaseUrl.search;
+
+                  if (options.transformRequest) {
+                    const transformed =
+                      options.transformRequest(imageUrl, 'SpriteImage') ||
+                      imageUrl;
+                    if (
+                      transformed instanceof Request ||
+                      transformed instanceof Promise
+                    ) {
+                      imageUrl = transformed;
+                    }
+                  }
+                  spriteImageUrl[sprite.id] = imageUrl;
+
+                  // add sprite data with prefix according to spec
+                  for (const spriteName in spritesJson) {
+                    const key =
+                      sprite.id == 'default'
+                        ? spriteName
+                        : `${sprite.id}:${spriteName}`;
+                    spriteData[key] = spritesJson[spriteName];
+                  }
+                })
+                .catch(function (err) {
+                  reject(
+                    new Error(
+                      `Sprites cannot be loaded: ${spriteUrl}: ${err.message}`,
+                    ),
+                  );
+                });
+            }),
+          )
+            .then(onChange)
+            .catch(reject);
         } else {
           onChange();
         }
