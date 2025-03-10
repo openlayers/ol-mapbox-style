@@ -173,7 +173,7 @@ function completeOptions(styleUrl, options) {
  * `source` key or an array of layer `id`s from the Mapbox/MapLibre Style object. When a `source` key is
  * provided, all layers for the specified source will be included in the style function. When layer
  * `id`s are provided, they must be from layers that use the same source. When not provided or a falsey
- * value, all layers using the first source specified in the glStyle will be rendered.
+ * value, all layers using the same source as the first layer matching the provided `layer` type will be rendered.
  * @param {Options&ApplyStyleOptions|string} [optionsOrPath] **Deprecated**. Options. Alternatively the path of the style file
  * (only required when a relative path is used for the `"sprite"` property of the style).
  * @param {Array<number>} [resolutions] **Deprecated**. Resolutions for mapping resolution to zoom level.
@@ -250,9 +250,10 @@ export function applyStyle(
 
         const type = layer instanceof VectorTileLayer ? 'vector' : 'geojson';
         if (!sourceOrLayers) {
-          sourceId = Object.keys(glStyle.sources).find(function (key) {
-            return glStyle.sources[key].type === type;
-          });
+          sourceId = glStyle.layers.find(function (layer) {
+            return layer.source && glStyle.sources[layer.source].type === type;
+          }).source;
+
           sourceOrLayers = sourceId;
         } else if (Array.isArray(sourceOrLayers)) {
           sourceId = glStyle.layers.find(function (layer) {
@@ -327,6 +328,7 @@ export function applyStyle(
               }
             });
           }
+
           const glSource = glStyle.sources[sourceId];
           let source = layer.getSource();
           if (!source || source.get('mapbox-source') !== glSource) {

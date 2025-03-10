@@ -283,7 +283,7 @@ export function getTileJson(glSource, styleUrl, options = {}) {
           return Promise.resolve({tileJson, tileLoadFunction});
         });
       }
-    } else {
+    } else if (glSource.tiles) {
       glSource = Object.assign({}, glSource, {
         tiles: glSource.tiles.map(function (tileUrl) {
           if (glSource.scheme === 'tms') {
@@ -301,6 +301,8 @@ export function getTileJson(glSource, styleUrl, options = {}) {
         tileJson: Object.assign({}, glSource),
         tileLoadFunction,
       });
+    } else {
+      promise = Promise.reject(new Error('source has no `tiles` nor `url`'));
     }
     tilejsonCache[cacheKey] = promise;
   }

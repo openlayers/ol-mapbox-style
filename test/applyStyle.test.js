@@ -330,7 +330,12 @@ describe('maxResolution', function () {
           minzoom: 6,
         },
       },
-      layers: [],
+      layers: [
+        {
+          id: 'mock',
+          source: 'foo',
+        },
+      ],
     };
   });
 
