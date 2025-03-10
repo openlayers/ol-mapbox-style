@@ -173,7 +173,7 @@ function completeOptions(styleUrl, options) {
  * `source` key or an array of layer `id`s from the Mapbox/MapLibre Style object. When a `source` key is
  * provided, all layers for the specified source will be included in the style function. When layer
  * `id`s are provided, they must be from layers that use the same source. When not provided or a falsey
- * value, the source is inferred from the first layer.
+ * value, all layers using the same source as the first layer matching the provided `layer` type will be rendered.
  * @param {Options&ApplyStyleOptions|string} [optionsOrPath] **Deprecated**. Options. Alternatively the path of the style file
  * (only required when a relative path is used for the `"sprite"` property of the style).
  * @param {Array<number>} [resolutions] **Deprecated**. Resolutions for mapping resolution to zoom level.
