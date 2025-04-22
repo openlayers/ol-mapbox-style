@@ -1,5 +1,10 @@
 # Changelog
 
+## 12.6.0
+
+* Add support for multiple sprite sheets
+* Warn instead of failing on invalid filters
+
 ## 12.5.0
 
 * transformRequest can now also return a `Response` or a `Promise` thereof.
