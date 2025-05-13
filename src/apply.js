@@ -40,6 +40,7 @@ import {
 import {hillshade} from './shaders.js';
 import {
   _colorWithOpacity,
+  cameraObj,
   getValue,
   styleFunctionArgs,
   stylefunction as applyStylefunction,
@@ -47,6 +48,7 @@ import {
 import {getFonts} from './text.js';
 import {
   defaultResolutions,
+  emptyObj,
   fetchResource,
   getFilterCache,
   getFunctionCache,
@@ -478,8 +480,6 @@ export function applyStyle(
   });
 }
 
-const emptyObj = {};
-
 function setFirstBackground(mapOrLayer, glStyle, options) {
   glStyle.layers.some(function (layer) {
     if (layer.type === 'background') {
@@ -588,16 +588,16 @@ function getBackgroundColor(glLayer, resolution, options, functionCache) {
   const layout = glLayer.layout || {};
   const paint = glLayer.paint || {};
   background['paint'] = paint;
-  const zoom = getZoomForResolution(
+  cameraObj.zoom = getZoomForResolution(
     resolution,
     options.resolutions || defaultResolutions,
   );
+  cameraObj.distanceFromCenter = 0;
   let opacity;
   const bg = getValue(
     background,
     'paint',
     'background-color',
-    zoom,
     emptyObj,
     functionCache,
   );
@@ -606,7 +606,6 @@ function getBackgroundColor(glLayer, resolution, options, functionCache) {
       background,
       'paint',
       'background-opacity',
-      zoom,
       emptyObj,
       functionCache,
     );
@@ -663,7 +662,9 @@ export function setupVectorSource(glSource, styleUrl, options) {
         );
         sourceOptions.tileLoadFunction = tileLoadFunction;
         sourceOptions.format = new MVT();
-        resolve(new VectorTileSource(sourceOptions));
+        const source = new VectorTileSource(sourceOptions);
+        source.set('mapbox-source', glSource);
+        resolve(source);
       })
       .catch(reject);
   });
@@ -676,7 +677,6 @@ function setupVectorLayer(glSource, styleUrl, options) {
   });
   setupVectorSource(glSource, styleUrl, options)
     .then(function (source) {
-      source.set('mapbox-source', glSource);
       layer.setSource(source);
     })
     .catch(function (error) {
@@ -881,11 +881,12 @@ function prerenderRasterLayer(glLayer, layer, functionCache) {
 }
 
 function updateRasterLayerProperties(glLayer, layer, zoom, functionCache) {
+  cameraObj.zoom = zoom;
+  cameraObj.distanceFromCenter = 0;
   const opacity = getValue(
     glLayer,
     'paint',
     'raster-opacity',
-    zoom,
     emptyObj,
     functionCache,
   );
@@ -950,10 +951,11 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
         getCenter(event.extent),
         'm',
       );
-      const zoom = getZoomForResolution(
+      cameraObj.zoom = getZoomForResolution(
         event.resolution,
         options.resolutions || defaultResolutions,
       );
+      cameraObj.distanceFromCenter = 0;
       data.encoding = glSource.encoding;
       data.vert =
         5 *
@@ -961,7 +963,6 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
           glLayer,
           'paint',
           'hillshade-exaggeration',
-          zoom,
           emptyObj,
           functionCache,
         );
@@ -969,7 +970,6 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
         glLayer,
         'paint',
         'hillshade-illumination-direction',
-        zoom,
         emptyObj,
         functionCache,
       );
@@ -979,7 +979,6 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
         glLayer,
         'paint',
         'hillshade-highlight-color',
-        zoom,
         emptyObj,
         functionCache,
       );
@@ -987,7 +986,6 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
         glLayer,
         'paint',
         'hillshade-shadow-color',
-        zoom,
         emptyObj,
         functionCache,
       );
@@ -995,7 +993,6 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
         glLayer,
         'paint',
         'hillshade-accent-color',
-        zoom,
         emptyObj,
         functionCache,
       );

@@ -6,15 +6,20 @@ License: https://raw.githubusercontent.com/openlayers/ol-mapbox-style/master/LIC
 
 import {
   Color,
+  CompoundExpression,
   convertFunction,
   createPropertyExpression,
   derefLayers,
+  expressions,
   featureFilter as createFilter,
   isExpression,
   isFunction,
   v8 as spec,
 } from '@maplibre/maplibre-gl-style-spec';
 import mb2css from 'mapbox-to-css-font';
+import Map from 'ol/Map.js';
+import {distance} from 'ol/coordinate.js';
+import {getCenter} from 'ol/extent.js';
 import {toPromise} from 'ol/functions.js';
 import RenderFeature from 'ol/render/Feature.js';
 import Circle from 'ol/style/Circle.js';
@@ -23,7 +28,6 @@ import Icon from 'ol/style/Icon.js';
 import Stroke from 'ol/style/Stroke.js';
 import Style from 'ol/style/Style.js';
 import Text from 'ol/style/Text.js';
-
 import {applyLetterSpacing, wrapText} from './text.js';
 import {
   clearFunctionCache,
@@ -32,6 +36,7 @@ import {
   deg2rad,
   drawIconHalo,
   drawSDF,
+  emptyObj,
   getFilterCache,
   getFunctionCache,
   getStyleFunctionKey,
@@ -91,8 +96,20 @@ const expressionData = function (rawExpression, propertySpec) {
   return compiledExpression.value;
 };
 
-const emptyObj = {};
-const zoomObj = {zoom: 0};
+// Shared camera object for global expression evaluation context
+export const cameraObj = {zoom: 0, distanceFromCenter: 0};
+
+// Add unsupported expressions to the MapLibre GL Style spec
+CompoundExpression.register(expressions, {
+  ...CompoundExpression.definitions,
+  'pitch': [{kind: 'number'}, [], (ctx) => cameraObj.pitch || 90],
+  'distance-from-center': [
+    {kind: 'number'},
+    [],
+    (ctx) => cameraObj.distanceFromCenter || 0,
+  ],
+});
+
 let renderFeatureCoordinates, renderFeature;
 
 /**
@@ -100,7 +117,6 @@ let renderFeatureCoordinates, renderFeature;
  * @param {Object} layer Gl object layer.
  * @param {string} layoutOrPaint 'layout' or 'paint'.
  * @param {string} property Feature property.
- * @param {number} zoom Zoom.
  * @param {Object} feature Gl feature.
  * @param {Object} [functionCache] Function cache.
  * @param {Object} [featureState] Feature state.
@@ -110,7 +126,6 @@ export function getValue(
   layer,
   layoutOrPaint,
   property,
-  zoom,
   feature,
   functionCache,
   featureState,
@@ -118,7 +133,7 @@ export function getValue(
   const layerId = layer.id;
   if (!functionCache) {
     functionCache = {};
-    console.warn('No functionCache provided to getValue()'); //eslint-disable-line no-console
+    console.warn('No functionCache provided to getValue()'); // eslint-disable-line no-console
   }
   if (!functionCache[layerId]) {
     functionCache[layerId] = {};
@@ -148,25 +163,22 @@ export function getValue(
       };
     }
   }
-  zoomObj.zoom = zoom;
-  return functions[property](zoomObj, feature, featureState);
+  return functions[property](cameraObj, feature, featureState);
 }
 
 /**
  * @private
  * @param {Object} layer Gl object layer.
- * @param {number} zoom Zoom.
  * @param {Object} feature Gl feature.
  * @param {"icon"|"text"} prefix Style property prefix.
  * @param {Object} [functionCache] Function cache.
  * @return {"declutter"|"obstacle"|"none"} Value.
  */
-function getDeclutterMode(layer, zoom, feature, prefix, functionCache) {
+function getDeclutterMode(layer, feature, prefix, functionCache) {
   const allowOverlap = getValue(
     layer,
     'layout',
     `${prefix}-allow-overlap`,
-    zoom,
     feature,
     functionCache,
   );
@@ -177,7 +189,6 @@ function getDeclutterMode(layer, zoom, feature, prefix, functionCache) {
     layer,
     'layout',
     `${prefix}-ignore-placement`,
-    zoom,
     feature,
     functionCache,
   );
@@ -192,26 +203,24 @@ function getDeclutterMode(layer, zoom, feature, prefix, functionCache) {
  * @param {string} layerId Layer id.
  * @param {?} filter Filter.
  * @param {Object} feature Feature.
- * @param {number} zoom Zoom.
  * @param {Object} [filterCache] Filter cache.
  * @return {boolean} Filter result.
  */
-function evaluateFilter(layerId, filter, feature, zoom, filterCache) {
+function evaluateFilter(layerId, filter, feature, filterCache) {
   if (!filterCache) {
-    console.warn('No filterCache provided to evaluateFilter()'); //eslint-disable-line no-console
+    console.warn('No filterCache provided to evaluateFilter()'); // eslint-disable-line no-console
   }
   if (!(layerId in filterCache)) {
     try {
       filterCache[layerId] = createFilter(filter).filter;
     } catch (e) {
-      console.warn('Filter will evaluate to false: ' + e.message); //eslint-disable-line no-console
+      console.warn('Filter will evaluate to false: ' + e.message); // eslint-disable-line no-console
       filterCache[layerId] = function () {
         return false;
       };
     }
   }
-  zoomObj.zoom = zoom;
-  return filterCache[layerId](zoomObj, feature);
+  return filterCache[layerId](cameraObj, feature);
 }
 
 let renderTransparentEnabled = false;
@@ -532,7 +541,20 @@ export function stylefunction(
     if (zoom == -1) {
       zoom = getZoomForResolution(resolution, resolutions);
     }
-    const type = types[feature.getGeometry().getType()];
+    cameraObj.zoom = zoom;
+    cameraObj.distanceFromCenter = 0;
+    const featureGeometry = feature.getGeometry();
+    const type = types[featureGeometry.getType()];
+    const map = olLayer.get('map');
+    if (map && map instanceof Map && type === 1) {
+      const size = map.getSize();
+      if (size) {
+        const mapCenter = map.getView().getCenter();
+        const featureCenter = getCenter(featureGeometry.getExtent());
+        cameraObj.distanceFromCenter =
+          distance(mapCenter, featureCenter) / resolution / size[1];
+      }
+    }
     const f = {
       id: feature.getId(),
       properties: properties,
@@ -559,7 +581,7 @@ export function stylefunction(
         continue;
       }
       const filter = layer.filter;
-      if (!filter || evaluateFilter(layerId, filter, f, zoom, filterCache)) {
+      if (!filter || evaluateFilter(layerId, filter, f, filterCache)) {
         featureBelongsToLayer = layer;
         let color, opacity, fill, stroke, strokeColor, style;
         const index = layerData.index;
@@ -571,7 +593,6 @@ export function stylefunction(
             layer,
             'paint',
             layer.type + '-opacity',
-            zoom,
             f,
             functionCache,
             featureState,
@@ -581,7 +602,6 @@ export function stylefunction(
               layer,
               'paint',
               layer.type + '-pattern',
-              zoom,
               f,
               functionCache,
               featureState,
@@ -643,7 +663,6 @@ export function stylefunction(
                 layer,
                 'paint',
                 layer.type + '-color',
-                zoom,
                 f,
                 functionCache,
                 featureState,
@@ -656,7 +675,6 @@ export function stylefunction(
                   layer,
                   'paint',
                   layer.type + '-outline-color',
-                  zoom,
                   f,
                   functionCache,
                   featureState,
@@ -704,7 +722,6 @@ export function stylefunction(
                 layer,
                 'paint',
                 'line-color',
-                zoom,
                 f,
                 functionCache,
                 featureState,
@@ -713,7 +730,6 @@ export function stylefunction(
                 layer,
                 'paint',
                 'line-opacity',
-                zoom,
                 f,
                 functionCache,
                 featureState,
@@ -726,7 +742,6 @@ export function stylefunction(
             layer,
             'paint',
             'line-width',
-            zoom,
             f,
             functionCache,
             featureState,
@@ -751,7 +766,6 @@ export function stylefunction(
                 layer,
                 'layout',
                 'line-cap',
-                zoom,
                 f,
                 functionCache,
                 featureState,
@@ -762,7 +776,6 @@ export function stylefunction(
                 layer,
                 'layout',
                 'line-join',
-                zoom,
                 f,
                 functionCache,
                 featureState,
@@ -773,7 +786,6 @@ export function stylefunction(
                 layer,
                 'layout',
                 'line-miter-limit',
-                zoom,
                 f,
                 functionCache,
                 featureState,
@@ -787,7 +799,6 @@ export function stylefunction(
                     layer,
                     'paint',
                     'line-dasharray',
-                    zoom,
                     f,
                     functionCache,
                     featureState,
@@ -809,7 +820,6 @@ export function stylefunction(
             layer,
             'layout',
             'icon-image',
-            zoom,
             f,
             functionCache,
             featureState,
@@ -830,7 +840,6 @@ export function stylefunction(
                 layer,
                 'layout',
                 'icon-rotation-alignment',
-                zoom,
                 f,
                 functionCache,
                 featureState,
@@ -870,7 +879,6 @@ export function stylefunction(
                       layer,
                       'layout',
                       'symbol-placement',
-                      zoom,
                       f,
                       functionCache,
                       featureState,
@@ -914,7 +922,6 @@ export function stylefunction(
                   layer,
                   'layout',
                   'icon-size',
-                  zoom,
                   f,
                   functionCache,
                   featureState,
@@ -925,7 +932,6 @@ export function stylefunction(
                         layer,
                         'paint',
                         'icon-color',
-                        zoom,
                         f,
                         functionCache,
                         featureState,
@@ -936,7 +942,6 @@ export function stylefunction(
                     layer,
                     'paint',
                     'icon-halo-color',
-                    zoom,
                     f,
                     functionCache,
                     featureState,
@@ -945,7 +950,6 @@ export function stylefunction(
                     layer,
                     'paint',
                     'icon-halo-width',
-                    zoom,
                     f,
                     functionCache,
                     featureState,
@@ -958,7 +962,6 @@ export function stylefunction(
                   if (!iconImg) {
                     const declutterMode = getDeclutterMode(
                       layer,
-                      zoom,
                       f,
                       'icon',
                       functionCache,
@@ -969,7 +972,6 @@ export function stylefunction(
                         layer,
                         'layout',
                         'icon-offset',
-                        zoom,
                         f,
                         functionCache,
                         featureState,
@@ -1091,7 +1093,6 @@ export function stylefunction(
                           layer,
                           'layout',
                           'icon-rotate',
-                          zoom,
                           f,
                           functionCache,
                           featureState,
@@ -1103,7 +1104,6 @@ export function stylefunction(
                       layer,
                       'paint',
                       'icon-opacity',
-                      zoom,
                       f,
                       functionCache,
                       featureState,
@@ -1115,7 +1115,6 @@ export function stylefunction(
                         layer,
                         'layout',
                         'icon-anchor',
-                        zoom,
                         f,
                         functionCache,
                         featureState,
@@ -1154,7 +1153,6 @@ export function stylefunction(
                   layer,
                   'paint',
                   'circle-radius',
-                  zoom,
                   f,
                   functionCache,
                   featureState,
@@ -1165,7 +1163,6 @@ export function stylefunction(
               layer,
               'paint',
               'circle-stroke-color',
-              zoom,
               f,
               functionCache,
               featureState,
@@ -1174,7 +1171,6 @@ export function stylefunction(
               layer,
               'paint',
               'circle-stroke-opacity',
-              zoom,
               f,
               functionCache,
               featureState,
@@ -1185,7 +1181,6 @@ export function stylefunction(
             layer,
             'paint',
             'circle-translate',
-            zoom,
             f,
             functionCache,
             featureState,
@@ -1195,7 +1190,6 @@ export function stylefunction(
               layer,
               'paint',
               'circle-color',
-              zoom,
               f,
               functionCache,
               featureState,
@@ -1204,7 +1198,6 @@ export function stylefunction(
               layer,
               'paint',
               'circle-opacity',
-              zoom,
               f,
               functionCache,
               featureState,
@@ -1214,7 +1207,6 @@ export function stylefunction(
             layer,
             'paint',
             'circle-stroke-width',
-            zoom,
             f,
             functionCache,
             featureState,
@@ -1268,7 +1260,6 @@ export function stylefunction(
               layer,
               'layout',
               'text-size',
-              zoom,
               f,
               functionCache,
               featureState,
@@ -1278,7 +1269,6 @@ export function stylefunction(
             layer,
             'layout',
             'text-font',
-            zoom,
             f,
             functionCache,
             featureState,
@@ -1287,7 +1277,6 @@ export function stylefunction(
             layer,
             'layout',
             'text-line-height',
-            zoom,
             f,
             functionCache,
             featureState,
@@ -1311,7 +1300,6 @@ export function stylefunction(
             layer,
             'layout',
             'text-letter-spacing',
-            zoom,
             f,
             functionCache,
             featureState,
@@ -1320,7 +1308,6 @@ export function stylefunction(
             layer,
             'layout',
             'text-max-width',
-            zoom,
             f,
             functionCache,
             featureState,
@@ -1329,7 +1316,6 @@ export function stylefunction(
             layer,
             'layout',
             'text-field',
-            zoom,
             f,
             functionCache,
             featureState,
@@ -1378,7 +1364,6 @@ export function stylefunction(
             layer,
             'paint',
             'text-opacity',
-            zoom,
             f,
             functionCache,
             featureState,
@@ -1402,7 +1387,6 @@ export function stylefunction(
           }
           const declutterMode = getDeclutterMode(
             layer,
-            zoom,
             f,
             'text',
             functionCache,
@@ -1427,7 +1411,6 @@ export function stylefunction(
             layer,
             'layout',
             'text-transform',
-            zoom,
             f,
             functionCache,
             featureState,
@@ -1454,7 +1437,6 @@ export function stylefunction(
                 layer,
                 'layout',
                 'text-rotate',
-                zoom,
                 f,
                 functionCache,
                 featureState,
@@ -1466,7 +1448,6 @@ export function stylefunction(
               layer,
               'layout',
               'text-keep-upright',
-              zoom,
               f,
               functionCache,
               featureState,
@@ -1477,7 +1458,6 @@ export function stylefunction(
             layer,
             'layout',
             'text-anchor',
-            zoom,
             f,
             functionCache,
             featureState,
@@ -1489,7 +1469,6 @@ export function stylefunction(
                   layer,
                   'layout',
                   'symbol-placement',
-                  zoom,
                   f,
                   functionCache,
                   featureState,
@@ -1506,7 +1485,6 @@ export function stylefunction(
               layer,
               'layout',
               'symbol-spacing',
-              zoom,
               f,
               functionCache,
               featureState,
@@ -1518,7 +1496,6 @@ export function stylefunction(
             layer,
             'paint',
             'text-halo-width',
-            zoom,
             f,
             functionCache,
             featureState,
@@ -1527,7 +1504,6 @@ export function stylefunction(
             layer,
             'layout',
             'text-offset',
-            zoom,
             f,
             functionCache,
             featureState,
@@ -1536,7 +1512,6 @@ export function stylefunction(
             layer,
             'paint',
             'text-translate',
-            zoom,
             f,
             functionCache,
             featureState,
@@ -1557,7 +1532,6 @@ export function stylefunction(
               layer,
               'layout',
               'text-rotation-alignment',
-              zoom,
               f,
               functionCache,
               featureState,
@@ -1570,7 +1544,6 @@ export function stylefunction(
                   layer,
                   'layout',
                   'text-max-angle',
-                  zoom,
                   f,
                   functionCache,
                   featureState,
@@ -1595,7 +1568,6 @@ export function stylefunction(
             layer,
             'layout',
             'text-justify',
-            zoom,
             f,
             functionCache,
             featureState,
@@ -1613,7 +1585,6 @@ export function stylefunction(
                 layer,
                 'paint',
                 'text-color',
-                zoom,
                 f,
                 functionCache,
                 featureState,
@@ -1627,7 +1598,6 @@ export function stylefunction(
               layer,
               'paint',
               'text-halo-color',
-              zoom,
               f,
               functionCache,
               featureState,
@@ -1652,7 +1622,6 @@ export function stylefunction(
             layer,
             'layout',
             'text-padding',
-            zoom,
             f,
             functionCache,
             featureState,
@@ -1686,8 +1655,8 @@ export function stylefunction(
   };
 
   olLayer.setStyle(styleFunction);
-  olLayer.set('mapbox-source', mapboxSource);
   olLayer.set('mapbox-layers', mapboxLayers);
+  olLayer.set('mapbox-source', mapboxSource);
   olLayer.set('mapbox-featurestate', olLayer.get('mapbox-featurestate') || {});
   return styleFunction;
 }
