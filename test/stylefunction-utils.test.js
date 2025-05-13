@@ -9,6 +9,7 @@ import {
   _evaluateFilter as evaluateFilter,
   _fromTemplate as fromTemplate,
   _getValue as getValue,
+  cameraObj,
 } from '../src/stylefunction.js';
 
 describe('utility functions currently in stylefunction.js', function () {
@@ -31,15 +32,14 @@ describe('utility functions currently in stylefunction.js', function () {
   describe('evaluateFilter()', function () {
     const filterCache = {};
     const feature = new Feature({geometry: new Point([0, 0], 'XY')});
-    const zoom = 11;
+    cameraObj.zoom = 11;
 
     it('should be true with "all" filter', function () {
       const glLayerId = 'gl-layer-id';
       const filter = '[ "all" ]';
 
       should(filterCache).not.have.key(glLayerId);
-      should(evaluateFilter(glLayerId, filter, feature, zoom, filterCache)).be
-        .true;
+      should(evaluateFilter(glLayerId, filter, feature, filterCache)).be.true;
       should(filterCache).have.key(glLayerId);
     });
 
@@ -47,8 +47,7 @@ describe('utility functions currently in stylefunction.js', function () {
       const glLayerId = 'gl-layer-id-2';
       const filter = '[ "==", "$type", "LineString" ]';
 
-      should(evaluateFilter(glLayerId, filter, feature, zoom, filterCache)).be
-        .false;
+      should(evaluateFilter(glLayerId, filter, feature, filterCache)).be.false;
       should(filterCache).have.key(glLayerId);
     });
 
@@ -56,8 +55,7 @@ describe('utility functions currently in stylefunction.js', function () {
       const glLayerId = 'gl-layer-id-2';
       const filter = '[ "==", "$type", "Point" ]';
 
-      should(evaluateFilter(glLayerId, filter, feature, zoom, filterCache)).be
-        .false;
+      should(evaluateFilter(glLayerId, filter, feature, filterCache)).be.false;
       should(filterCache).have.key(glLayerId);
     });
   });
@@ -96,7 +94,6 @@ describe('utility functions currently in stylefunction.js', function () {
   });
 
   describe('getValue()', function () {
-    const zoom = 11;
     const feature = new Feature({geometry: new Point([0, 0], 'XY')});
     const functionCache = {};
     const glLayer = {
@@ -124,11 +121,15 @@ describe('utility functions currently in stylefunction.js', function () {
       'type': 'line',
     };
 
+    beforeEach(function () {
+      cameraObj.zoom = 11;
+    });
+
     it('should get correct default property', function () {
       const d = spec['layout_line']['line-cap']['default'];
 
       should.equal(
-        getValue(glLayer2, 'layout', 'line-cap', zoom, feature, functionCache),
+        getValue(glLayer2, 'layout', 'line-cap', feature, functionCache),
         d,
       );
       should(functionCache).have.key(glLayer2.id);
@@ -136,26 +137,24 @@ describe('utility functions currently in stylefunction.js', function () {
 
     it('should get simple layout property', function () {
       should.equal(
-        getValue(glLayer, 'layout', 'visibility', zoom, feature, functionCache),
+        getValue(glLayer, 'layout', 'visibility', feature, functionCache),
         'visible',
       );
       should(functionCache).have.key(glLayer.id);
     });
 
     it('should get simple paint property', function () {
-      should.equal(
-        getValue(glLayer, 'paint', 'fill-opacity', zoom, feature),
-        0.7,
-      );
+      should.equal(getValue(glLayer, 'paint', 'fill-opacity', feature), 0.7);
     });
 
     it('should get color paint property', function () {
-      const result = getValue(glLayer, 'paint', 'fill-color', zoom, feature);
+      const result = getValue(glLayer, 'paint', 'fill-color', feature);
       should(result).be.instanceof(Color);
     });
 
     it('should get complex paint property', function () {
-      const result = getValue(glLayer2, 'paint', 'line-gap-width', 20, feature);
+      cameraObj.zoom = 20;
+      const result = getValue(glLayer2, 'paint', 'line-gap-width', feature);
       should(result).equal(6);
     });
   });

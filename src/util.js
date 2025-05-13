@@ -13,6 +13,8 @@ import {normalizeSourceUrl, normalizeStyleUrl} from './mapbox.js';
 /** @typedef {import("ol/layer").VectorTile} VectorTileLayer */
 /** @typedef {import("ol/source").Source} Source */
 
+export const emptyObj = Object.freeze({});
+
 const functionCacheByStyleId = {};
 const filterCacheByStyleId = {};
 
