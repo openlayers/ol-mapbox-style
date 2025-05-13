@@ -1,5 +1,9 @@
 # Changelog
 
+## 12.6.1
+
+* Make styles with `pitch` and `distance-from-center` expressions work again
+
 ## 12.6.0
 
 * Add support for multiple sprite sheets
