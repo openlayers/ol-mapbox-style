@@ -20,6 +20,23 @@ import {
 } from '../src/apply.js';
 import {fetchResource} from '../src/util.js';
 
+export function createObserver(total) {
+  return new Promise((resolve) => {
+    let count = 0;
+    const observer = new MutationObserver(() => {
+      count++;
+      if (count === total) {
+        observer.disconnect();
+        resolve();
+      }
+    });
+    observer.observe(document.head, {
+      childList: true,
+      subtree: true,
+    });
+  });
+}
+
 describe('util', function () {
   describe('fetchResource', function () {
     it('allows to transform requests with the transformRequest option', function (done) {

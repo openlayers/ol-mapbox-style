@@ -1,5 +1,4 @@
 import mb2css from 'mapbox-to-css-font';
-import {checkedFonts, registerFont} from 'ol/render/canvas.js';
 import {createCanvas} from './util.js';
 
 const hairSpacePool = Array(256).join('\u200A');
@@ -119,33 +118,17 @@ export function wrapText(text, font, em, letterSpacing) {
   return wrappedText;
 }
 
-const fontFamilyRegEx = /font-family: ?([^;]*);/;
-const stripQuotesRegEx = /("|')/g;
-let loadedFontFamilies;
-function hasFontFamily(family) {
-  if (!loadedFontFamilies) {
-    loadedFontFamilies = {};
-    const styleSheets = document.styleSheets;
-    for (let i = 0, ii = styleSheets.length; i < ii; ++i) {
-      const styleSheet = /** @type {CSSStyleSheet} */ (styleSheets[i]);
-      try {
-        const cssRules = styleSheet.rules || styleSheet.cssRules;
-        if (cssRules) {
-          for (let j = 0, jj = cssRules.length; j < jj; ++j) {
-            const cssRule = cssRules[j];
-            if (cssRule.type == 5) {
-              const match = cssRule.cssText.match(fontFamilyRegEx);
-              loadedFontFamilies[match[1].replace(stripQuotesRegEx, '')] = true;
-            }
-          }
-        }
-      } catch {
-        // empty catch block
-      }
-    }
-  }
-  return family in loadedFontFamilies;
-}
+const webSafeFonts = [
+  'Arial',
+  'Courier New',
+  'Times New Roman',
+  'Verdana',
+  'sans-serif',
+  'serif',
+  'monospace',
+  'cursive',
+  'fantasy',
+];
 
 const processedFontFamilies = {};
 
@@ -159,16 +142,14 @@ export function getFonts(
   fonts,
   templateUrl = 'https://cdn.jsdelivr.net/npm/@fontsource/{font-family}/{fontweight}{-fontstyle}.css',
 ) {
-  const fontsKey = fonts.toString();
-  if (fontsKey in processedFontFamilies) {
-    return processedFontFamilies[fontsKey];
-  }
   const fontDescriptions = [];
   for (let i = 0, ii = fonts.length; i < ii; ++i) {
-    fonts[i] = fonts[i].replace('Arial Unicode MS', 'Arial');
     const font = fonts[i];
+    if (font in processedFontFamilies) {
+      continue;
+    }
+    processedFontFamilies[font] = true;
     const cssFont = mb2css(font, 1);
-    registerFont(cssFont);
     const parts = cssFont.split(' ');
     fontDescriptions.push([
       parts.slice(3).join(' ').replace(/"/g, ''),
@@ -176,24 +157,30 @@ export function getFonts(
       parts[0],
     ]);
   }
-  for (let i = 0, ii = fontDescriptions.length; i < ii; ++i) {
-    const fontDescription = fontDescriptions[i];
-    const family = fontDescription[0];
-    if (!hasFontFamily(family)) {
+
+  (async () => {
+    await document.fonts.ready;
+    for (let i = 0, ii = fontDescriptions.length; i < ii; ++i) {
+      const fontDescription = fontDescriptions[i];
+      const family = fontDescription[0];
+      if (webSafeFonts.includes(family)) {
+        continue;
+      }
+      const weight = fontDescription[1];
+      const style = fontDescription[2];
       if (
-        checkedFonts.get(
-          `${fontDescription[2]}\n${fontDescription[1]} \n${family}`,
-        ) !== 100
+        (await document.fonts.load(`${style} ${weight} 16px "${family}"`))
+          .length === 0
       ) {
         const fontUrl = templateUrl
           .replace('{font-family}', family.replace(/ /g, '-').toLowerCase())
           .replace('{Font+Family}', family.replace(/ /g, '+'))
-          .replace('{fontweight}', fontDescription[1])
+          .replace('{fontweight}', weight)
           .replace(
             '{-fontstyle}',
-            fontDescription[2].replace('normal', '').replace(/(.+)/, '-$1'),
+            style.replace('normal', '').replace(/(.+)/, '-$1'),
           )
-          .replace('{fontstyle}', fontDescription[2]);
+          .replace('{fontstyle}', style);
         if (!document.querySelector('link[href="' + fontUrl + '"]')) {
           const markup = document.createElement('link');
           markup.href = fontUrl;
@@ -202,7 +189,7 @@ export function getFonts(
         }
       }
     }
-  }
-  processedFontFamilies[fontsKey] = fonts;
+  })();
+
   return fonts;
 }
