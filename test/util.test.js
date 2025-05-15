@@ -571,7 +571,7 @@ describe('util', function () {
                 [0, 0],
               ],
             ]),
-            layer: 'landuse',
+            'mvt:layer': 'landuse',
             class: 'park',
           });
           let styles = getStyle(feature, 1);
@@ -606,7 +606,7 @@ describe('util', function () {
                 [0, 0],
               ],
             ]),
-            layer: 'landuse',
+            'mvt:layer': 'landuse',
             class: 'park',
           });
           const styles = getStyle(feature, 1);

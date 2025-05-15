@@ -533,7 +533,7 @@ export function stylefunction(
    */
   const styleFunction = function (feature, resolution, onlyLayer) {
     const properties = feature.getProperties();
-    const layers = layersBySourceLayer[properties.layer];
+    const layers = layersBySourceLayer[properties['mvt:layer']];
     if (!layers) {
       return undefined;
     }

@@ -151,7 +151,7 @@ export default class MapboxVectorLayer extends VectorTileLayer {
     const declutter = 'declutter' in options ? options.declutter : true;
     const source = new VectorTileSource({
       state: 'loading',
-      format: new MVT(),
+      format: new MVT({layerName: 'mvt:layer'}),
     });
 
     super({
