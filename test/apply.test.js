@@ -24,6 +24,7 @@ import {
 import {defaultResolutions, getZoomForResolution} from '../src/util.js';
 import backgroundNoneStyle from './fixtures/background-none.json';
 import backgroundStyle from './fixtures/background.json';
+import {createObserver} from './util.test.js';
 delete brightV9.sprite;
 
 describe('ol-mapbox-style', function () {
@@ -1142,8 +1143,8 @@ describe('ol-mapbox-style', function () {
       });
     });
 
-    it('loads fonts from a style', function (done) {
-      apply(target, {
+    it('loads fonts from a style', async function () {
+      const map = await apply(target, {
         version: 8,
         metadata: {
           'ol:webfonts':
@@ -1169,20 +1170,15 @@ describe('ol-mapbox-style', function () {
             },
           },
         ],
-      })
-        .then(function (map) {
-          const getStyle = map.getAllLayers()[0].getStyle();
-          getStyle(new Feature(new Point([0, 0])), 1);
-          const stylesheets = document.querySelectorAll('link[rel=stylesheet]');
-          should(stylesheets.length).eql(1);
-          should(stylesheets.item(0).href).eql(
-            'https://fonts.openmaptiles.org/open-sans/400.css',
-          );
-          done();
-        })
-        .catch(function (err) {
-          done(err);
-        });
+      });
+      const getStyle = map.getAllLayers()[0].getStyle();
+      getStyle(new Feature(new Point([0, 0])), 1);
+      await createObserver(1);
+      const stylesheets = document.querySelectorAll('link[rel=stylesheet]');
+      should(stylesheets.length).eql(1);
+      should(stylesheets.item(0).href).eql(
+        'https://fonts.openmaptiles.org/open-sans/400.css',
+      );
     });
 
     it('loads fonts from the webfonts option', function (done) {
@@ -1216,9 +1212,10 @@ describe('ol-mapbox-style', function () {
             'https://fonts.openmaptiles.org/{font-family}/{fontweight}{-fontstyle}.css',
         },
       )
-        .then(function (map) {
+        .then(async function (map) {
           const getStyle = map.getAllLayers()[0].getStyle();
           getStyle(new Feature(new Point([0, 0])), 1);
+          await createObserver(1);
           const stylesheets = document.querySelectorAll('link[rel=stylesheet]');
           should(stylesheets.length).eql(1);
           should(stylesheets.item(0).href).eql(
