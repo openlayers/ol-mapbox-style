@@ -1,4 +1,5 @@
 import mb2css from 'mapbox-to-css-font';
+import {checkedFonts} from 'ol/render/canvas.js';
 import {createCanvas} from './util.js';
 
 const hairSpacePool = Array(256).join('\u200A');
@@ -37,6 +38,12 @@ function measureText(text, letterSpacing) {
 }
 
 const measureCache = {};
+checkedFonts.on('propertychange', () => {
+  for (const key in measureCache) {
+    delete measureCache[key];
+  }
+});
+
 export function wrapText(text, font, em, letterSpacing) {
   if (text.indexOf('\n') !== -1) {
     const hardLines = text.split('\n');
