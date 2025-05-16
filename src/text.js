@@ -142,20 +142,26 @@ export function getFonts(
   fonts,
   templateUrl = 'https://cdn.jsdelivr.net/npm/@fontsource/{font-family}/{fontweight}{-fontstyle}.css',
 ) {
-  const fontDescriptions = [];
+  let fontDescriptions;
   for (let i = 0, ii = fonts.length; i < ii; ++i) {
     const font = fonts[i];
     if (font in processedFontFamilies) {
       continue;
     }
     processedFontFamilies[font] = true;
-    const cssFont = mb2css(font, 1);
+    const cssFont = mb2css(font, 16);
     const parts = cssFont.split(' ');
+    if (!fontDescriptions) {
+      fontDescriptions = [];
+    }
     fontDescriptions.push([
       parts.slice(3).join(' ').replace(/"/g, ''),
       parts[1],
       parts[0],
     ]);
+  }
+  if (!fontDescriptions) {
+    return fonts;
   }
 
   (async () => {
@@ -168,9 +174,17 @@ export function getFonts(
       }
       const weight = fontDescription[1];
       const style = fontDescription[2];
+      const loaded = await document.fonts.load(
+        `${style} ${weight} 16px "${family}"`,
+      );
       if (
-        (await document.fonts.load(`${style} ${weight} 16px "${family}"`))
-          .length === 0
+        !loaded.some(
+          (f) =>
+            f.family.replace(/^['"]|['"]$/g, '').toLowerCase() ===
+              family.toLowerCase() &&
+            f.weight == weight &&
+            f.style === style,
+        )
       ) {
         const fontUrl = templateUrl
           .replace('{font-family}', family.replace(/ /g, '-').toLowerCase())
