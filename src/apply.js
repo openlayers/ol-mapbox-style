@@ -661,7 +661,7 @@ export function setupVectorSource(glSource, styleUrl, options) {
           options,
         );
         sourceOptions.tileLoadFunction = tileLoadFunction;
-        sourceOptions.format = new MVT();
+        sourceOptions.format = new MVT({layerName: 'mvt:layer'});
         const source = new VectorTileSource(sourceOptions);
         source.set('mapbox-source', glSource);
         resolve(source);
