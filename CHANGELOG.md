@@ -6,6 +6,10 @@
 
 * The MVT format parser now assigns the tile's `source-layer`s to the `mvt:layer` property of each feature. Previously the `layer` property was used, which was not ideal because it is frequently used in OpenStreetMap based tiles. This change may require application code changes where OpenLayers feature info (`Map.getFeaturesAtPixel()`, `Map.forEachFeatureAtPixel()`, `Layer.getFeatures()`) or style function customizations are used.
 
+### Other changes
+
+* Improvements to font detection, to ensure that the correct fonts are downloaded
+
 ## 12.6.1
 
 * Make styles with `pitch` and `distance-from-center` expressions work again
