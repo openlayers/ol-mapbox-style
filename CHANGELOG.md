@@ -1,5 +1,9 @@
 # Changelog
 
+## 13.0.1
+
+* Clear text width measurement cache when new fonts are loaded
+
 ## 13.0.0
 
 ### Backwards incompatible changes
