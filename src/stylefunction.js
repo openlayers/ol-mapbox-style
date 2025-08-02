@@ -311,6 +311,13 @@ export function recordStyleLayer(record = false) {
 export const styleFunctionArgs = {};
 
 /**
+ * **Caution**: This is a low level API, which is only useful for advanced use cases.
+ * If you want to crete a map or layer group from an entire Mapbox/MapLibre style, use
+ * the `apply()` function. If you want to create a vector layer from a single
+ * source of a Mapbox/MapLibre style, use the `applyStyle()` function. If you want to
+ * create a vector tile layer from a single source of a Mapbox/MapLibre style, use either
+ * the `applyStyle()` function or the `MapboxVectorLayer` constructor.
+ *
  * Creates a style function from the `glStyle` object for all layers that use
  * the specified `source`, which needs to be a `"type": "vector"` or
  * `"type": "geojson"` source and applies it to the specified OpenLayers layer.
@@ -532,8 +539,11 @@ export function stylefunction(
    * @return {Array<import("ol/style/Style").default>} Style.
    */
   const styleFunction = function (feature, resolution, onlyLayer) {
+    const layerProperty =
+      //@ts-ignore
+      olLayer.getSource?.()?.format_?.layerName_ ?? 'mvt:layer';
     const properties = feature.getProperties();
-    const layers = layersBySourceLayer[properties['mvt:layer']];
+    const layers = layersBySourceLayer[properties[layerProperty]];
     if (!layers) {
       return undefined;
     }

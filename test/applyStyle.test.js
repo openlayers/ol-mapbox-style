@@ -1,3 +1,6 @@
+import {Feature} from 'ol';
+import MVT from 'ol/format/MVT.js';
+import {Polygon} from 'ol/geom.js';
 import ImageLayer from 'ol/layer/Image.js';
 import VectorLayer from 'ol/layer/Vector.js';
 import VectorTileLayer from 'ol/layer/VectorTile.js';
@@ -307,6 +310,39 @@ describe('applyStyle without source creation', function () {
           should(layer.getSource().getAttributions()).be.null();
           should(layer.getSource().getTileLoadFunction()).equal(loader);
           should(layer.getStyle()).be.an.instanceOf(Function);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      })
+      .catch(function (e) {
+        done(e);
+      });
+  });
+  it('uses the layer property of the MVT format', function (done) {
+    const layer = new VectorTileLayer();
+    applyStyle(layer, '/fixtures/osm-liberty/style.json', 'openmaptiles')
+      .then(function () {
+        layer.setSource(
+          new VectorTileSource({
+            format: new MVT({layerName: 'my:layer'}),
+          }),
+        );
+        try {
+          const stylefunction = layer.getStyle();
+          const style = stylefunction(
+            new Feature({
+              'my:layer': 'park',
+              geometry: new Polygon([
+                [0, 0],
+                [1, 1],
+                [1, 0],
+                [0, 0],
+              ]),
+            }),
+            1,
+          );
+          should(style.length).be.greaterThan(0);
           done();
         } catch (e) {
           done(e);
