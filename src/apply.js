@@ -369,6 +369,15 @@ export function applyStyle(
                 );
               }
             }
+            let layerProperty;
+            const source = layer.getSource();
+            if (source instanceof VectorTileSource) {
+              //@ts-ignore
+              if (source.format_ instanceof MVT) {
+                //@ts-ignore
+                layerProperty = source.format_.layerName_;
+              }
+            }
             style = applyStylefunction(
               layer,
               glStyle,
@@ -379,6 +388,7 @@ export function applyStyle(
               (fonts, templateUrl = options.webfonts) =>
                 getFonts(fonts, templateUrl),
               options.getImage,
+              layerProperty,
             );
             if (!layer.getStyle()) {
               reject(new Error(`Nothing to show for source [${sourceId}]`));
