@@ -1,4 +1,5 @@
 import brightV9 from 'mapbox-gl-styles/styles/bright-v9.json';
+import satelliteV9 from 'mapbox-gl-styles/styles/satellite-v9.json';
 import {Feature} from 'ol';
 import Map from 'ol/Map.js';
 import {Polygon} from 'ol/geom.js';
@@ -569,7 +570,7 @@ describe('util', function () {
       target = document.createElement('div');
     });
 
-    it('updates a geojson source', function (done) {
+    it('updates a geojson source layer', function (done) {
       apply(target, JSON.parse(JSON.stringify(brightV9)))
         .then(function (map) {
           // add another layer that has no 'mapbox-layers' set
@@ -598,6 +599,27 @@ describe('util', function () {
           styles = getStyle(feature, 1);
           should(styles[0].getFill().getColor()).eql('rgba(0,0,255,1)');
           done();
+        })
+        .catch((err) => done(err));
+    });
+
+    it('updates a raster source layer', function (done) {
+      apply(target, JSON.parse(JSON.stringify(satelliteV9)))
+        .then((map) => {
+          const layer = getLayer(map, 'satellite');
+          const mapboxLayer = getMapboxLayer(map, 'satellite');
+          updateMapboxLayer(map, {
+            ...mapboxLayer,
+            minzoom: 16,
+          })
+            .then(() => {
+              should(layer.getMaxResolution()).approximately(
+                map.getView().getResolutionForZoom(16),
+                1e-9,
+              );
+              done();
+            })
+            .catch((err) => done(err));
         })
         .catch((err) => done(err));
     });
