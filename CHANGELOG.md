@@ -1,5 +1,10 @@
 # Changelog
 
+## 13.1.0
+
+* Respect the `layerName` property of the source format, instead of using `mvt:layer`
+* `updateMapboxLayer` now also works with raster layers
+
 ## 13.0.1
 
 * Clear text width measurement cache when new fonts are loaded
