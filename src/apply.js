@@ -10,6 +10,7 @@ import View from 'ol/View.js';
 import {getCenter, getTopLeft} from 'ol/extent.js';
 import GeoJSON from 'ol/format/GeoJSON.js';
 import MVT from 'ol/format/MVT.js';
+import {WORKER_OFFSCREEN_CANVAS} from 'ol/has.js';
 import LayerGroup from 'ol/layer/Group.js';
 import ImageLayer from 'ol/layer/Image.js';
 import Layer from 'ol/layer/Layer.js';
@@ -399,7 +400,11 @@ export function applyStyle(
             options.accessToken,
             styleUrl || location.href,
           );
-          spriteScale = window.devicePixelRatio >= 1.5 ? 0.5 : 1;
+          spriteScale = WORKER_OFFSCREEN_CANVAS
+            ? 1
+            : window.devicePixelRatio >= 1.5
+              ? 0.5
+              : 1;
           const sizeFactor = spriteScale == 0.5 ? '@2x' : '';
 
           Promise.all(
@@ -1155,15 +1160,28 @@ export function apply(mapOrGroupOrElement, style, options = {}) {
   let promise;
   /** @type {Map|LayerGroup} */
   let mapOrGroup;
-  if (
-    typeof mapOrGroupOrElement === 'string' ||
-    mapOrGroupOrElement instanceof HTMLElement
-  ) {
-    mapOrGroup = new Map({
-      target: mapOrGroupOrElement,
-    });
-  } else {
+
+  if (WORKER_OFFSCREEN_CANVAS) {
+    if (
+      !(mapOrGroupOrElement instanceof Map) &&
+      !(mapOrGroupOrElement instanceof LayerGroup)
+    ) {
+      throw new Error(
+        'ol-mapbox-style in a web worker requires a Map or a LayerGroup as first argument',
+      );
+    }
     mapOrGroup = mapOrGroupOrElement;
+  } else {
+    if (
+      typeof mapOrGroupOrElement === 'string' ||
+      mapOrGroupOrElement instanceof HTMLElement
+    ) {
+      mapOrGroup = new Map({
+        target: mapOrGroupOrElement,
+      });
+    } else {
+      mapOrGroup = mapOrGroupOrElement;
+    }
   }
 
   if (typeof style === 'string') {
