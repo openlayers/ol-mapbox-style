@@ -151,7 +151,8 @@ export function getFonts(
   templateUrl = 'https://cdn.jsdelivr.net/npm/@fontsource/{font-family}/{fontweight}{-fontstyle}.css',
 ) {
   if (WORKER_OFFSCREEN_CANVAS) {
-    return [];
+    //FIXME Font handling in web workers
+    return fonts;
   }
   let fontDescriptions;
   for (let i = 0, ii = fonts.length; i < ii; ++i) {
