@@ -7,7 +7,6 @@ License: https://raw.githubusercontent.com/openlayers/ol-mapbox-style/master/LIC
 import {derefLayers} from '@maplibre/maplibre-gl-style-spec';
 import Map from 'ol/Map.js';
 import View from 'ol/View.js';
-import {createMockDiv} from 'ol/dom.js';
 import {getCenter, getTopLeft} from 'ol/extent.js';
 import GeoJSON from 'ol/format/GeoJSON.js';
 import MVT from 'ol/format/MVT.js';
@@ -639,7 +638,7 @@ function getBackgroundColor(glLayer, resolution, options, functionCache) {
  */
 function setupBackgroundLayer(glLayer, options, functionCache) {
   const div = WORKER_OFFSCREEN_CANVAS
-    ? createMockDiv()
+    ? /** @type { HTMLDivElement } */ ({style: {}})
     : document.createElement('div');
   div.className = 'ol-mapbox-style-background';
   div.style.position = 'absolute';
