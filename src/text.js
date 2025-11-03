@@ -1,4 +1,5 @@
 import mb2css from 'mapbox-to-css-font';
+import {WORKER_OFFSCREEN_CANVAS} from 'ol/has.js';
 import {checkedFonts} from 'ol/render/canvas.js';
 import {createCanvas} from './util.js';
 
@@ -149,6 +150,10 @@ export function getFonts(
   fonts,
   templateUrl = 'https://cdn.jsdelivr.net/npm/@fontsource/{font-family}/{fontweight}{-fontstyle}.css',
 ) {
+  if (WORKER_OFFSCREEN_CANVAS) {
+    //FIXME Font handling in web workers
+    return fonts;
+  }
   let fontDescriptions;
   for (let i = 0, ii = fonts.length; i < ii; ++i) {
     const font = fonts[i];
