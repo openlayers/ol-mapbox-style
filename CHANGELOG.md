@@ -1,5 +1,9 @@
 # Changelog
 
+## 13.1.1
+
+* Add support for running ol-mapbox-style in web workers
+
 ## 13.1.0
 
 * Respect the `layerName` property of the source format, instead of using `mvt:layer`
