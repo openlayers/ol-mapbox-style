@@ -191,7 +191,7 @@ export function raster(inputs, data) {
   const maxY = height - 1;
   const pixel = [0, 0, 0, 0];
 
-  let pixelX, pixelY, x0, offset;
+  let pixelX, pixelY, offset;
 
   /*
    * The following functions have the same math as <https://github.com/maplibre/maplibre-gl-js/blob/5518ede00ef769fed1ca4f54f6d970885987fb22/src/render/program/raster_program.ts#L76>
@@ -231,9 +231,7 @@ export function raster(inputs, data) {
 
   for (pixelY = 0; pixelY <= maxY; ++pixelY) {
     for (pixelX = 0; pixelX <= maxX; ++pixelX) {
-      x0 = pixelX === 0 ? 0 : pixelX - 1;
-
-      offset = (pixelY * width + x0) * 4;
+      offset = (pixelY * width + pixelX) * 4;
       pixel[0] = imageData[offset];
       pixel[1] = imageData[offset + 1];
       pixel[2] = imageData[offset + 2];
