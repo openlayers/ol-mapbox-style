@@ -751,7 +751,7 @@ function setupRasterSource(glSource, styleUrl, options) {
   });
 }
 
-function setupRasterLayerAbstract(glSource, styleUrl, options) {
+function setupRasterLayer(glSource, styleUrl, options) {
   const layer = new TileLayer();
   setupRasterSource(glSource, styleUrl, options)
     .then(function (source) {
@@ -768,22 +768,10 @@ function setupRasterLayerAbstract(glSource, styleUrl, options) {
  * @param {Object} glSource "source" entry from a Mapbox/MapLibre Style object.
  * @param {string} styleUrl Style url
  * @param {Options} options ol-mapbox-style options.
- * @return {TileLayer} The raster layer
- */
-function setupRasterLayer(glSource, styleUrl, options) {
-  const tileLayer = setupRasterLayerAbstract(glSource, styleUrl, options);
-  return tileLayer;
-}
-
-/**
- *
- * @param {Object} glSource "source" entry from a Mapbox Style object.
- * @param {string} styleUrl Style url
- * @param {Options} options ol-mapbox-style options.
  * @return {ImageLayer<Raster>} The raster layer
  */
 function setupRasterOpLayer(glSource, styleUrl, options) {
-  const tileLayer = setupRasterLayerAbstract(glSource, styleUrl, options);
+  const tileLayer = setupRasterLayer(glSource, styleUrl, options);
   /** @type {ImageLayer<Raster>} */
   const layer = new ImageLayer({
     source: new Raster({
@@ -803,7 +791,7 @@ function setupRasterOpLayer(glSource, styleUrl, options) {
  * @return {ImageLayer<Raster>} The raster layer
  */
 function setupHillshadeLayer(glSource, styleUrl, options) {
-  const tileLayer = setupRasterLayerAbstract(glSource, styleUrl, options);
+  const tileLayer = setupRasterLayer(glSource, styleUrl, options);
   /** @type {ImageLayer<Raster>} */
   const layer = new ImageLayer({
     source: new Raster({
