@@ -919,11 +919,12 @@ function prerenderRasterLayer(glLayer, layer, functionCache) {
 }
 
 function updateRasterLayerProperties(glLayer, layer, zoom, functionCache) {
+  cameraObj.zoom = zoom;
+  cameraObj.distanceFromCenter = 0;
   const opacity = getValue(
     glLayer,
     'paint',
     'raster-opacity',
-    zoom,
     emptyObj,
     functionCache,
   );
@@ -986,17 +987,17 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
     if (requiresOperations) {
       layer = setupRasterOpLayer(glSource, styleUrl, options);
       layer.getSource().on('beforeoperations', function (event) {
-        const zoom = getZoomForResolution(
+        cameraObj.zoom = getZoomForResolution(
           event.resolution,
           options.resolutions || defaultResolutions,
         );
+        cameraObj.distanceFromCenter = 0;
 
         const data = event.data;
         data.saturation = getValue(
           glLayer,
           'paint',
           'raster-saturation',
-          zoom,
           emptyObj,
           functionCache,
         );
@@ -1004,7 +1005,6 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
           glLayer,
           'paint',
           'raster-contrast',
-          zoom,
           emptyObj,
           functionCache,
         );
@@ -1013,7 +1013,6 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
           glLayer,
           'paint',
           'raster-brightness-max',
-          zoom,
           emptyObj,
           functionCache,
         );
@@ -1022,7 +1021,6 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
           glLayer,
           'paint',
           'raster-brightness-min',
-          zoom,
           emptyObj,
           functionCache,
         );
@@ -1031,7 +1029,6 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
           glLayer,
           'paint',
           'raster-hue-rotate',
-          zoom,
           emptyObj,
           functionCache,
         );
