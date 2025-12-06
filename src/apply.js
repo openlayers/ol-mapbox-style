@@ -925,7 +925,7 @@ function updateRasterLayerProperties(glLayer, layer, zoom, functionCache) {
     'raster-opacity',
     zoom,
     emptyObj,
-    functionCache
+    functionCache,
   );
   layer.setOpacity(opacity);
 }
@@ -980,7 +980,7 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
     const requiresOperations = !!Object.keys(glLayer.paint || {}).find(
       (key) => {
         return keys.includes(key);
-      }
+      },
     );
 
     if (requiresOperations) {
@@ -988,7 +988,7 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
       layer.getSource().on('beforeoperations', function (event) {
         const zoom = getZoomForResolution(
           event.resolution,
-          options.resolutions || defaultResolutions
+          options.resolutions || defaultResolutions,
         );
 
         const data = event.data;
@@ -998,7 +998,7 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
           'raster-saturation',
           zoom,
           emptyObj,
-          functionCache
+          functionCache,
         );
         data.contrast = getValue(
           glLayer,
@@ -1006,7 +1006,7 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
           'raster-contrast',
           zoom,
           emptyObj,
-          functionCache
+          functionCache,
         );
 
         data.brightnessHigh = getValue(
@@ -1015,7 +1015,7 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
           'raster-brightness-max',
           zoom,
           emptyObj,
-          functionCache
+          functionCache,
         );
 
         data.brightnessLow = getValue(
@@ -1024,7 +1024,7 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
           'raster-brightness-min',
           zoom,
           emptyObj,
-          functionCache
+          functionCache,
         );
 
         data.hueRotate = getValue(
@@ -1033,7 +1033,7 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
           'raster-hue-rotate',
           zoom,
           emptyObj,
-          functionCache
+          functionCache,
         );
       });
     } else {
