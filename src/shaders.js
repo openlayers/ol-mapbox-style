@@ -266,9 +266,9 @@ export function raster(inputs, data) {
       b = (b - 0.5) * cFactor + 0.5;
 
       // brightness
-      r = bLow * (1 - r) + bHigh * r;
-      g = bLow * (1 - r) + bHigh * g;
-      b = bLow * (1 - r) + bHigh * b;
+      r = bLow * (255 - r) + bHigh * r;
+      g = bLow * (255 - g) + bHigh * g;
+      b = bLow * (255 - b) + bHigh * b;
 
       shadeData[offset] = r;
       shadeData[offset + 1] = g;
