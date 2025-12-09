@@ -557,10 +557,7 @@ export function stylefunction(
     cameraObj.distanceFromCenter = 0;
     const featureGeometry = feature.getGeometry();
 
-    if (
-      featureGeometry.getType &&
-      featureGeometry instanceof GeometryCollection
-    ) {
+    if (featureGeometry instanceof GeometryCollection) {
       const geoms = featureGeometry.getGeometries();
 
       for (const geom of geoms) {
