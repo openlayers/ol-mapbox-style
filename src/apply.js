@@ -38,7 +38,7 @@ import {
   normalizeSpriteDefinition,
   normalizeStyleUrl,
 } from './mapbox.js';
-import {hillshade} from './shaders.js';
+import {hillshade, raster as rasterShader} from './shaders.js';
 import {
   _colorWithOpacity,
   cameraObj,
@@ -741,6 +741,7 @@ function setupRasterSource(glSource, styleUrl, options) {
           }
           return src;
         });
+
         source.set('mapbox-source', glSource);
         resolve(source);
       })
@@ -765,6 +766,26 @@ function setupRasterLayer(glSource, styleUrl, options) {
 /**
  *
  * @param {Object} glSource "source" entry from a Mapbox/MapLibre Style object.
+ * @param {string} styleUrl Style url
+ * @param {Options} options ol-mapbox-style options.
+ * @return {ImageLayer<Raster>} The raster layer
+ */
+function setupRasterOpLayer(glSource, styleUrl, options) {
+  const tileLayer = setupRasterLayer(glSource, styleUrl, options);
+  /** @type {ImageLayer<Raster>} */
+  const layer = new ImageLayer({
+    source: new Raster({
+      operationType: 'image',
+      operation: rasterShader,
+      sources: [tileLayer],
+    }),
+  });
+  return layer;
+}
+
+/**
+ *
+ * @param {Object} glSource "source" entry from a Mapbox Style object.
  * @param {string} styleUrl Style url
  * @param {Options} options ol-mapbox-style options.
  * @return {ImageLayer<Raster>} The raster layer
@@ -950,10 +971,75 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
   } else if (glSource.type == 'vector') {
     layer = setupVectorLayer(glSource, styleUrl, options);
   } else if (glSource.type == 'raster') {
-    layer = setupRasterLayer(glSource, styleUrl, options);
+    const keys = [
+      'raster-saturation',
+      'raster-contrast',
+      'raster-brightness-max',
+      'raster-brightness-min',
+      'raster-hue-rotate',
+    ];
+    const requiresOperations = !!Object.keys(glLayer.paint || {}).find(
+      (key) => {
+        return keys.includes(key);
+      },
+    );
+
+    if (requiresOperations) {
+      layer = setupRasterOpLayer(glSource, styleUrl, options);
+      layer.getSource().on('beforeoperations', function (event) {
+        cameraObj.zoom = getZoomForResolution(
+          event.resolution,
+          options.resolutions || defaultResolutions,
+        );
+        cameraObj.distanceFromCenter = 0;
+
+        const data = event.data;
+        data.saturation = getValue(
+          glLayer,
+          'paint',
+          'raster-saturation',
+          emptyObj,
+          functionCache,
+        );
+        data.contrast = getValue(
+          glLayer,
+          'paint',
+          'raster-contrast',
+          emptyObj,
+          functionCache,
+        );
+
+        data.brightnessHigh = getValue(
+          glLayer,
+          'paint',
+          'raster-brightness-max',
+          emptyObj,
+          functionCache,
+        );
+
+        data.brightnessLow = getValue(
+          glLayer,
+          'paint',
+          'raster-brightness-min',
+          emptyObj,
+          functionCache,
+        );
+
+        data.hueRotate = getValue(
+          glLayer,
+          'paint',
+          'raster-hue-rotate',
+          emptyObj,
+          functionCache,
+        );
+      });
+    } else {
+      layer = setupRasterLayer(glSource, styleUrl, options);
+    }
     layer.setVisible(
       glLayer.layout ? glLayer.layout.visibility !== 'none' : true,
     );
+
     layer.on('prerender', prerenderRasterLayer(glLayer, layer, functionCache));
   } else if (glSource.type == 'geojson') {
     layer = setupGeoJSONLayer(glSource, styleUrl, options);

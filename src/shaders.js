@@ -180,3 +180,102 @@ export function hillshade(inputs, data) {
 
   return new ImageData(shadeData, width, height);
 }
+
+export function raster(inputs, data) {
+  const image = inputs[0];
+  const width = image.width;
+  const height = image.height;
+  const imageData = image.data;
+  const shadeData = new Uint8ClampedArray(imageData.length);
+  const maxX = width - 1;
+  const maxY = height - 1;
+  const pixel = [0, 0, 0, 0];
+
+  let pixelX, pixelY, offset;
+
+  /*
+   * The following functions have the same math as <https://github.com/maplibre/maplibre-gl-js/blob/5518ede00ef769fed1ca4f54f6d970885987fb22/src/render/program/raster_program.ts#L76>
+   *   - calculateContrastFactor
+   *   - calculateSaturationFactor
+   *   - generateSpinWeights
+   */
+  function calculateContrastFactor(contrast) {
+    return contrast > 0 ? 1 / (1 - contrast) : 1 + contrast;
+  }
+
+  function calculateSaturationFactor(saturation) {
+    return saturation > 0 ? 1 - 1 / (1.001 - saturation) : -saturation;
+  }
+
+  function generateSpinWeights(angle) {
+    angle *= Math.PI / 180;
+    const s = Math.sin(angle);
+    const c = Math.cos(angle);
+    return [
+      (2 * c + 1) / 3,
+      (-Math.sqrt(3) * s - c + 1) / 3,
+      (Math.sqrt(3) * s - c + 1) / 3,
+    ];
+  }
+
+  const sFactor = calculateSaturationFactor(data.saturation);
+  const cFactor = calculateContrastFactor(data.contrast);
+
+  const cSpinWeights = generateSpinWeights(data.hueRotate);
+  const cSpinWeightsXYZ = cSpinWeights;
+  const cSpinWeightsZXY = [cSpinWeights[2], cSpinWeights[0], cSpinWeights[1]];
+  const cSpinWeightsYZX = [cSpinWeights[1], cSpinWeights[2], cSpinWeights[0]];
+
+  const bLow = data.brightnessLow;
+  const bHigh = data.brightnessHigh;
+
+  for (pixelY = 0; pixelY <= maxY; ++pixelY) {
+    for (pixelX = 0; pixelX <= maxX; ++pixelX) {
+      offset = (pixelY * width + pixelX) * 4;
+      pixel[0] = imageData[offset];
+      pixel[1] = imageData[offset + 1];
+      pixel[2] = imageData[offset + 2];
+      pixel[3] = imageData[offset + 3];
+
+      const or = pixel[0];
+      const og = pixel[1];
+      const ob = pixel[2];
+
+      const dotProduct = (vector1, vector2) => {
+        let result = 0;
+        for (let i = 0; i < vector1.length; i++) {
+          result += vector1[i] * vector2[i];
+        }
+        return result;
+      };
+
+      // hue-rotate
+      let r = dotProduct([or, og, ob], cSpinWeightsXYZ);
+      let g = dotProduct([or, og, ob], cSpinWeightsZXY);
+      let b = dotProduct([or, og, ob], cSpinWeightsYZX);
+
+      // saturation
+      const average = (r + g + b) / 3;
+      r += (average - r) * sFactor;
+      g += (average - g) * sFactor;
+      b += (average - b) * sFactor;
+
+      // contrast
+      r = (r - 0.5) * cFactor + 0.5;
+      g = (g - 0.5) * cFactor + 0.5;
+      b = (b - 0.5) * cFactor + 0.5;
+
+      // brightness
+      r = bLow * (255 - r) + bHigh * r;
+      g = bLow * (255 - g) + bHigh * g;
+      b = bLow * (255 - b) + bHigh * b;
+
+      shadeData[offset] = r;
+      shadeData[offset + 1] = g;
+      shadeData[offset + 2] = b;
+      shadeData[offset + 3] = pixel[3];
+    }
+  }
+
+  return new ImageData(shadeData, width, height);
+}
