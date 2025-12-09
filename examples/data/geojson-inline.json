@@ -59,7 +59,23 @@
             "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
           }
         },
-        "features": [{
+        "features": [ {
+          "type": "Feature",
+          "properties": {
+            "n": 2,
+            "cat": 1
+          },
+          "geometries": [{
+            "type": "GeometryCollection",
+            "coordinates": [0.6, 0.6]
+          },{
+            "type": "GeometryCollection",
+            "coordinates": [0.7, 0.7]
+          },{
+            "type": "GeometryCollection",
+            "coordinates": [0.8, 0.8]
+          }]
+        },{
           "type": "Feature",
           "properties": {
             "n": 2,
