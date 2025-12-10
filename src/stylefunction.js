@@ -155,7 +155,8 @@ export function getValue(
       functions[property] =
         compiledExpression.evaluate.bind(compiledExpression);
     } else {
-      if (propertySpec.type == 'color') {
+      const type = propertySpec.type;
+      if (type === 'color' || type === 'colorArray') {
         value = Color.parse(value);
       }
       functions[property] = function () {
