@@ -62,20 +62,23 @@
         "features": [ {
           "type": "Feature",
           "properties": {
-            "n": 2,
+            "n": 1,
             "cat": 1
           },
-          "geometries": [{
+          "geometry": {
             "type": "GeometryCollection",
-            "coordinates": [0.6, 0.6]
-          },{
-            "type": "GeometryCollection",
-            "coordinates": [0.7, 0.7]
-          },{
-            "type": "GeometryCollection",
-            "coordinates": [0.8, 0.8]
-          }]
-        },{
+            "geometries": [{
+              "type": "Point",
+              "coordinates": [0.5, 0.5]
+            }, {
+              "type": "Point",
+              "coordinates": [1.5, 1.5]
+            }, {
+              "type": "Point",
+              "coordinates": [2.5, 2.5]
+            }]
+          }
+        }, {
           "type": "Feature",
           "properties": {
             "n": 2,

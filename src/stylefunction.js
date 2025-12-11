@@ -562,15 +562,11 @@ export function stylefunction(
 
       for (const geom of geoms) {
         const subFeature = new Feature({
-          ...feature.getProperties(),
+          ...properties,
           geometry: geom,
         });
 
-        const subStyles = styleFunction(subFeature, resolution, onlyLayer);
-
-        if (subStyles && Array.isArray(subStyles)) {
-          styles.push(...subStyles);
-        }
+        styleFunction(subFeature, resolution, onlyLayer);
       }
 
       return styles.length > 0 ? styles : undefined;
