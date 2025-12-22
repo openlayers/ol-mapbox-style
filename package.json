@@ -41,7 +41,7 @@
     "test": "npm run karma -- --single-run --log-level error"
   },
   "dependencies": {
-    "@maplibre/maplibre-gl-style-spec": "^23.1.0",
+    "@maplibre/maplibre-gl-style-spec": "^24.4.1",
     "mapbox-to-css-font": "^3.2.0"
   },
   "peerDependencies": {
