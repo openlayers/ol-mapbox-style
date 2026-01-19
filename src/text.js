@@ -33,8 +33,8 @@ function getMeasureContext() {
 
 function fitWeight(fontWeight, weight) {
   if (/\d+ \d+/.test(fontWeight)) {
-    const [start, end] = fontWeight.split(' ');
-    return parseInt(start, 10) <= weight && weight <= parseInt(end, 10);
+    const [start, end] = fontWeight.split(' ').map(Number);
+    return start <= weight && weight <= end;
   }
   return fontWeight == weight;
 }
