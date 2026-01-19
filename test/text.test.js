@@ -113,5 +113,35 @@ describe('text', function () {
         'https://cdn.jsdelivr.net/npm/@fontsource/averia-sans-libre/400.css',
       );
     });
+
+    it('skip font loading when the loaded fonts fit the weight range', async function () {
+      // Mock a font with a weight range
+      const mockFont = {
+        family: 'Custom Font',
+        weight: '400 700', // Variable font with weight range
+        style: 'normal',
+      };
+
+      // Mock document.fonts.load to return the font with weight range
+      const originalLoad = document.fonts.load;
+      document.fonts.load = async function () {
+        return [mockFont];
+      };
+
+      try {
+        // Request a font with weight 500, which falls within the 400-700 range
+        getFonts(['Custom Font Medium']);
+
+        // Wait a bit for the async operation to complete
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
+        // Verify no stylesheet was added because the font already exists with compatible weight range
+        const stylesheets = document.querySelectorAll('link[rel=stylesheet]');
+        should(stylesheets.length).eql(0);
+      } finally {
+        // Restore original function
+        document.fonts.load = originalLoad;
+      }
+    });
   });
 });
