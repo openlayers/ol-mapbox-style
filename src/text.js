@@ -31,6 +31,14 @@ function getMeasureContext() {
   return measureContext;
 }
 
+function fitWeight(fontWeight, weight) {
+  if (/\d+ \d+/.test(fontWeight)) {
+    const [start, end] = fontWeight.split(' ').map(Number);
+    return start <= weight && weight <= end;
+  }
+  return fontWeight == weight;
+}
+
 function measureText(text, letterSpacing) {
   return (
     getMeasureContext().measureText(text).width +
@@ -194,7 +202,7 @@ export function getFonts(
           (f) =>
             f.family.replace(/^['"]|['"]$/g, '').toLowerCase() ===
               family.toLowerCase() &&
-            f.weight == weight &&
+            fitWeight(f.weight, weight) &&
             f.style === style,
         )
       ) {
