@@ -1193,8 +1193,10 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
           !(layer instanceof VectorLayer || layer instanceof VectorTileLayer)
         ) {
           layerIds = [];
+          glSourceId = undefined;
+        } else {
+          glSourceId = layer.get('mapbox-source');
         }
-        glSourceId = layer.get('mapbox-source');
       }
       layerIds.push(glLayer.id);
     }
