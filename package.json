@@ -1,7 +1,7 @@
 {
   "name": "ol-mapbox-style",
   "version": "13.2.0",
-  "description": "Create OpenLayers maps from Mapbox Style objects",
+  "description": "Create OpenLayers layers or maps from Mapbox/MapLibre styles",
   "type": "module",
   "browser": "src/index.js",
   "main": "dist/olms.js",
