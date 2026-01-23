@@ -1,4 +1,4 @@
-Create [OpenLayers](https://openlayers.org/) maps from [Mapbox Style](https://docs.mapbox.com/style-spec/guides/) or [MapLibre Style](https://maplibre.org/maplibre-style-spec/) objects.
+Create [OpenLayers](https://openlayers.org/) layers or maps from [Mapbox Style](https://docs.mapbox.com/style-spec/guides/) or [MapLibre Style](https://maplibre.org/maplibre-style-spec/) objects.
 
 ## Getting started
 
