@@ -479,6 +479,7 @@ export function stylefunction(
     });
   }
 
+  /** @type {*} */
   const allLayers = derefLayers(glStyle.layers);
 
   const layersBySourceLayer = {};
