@@ -963,11 +963,13 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
   const glLayers = glStyle.layers;
   const type = glLayer.type;
 
-  const id = glLayer.source || getSourceIdByRef(glLayers, glLayer.ref);
-  const glSource = glStyle.sources[id];
+  let glSourceId = glLayer.source || getSourceIdByRef(glLayers, glLayer.ref);
+  const glSource = glStyle.sources[glSourceId];
   let layer;
   if (type == 'background') {
     layer = setupBackgroundLayer(glLayer, options, functionCache);
+    // background layers do not have a source
+    glSourceId = undefined;
   } else if (glSource.type == 'vector') {
     layer = setupVectorLayer(glSource, styleUrl, options);
   } else if (glSource.type == 'raster') {
@@ -1104,7 +1106,6 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
       glLayer.layout ? glLayer.layout.visibility !== 'none' : true,
     );
   }
-  const glSourceId = id;
   if (layer) {
     layer.set('mapbox-source', glSourceId);
   }

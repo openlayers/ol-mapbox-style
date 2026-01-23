@@ -945,6 +945,28 @@ describe('ol-mapbox-style', function () {
             done(err);
           });
       });
+
+      it('ignores source for background layer', function (done) {
+        context.layers.unshift({
+          id: 'background',
+          type: 'background',
+          source: 'osm', // this is invalid, so we want to ignore it
+          paint: {
+            'background-color': 'rgba(255, 0, 0, 1)',
+          },
+        });
+        apply(target, context)
+          .then(function (map) {
+            should(map.getLayers().getLength()).eql(2);
+            const layer = map.getLayers().item(0);
+            should(layer.get('mapbox-layers')).eql(['background']);
+            should(layer.get('mapbox-source')).be.undefined();
+            done();
+          })
+          .catch(function (err) {
+            done(err);
+          });
+      });
     });
 
     describe('layer stacking', function () {
