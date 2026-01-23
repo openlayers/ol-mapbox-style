@@ -22,7 +22,20 @@ When installed this way, just import from ol-mapbox-style, as shown in the usage
 
 **See the [project page](https://openlayers.org/ol-mapbox-style/) for the full documentation.**
 
-The code below creates an OpenLayers map from Mapbox's Bright v9 style, using a `https://` url:
+The recommended way of using a map defined by a Mapbox/MapLibre style is to apply it to an OpenLayers [LayerGroup](https://openlayers.org/en/latest/apidoc/module-ol_layer_Group-LayerGroup.html):
+
+```js
+import { apply } from 'ol-mapbox-style';
+import LayerGroup from 'ol/layer/Group.js'
+
+const liberty = new LayerGroup();
+apply(liberty, 'https://tiles.openfreemap.org/styles/liberty');
+
+// `map` is an OpenLayers Map instance
+map.addLayer(liberty);
+```
+
+The code below creates an entire OpenLayers map from Mapbox's Bright v9 style, using a `https://` url:
 
 ```js
 import { apply } from 'ol-mapbox-style';
