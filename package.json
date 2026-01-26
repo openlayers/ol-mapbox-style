@@ -72,7 +72,7 @@
     "karma-sourcemap-loader": "^0.4.0",
     "karma-webpack": "^5.0.0",
     "mapbox-gl-styles": "^2.0.2",
-    "mini-css-extract-plugin": "^2.4.4",
+    "mini-css-extract-plugin": "^2.10.0",
     "mocha": "^11.1.0",
     "nanoassert": "^3.0.1",
     "pmtiles-protocol": "^1.0.5",
