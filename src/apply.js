@@ -1062,15 +1062,14 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
       );
       cameraObj.distanceFromCenter = 0;
       data.encoding = glSource.encoding;
-      data.vert =
-        5 *
-        getValue(
-          glLayer,
-          'paint',
-          'hillshade-exaggeration',
-          emptyObj,
-          functionCache,
-        );
+      data.exaggeration = getValue(
+        glLayer,
+        'paint',
+        'hillshade-exaggeration',
+        emptyObj,
+        functionCache,
+      );
+      data.vert = 1;
       data.sunAz = getValue(
         glLayer,
         'paint',
@@ -1078,8 +1077,6 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
         emptyObj,
         functionCache,
       );
-      data.sunEl = 35;
-      data.opacity = 0.3;
       data.highlightColor = getValue(
         glLayer,
         'paint',
@@ -1087,6 +1084,9 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
         emptyObj,
         functionCache,
       );
+      if (data.highlightColor && data.highlightColor.values) {
+        data.highlightColor = data.highlightColor.values[0];
+      }
       data.shadowColor = getValue(
         glLayer,
         'paint',
@@ -1094,6 +1094,9 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
         emptyObj,
         functionCache,
       );
+      if (data.shadowColor && data.shadowColor.values) {
+        data.shadowColor = data.shadowColor.values[0];
+      }
       data.accentColor = getValue(
         glLayer,
         'paint',
@@ -1101,6 +1104,9 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
         emptyObj,
         functionCache,
       );
+      if (data.accentColor && data.accentColor.values) {
+        data.accentColor = data.accentColor.values[0];
+      }
     });
     layer.setVisible(
       glLayer.layout ? glLayer.layout.visibility !== 'none' : true,
