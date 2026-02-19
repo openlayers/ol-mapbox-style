@@ -6,16 +6,15 @@ License: https://raw.githubusercontent.com/openlayers/ol-mapbox-style/master/LIC
 
 import {
   Color,
-  CompoundExpression,
   convertFunction,
   createPropertyExpression,
   derefLayers,
-  expressions,
   featureFilter as createFilter,
   isExpression,
   isFunction,
   v8 as spec,
 } from '@maplibre/maplibre-gl-style-spec';
+
 import mb2css from 'mapbox-to-css-font';
 import Map from 'ol/Map.js';
 import {distance} from 'ol/coordinate.js';
@@ -28,6 +27,7 @@ import Icon from 'ol/style/Icon.js';
 import Stroke from 'ol/style/Stroke.js';
 import Style from 'ol/style/Style.js';
 import Text from 'ol/style/Text.js';
+import {cameraObj, styleConfig, wrapImageExtraArgs} from './expressions.js';
 import {applyLetterSpacing, wrapText} from './text.js';
 import {
   clearFunctionCache,
@@ -82,33 +82,37 @@ const anchor = {
 };
 
 const expressionData = function (rawExpression, propertySpec) {
-  const compiledExpression = createPropertyExpression(
+  let compiledExpression = createPropertyExpression(
     rawExpression,
     propertySpec,
   );
   if (compiledExpression.result === 'error') {
-    throw new Error(
-      compiledExpression.value
-        .map((err) => `${err.key}: ${err.message}`)
-        .join(', '),
+    const wrappedExpression = wrapImageExtraArgs(rawExpression);
+    if (wrappedExpression !== rawExpression) {
+      compiledExpression = createPropertyExpression(
+        wrappedExpression,
+        propertySpec,
+      );
+    }
+  }
+  if (compiledExpression.result === 'error') {
+    const err = compiledExpression.value[0];
+    // eslint-disable-next-line no-console
+    console.error(
+      'Error parsing expression:',
+      rawExpression,
+      err.key,
+      err.message,
     );
+    // fallback to default value
+    return {
+      evaluate: () => {
+        return propertySpec.default;
+      },
+    };
   }
   return compiledExpression.value;
 };
-
-// Shared camera object for global expression evaluation context
-export const cameraObj = {zoom: 0, distanceFromCenter: 0};
-
-// Add unsupported expressions to the MapLibre GL Style spec
-CompoundExpression.register(expressions, {
-  ...CompoundExpression.definitions,
-  'pitch': [{kind: 'number'}, [], (ctx) => cameraObj.pitch || 90],
-  'distance-from-center': [
-    {kind: 'number'},
-    [],
-    (ctx) => cameraObj.distanceFromCenter || 0,
-  ],
-});
 
 let renderFeatureCoordinates, renderFeature;
 
@@ -141,9 +145,13 @@ export function getValue(
   const functions = functionCache[layerId];
   if (!functions[property]) {
     let value = (layer[layoutOrPaint] || emptyObj)[property];
-    const propertySpec = spec[`${layoutOrPaint}_${layer.type}`][property];
+    const propertySpec =
+      spec[`${layoutOrPaint}_${layer.type}`] &&
+      spec[`${layoutOrPaint}_${layer.type}`][property];
     if (value === undefined) {
-      value = propertySpec.default;
+      if (propertySpec) {
+        value = propertySpec.default;
+      }
     }
     let isExpr = isExpression(value);
     if (!isExpr && isFunction(value)) {
@@ -155,13 +163,62 @@ export function getValue(
       functions[property] =
         compiledExpression.evaluate.bind(compiledExpression);
     } else {
-      const type = propertySpec.type;
+      const type = propertySpec ? propertySpec.type : typeof value;
       if (type === 'color' || type === 'colorArray') {
         value = Color.parse(value);
       }
-      functions[property] = function () {
-        return value;
-      };
+
+      let hasExpr = false;
+      if (type === 'array') {
+        for (let i = 0; i < value.length; ++i) {
+          const item = value[i];
+          if (isExpression(item) || isFunction(item)) {
+            hasExpr = true;
+            break;
+          }
+        }
+      }
+      if (hasExpr) {
+        const itemPropertySpec = Object.assign({}, propertySpec, {
+          type: propertySpec.value,
+        });
+        const itemExpressions = [];
+        for (let i = 0; i < value.length; ++i) {
+          let item = value[i];
+          if (!isExpression(item) && isFunction(item)) {
+            item = convertFunction(item, itemPropertySpec);
+          }
+          if (isExpression(item)) {
+            const compiledExpression = expressionData(item, itemPropertySpec);
+            itemExpressions.push(
+              compiledExpression.evaluate.bind(compiledExpression),
+            );
+          } else {
+            itemExpressions.push(function () {
+              return item;
+            });
+          }
+        }
+        functions[property] = function (
+          globalProperties,
+          feature,
+          featureState,
+        ) {
+          const result = [];
+          for (let i = 0; i < itemExpressions.length; ++i) {
+            result[i] = itemExpressions[i](
+              globalProperties,
+              feature,
+              featureState,
+            );
+          }
+          return result;
+        };
+      } else {
+        functions[property] = function () {
+          return value;
+        };
+      }
     }
   }
   return functions[property](cameraObj, feature, featureState);
@@ -401,6 +458,14 @@ export function stylefunction(
   if (typeof glStyle == 'string') {
     glStyle = JSON.parse(glStyle);
   }
+  if (glStyle.schema) {
+    for (const key in glStyle.schema) {
+      const config = glStyle.schema[key];
+      if ('default' in config) {
+        styleConfig[key] = config.default;
+      }
+    }
+  }
   if (glStyle.version != 8) {
     throw new Error('glStyle version 8 required.');
   }
@@ -585,8 +650,16 @@ export function stylefunction(
 
       const layout = layer.layout || emptyObj;
       const paint = layer.paint || emptyObj;
+      const visibility = getValue(
+        layer,
+        'layout',
+        'visibility',
+        f,
+        functionCache,
+        featureState,
+      );
       if (
-        layout.visibility === 'none' ||
+        visibility === 'none' ||
         ('minzoom' in layer && zoom < layer.minzoom) ||
         ('maxzoom' in layer && zoom >= layer.maxzoom)
       ) {
@@ -717,6 +790,30 @@ export function stylefunction(
               if (color) {
                 fill = style.getFill();
                 fill.setColor(color);
+              }
+              if (layer.type === 'fill-extrusion') {
+                const height = getValue(
+                  layer,
+                  'paint',
+                  'fill-extrusion-height',
+                  f,
+                  functionCache,
+                  featureState,
+                );
+                // For fill-extrusion, we darken the stroke color based on height
+                // This gives a pseudo-3D effect
+                if (height > 0) {
+                  // Darken factor: clamps between 0.1 and 0.9 based on height
+                  // Higher extrusion = darker outline
+                  const darkenFactor = Math.max(
+                    0.1,
+                    0.9 - Math.min(height, 225) / 280,
+                  );
+                  if (strokeColor && strokeColor !== 'transparent') {
+                    const rgba = Color.parse(strokeColor);
+                    strokeColor = `rgba(${Math.round(rgba.r * 255 * darkenFactor)},${Math.round(rgba.g * 255 * darkenFactor)},${Math.round(rgba.b * 255 * darkenFactor)},${rgba.a})`;
+                  }
+                }
               }
               if (strokeColor) {
                 stroke = style.getStroke();

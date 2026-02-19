@@ -13,4 +13,4 @@ if (!key) {
   }
 }
 
-olms('map', 'mapbox://styles/mapbox/streets-v12', {accessToken: key});
+olms('map', 'mapbox://styles/mapbox/standard', {accessToken: key});

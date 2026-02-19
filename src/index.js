@@ -20,4 +20,5 @@ export {
   updateMapboxLayer,
   updateMapboxSource,
 } from './apply.js';
+export {styleConfig} from './expressions.js';
 export {default as MapboxVectorLayer} from './MapboxVectorLayer.js';
