@@ -33,6 +33,7 @@ import VectorSource from 'ol/source/Vector.js';
 import VectorTileSource, {defaultLoadFunction} from 'ol/source/VectorTile.js';
 import TileGrid from 'ol/tilegrid/TileGrid.js';
 import {createXYZ} from 'ol/tilegrid.js';
+import {cameraObj, styleConfig} from './expressions.js';
 import {
   normalizeSourceUrl,
   normalizeSpriteDefinition,
@@ -41,7 +42,6 @@ import {
 import {hillshade, raster as rasterShader} from './shaders.js';
 import {
   _colorWithOpacity,
-  cameraObj,
   getValue,
   styleFunctionArgs,
   stylefunction as applyStylefunction,
@@ -103,6 +103,17 @@ import {
  * @property {boolean} [updateSource=true] Update or create vector (tile) layer source with parameters
  * specified for the source in the mapbox style definition.
  */
+
+const SUPPORTED_LAYER_TYPES = [
+  'background',
+  'circle',
+  'fill',
+  'fill-extrusion',
+  'line',
+  'symbol',
+  'raster',
+  'hillshade',
+];
 
 /**
  * @param {import("ol/proj/Projection.js").default} projection Projection.
@@ -600,7 +611,6 @@ function getBackgroundColor(glLayer, resolution, options, functionCache) {
     id: glLayer.id,
     type: glLayer.type,
   };
-  const layout = glLayer.layout || {};
   const paint = glLayer.paint || {};
   background['paint'] = paint;
   cameraObj.zoom = getZoomForResolution(
@@ -625,7 +635,13 @@ function getBackgroundColor(glLayer, resolution, options, functionCache) {
       functionCache,
     );
   }
-  return layout.visibility == 'none'
+  return getValue(
+    background,
+    'layout',
+    'visibility',
+    emptyObj,
+    functionCache,
+  ) === 'none'
     ? undefined
     : _colorWithOpacity(bg, opacity);
 }
@@ -931,7 +947,7 @@ function updateRasterLayerProperties(glLayer, layer, zoom, functionCache) {
   layer.setOpacity(opacity);
 }
 
-function manageVisibility(layer, mapOrGroup) {
+function manageVisibility(layer, mapOrGroup, functionCache) {
   function onChange() {
     const glStyle = mapOrGroup.get('mapbox-style');
     if (!glStyle) {
@@ -946,8 +962,13 @@ function manageVisibility(layer, mapOrGroup) {
       .some(function (mapboxLayer) {
         return (
           !mapboxLayer.layout ||
-          !mapboxLayer.layout.visibility ||
-          mapboxLayer.layout.visibility === 'visible'
+          getValue(
+            mapboxLayer,
+            'layout',
+            'visibility',
+            emptyObj,
+            functionCache,
+          ) === 'visible'
         );
       });
     if (layer.get('visible') !== visible) {
@@ -1039,7 +1060,10 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
       layer = setupRasterLayer(glSource, styleUrl, options);
     }
     layer.setVisible(
-      glLayer.layout ? glLayer.layout.visibility !== 'none' : true,
+      glLayer.layout
+        ? getValue(glLayer, 'layout', 'visibility', emptyObj, functionCache) !==
+            'none'
+        : true,
     );
 
     layer.on('prerender', prerenderRasterLayer(glLayer, layer, functionCache));
@@ -1109,7 +1133,10 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
       }
     });
     layer.setVisible(
-      glLayer.layout ? glLayer.layout.visibility !== 'none' : true,
+      glLayer.layout
+        ? getValue(glLayer, 'layout', 'visibility', emptyObj, functionCache) !==
+            'none'
+        : true,
     );
   }
   if (layer) {
@@ -1126,6 +1153,15 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
  * @return {Promise} Promise that resolves when the style is loaded.
  */
 function processStyle(glStyle, mapOrGroup, styleUrl, options) {
+  if (glStyle.schema) {
+    Object.assign(
+      styleConfig,
+      Object.keys(glStyle.schema).reduce((config, key) => {
+        config[key] = glStyle.schema[key]?.default;
+        return config;
+      }, {}),
+    );
+  }
   const promises = [];
 
   let view = null;
@@ -1172,10 +1208,10 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
   for (let i = 0, ii = glLayers.length; i < ii; ++i) {
     const glLayer = glLayers[i];
     const type = glLayer.type;
-    if (type == 'heatmap') {
+    if (!SUPPORTED_LAYER_TYPES.includes(type)) {
       //FIXME Unsupported layer type
       // eslint-disable-next-line no-console
-      console.debug(`layers[${i}].type "${type}" not supported`);
+      console.warn(`layers[${i}].type "${type}" not supported`);
       continue;
     } else {
       id = glLayer.source || getSourceIdByRef(glLayers, glLayer.ref);
@@ -1424,7 +1460,7 @@ export function finalizeLayer(
           Object.assign({styleUrl: styleUrl}, options),
         )
           .then(function () {
-            manageVisibility(layer, mapOrGroup);
+            manageVisibility(layer, mapOrGroup, getFunctionCache(glStyle));
             resolve();
           })
           .catch(reject);
