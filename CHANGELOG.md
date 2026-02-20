@@ -1,5 +1,16 @@
 # Changelog
 
+## 13.2.1
+
+* Prevent redundant font loading requests
+* Ignore source on background layer
+* Encourage the use of `ol/layer/Group` with `apply()`
+
+## 13.2.0
+
+* Add support for raster-hue-rotate, raster-saturation, raster-opacity
+* Fix hillshade colors
+
 ## 13.1.1
 
 * Add support for running ol-mapbox-style in web workers

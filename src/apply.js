@@ -33,15 +33,15 @@ import VectorSource from 'ol/source/Vector.js';
 import VectorTileSource, {defaultLoadFunction} from 'ol/source/VectorTile.js';
 import TileGrid from 'ol/tilegrid/TileGrid.js';
 import {createXYZ} from 'ol/tilegrid.js';
+import {cameraObj, styleConfig} from './expressions.js';
 import {
   normalizeSourceUrl,
   normalizeSpriteDefinition,
   normalizeStyleUrl,
 } from './mapbox.js';
-import {hillshade} from './shaders.js';
+import {hillshade, raster as rasterShader} from './shaders.js';
 import {
   _colorWithOpacity,
-  cameraObj,
   getValue,
   styleFunctionArgs,
   stylefunction as applyStylefunction,
@@ -103,6 +103,17 @@ import {
  * @property {boolean} [updateSource=true] Update or create vector (tile) layer source with parameters
  * specified for the source in the mapbox style definition.
  */
+
+const SUPPORTED_LAYER_TYPES = [
+  'background',
+  'circle',
+  'fill',
+  'fill-extrusion',
+  'line',
+  'symbol',
+  'raster',
+  'hillshade',
+];
 
 /**
  * @param {import("ol/proj/Projection.js").default} projection Projection.
@@ -600,7 +611,6 @@ function getBackgroundColor(glLayer, resolution, options, functionCache) {
     id: glLayer.id,
     type: glLayer.type,
   };
-  const layout = glLayer.layout || {};
   const paint = glLayer.paint || {};
   background['paint'] = paint;
   cameraObj.zoom = getZoomForResolution(
@@ -625,7 +635,13 @@ function getBackgroundColor(glLayer, resolution, options, functionCache) {
       functionCache,
     );
   }
-  return layout.visibility == 'none'
+  return getValue(
+    background,
+    'layout',
+    'visibility',
+    emptyObj,
+    functionCache,
+  ) === 'none'
     ? undefined
     : _colorWithOpacity(bg, opacity);
 }
@@ -741,6 +757,7 @@ function setupRasterSource(glSource, styleUrl, options) {
           }
           return src;
         });
+
         source.set('mapbox-source', glSource);
         resolve(source);
       })
@@ -765,6 +782,26 @@ function setupRasterLayer(glSource, styleUrl, options) {
 /**
  *
  * @param {Object} glSource "source" entry from a Mapbox/MapLibre Style object.
+ * @param {string} styleUrl Style url
+ * @param {Options} options ol-mapbox-style options.
+ * @return {ImageLayer<Raster>} The raster layer
+ */
+function setupRasterOpLayer(glSource, styleUrl, options) {
+  const tileLayer = setupRasterLayer(glSource, styleUrl, options);
+  /** @type {ImageLayer<Raster>} */
+  const layer = new ImageLayer({
+    source: new Raster({
+      operationType: 'image',
+      operation: rasterShader,
+      sources: [tileLayer],
+    }),
+  });
+  return layer;
+}
+
+/**
+ *
+ * @param {Object} glSource "source" entry from a Mapbox Style object.
  * @param {string} styleUrl Style url
  * @param {Options} options ol-mapbox-style options.
  * @return {ImageLayer<Raster>} The raster layer
@@ -910,7 +947,7 @@ function updateRasterLayerProperties(glLayer, layer, zoom, functionCache) {
   layer.setOpacity(opacity);
 }
 
-function manageVisibility(layer, mapOrGroup) {
+function manageVisibility(layer, mapOrGroup, functionCache) {
   function onChange() {
     const glStyle = mapOrGroup.get('mapbox-style');
     if (!glStyle) {
@@ -925,8 +962,13 @@ function manageVisibility(layer, mapOrGroup) {
       .some(function (mapboxLayer) {
         return (
           !mapboxLayer.layout ||
-          !mapboxLayer.layout.visibility ||
-          mapboxLayer.layout.visibility === 'visible'
+          getValue(
+            mapboxLayer,
+            'layout',
+            'visibility',
+            emptyObj,
+            functionCache,
+          ) === 'visible'
         );
       });
     if (layer.get('visible') !== visible) {
@@ -942,18 +984,88 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
   const glLayers = glStyle.layers;
   const type = glLayer.type;
 
-  const id = glLayer.source || getSourceIdByRef(glLayers, glLayer.ref);
-  const glSource = glStyle.sources[id];
+  let glSourceId = glLayer.source || getSourceIdByRef(glLayers, glLayer.ref);
+  const glSource = glStyle.sources[glSourceId];
   let layer;
   if (type == 'background') {
     layer = setupBackgroundLayer(glLayer, options, functionCache);
+    // background layers do not have a source
+    glSourceId = undefined;
   } else if (glSource.type == 'vector') {
     layer = setupVectorLayer(glSource, styleUrl, options);
   } else if (glSource.type == 'raster') {
-    layer = setupRasterLayer(glSource, styleUrl, options);
-    layer.setVisible(
-      glLayer.layout ? glLayer.layout.visibility !== 'none' : true,
+    const keys = [
+      'raster-saturation',
+      'raster-contrast',
+      'raster-brightness-max',
+      'raster-brightness-min',
+      'raster-hue-rotate',
+    ];
+    const requiresOperations = !!Object.keys(glLayer.paint || {}).find(
+      (key) => {
+        return keys.includes(key);
+      },
     );
+
+    if (requiresOperations) {
+      layer = setupRasterOpLayer(glSource, styleUrl, options);
+      layer.getSource().on('beforeoperations', function (event) {
+        cameraObj.zoom = getZoomForResolution(
+          event.resolution,
+          options.resolutions || defaultResolutions,
+        );
+        cameraObj.distanceFromCenter = 0;
+
+        const data = event.data;
+        data.saturation = getValue(
+          glLayer,
+          'paint',
+          'raster-saturation',
+          emptyObj,
+          functionCache,
+        );
+        data.contrast = getValue(
+          glLayer,
+          'paint',
+          'raster-contrast',
+          emptyObj,
+          functionCache,
+        );
+
+        data.brightnessHigh = getValue(
+          glLayer,
+          'paint',
+          'raster-brightness-max',
+          emptyObj,
+          functionCache,
+        );
+
+        data.brightnessLow = getValue(
+          glLayer,
+          'paint',
+          'raster-brightness-min',
+          emptyObj,
+          functionCache,
+        );
+
+        data.hueRotate = getValue(
+          glLayer,
+          'paint',
+          'raster-hue-rotate',
+          emptyObj,
+          functionCache,
+        );
+      });
+    } else {
+      layer = setupRasterLayer(glSource, styleUrl, options);
+    }
+    layer.setVisible(
+      glLayer.layout
+        ? getValue(glLayer, 'layout', 'visibility', emptyObj, functionCache) !==
+            'none'
+        : true,
+    );
+
     layer.on('prerender', prerenderRasterLayer(glLayer, layer, functionCache));
   } else if (glSource.type == 'geojson') {
     layer = setupGeoJSONLayer(glSource, styleUrl, options);
@@ -974,15 +1086,14 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
       );
       cameraObj.distanceFromCenter = 0;
       data.encoding = glSource.encoding;
-      data.vert =
-        5 *
-        getValue(
-          glLayer,
-          'paint',
-          'hillshade-exaggeration',
-          emptyObj,
-          functionCache,
-        );
+      data.exaggeration = getValue(
+        glLayer,
+        'paint',
+        'hillshade-exaggeration',
+        emptyObj,
+        functionCache,
+      );
+      data.vert = 1;
       data.sunAz = getValue(
         glLayer,
         'paint',
@@ -990,8 +1101,6 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
         emptyObj,
         functionCache,
       );
-      data.sunEl = 35;
-      data.opacity = 0.3;
       data.highlightColor = getValue(
         glLayer,
         'paint',
@@ -999,6 +1108,9 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
         emptyObj,
         functionCache,
       );
+      if (data.highlightColor && data.highlightColor.values) {
+        data.highlightColor = data.highlightColor.values[0];
+      }
       data.shadowColor = getValue(
         glLayer,
         'paint',
@@ -1006,6 +1118,9 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
         emptyObj,
         functionCache,
       );
+      if (data.shadowColor && data.shadowColor.values) {
+        data.shadowColor = data.shadowColor.values[0];
+      }
       data.accentColor = getValue(
         glLayer,
         'paint',
@@ -1013,12 +1128,17 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
         emptyObj,
         functionCache,
       );
+      if (data.accentColor && data.accentColor.values) {
+        data.accentColor = data.accentColor.values[0];
+      }
     });
     layer.setVisible(
-      glLayer.layout ? glLayer.layout.visibility !== 'none' : true,
+      glLayer.layout
+        ? getValue(glLayer, 'layout', 'visibility', emptyObj, functionCache) !==
+            'none'
+        : true,
     );
   }
-  const glSourceId = id;
   if (layer) {
     layer.set('mapbox-source', glSourceId);
   }
@@ -1033,6 +1153,15 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
  * @return {Promise} Promise that resolves when the style is loaded.
  */
 function processStyle(glStyle, mapOrGroup, styleUrl, options) {
+  if (glStyle.schema) {
+    Object.assign(
+      styleConfig,
+      Object.keys(glStyle.schema).reduce((config, key) => {
+        config[key] = glStyle.schema[key]?.default;
+        return config;
+      }, {}),
+    );
+  }
   const promises = [];
 
   let view = null;
@@ -1079,10 +1208,10 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
   for (let i = 0, ii = glLayers.length; i < ii; ++i) {
     const glLayer = glLayers[i];
     const type = glLayer.type;
-    if (type == 'heatmap') {
+    if (!SUPPORTED_LAYER_TYPES.includes(type)) {
       //FIXME Unsupported layer type
       // eslint-disable-next-line no-console
-      console.debug(`layers[${i}].type "${type}" not supported`);
+      console.warn(`layers[${i}].type "${type}" not supported`);
       continue;
     } else {
       id = glLayer.source || getSourceIdByRef(glLayers, glLayer.ref);
@@ -1331,7 +1460,7 @@ export function finalizeLayer(
           Object.assign({styleUrl: styleUrl}, options),
         )
           .then(function () {
-            manageVisibility(layer, mapOrGroup);
+            manageVisibility(layer, mapOrGroup, getFunctionCache(glStyle));
             resolve();
           })
           .catch(reject);

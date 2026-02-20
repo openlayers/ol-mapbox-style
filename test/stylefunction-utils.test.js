@@ -4,12 +4,12 @@ import Feature from 'ol/Feature.js';
 import Point from 'ol/geom/Point.js';
 import should from 'should';
 
+import {cameraObj} from '../src/expressions.js';
 import {
   _colorWithOpacity as colorWithOpacity,
   _evaluateFilter as evaluateFilter,
   _fromTemplate as fromTemplate,
   _getValue as getValue,
-  cameraObj,
 } from '../src/stylefunction.js';
 
 describe('utility functions currently in stylefunction.js', function () {
@@ -156,6 +156,42 @@ describe('utility functions currently in stylefunction.js', function () {
       cameraObj.zoom = 20;
       const result = getValue(glLayer2, 'paint', 'line-gap-width', feature);
       should(result).equal(6);
+    });
+
+    it('should evaluate array property with expressions', function () {
+      const glLayer = {
+        id: 'test-layer-font',
+        type: 'symbol',
+        layout: {
+          'text-font': ['Arial', ['get', 'fontprop']],
+        },
+      };
+      const feature = {
+        properties: {
+          fontprop: 'Open Sans',
+        },
+        type: 1,
+      };
+      const result = getValue(glLayer, 'layout', 'text-font', feature);
+      should(result).be.eql(['Arial', 'Open Sans']);
+    });
+
+    it('should evaluate numeric array property with expressions', function () {
+      const glLayer = {
+        id: 'test-layer-dash',
+        type: 'line',
+        paint: {
+          'line-dasharray': [1, ['get', 'dashprop']],
+        },
+      };
+      const feature = {
+        properties: {
+          dashprop: 2,
+        },
+        type: 2,
+      };
+      const result = getValue(glLayer, 'paint', 'line-dasharray', feature);
+      should(result).be.eql([1, 2]);
     });
   });
 });
