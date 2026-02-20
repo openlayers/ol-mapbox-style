@@ -1,5 +1,12 @@
 # Changelog
 
+## 13.3.0
+
+* Better match MapLibre's hillshade rendering
+* Improved support for latest Mapbox style spec additions: data-driven `visibility`, data-driven`text-font` array entries, `config` to retrieve defaults from style's `schema` root properties, `hsl`, `hsla` and `to-hsla` expressions
+* Darkened outlines depending on `fill-extrusion-height` for `fill-extrusion` layers
+* More robustness against failures due to unsupported features
+
 ## 13.2.1
 
 * Prevent redundant font loading requests
