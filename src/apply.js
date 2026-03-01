@@ -4,15 +4,14 @@ Copyright 2016-present ol-mapbox-style contributors
 License: https://raw.githubusercontent.com/openlayers/ol-mapbox-style/master/LICENSE
 */
 
-import {Color, derefLayers} from '@maplibre/maplibre-gl-style-spec';
+import {derefLayers} from '@maplibre/maplibre-gl-style-spec';
 import Map from 'ol/Map.js';
 import View from 'ol/View.js';
-import {getCenter, getTopLeft} from 'ol/extent.js';
+import {getTopLeft} from 'ol/extent.js';
 import GeoJSON from 'ol/format/GeoJSON.js';
 import MVT from 'ol/format/MVT.js';
 import {WORKER_OFFSCREEN_CANVAS} from 'ol/has.js';
 import LayerGroup from 'ol/layer/Group.js';
-import ImageLayer from 'ol/layer/Image.js';
 import Layer from 'ol/layer/Layer.js';
 import TileLayer from 'ol/layer/Tile.js';
 import VectorLayer from 'ol/layer/Vector.js';
@@ -23,10 +22,8 @@ import {
   equivalent,
   fromLonLat,
   get as getProjection,
-  getPointResolution,
   getUserProjection,
 } from 'ol/proj.js';
-import Raster from 'ol/source/Raster.js';
 import Source from 'ol/source/Source.js';
 import TileJSON from 'ol/source/TileJSON.js';
 import VectorSource from 'ol/source/Vector.js';
@@ -39,7 +36,14 @@ import {
   normalizeSpriteDefinition,
   normalizeStyleUrl,
 } from './mapbox.js';
-import {hillshade, raster as rasterShader} from './shaders.js';
+import {
+  configureHillshadeLayer,
+  configureRasterOpLayer,
+  createHillshadeLayer,
+  createRasterOpLayer,
+  prerenderRasterLayer,
+  rasterOperationKeys,
+} from './rasterfunction.js';
 import {
   _colorWithOpacity,
   getValue,
@@ -59,10 +63,6 @@ import {
   getTileJson,
   getZoomForResolution,
 } from './util.js';
-
-const defaultShadowColor = Color.parse('#000000');
-const defaultHighlightColor = Color.parse('#FFFFFF');
-const defaultAccentColor = Color.parse('#000000');
 
 /**
  * @typedef {Object} FeatureIdentifier
@@ -784,46 +784,6 @@ function setupRasterLayer(glSource, styleUrl, options) {
 }
 
 /**
- *
- * @param {Object} glSource "source" entry from a Mapbox/MapLibre Style object.
- * @param {string} styleUrl Style url
- * @param {Options} options ol-mapbox-style options.
- * @return {ImageLayer<Raster>} The raster layer
- */
-function setupRasterOpLayer(glSource, styleUrl, options) {
-  const tileLayer = setupRasterLayer(glSource, styleUrl, options);
-  /** @type {ImageLayer<Raster>} */
-  const layer = new ImageLayer({
-    source: new Raster({
-      operationType: 'image',
-      operation: rasterShader,
-      sources: [tileLayer],
-    }),
-  });
-  return layer;
-}
-
-/**
- *
- * @param {Object} glSource "source" entry from a Mapbox Style object.
- * @param {string} styleUrl Style url
- * @param {Options} options ol-mapbox-style options.
- * @return {ImageLayer<Raster>} The raster layer
- */
-function setupHillshadeLayer(glSource, styleUrl, options) {
-  const tileLayer = setupRasterLayer(glSource, styleUrl, options);
-  /** @type {ImageLayer<Raster>} */
-  const layer = new ImageLayer({
-    source: new Raster({
-      operationType: 'image',
-      operation: hillshade,
-      sources: [tileLayer],
-    }),
-  });
-  return layer;
-}
-
-/**
  * @param {Object} glSource glStyle source.
  * @param {string} styleUrl Style URL.
  * @param {Options} options Options.
@@ -923,34 +883,6 @@ function setupGeoJSONLayer(glSource, styleUrl, options) {
   });
 }
 
-function prerenderRasterLayer(glLayer, layer, functionCache) {
-  let zoom = null;
-  return function (event) {
-    if (
-      glLayer.paint &&
-      'raster-opacity' in glLayer.paint &&
-      event.frameState.viewState.zoom !== zoom
-    ) {
-      zoom = event.frameState.viewState.zoom;
-      delete functionCache[glLayer.id];
-      updateRasterLayerProperties(glLayer, layer, zoom, functionCache);
-    }
-  };
-}
-
-function updateRasterLayerProperties(glLayer, layer, zoom, functionCache) {
-  cameraObj.zoom = zoom;
-  cameraObj.distanceFromCenter = 0;
-  const opacity = getValue(
-    glLayer,
-    'paint',
-    'raster-opacity',
-    emptyObj,
-    functionCache,
-  );
-  layer.setOpacity(opacity);
-}
-
 function manageVisibility(layer, mapOrGroup, functionCache) {
   function onChange() {
     const glStyle = mapOrGroup.get('mapbox-style');
@@ -998,68 +930,16 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
   } else if (glSource.type == 'vector') {
     layer = setupVectorLayer(glSource, styleUrl, options);
   } else if (glSource.type == 'raster') {
-    const keys = [
-      'raster-saturation',
-      'raster-contrast',
-      'raster-brightness-max',
-      'raster-brightness-min',
-      'raster-hue-rotate',
-    ];
     const requiresOperations = !!Object.keys(glLayer.paint || {}).find(
       (key) => {
-        return keys.includes(key);
+        return rasterOperationKeys.includes(key);
       },
     );
 
     if (requiresOperations) {
-      layer = setupRasterOpLayer(glSource, styleUrl, options);
-      layer.getSource().on('beforeoperations', function (event) {
-        cameraObj.zoom = getZoomForResolution(
-          event.resolution,
-          options.resolutions || defaultResolutions,
-        );
-        cameraObj.distanceFromCenter = 0;
-
-        const data = event.data;
-        data.saturation = getValue(
-          glLayer,
-          'paint',
-          'raster-saturation',
-          emptyObj,
-          functionCache,
-        );
-        data.contrast = getValue(
-          glLayer,
-          'paint',
-          'raster-contrast',
-          emptyObj,
-          functionCache,
-        );
-
-        data.brightnessHigh = getValue(
-          glLayer,
-          'paint',
-          'raster-brightness-max',
-          emptyObj,
-          functionCache,
-        );
-
-        data.brightnessLow = getValue(
-          glLayer,
-          'paint',
-          'raster-brightness-min',
-          emptyObj,
-          functionCache,
-        );
-
-        data.hueRotate = getValue(
-          glLayer,
-          'paint',
-          'raster-hue-rotate',
-          emptyObj,
-          functionCache,
-        );
-      });
+      const tileLayer = setupRasterLayer(glSource, styleUrl, options);
+      layer = createRasterOpLayer(tileLayer);
+      configureRasterOpLayer(layer, glLayer, options, functionCache);
     } else {
       layer = setupRasterLayer(glSource, styleUrl, options);
     }
@@ -1074,122 +954,9 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
   } else if (glSource.type == 'geojson') {
     layer = setupGeoJSONLayer(glSource, styleUrl, options);
   } else if (glSource.type == 'raster-dem' && glLayer.type == 'hillshade') {
-    const hillshadeLayer = setupHillshadeLayer(glSource, styleUrl, options);
-    layer = hillshadeLayer;
-    hillshadeLayer.getSource().on('beforeoperations', function (event) {
-      const data = event.data;
-      data.resolution = getPointResolution(
-        options.projection || 'EPSG:3857',
-        event.resolution,
-        getCenter(event.extent),
-        'm',
-      );
-      const zoom = getZoomForResolution(
-        event.resolution,
-        options.resolutions || defaultResolutions,
-      );
-      cameraObj.zoom = zoom;
-      cameraObj.distanceFromCenter = 0;
-      data.zoom = zoom;
-      data.encoding = glSource.encoding;
-
-      // Hillshade method (standard, basic, combined, igor, multidirectional)
-      data.method =
-        getValue(
-          glLayer,
-          'paint',
-          'hillshade-method',
-          emptyObj,
-          functionCache,
-        ) || 'standard';
-
-      data.exaggeration = getValue(
-        glLayer,
-        'paint',
-        'hillshade-exaggeration',
-        emptyObj,
-        functionCache,
-      );
-
-      // Illumination directions - normalize to array (for multidirectional)
-      let dirValue = getValue(
-        glLayer,
-        'paint',
-        'hillshade-illumination-direction',
-        emptyObj,
-        functionCache,
-      );
-      if (dirValue === null || dirValue === undefined) {
-        dirValue = 335;
-      }
-      data.azimuths = Array.isArray(dirValue) ? dirValue : [dirValue];
-      data.sunAz = data.azimuths[0];
-
-      // Illumination altitudes - normalize to array (for basic, combined, multidirectional)
-      let altValue = getValue(
-        glLayer,
-        'paint',
-        'hillshade-illumination-altitude',
-        emptyObj,
-        functionCache,
-      );
-      if (altValue === null || altValue === undefined) {
-        altValue = 45;
-      }
-      data.altitudes = Array.isArray(altValue) ? altValue : [altValue];
-
-      // Helper to unwrap Color values from expression wrappers
-      function unwrapColor(val) {
-        if (val && val.values) {
-          return val.values[0];
-        }
-        return val;
-      }
-
-      // Helper to parse color array properties.
-      // colorArray values may be a single color string, a Color object,
-      // or an array of color strings (for multidirectional).
-      // Must distinguish ["#ff0000", "#00ff00"] from ["interpolate", ...].
-      function getColorArray(property) {
-        const raw = glLayer.paint?.[property];
-        if (
-          Array.isArray(raw) &&
-          raw.length > 0 &&
-          typeof raw[0] === 'string' &&
-          Color.parse(raw[0]) !== undefined
-        ) {
-          // Array of color strings - parse each individually
-          return raw.map((c) => Color.parse(c));
-        }
-        // Single value or expression - use getValue
-        let val = getValue(glLayer, 'paint', property, emptyObj, functionCache);
-        val = unwrapColor(val);
-        return val ? [val] : undefined;
-      }
-
-      data.highlightColors = getColorArray('hillshade-highlight-color');
-      data.highlightColor = data.highlightColors?.[0] || defaultHighlightColor;
-      if (!data.highlightColors) {
-        data.highlightColors = [data.highlightColor];
-      }
-
-      data.shadowColors = getColorArray('hillshade-shadow-color');
-      data.shadowColor = data.shadowColors?.[0] || defaultShadowColor;
-      if (!data.shadowColors) {
-        data.shadowColors = [data.shadowColor];
-      }
-
-      data.accentColor =
-        unwrapColor(
-          getValue(
-            glLayer,
-            'paint',
-            'hillshade-accent-color',
-            emptyObj,
-            functionCache,
-          ),
-        ) || defaultAccentColor;
-    });
+    const tileLayer = setupRasterLayer(glSource, styleUrl, options);
+    layer = createHillshadeLayer(tileLayer);
+    configureHillshadeLayer(layer, glSource, glLayer, options, functionCache);
     layer.setVisible(
       glLayer.layout
         ? getValue(glLayer, 'layout', 'visibility', emptyObj, functionCache) !==
