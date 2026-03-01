@@ -22,6 +22,13 @@ export function hillshade(inputs, data) {
   const accentColor = data.accentColor;
   const encoding = data.encoding;
   const intensity = data.exaggeration;
+  const zoom = data.zoom;
+
+  // Zoom-dependent exaggeration factor from MapLibre's hillshade_prepare.fragment.glsl
+  // At low zooms, derivatives are amplified so hillshading remains visible.
+  const exaggerationFactor = zoom < 2 ? 0.4 : zoom < 4.5 ? 0.35 : 0.3;
+  const zoomExaggeration =
+    zoom < 15 ? Math.pow(2, (15 - zoom) * exaggerationFactor) : 1;
 
   let pixelX,
     pixelY,
@@ -98,7 +105,7 @@ export function hillshade(inputs, data) {
       pixel[3] = elevationData[offset + 3];
       z1 = calculateElevation(pixel, encoding);
 
-      dzdx = (z1 - z0) / dp;
+      dzdx = ((z1 - z0) / dp) * zoomExaggeration;
 
       // determine elevation for (pixelX, y0)
       offset = (y0 * width + pixelX) * 4;
@@ -116,7 +123,7 @@ export function hillshade(inputs, data) {
       pixel[3] = elevationData[offset + 3];
       z1 = calculateElevation(pixel, encoding);
 
-      dzdy = (z1 - z0) / dp;
+      dzdy = ((z1 - z0) / dp) * zoomExaggeration;
 
       /*
        * The following is port of MapLibre's standrad_hillshade
@@ -165,16 +172,21 @@ export function hillshade(inputs, data) {
       shade_a =
         (shadowColor.a * (1 - shade) + highlightColor.a * shade) * shadeScale;
 
-      const r = accent_r * (1 - shade_a) + shade_r;
-      const g = accent_g * (1 - shade_a) + shade_g;
-      const b = accent_b * (1 - shade_a) + shade_b;
+      // The compositing math (matching the GLSL) produces premultiplied alpha values,
+      // but Canvas ImageData uses straight (unpremultiplied) alpha. Un-premultiply
+      // so that Canvas doesn't premultiply a second time during compositing.
       const a = accent_a * (1 - shade_a) + shade_a;
 
       // Fill in result color value
       offset = (pixelY * width + pixelX) * 4;
-      shadeData[offset] = r * 255;
-      shadeData[offset + 1] = g * 255;
-      shadeData[offset + 2] = b * 255;
+      if (a > 0) {
+        const r = accent_r * (1 - shade_a) + shade_r;
+        const g = accent_g * (1 - shade_a) + shade_g;
+        const b = accent_b * (1 - shade_a) + shade_b;
+        shadeData[offset] = (r / a) * 255;
+        shadeData[offset + 1] = (g / a) * 255;
+        shadeData[offset + 2] = (b / a) * 255;
+      }
       shadeData[offset + 3] = a * 255;
     }
   }
@@ -262,9 +274,9 @@ export function raster(inputs, data) {
       b += (average - b) * sFactor;
 
       // contrast
-      r = (r - 0.5) * cFactor + 0.5;
-      g = (g - 0.5) * cFactor + 0.5;
-      b = (b - 0.5) * cFactor + 0.5;
+      r = (r - 127.5) * cFactor + 127.5;
+      g = (g - 127.5) * cFactor + 127.5;
+      b = (b - 127.5) * cFactor + 127.5;
 
       // brightness
       r = bLow * (255 - r) + bHigh * r;

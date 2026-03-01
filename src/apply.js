@@ -1080,11 +1080,13 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
         getCenter(event.extent),
         'm',
       );
-      cameraObj.zoom = getZoomForResolution(
+      const zoom = getZoomForResolution(
         event.resolution,
         options.resolutions || defaultResolutions,
       );
+      cameraObj.zoom = zoom;
       cameraObj.distanceFromCenter = 0;
+      data.zoom = zoom;
       data.encoding = glSource.encoding;
       data.exaggeration = getValue(
         glLayer,
