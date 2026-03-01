@@ -4,7 +4,7 @@ Copyright 2016-present ol-mapbox-style contributors
 License: https://raw.githubusercontent.com/openlayers/ol-mapbox-style/master/LICENSE
 */
 
-import {derefLayers} from '@maplibre/maplibre-gl-style-spec';
+import {Color, derefLayers} from '@maplibre/maplibre-gl-style-spec';
 import Map from 'ol/Map.js';
 import View from 'ol/View.js';
 import {getCenter, getTopLeft} from 'ol/extent.js';
@@ -59,6 +59,10 @@ import {
   getTileJson,
   getZoomForResolution,
 } from './util.js';
+
+const defaultShadowColor = Color.parse('#000000');
+const defaultHighlightColor = Color.parse('#FFFFFF');
+const defaultAccentColor = Color.parse('#000000');
 
 /**
  * @typedef {Object} FeatureIdentifier
@@ -1088,6 +1092,17 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
       cameraObj.distanceFromCenter = 0;
       data.zoom = zoom;
       data.encoding = glSource.encoding;
+
+      // Hillshade method (standard, basic, combined, igor, multidirectional)
+      data.method =
+        getValue(
+          glLayer,
+          'paint',
+          'hillshade-method',
+          emptyObj,
+          functionCache,
+        ) || 'standard';
+
       data.exaggeration = getValue(
         glLayer,
         'paint',
@@ -1095,44 +1110,85 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
         emptyObj,
         functionCache,
       );
-      data.vert = 1;
-      data.sunAz = getValue(
+
+      // Illumination directions - normalize to array (for multidirectional)
+      let dirValue = getValue(
         glLayer,
         'paint',
         'hillshade-illumination-direction',
         emptyObj,
         functionCache,
       );
-      data.highlightColor = getValue(
+      if (dirValue === null || dirValue === undefined) {
+        dirValue = 335;
+      }
+      data.azimuths = Array.isArray(dirValue) ? dirValue : [dirValue];
+      data.sunAz = data.azimuths[0];
+
+      // Illumination altitudes - normalize to array (for basic, combined, multidirectional)
+      let altValue = getValue(
         glLayer,
         'paint',
-        'hillshade-highlight-color',
+        'hillshade-illumination-altitude',
         emptyObj,
         functionCache,
       );
-      if (data.highlightColor && data.highlightColor.values) {
-        data.highlightColor = data.highlightColor.values[0];
+      if (altValue === null || altValue === undefined) {
+        altValue = 45;
       }
-      data.shadowColor = getValue(
-        glLayer,
-        'paint',
-        'hillshade-shadow-color',
-        emptyObj,
-        functionCache,
-      );
-      if (data.shadowColor && data.shadowColor.values) {
-        data.shadowColor = data.shadowColor.values[0];
+      data.altitudes = Array.isArray(altValue) ? altValue : [altValue];
+
+      // Helper to unwrap Color values from expression wrappers
+      function unwrapColor(val) {
+        if (val && val.values) {
+          return val.values[0];
+        }
+        return val;
       }
-      data.accentColor = getValue(
-        glLayer,
-        'paint',
-        'hillshade-accent-color',
-        emptyObj,
-        functionCache,
-      );
-      if (data.accentColor && data.accentColor.values) {
-        data.accentColor = data.accentColor.values[0];
+
+      // Helper to parse color array properties.
+      // colorArray values may be a single color string, a Color object,
+      // or an array of color strings (for multidirectional).
+      // Must distinguish ["#ff0000", "#00ff00"] from ["interpolate", ...].
+      function getColorArray(property) {
+        const raw = glLayer.paint?.[property];
+        if (
+          Array.isArray(raw) &&
+          raw.length > 0 &&
+          typeof raw[0] === 'string' &&
+          Color.parse(raw[0]) !== undefined
+        ) {
+          // Array of color strings - parse each individually
+          return raw.map((c) => Color.parse(c));
+        }
+        // Single value or expression - use getValue
+        let val = getValue(glLayer, 'paint', property, emptyObj, functionCache);
+        val = unwrapColor(val);
+        return val ? [val] : undefined;
       }
+
+      data.highlightColors = getColorArray('hillshade-highlight-color');
+      data.highlightColor = data.highlightColors?.[0] || defaultHighlightColor;
+      if (!data.highlightColors) {
+        data.highlightColors = [data.highlightColor];
+      }
+
+      data.shadowColors = getColorArray('hillshade-shadow-color');
+      data.shadowColor = data.shadowColors?.[0] || defaultShadowColor;
+      if (!data.shadowColors) {
+        data.shadowColors = [data.shadowColor];
+      }
+
+      data.accentColor =
+        unwrapColor(
+          getValue(
+            glLayer,
+            'paint',
+            'hillshade-accent-color',
+            emptyObj,
+            functionCache,
+          ),
+        ) || defaultAccentColor;
     });
     layer.setVisible(
       glLayer.layout
