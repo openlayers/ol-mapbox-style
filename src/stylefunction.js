@@ -594,9 +594,6 @@ export function stylefunction(
     }
   }
 
-  const textHalo = new Stroke();
-  const textColor = new Fill();
-
   const styles = [];
 
   /**
@@ -1688,7 +1685,8 @@ export function stylefunction(
           text.setOffsetY(
             textOffset[1] * textSize + vOffset + textTranslate[1],
           );
-          textColor.setColor(
+          const textFill = text.getFill() || new Fill();
+          textFill.setColor(
             colorWithOpacity(
               getValue(
                 layer,
@@ -1701,7 +1699,7 @@ export function stylefunction(
               opacity,
             ),
           );
-          text.setFill(textColor);
+          text.setFill(textFill);
           const haloColor = colorWithOpacity(
             getValue(
               layer,
@@ -1714,16 +1712,17 @@ export function stylefunction(
             opacity,
           );
           if (haloColor && textHaloWidth > 0) {
-            textHalo.setColor(haloColor);
+            const textStroke = text.getStroke() || new Stroke();
+            textStroke.setColor(haloColor);
             // spec here : https://docs.mapbox.com/mapbox-gl-js/style-spec/#paint-symbol-text-halo-width
             // Halo width must be doubled because it is applied around the center of the text outline
             textHaloWidth *= 2;
             // 1/4 of text size (spec) x 2
             const halfTextSize = 0.5 * textSize;
-            textHalo.setWidth(
+            textStroke.setWidth(
               textHaloWidth <= halfTextSize ? textHaloWidth : halfTextSize,
             );
-            text.setStroke(textHalo);
+            text.setStroke(textStroke);
           } else {
             text.setStroke(undefined);
           }
