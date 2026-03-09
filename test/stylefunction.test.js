@@ -1060,6 +1060,99 @@ describe('stylefunction', function () {
     });
   });
 
+  describe('Text color isolation between layers', function () {
+    const style = {
+      version: '8',
+      id: 'text-color-isolation',
+      name: 'text-color-isolation',
+      sources: {
+        'geojson': {
+          type: 'geojson',
+          data: {
+            type: 'FeatureCollection',
+            features: [
+              {
+                type: 'Feature',
+                geometry: {
+                  type: 'Point',
+                  coordinates: [0, 0],
+                },
+                properties: {
+                  'name': 'test',
+                },
+              },
+            ],
+          },
+        },
+      },
+      layers: [
+        {
+          id: 'road-labels',
+          type: 'symbol',
+          source: 'geojson',
+          layout: {
+            'text-field': '{name}',
+            'text-font': ['sans-serif'],
+            'text-size': 12,
+          },
+          paint: {
+            'text-color': '#0000ff',
+            'text-halo-color': '#ffffff',
+            'text-halo-width': 1,
+          },
+        },
+        {
+          id: 'highway-shields',
+          type: 'symbol',
+          source: 'geojson',
+          layout: {
+            'text-field': '{name}',
+            'text-font': ['sans-serif'],
+            'text-size': 10,
+          },
+          paint: {
+            'text-color': '#ff0000',
+            'text-halo-color': '#000000',
+            'text-halo-width': 0.5,
+          },
+        },
+      ],
+    };
+
+    it('uses distinct text fill and halo colors for different layers', function (done) {
+      apply(document.createElement('div'), style)
+        .then(function (map) {
+          const layer = map.getLayers().item(0);
+          const feature = layer.getSource().getFeatures()[0];
+          const styleFunction = layer.getStyle();
+          // Both layers match the same feature, producing two styles
+          const styles = styleFunction(feature, 1);
+          should(styles.length).eql(2);
+
+          // First style (road-labels) should have blue text
+          should(styles[0].getText().getFill().getColor()).eql(
+            'rgba(0,0,255,1)',
+          );
+          // Second style (highway-shields) should have red text
+          should(styles[1].getText().getFill().getColor()).eql(
+            'rgba(255,0,0,1)',
+          );
+
+          // Verify halo colors are also isolated
+          should(styles[0].getText().getStroke().getColor()).eql(
+            'rgba(255,255,255,1)',
+          );
+          should(styles[1].getText().getStroke().getColor()).eql(
+            'rgba(0,0,0,1)',
+          );
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+  });
+
   describe('getSpriteImageForIcon()', function () {
     const defaultSpriteImage = {
       image: new Image(),
