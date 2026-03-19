@@ -1,5 +1,10 @@
 # Changelog
 
+## 13.4.0
+
+* New hillshading options
+* Support for the `line-offset` paint property
+
 ## 13.3.0
 
 * Better match MapLibre's hillshade rendering
