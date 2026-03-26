@@ -3,6 +3,7 @@
   "version": "13.4.0",
   "description": "Create OpenLayers layers or maps from Mapbox/MapLibre styles",
   "type": "module",
+  "funding": "https://github.com/sponsors/ahocevar",
   "browser": "src/index.js",
   "main": "dist/olms.js",
   "module": "src/index.js",
