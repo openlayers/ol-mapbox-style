@@ -1,7 +1,9 @@
 import deepFreeze from 'deep-freeze';
 import Feature from 'ol/Feature.js';
+import LineString from 'ol/geom/LineString.js';
 import Polygon from 'ol/geom/Polygon.js';
 import VectorLayer from 'ol/layer/Vector.js';
+import Stroke from 'ol/style/Stroke.js';
 import Text from 'ol/style/Text.js';
 import should from 'should';
 import {
@@ -266,6 +268,50 @@ describe('stylefunction', function () {
       setFeatureState(layer, {source: 'states', id: 1}, null);
       style = styleFn(feature, 1);
       should(style[0].getFill().getColor()).eql('rgba(255,0,0,1)');
+    });
+
+    it('does not fail with line-offset when Stroke has no setOffset method', function () {
+      const lineFeature = new Feature(
+        new LineString([
+          [-1, 0],
+          [1, 0],
+        ]),
+      );
+      lineFeature.set('mvt:layer', 'roads');
+      const styleObject = {
+        version: 8,
+        sources: {
+          roads: {
+            type: 'geojson',
+            data: {type: 'FeatureCollection', features: []},
+          },
+        },
+        layers: [
+          {
+            id: 'road',
+            type: 'line',
+            source: 'roads',
+            'source-layer': 'roads',
+            paint: {
+              'line-color': '#ff0000',
+              'line-width': 4,
+              'line-offset': 2,
+            },
+          },
+        ],
+      };
+      // Temporarily remove setOffset to simulate older OpenLayers versions
+      const originalSetOffset = Stroke.prototype.setOffset;
+      delete Stroke.prototype.setOffset;
+      try {
+        const lineLayer = new VectorLayer();
+        const styleFn = applyStylefunction(lineLayer, styleObject, ['road']);
+        should.doesNotThrow(function () {
+          styleFn(lineFeature, 1);
+        });
+      } finally {
+        Stroke.prototype.setOffset = originalSetOffset;
+      }
     });
   });
 

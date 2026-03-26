@@ -913,16 +913,18 @@ export function stylefunction(
                   })
                 : null,
             );
-            stroke.setOffset(
-              getValue(
-                layer,
-                'paint',
-                'line-offset',
-                f,
-                functionCache,
-                featureState,
-              ),
-            );
+            if (typeof stroke.setOffset === 'function') {
+              stroke.setOffset(
+                getValue(
+                  layer,
+                  'paint',
+                  'line-offset',
+                  f,
+                  functionCache,
+                  featureState,
+                ),
+              );
+            }
             style.setZIndex(index);
           }
         }
