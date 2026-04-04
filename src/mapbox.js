@@ -23,7 +23,7 @@ export function getMapboxPath(url) {
 /**
  * Normalizes legacy string-based or new-style array based sprite definitions into array-based.
  * @param {string|Array<Sprite>} sprite the sprite source.
- * @param {string} token The access token.
+ * @param {string|undefined} token The access token.
  * @param {string} styleUrl The style URL.
  * @return {Array<Sprite>} An array of sprite definitions with normalized URLs.
  * @private
@@ -48,14 +48,14 @@ export function normalizeSpriteDefinition(sprite, token, styleUrl) {
 /**
  * Turns mapbox:// sprite URLs into resolvable URLs.
  * @param {string} url The sprite URL.
- * @param {string} token The access token.
+ * @param {string|undefined} token The access token.
  * @param {string} styleUrl The style URL.
  * @return {string} A resolvable URL.
  * @private
  */
 export function normalizeSpriteUrl(url, token, styleUrl) {
   const mapboxPath = getMapboxPath(url);
-  if (!mapboxPath) {
+  if (!token || !mapboxPath) {
     return decodeURI(new URL(url, styleUrl).href);
   }
   const startsWith = 'sprites/';
@@ -70,13 +70,13 @@ export function normalizeSpriteUrl(url, token, styleUrl) {
 /**
  * Turns mapbox:// style URLs into resolvable URLs.
  * @param {string} url The style URL.
- * @param {string} token The access token.
+ * @param {string} [token] The access token.
  * @return {string} A resolvable URL.
  * @private
  */
 export function normalizeStyleUrl(url, token) {
   const mapboxPath = getMapboxPath(url);
-  if (!mapboxPath) {
+  if (!mapboxPath || !token) {
     return decodeURI(new URL(url, location.href).href);
   }
   const startsWith = 'styles/';
@@ -93,7 +93,7 @@ const mapboxSubdomains = ['a', 'b', 'c', 'd'];
 /**
  * Turns mapbox:// source URLs into vector tile URL templates.
  * @param {string} url The source URL.
- * @param {string} token The access token.
+ * @param {string|undefined} token The access token.
  * @param {string} tokenParam The access token key.
  * @param {string} styleUrl The style URL.
  * @return {Array<string>} A vector tile template.

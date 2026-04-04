@@ -1,5 +1,5 @@
-import 'ol/ol.css';
 import olms from 'ol-mapbox-style';
+import 'ol/ol.css';
 
 let key = document.cookie.replace(
   /(?:(?:^|.*;\s*)mapbox_access_token\s*\=\s*([^;]*).*$)|^.*$/,

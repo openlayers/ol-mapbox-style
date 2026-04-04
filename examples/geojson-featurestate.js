@@ -1,5 +1,5 @@
-import 'ol/ol.css';
 import olms, {setFeatureState} from 'ol-mapbox-style';
+import 'ol/ol.css';
 
 const styleUrl = 'data/geojson.json';
 

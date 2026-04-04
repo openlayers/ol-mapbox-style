@@ -5,8 +5,12 @@
     "checkJs": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
+    "module": "node16",
+    "moduleResolution": "node16",
+    "strictNullChecks": false,
+    "noImplicitAny": false,
     "lib": [
-      "es2015",
+      "ES2020",
       "dom",
       "webworker"
     ]

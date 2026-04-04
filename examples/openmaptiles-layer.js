@@ -1,7 +1,7 @@
-import 'ol/ol.css';
 import {Map, View} from 'ol';
-import VectorTileLayer from 'ol/layer/VectorTile.js';
 import {applyBackground, applyStyle} from 'ol-mapbox-style';
+import VectorTileLayer from 'ol/layer/VectorTile.js';
+import 'ol/ol.css';
 
 const baseUrl = 'https://api.maptiler.com/maps/basic-v2/style.json';
 

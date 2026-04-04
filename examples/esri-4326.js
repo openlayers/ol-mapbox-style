@@ -1,5 +1,5 @@
-import 'ol/ol.css';
 import {apply} from 'ol-mapbox-style';
+import 'ol/ol.css';
 
 apply(
   'map',

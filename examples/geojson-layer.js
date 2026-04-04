@@ -1,8 +1,8 @@
-import 'ol/ol.css';
 import {Map, View} from 'ol';
-import VectorLayer from 'ol/layer/Vector.js';
-import {fromLonLat} from 'ol/proj.js';
 import {applyStyle} from 'ol-mapbox-style';
+import VectorLayer from 'ol/layer/Vector.js';
+import 'ol/ol.css';
+import {fromLonLat} from 'ol/proj.js';
 
 const layer = new VectorLayer();
 applyStyle(layer, 'data/geojson.json');

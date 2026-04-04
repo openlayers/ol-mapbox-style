@@ -1,7 +1,7 @@
-import 'ol/ol.css';
 import {Map, View} from 'ol';
-import {Group as LayerGroup} from 'ol/layer.js';
 import {apply} from 'ol-mapbox-style';
+import {Group as LayerGroup} from 'ol/layer.js';
+import 'ol/ol.css';
 
 const layerGroup = new LayerGroup();
 apply(layerGroup, 'data/geojson-wms.json');
