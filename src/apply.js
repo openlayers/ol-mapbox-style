@@ -17,19 +17,19 @@ import TileLayer from 'ol/layer/Tile.js';
 import VectorLayer from 'ol/layer/Vector.js';
 import VectorTileLayer from 'ol/layer/VectorTile.js';
 import {bbox as bboxStrategy} from 'ol/loadingstrategy.js';
-import {METERS_PER_UNIT} from 'ol/proj/Units.js';
 import {
   equivalent,
   fromLonLat,
   get as getProjection,
   getUserProjection,
 } from 'ol/proj.js';
+import {METERS_PER_UNIT} from 'ol/proj/Units.js';
 import Source from 'ol/source/Source.js';
 import TileJSON from 'ol/source/TileJSON.js';
 import VectorSource from 'ol/source/Vector.js';
 import VectorTileSource, {defaultLoadFunction} from 'ol/source/VectorTile.js';
-import TileGrid from 'ol/tilegrid/TileGrid.js';
 import {createXYZ} from 'ol/tilegrid.js';
+import TileGrid from 'ol/tilegrid/TileGrid.js';
 import {cameraObj, styleConfig} from './expressions.js';
 import {
   normalizeSourceUrl,
@@ -46,9 +46,9 @@ import {
 } from './rasterfunction.js';
 import {
   _colorWithOpacity,
+  stylefunction as applyStylefunction,
   getValue,
   styleFunctionArgs,
-  stylefunction as applyStylefunction,
 } from './stylefunction.js';
 import {getFonts} from './text.js';
 import {
@@ -552,15 +552,31 @@ export function applyBackground(mapOrLayer, glStyle, options = {}) {
   });
 }
 
-function getSourceIdByRef(layers, ref) {
-  let sourceId;
-  layers.some(function (layer) {
-    if (layer.id == ref) {
-      sourceId = layer.source;
-      return true;
+const REF_INHERITED_PROPS = [
+  'type',
+  'source',
+  'source-layer',
+  'minzoom',
+  'maxzoom',
+  'filter',
+  'layout',
+];
+
+function resolveRef(layers, glLayer) {
+  if (!glLayer.ref) {
+    return glLayer;
+  }
+  const refLayer = layers.find((layer) => layer.id === glLayer.ref);
+  if (!refLayer) {
+    return glLayer;
+  }
+  const resolved = Object.assign({}, glLayer);
+  for (const key of REF_INHERITED_PROPS) {
+    if (!(key in resolved) && key in refLayer) {
+      resolved[key] = refLayer[key];
     }
-  });
-  return sourceId;
+  }
+  return resolved;
 }
 
 function extentFromTileJSON(tileJSON, projection) {
@@ -685,7 +701,7 @@ function setupBackgroundLayer(glLayer, options, functionCache) {
  * @param {string|undefined} styleUrl URL to use for the source. This is expected to be the complete http(s) url,
  * with access key applied.
  * @param {Options} options Options.
- * @return {Promise<import("ol/source/VectorTile").default>} Promise resolving to a VectorTile source.
+ * @return {Promise<import("ol/source/VectorTile.js").default>} Promise resolving to a VectorTile source.
  * @private
  */
 export function setupVectorSource(glSource, styleUrl, options) {
@@ -916,11 +932,11 @@ function manageVisibility(layer, mapOrGroup, functionCache) {
 }
 
 export function setupLayer(glStyle, styleUrl, glLayer, options) {
+  glLayer = resolveRef(glStyle.layers, glLayer);
   const functionCache = getFunctionCache(glStyle);
-  const glLayers = glStyle.layers;
   const type = glLayer.type;
 
-  let glSourceId = glLayer.source || getSourceIdByRef(glLayers, glLayer.ref);
+  let glSourceId = glLayer.source;
   const glSource = glStyle.sources[glSourceId];
   let layer;
   if (type == 'background') {
@@ -1031,7 +1047,7 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
 
   let layer, glSourceId, id;
   for (let i = 0, ii = glLayers.length; i < ii; ++i) {
-    const glLayer = glLayers[i];
+    const glLayer = resolveRef(glLayers, glLayers[i]);
     const type = glLayer.type;
     if (!SUPPORTED_LAYER_TYPES.includes(type)) {
       //FIXME Unsupported layer type
@@ -1039,7 +1055,7 @@ function processStyle(glStyle, mapOrGroup, styleUrl, options) {
       console.warn(`layers[${i}].type "${type}" not supported`);
       continue;
     } else {
-      id = glLayer.source || getSourceIdByRef(glLayers, glLayer.ref);
+      id = glLayer.source;
       // this technique assumes gl layers will be in a particular order
       if (!id || id != glSourceId) {
         if (layerIds.length) {
@@ -1277,7 +1293,7 @@ export function finalizeLayer(
         source instanceof VectorTileSource
       ) {
         applyStyle(
-          /** @type {import("ol/layer/Vector").default|import("ol/layer/VectorTile").default} */ (
+          /** @type {import("ol/layer/Vector.js").default|import("ol/layer/VectorTile.js").default} */ (
             layer
           ),
           glStyle,

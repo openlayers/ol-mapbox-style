@@ -7,9 +7,9 @@ License: https://raw.githubusercontent.com/openlayers/ol-mapbox-style/master/LIC
 import {
   Color,
   convertFunction,
+  featureFilter as createFilter,
   createPropertyExpression,
   derefLayers,
-  featureFilter as createFilter,
   isExpression,
   isFunction,
   v8 as spec,
@@ -44,9 +44,9 @@ import {
 } from './util.js';
 
 /**
- * @typedef {import("ol/layer/Vector").default} VectorLayer
- * @typedef {import("ol/layer/VectorTile").default} VectorTileLayer
- * @typedef {import("ol/style/Style").StyleFunction} StyleFunction
+ * @typedef {import("ol/layer/Vector.js").default} VectorLayer
+ * @typedef {import("ol/layer/VectorTile.js").default} VectorTileLayer
+ * @typedef {import("ol/style/Style.js").StyleFunction} StyleFunction
  * @typedef {import('./util.js').ResourceType} ResourceType
  */
 
@@ -272,7 +272,10 @@ function evaluateFilter(layerId, filter, feature, filterCache) {
     try {
       filterCache[layerId] = createFilter(filter).filter;
     } catch (e) {
-      console.warn('Filter will evaluate to false: ' + e.message); // eslint-disable-line no-console
+      // eslint-disable-next-line no-console
+      console.warn(
+        'Filter will evaluate to false: ' + /** @type {Error} */ (e).message,
+      );
       filterCache[layerId] = function () {
         return false;
       };
@@ -597,10 +600,10 @@ export function stylefunction(
   const styles = [];
 
   /**
-   * @param {import("ol/Feature").default|import("ol/render/Feature").default} feature Feature.
+   * @param {import("ol/Feature.js").default|import("ol/render/Feature.js").default} feature Feature.
    * @param {number} resolution Resolution.
    * @param {string} [onlyLayer] Calculate style for this layer only.
-   * @return {Array<import("ol/style/Style").default>} Style.
+   * @return {Array<import("ol/style/Style.js").default>} Style.
    */
   const styleFunction = function (feature, resolution, onlyLayer) {
     const layerProperty =
@@ -1783,11 +1786,11 @@ export function stylefunction(
 
 /**
  * Get the the style for a specific Mapbox layer only. This can be useful for creating a legend.
- * @param {import("ol/Feature").default|import("ol/render/Feature").default} feature OpenLayers feature.
+ * @param {import("ol/Feature.js").default|import("ol/render/Feature.js").default} feature OpenLayers feature.
  * @param {number} resolution View resolution.
- * @param {import("ol/layer").Vector|import("ol/layer").VectorTile} olLayer OpenLayers layer.
+ * @param {import("ol/layer/Vector.js").default|import("ol/layer/VectorTile.js").default} olLayer OpenLayers layer.
  * @param {string} layerId Id of the Mapbox layer to get the style for
- * @return {Array<import("ol/style").Style>} Styles for the provided Mapbox layer.
+ * @return {Array<import("ol/style/Style.js").default>} Styles for the provided Mapbox layer.
  */
 export function getStyleForLayer(feature, resolution, olLayer, layerId) {
   const evaluateStyle = olLayer.getStyleFunction();

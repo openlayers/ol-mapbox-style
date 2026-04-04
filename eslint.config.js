@@ -27,10 +27,10 @@ export default [
     },
   },
   {
-    name: 'examples-config',
-    files: ['examples/**/*'],
+    name: 'shared-config',
+    files: ['**/*'],
     rules: {
-      'import/no-unresolved': 'off',
+      'jsdoc/reject-any-type': 'off',
     },
   },
 ];

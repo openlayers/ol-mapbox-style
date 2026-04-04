@@ -8,12 +8,12 @@ import Text from 'ol/style/Text.js';
 import should from 'should';
 import {
   apply,
+  stylefunction as applyStylefunction,
   getFeatureState,
   getStyleForLayer,
   recordStyleLayer,
   renderTransparent,
   setFeatureState,
-  stylefunction as applyStylefunction,
 } from '../src/index.js';
 import {getSpriteImageForIcon} from '../src/stylefunction.js';
 import states from './fixtures/states.json';

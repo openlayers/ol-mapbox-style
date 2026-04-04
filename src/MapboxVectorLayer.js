@@ -99,7 +99,7 @@ class ErrorEvent extends BaseEvent {
  * @property {number} [preload=0] Preload. Load low-resolution tiles up to `preload` levels. `0`
  * means no preloading.
  * @property {boolean} [useInterimTilesOnError=true] Use interim tiles on error.
- * @property {Object<string, *>} [properties] Arbitrary observable properties. Can be accessed with `#get()` and `#set()`.
+ * @property {Object<string, unknown>} [properties] Arbitrary observable properties. Can be accessed with `#get()` and `#set()`.
  */
 
 /**
@@ -158,6 +158,7 @@ export default class MapboxVectorLayer extends VectorTileLayer {
       source: source,
       background: options.background === false ? null : options.background,
       declutter: declutter,
+      extent: options.extent,
       className: options.className,
       opacity: options.opacity,
       visible: options.visible,
