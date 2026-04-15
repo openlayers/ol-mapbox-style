@@ -1,6 +1,6 @@
 {
   "name": "ol-mapbox-style",
-  "version": "13.4.0",
+  "version": "13.4.1",
   "description": "Create OpenLayers layers or maps from Mapbox/MapLibre styles",
   "type": "module",
   "funding": "https://github.com/sponsors/ahocevar",
