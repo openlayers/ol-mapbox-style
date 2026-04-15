@@ -4,12 +4,10 @@
  * Supports multiple hillshade algorithms matching MapLibre's
  * {@link https://github.com/maplibre/maplibre-gl-js/blob/main/src/shaders/hillshade.fragment.glsl hillshade.fragment.glsl}:
  * standard, basic, combined, igor, and multidirectional.
- * @param {Array<ImageData>} inputs Array of input images.
- * @param {Object} data Data added in the "beforeoperations" event.
- * @return {ImageData} Output image.
+ * @type {import('ol/source/Raster.js').Operation}
  */
 export function hillshade(inputs, data) {
-  const elevationImage = inputs[0];
+  const elevationImage = /** @type {ImageData} */ (inputs[0]);
   const width = elevationImage.width;
   const height = elevationImage.height;
   const elevationData = elevationImage.data;
@@ -324,8 +322,9 @@ export function hillshade(inputs, data) {
   return new ImageData(shadeData, width, height);
 }
 
+/** @type {import('ol/source/Raster.js').Operation} */
 export function raster(inputs, data) {
-  const image = inputs[0];
+  const image = /** @type {ImageData} */ (inputs[0]);
   const width = image.width;
   const height = image.height;
   const imageData = image.data;

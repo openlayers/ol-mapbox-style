@@ -7,11 +7,11 @@ import {normalizeSourceUrl, normalizeStyleUrl} from './mapbox.js';
 /** @typedef {'Style'|'Source'|'Sprite'|'SpriteImage'|'Tiles'|'GeoJSON'} ResourceType */
 
 /** @typedef {import("ol").Map} Map */
-/** @typedef {import("ol/layer").Layer} Layer */
-/** @typedef {import("ol/layer").Group} LayerGroup */
-/** @typedef {import("ol/layer").Vector} VectorLayer */
-/** @typedef {import("ol/layer").VectorTile} VectorTileLayer */
-/** @typedef {import("ol/source").Source} Source */
+/** @typedef {import("ol/layer/Layer.js").default} Layer */
+/** @typedef {import("ol/layer/Group.js").default} LayerGroup */
+/** @typedef {import("ol/layer/Vector.js").default} VectorLayer */
+/** @typedef {import("ol/layer/VectorTile.js").default} VectorTileLayer */
+/** @typedef {import("ol/source/Source.js").default} Source */
 
 export const emptyObj = Object.freeze({});
 
