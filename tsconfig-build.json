@@ -1,17 +1,18 @@
 {
   "compilerOptions": {
-    "target": "ES5",
-    "module": "es2015",
+    "target": "es2016",
+    "module": "node16",
     "allowJs": true,
     "declaration": true,
     "emitDeclarationOnly": true,
     "sourceMap": true,
     "outDir": "./dist",
+    "rootDir": "./src",
     "importHelpers": false,
     "strict": false,
     "strictNullChecks": true,
-    "moduleResolution": "node",
-    "esModuleInterop": false,
+    "moduleResolution": "node16",
+    "allowSyntheticDefaultImports": true,
     "inlineSources": false,
     "skipLibCheck": true
   },

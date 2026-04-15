@@ -5,11 +5,16 @@ import {
 } from '@maplibre/maplibre-gl-style-spec';
 import {fromString} from 'ol/color.js';
 
-function hsla(ctx, [h, s, l, a]) {
-  h = h.evaluate(ctx);
-  s = s.evaluate(ctx);
-  l = l.evaluate(ctx);
-  const alpha = a ? a.evaluate(ctx) : 1;
+/**
+ * @param {import('@maplibre/maplibre-gl-style-spec').EvaluationContext} ctx Context
+ * @param {Array<import('@maplibre/maplibre-gl-style-spec').Expression>} args r, g, b, alpha
+ * @return {Color} The parsed HSLA color.
+ */
+function hsla(ctx, args) {
+  const h = args[0].evaluate(ctx);
+  const s = args[1].evaluate(ctx);
+  const l = args[2].evaluate(ctx);
+  const alpha = args[3] ? args[3].evaluate(ctx) : 1;
   return Color.parse(`hsla(${h}, ${s}%, ${l}%, ${alpha})`);
 }
 

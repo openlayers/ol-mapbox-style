@@ -3,15 +3,16 @@
     "noEmit": true,
     "allowJs": true,
     "checkJs": true,
-    "target": "ES5",
-    "moduleResolution": "node",
-    "module": "ESNext",
+    "target": "es2016",
+    "moduleResolution": "node16",
+    "module": "node16",
     "skipLibCheck": true,
+    "strictNullChecks": false,
+    "noImplicitAny": false,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
-    "baseUrl": "./",
     "lib": [
-      "es2015",
+      "es2016",
       "dom",
       "webworker"
     ]
