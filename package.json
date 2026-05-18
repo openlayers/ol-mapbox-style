@@ -78,7 +78,7 @@
     "nanoassert": "^3.0.1",
     "pmtiles-protocol": "^1.0.5",
     "proj4": "^2.15.0",
-    "puppeteer": "^24.36.0",
+    "puppeteer": "^25.0.4",
     "rollup": "^4.57.1",
     "should": "^13.2.3",
     "sinon": "^21.0.0",
