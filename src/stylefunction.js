@@ -16,10 +16,12 @@ import {
 } from '@maplibre/maplibre-gl-style-spec';
 
 import mb2css from 'mapbox-to-css-font';
+import {Feature} from 'ol';
 import Map from 'ol/Map.js';
 import {distance} from 'ol/coordinate.js';
 import {getCenter} from 'ol/extent.js';
 import {toPromise} from 'ol/functions.js';
+import {GeometryCollection} from 'ol/geom.js';
 import RenderFeature from 'ol/render/Feature.js';
 import Circle from 'ol/style/Circle.js';
 import Fill from 'ol/style/Fill.js';
@@ -621,7 +623,24 @@ export function stylefunction(
     cameraObj.zoom = zoom;
     cameraObj.distanceFromCenter = 0;
     const featureGeometry = feature.getGeometry();
+
+    if (featureGeometry instanceof GeometryCollection) {
+      const geoms = featureGeometry.getGeometries();
+
+      for (const geom of geoms) {
+        const subFeature = new Feature({
+          ...properties,
+          geometry: geom,
+        });
+
+        styleFunction(subFeature, resolution, onlyLayer);
+      }
+
+      return styles.length > 0 ? styles : undefined;
+    }
+
     const type = types[featureGeometry.getType()];
+
     const map = olLayer.get('map');
     if (map && map instanceof Map && type === 1) {
       const size = map.getSize();
