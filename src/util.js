@@ -109,6 +109,12 @@ export function getResolutionForZoom(zoom, resolutions) {
 }
 
 const pendingRequests = {};
+export function clearPendingRequests() {
+  for (const key in pendingRequests) {
+    delete pendingRequests[key];
+  }
+}
+
 /**
  * @param {ResourceType} resourceType Type of resource to load.
  * @param {string} url Url of the resource.

@@ -12,7 +12,12 @@ import should from 'should';
 import {spy} from 'sinon';
 
 import {apply, applyStyle} from '../src/apply.js';
-import {defaultResolutions, getZoomForResolution} from '../src/util.js';
+import {
+  clearPendingRequests,
+  defaultResolutions,
+  getZoomForResolution,
+} from '../src/util.js';
+import geojsonWfsStyle from './fixtures/geojson-wfs.json';
 import glStyle from './fixtures/osm-liberty/style.json';
 import styleEmptySprite from './fixtures/style-empty-sprite.json';
 import styleInvalidSpriteURL from './fixtures/style-invalid-sprite-url.json';
@@ -351,6 +356,338 @@ describe('applyStyle without source creation', function () {
       .catch(function (e) {
         done(e);
       });
+  });
+});
+
+describe('applyStyle GeoJSON bbox loader event dispatch', function () {
+  let originalFetch;
+
+  beforeEach(function () {
+    originalFetch = window.fetch;
+  });
+
+  afterEach(function () {
+    window.fetch = originalFetch;
+    clearPendingRequests();
+  });
+
+  function createGeoJSONResponse(id) {
+    return new Response(
+      JSON.stringify({
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            id: id,
+            properties: {},
+            geometry: {
+              type: 'Point',
+              coordinates: [0, 0],
+            },
+          },
+        ],
+      }),
+      {
+        status: 200,
+        headers: {'Content-Type': 'application/json'},
+      },
+    );
+  }
+
+  it('dispatches source load events correctly for overlapping extents when transformRequest returns Request', function (done) {
+    const layer = new VectorLayer();
+    const requests = [];
+    const pendingResolvers = [];
+    const events = [];
+
+    applyStyle(
+      layer,
+      JSON.parse(JSON.stringify(geojsonWfsStyle)),
+      'water_areas',
+      {
+        transformRequest: function (url, type) {
+          if (type === 'GeoJSON') {
+            return new Request(url + '&request=true');
+          }
+        },
+      },
+    )
+      .then(function () {
+        const source = layer.getSource();
+        source.on('featuresloadstart', function () {
+          events.push('start');
+        });
+        source.on('featuresloadend', function () {
+          events.push('end');
+        });
+        source.on('featuresloaderror', function () {
+          done(new Error('Unexpected featuresloaderror event'));
+        });
+
+        window.fetch = function (request) {
+          const req =
+            request instanceof Request ? request : new Request(request);
+          requests.push(req.url);
+          if (req.url.includes('service=WFS')) {
+            return new Promise(function (resolve) {
+              pendingResolvers.push(resolve);
+            });
+          }
+          return originalFetch(req);
+        };
+
+        const projection = get('EPSG:3857');
+        source.loadFeatures([0, 0, 1000, 1000], 1, projection);
+        source.loadFeatures([1000, 1000, 2000, 2000], 1, projection);
+
+        // featuresloadstart fires synchronously
+        should(events).eql(['start', 'start']);
+
+        // fetch is called via a microtask; wait one tick before checking
+        Promise.resolve()
+          .then(function () {
+            should(pendingResolvers).have.length(2);
+            should(requests[0]).match(/request=true/);
+            should(requests[1]).match(/request=true/);
+
+            source.once('featuresloadend', function () {
+              try {
+                should(events).eql(['start', 'start', 'end']);
+                source.once('featuresloadend', function () {
+                  try {
+                    should(events).eql(['start', 'start', 'end', 'end']);
+                    done();
+                  } catch (e) {
+                    done(e);
+                  }
+                });
+                pendingResolvers[1](createGeoJSONResponse('second'));
+              } catch (e) {
+                done(e);
+              }
+            });
+            pendingResolvers[0](createGeoJSONResponse('first'));
+          })
+          .catch(done);
+      })
+      .catch(done);
+  });
+
+  it('dispatches source load events correctly for overlapping extents when transformRequest returns Response', function (done) {
+    const layer = new VectorLayer();
+    const responseResolvers = [];
+    const events = [];
+
+    window.fetch = function (request) {
+      const req = request instanceof Request ? request : new Request(request);
+      if (req.url.includes('service=WFS')) {
+        done(
+          new Error(
+            'GeoJSON requests must not use fetch() when a Response is returned by transformRequest',
+          ),
+        );
+      }
+      return originalFetch(req);
+    };
+
+    applyStyle(
+      layer,
+      JSON.parse(JSON.stringify(geojsonWfsStyle)),
+      'water_areas',
+      {
+        transformRequest: function (url, type) {
+          if (type === 'GeoJSON') {
+            return new Promise(function (resolve) {
+              responseResolvers.push(resolve);
+            });
+          }
+        },
+      },
+    )
+      .then(function () {
+        const source = layer.getSource();
+        source.on('featuresloadstart', function () {
+          events.push('start');
+        });
+        source.on('featuresloadend', function () {
+          events.push('end');
+        });
+        source.on('featuresloaderror', function () {
+          done(new Error('Unexpected featuresloaderror event'));
+        });
+
+        const projection = get('EPSG:3857');
+        source.loadFeatures([0, 0, 1000, 1000], 1, projection);
+        source.loadFeatures([1000, 1000, 2000, 2000], 1, projection);
+
+        should(events).eql(['start', 'start']);
+        should(responseResolvers).have.length(2);
+
+        source.once('featuresloadend', function () {
+          try {
+            should(events).eql(['start', 'start', 'end']);
+            source.once('featuresloadend', function () {
+              try {
+                should(events).eql(['start', 'start', 'end', 'end']);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            });
+            responseResolvers[1](createGeoJSONResponse('second'));
+          } catch (e) {
+            done(e);
+          }
+        });
+        responseResolvers[0](createGeoJSONResponse('first'));
+      })
+      .catch(done);
+  });
+
+  it('dispatches featuresloaderror for overlapping extents when transformRequest returns Request and fetch fails', function (done) {
+    const layer = new VectorLayer();
+    const pendingRejecters = [];
+    const events = [];
+
+    applyStyle(
+      layer,
+      JSON.parse(JSON.stringify(geojsonWfsStyle)),
+      'water_areas',
+      {
+        transformRequest: function (url, type) {
+          if (type === 'GeoJSON') {
+            return new Request(url + '&request=true');
+          }
+        },
+      },
+    )
+      .then(function () {
+        const source = layer.getSource();
+        source.on('featuresloadstart', function () {
+          events.push('start');
+        });
+        source.on('featuresloadend', function () {
+          done(new Error('Unexpected featuresloadend event on failure'));
+        });
+        source.on('featuresloaderror', function () {
+          events.push('error');
+        });
+
+        window.fetch = function (request) {
+          const req =
+            request instanceof Request ? request : new Request(request);
+          if (req.url.includes('service=WFS')) {
+            return new Promise(function (_resolve, reject) {
+              pendingRejecters.push(reject);
+            });
+          }
+          return originalFetch(req);
+        };
+
+        const projection = get('EPSG:3857');
+        source.loadFeatures([0, 0, 1000, 1000], 1, projection);
+        source.loadFeatures([1000, 1000, 2000, 2000], 1, projection);
+
+        // featuresloadstart fires synchronously
+        should(events).eql(['start', 'start']);
+
+        // fetch is called via a microtask; wait one tick before checking
+        Promise.resolve()
+          .then(function () {
+            should(pendingRejecters).have.length(2);
+
+            source.once('featuresloaderror', function () {
+              try {
+                should(events).eql(['start', 'start', 'error']);
+                source.once('featuresloaderror', function () {
+                  try {
+                    should(events).eql(['start', 'start', 'error', 'error']);
+                    done();
+                  } catch (e) {
+                    done(e);
+                  }
+                });
+                pendingRejecters[1](new Error('Network error'));
+              } catch (e) {
+                done(e);
+              }
+            });
+            pendingRejecters[0](new Error('Network error'));
+          })
+          .catch(done);
+      })
+      .catch(done);
+  });
+
+  it('dispatches featuresloaderror for overlapping extents when transformRequest returns a non-ok Response', function (done) {
+    const layer = new VectorLayer();
+    const responseResolvers = [];
+    const events = [];
+
+    window.fetch = function (request) {
+      const req = request instanceof Request ? request : new Request(request);
+      if (req.url.includes('service=WFS')) {
+        done(
+          new Error(
+            'GeoJSON requests must not use fetch() when a Response is returned by transformRequest',
+          ),
+        );
+      }
+      return originalFetch(req);
+    };
+
+    applyStyle(
+      layer,
+      JSON.parse(JSON.stringify(geojsonWfsStyle)),
+      'water_areas',
+      {
+        transformRequest: function (url, type) {
+          if (type === 'GeoJSON') {
+            return new Promise(function (resolve) {
+              responseResolvers.push(resolve);
+            });
+          }
+        },
+      },
+    )
+      .then(function () {
+        const source = layer.getSource();
+        source.on('featuresloadstart', function () {
+          events.push('start');
+        });
+        source.on('featuresloadend', function () {
+          done(new Error('Unexpected featuresloadend event on failure'));
+        });
+        source.on('featuresloaderror', function () {
+          events.push('error');
+        });
+
+        const projection = get('EPSG:3857');
+        source.loadFeatures([0, 0, 1000, 1000], 1, projection);
+        source.loadFeatures([1000, 1000, 2000, 2000], 1, projection);
+
+        should(events).eql(['start', 'start']);
+        should(responseResolvers).have.length(2);
+
+        source.once('featuresloaderror', function () {
+          try {
+            should(events).eql(['start', 'start', 'error']);
+            source.once('featuresloaderror', function () {
+              try {
+                should(events).eql(['start', 'start', 'error', 'error']);
+                done();
+              } catch (e) {
+                done(e);
+              }
+            });
+            responseResolvers[1](new Response('Not Found', {status: 404}));
+          } catch (e) {
+            done(e);
+          }
+        });
+        responseResolvers[0](new Response('Not Found', {status: 404}));
+      })
+      .catch(done);
   });
 });
 
