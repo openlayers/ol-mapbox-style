@@ -1,0 +1,12 @@
+/**
+ * Generates a shaded relief image given elevation data.  Uses a 3x3
+ * neighborhood for determining slope and aspect.
+ * Supports multiple hillshade algorithms matching MapLibre's
+ * {@link https://github.com/maplibre/maplibre-gl-js/blob/main/src/shaders/hillshade.fragment.glsl hillshade.fragment.glsl}:
+ * standard, basic, combined, igor, and multidirectional.
+ * @param {Array<ImageData>} inputs Array of input images.
+ * @param {Object} data Data added in the "beforeoperations" event.
+ * @return {ImageData} Output image.
+ */
+export function hillshade(inputs: Array<ImageData>, data: any): ImageData;
+export function raster(inputs: any, data: any): ImageData;
