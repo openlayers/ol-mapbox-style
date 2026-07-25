@@ -1,5 +1,9 @@
 # Changelog
 
+## 13.4.1
+
+* Invalidate function/filter cache on remove/addMapboxLayer
+
 ## 13.4.0
 
 * New hillshading options
