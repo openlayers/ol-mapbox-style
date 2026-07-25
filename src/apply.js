@@ -1347,6 +1347,9 @@ export function getMapboxLayer(mapOrGroup, layerId) {
  */
 export function addMapboxLayer(mapOrGroup, mapboxLayer, beforeLayerId) {
   const glStyle = mapOrGroup.get('mapbox-style');
+  delete getFunctionCache(glStyle)[mapboxLayer.id];
+  delete getFilterCache(glStyle)[mapboxLayer.id];
+
   const mapboxLayers = glStyle.layers;
   let spliceIndex;
   let sourceIndex = -1;
@@ -1564,6 +1567,8 @@ export function removeMapboxLayer(mapOrGroup, mapboxLayerIdOrLayer) {
   }
   layerMapboxLayers.splice(layerMapboxLayers.indexOf(mapboxLayerId), 1);
   const glStyle = mapOrGroup.get('mapbox-style');
+  delete getFunctionCache(glStyle)[mapboxLayerId];
+  delete getFilterCache(glStyle)[mapboxLayerId];
   const layers = glStyle.layers;
   layers.splice(
     layers.findIndex((layer) => layer.id === mapboxLayerId),
