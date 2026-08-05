@@ -957,6 +957,14 @@ export function stylefunction(
               (spriteData && spriteData[icon] && spriteImage) ||
               imageElement
             ) {
+              const placement = getValue(
+                layer,
+                'layout',
+                'symbol-placement',
+                f,
+                functionCache,
+                featureState,
+              );
               const iconRotationAlignment = getValue(
                 layer,
                 'layout',
@@ -965,6 +973,11 @@ export function stylefunction(
                 functionCache,
                 featureState,
               );
+              // `auto` means `viewport` for point placement, and `map` otherwise
+              const iconAlignedWithMap =
+                iconRotationAlignment === 'auto'
+                  ? placement !== 'point'
+                  : iconRotationAlignment === 'map';
               if (type == 2) {
                 const geom = /** @type {*} */ (feature.getGeometry());
                 // ol package and ol-debug.js only
@@ -996,18 +1009,7 @@ export function stylefunction(
                     styleGeom = renderFeature;
                     renderFeatureCoordinates[0] = midpoint[0];
                     renderFeatureCoordinates[1] = midpoint[1];
-                    const placement = getValue(
-                      layer,
-                      'layout',
-                      'symbol-placement',
-                      f,
-                      functionCache,
-                      featureState,
-                    );
-                    if (
-                      placement === 'line' &&
-                      iconRotationAlignment === 'map'
-                    ) {
+                    if (placement === 'line' && iconAlignedWithMap) {
                       const stride = geom.getStride();
                       const coordinates = geom.getFlatCoordinates();
                       for (
@@ -1075,7 +1077,7 @@ export function stylefunction(
                     functionCache,
                     featureState,
                   );
-                  let iconCacheKey = `${icon}.${iconSize}.${haloWidth}.${haloColor}`;
+                  let iconCacheKey = `${icon}.${iconSize}.${haloWidth}.${haloColor}.${iconAlignedWithMap}`;
                   if (iconColor !== null) {
                     iconCacheKey += `.${iconColor}`;
                   }
@@ -1111,7 +1113,7 @@ export function stylefunction(
                     if (imageElement) {
                       const iconOptions = {
                         color: color,
-                        rotateWithView: iconRotationAlignment === 'map',
+                        rotateWithView: iconAlignedWithMap,
                         displacement: displacement,
                         declutterMode: declutterMode,
                         scale: iconSize,
@@ -1185,7 +1187,7 @@ export function stylefunction(
                         imgSize: spriteImage.size,
                         size: size,
                         offset: offset,
-                        rotateWithView: iconRotationAlignment === 'map',
+                        rotateWithView: iconAlignedWithMap,
                         scale: iconSize / spriteImageData.pixelRatio,
                         displacement: displacement,
                         declutterMode: declutterMode,
