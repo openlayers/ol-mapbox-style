@@ -1,5 +1,9 @@
 # Changelog
 
+## 13.4.3
+
+* Fixed icon-rotate along lines
+
 ## 13.4.1
 
 * Invalidate function/filter cache on remove/addMapboxLayer
