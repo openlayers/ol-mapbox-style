@@ -81,9 +81,10 @@ const anchor = {
   'bottom-right': [1, 1],
 };
 
-const expressionData = function (rawExpression, propertySpec) {
+const expressionData = function (rawExpression, rootKey, propertySpec) {
   let compiledExpression = createPropertyExpression(
     rawExpression,
+    rootKey,
     propertySpec,
   );
   if (compiledExpression.result === 'error') {
@@ -91,6 +92,7 @@ const expressionData = function (rawExpression, propertySpec) {
     if (wrappedExpression !== rawExpression) {
       compiledExpression = createPropertyExpression(
         wrappedExpression,
+        rootKey,
         propertySpec,
       );
     }
@@ -145,6 +147,7 @@ export function getValue(
   const functions = functionCache[layerId];
   if (!functions[property]) {
     let value = (layer[layoutOrPaint] || emptyObj)[property];
+    const rootKey = `layers[${layerId}].${layoutOrPaint}.${property}`;
     const propertySpec =
       spec[`${layoutOrPaint}_${layer.type}`] &&
       spec[`${layoutOrPaint}_${layer.type}`][property];
@@ -159,7 +162,7 @@ export function getValue(
       isExpr = true;
     }
     if (isExpr) {
-      const compiledExpression = expressionData(value, propertySpec);
+      const compiledExpression = expressionData(value, rootKey, propertySpec);
       functions[property] =
         compiledExpression.evaluate.bind(compiledExpression);
     } else {
@@ -189,7 +192,11 @@ export function getValue(
             item = convertFunction(item, itemPropertySpec);
           }
           if (isExpression(item)) {
-            const compiledExpression = expressionData(item, itemPropertySpec);
+            const compiledExpression = expressionData(
+              item,
+              `${rootKey}[${i}]`,
+              itemPropertySpec,
+            );
             itemExpressions.push(
               compiledExpression.evaluate.bind(compiledExpression),
             );
@@ -270,7 +277,10 @@ function evaluateFilter(layerId, filter, feature, filterCache) {
   }
   if (!(layerId in filterCache)) {
     try {
-      filterCache[layerId] = createFilter(filter).filter;
+      filterCache[layerId] = createFilter(
+        filter,
+        `layers[${layerId}].filter`,
+      ).filter;
     } catch (e) {
       // eslint-disable-next-line no-console
       console.warn(
