@@ -12,8 +12,9 @@ import {
   derefLayers,
   isExpression,
   isFunction,
-  v8 as spec,
 } from '@maplibre/maplibre-gl-style-spec';
+
+import spec from './stylespec.js';
 
 import mb2css from 'mapbox-to-css-font';
 import Map from 'ol/Map.js';
@@ -119,10 +120,28 @@ const expressionData = function (rawExpression, rootKey, propertySpec) {
 let renderFeatureCoordinates, renderFeature;
 
 /**
+ * The style reference, as a type: `Spec` has a key per `layout_*`/`paint_*`
+ * section, and each section a key per property it defines.
+ * @typedef {typeof import('./stylespec.js').default} Spec
+ */
+/**
+ * @template {string} S
+ * @typedef {S extends keyof Spec ? Extract<keyof Spec[S], string> : never} PropertiesIn
+ */
+/**
+ * Every property name the reference defines for `layout` or for `paint`. Asking
+ * `getValue()` for anything else is a type error, which is how a property that
+ * upstream has dropped gets caught.
+ * @template {'layout'|'paint'} K
+ * @typedef {PropertiesIn<Extract<keyof Spec, `${K}_${string}`>>} PropertyOf
+ */
+
+/**
  * @private
+ * @template {'layout'|'paint'} K
  * @param {Object} layer Gl object layer.
- * @param {string} layoutOrPaint 'layout' or 'paint'.
- * @param {string} property Feature property.
+ * @param {K} layoutOrPaint 'layout' or 'paint'.
+ * @param {PropertyOf<K>} property Feature property.
  * @param {Object} feature Gl feature.
  * @param {Object} [functionCache] Function cache.
  * @param {Object} [featureState] Feature state.
@@ -148,9 +167,11 @@ export function getValue(
   if (!functions[property]) {
     let value = (layer[layoutOrPaint] || emptyObj)[property];
     const rootKey = `layers[${layerId}].${layoutOrPaint}.${property}`;
+    // The section key is only known at runtime, so this one lookup is untyped.
+    const sections = /** @type {Object<string, any>} */ (spec);
     const propertySpec =
-      spec[`${layoutOrPaint}_${layer.type}`] &&
-      spec[`${layoutOrPaint}_${layer.type}`][property];
+      sections[`${layoutOrPaint}_${layer.type}`] &&
+      sections[`${layoutOrPaint}_${layer.type}`][property];
     if (value === undefined) {
       if (propertySpec) {
         value = propertySpec.default;
@@ -687,7 +708,7 @@ export function stylefunction(
           opacity = getValue(
             layer,
             'paint',
-            layer.type + '-opacity',
+            `${/** @type {'fill'|'fill-extrusion'} */ (layer.type)}-opacity`,
             f,
             functionCache,
             featureState,
@@ -696,7 +717,7 @@ export function stylefunction(
             const fillIcon = getValue(
               layer,
               'paint',
-              layer.type + '-pattern',
+              `${/** @type {'fill'|'fill-extrusion'} */ (layer.type)}-pattern`,
               f,
               functionCache,
               featureState,
@@ -757,7 +778,7 @@ export function stylefunction(
               getValue(
                 layer,
                 'paint',
-                layer.type + '-color',
+                `${/** @type {'fill'|'fill-extrusion'} */ (layer.type)}-color`,
                 f,
                 functionCache,
                 featureState,
@@ -769,7 +790,7 @@ export function stylefunction(
                 getValue(
                   layer,
                   'paint',
-                  layer.type + '-outline-color',
+                  `${/** @type {'fill'} */ (layer.type)}-outline-color`,
                   f,
                   functionCache,
                   featureState,

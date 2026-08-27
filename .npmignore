@@ -12,3 +12,4 @@ webpack.*.cjs
 rollup.config.js
 tsconfig*.json
 typedoc.json
+src/stylespec.js.bak

@@ -111,7 +111,7 @@ describe('utility functions currently in stylefunction.js', function () {
       'id': 'park_outline',
       'paint': {
         'line-color': 'rgba(159, 183, 118, 0.69)',
-        'line-gap-width': {
+        'line-width': {
           'stops': [
             [12, 0],
             [20, 6],
@@ -154,7 +154,7 @@ describe('utility functions currently in stylefunction.js', function () {
 
     it('should get complex paint property', function () {
       cameraObj.zoom = 20;
-      const result = getValue(glLayer2, 'paint', 'line-gap-width', feature);
+      const result = getValue(glLayer2, 'paint', 'line-width', feature);
       should(result).equal(6);
     });
 

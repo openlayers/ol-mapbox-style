@@ -35,14 +35,20 @@
     "prepare": "npm run doc && npm run build",
     "build": "tsc --project tsconfig-build.json && rollup -c && webpack-cli --mode=production --config ./webpack.config.examples.cjs",
     "doc": "typedoc --plugin typedoc-plugin-missing-exports src/index.js --excludeExternals --tsconfig tsconfig-typecheck.json --out ./_site",
+    "style-spec:generate": "node tasks/style-spec.js generate",
+    "style-spec:restore": "node tasks/style-spec.js restore",
+    "prepack": "npm run style-spec:generate",
+    "postpack": "npm run style-spec:restore",
+    "style-spec:check": "node tasks/style-spec.js check",
     "karma": "karma start test/karma.conf.cjs",
-    "lint": "eslint test examples src",
+    "lint": "eslint test examples src tasks",
     "typecheck": "tsc --project tsconfig-typecheck.json",
-    "pretest": "npm run lint && npm run typecheck",
-    "test": "npm run karma -- --single-run --log-level error"
+    "pretest": "npm run style-spec:generate && npm run style-spec:check && npm run lint && npm run typecheck",
+    "test": "npm run karma -- --single-run --log-level error",
+    "posttest": "npm run style-spec:restore"
   },
   "dependencies": {
-    "@maplibre/maplibre-gl-style-spec": "^26.4.0",
+    "@maplibre/maplibre-gl-style-spec": "^26.4.1",
     "mapbox-to-css-font": "^3.2.0"
   },
   "peerDependencies": {
