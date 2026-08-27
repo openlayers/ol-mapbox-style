@@ -189,6 +189,10 @@ export function configureHillshadeLayer(
     // colorArray values may be a single color string, a Color object,
     // or an array of color strings (for multidirectional).
     // Must distinguish ["#ff0000", "#00ff00"] from ["interpolate", ...].
+    /**
+     * @param {import('./stylefunction.js').PropertyOf<'paint'>} property Name.
+     * @return {Array<Color>|undefined} The colors.
+     */
     function getColorArray(property) {
       const raw = glLayer.paint?.[property];
       if (

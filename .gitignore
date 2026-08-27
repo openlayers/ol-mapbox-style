@@ -2,3 +2,4 @@ node_modules
 dist
 _site
 coverage
+src/stylespec.js.bak
