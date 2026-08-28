@@ -45,7 +45,7 @@
     "karma": "karma start test/karma.conf.cjs",
     "lint": "eslint test examples src tasks",
     "typecheck": "tsc --project tsconfig-typecheck.json",
-    "pretest": "npm run style-spec:generate && npm run style-spec:check && npm run lint && npm run typecheck",
+    "pretest": "npm run lint && npm run typecheck && npm run style-spec:check && npm run style-spec:generate && npm run typecheck",
     "test": "npm run karma -- --single-run --log-level error",
     "posttest": "npm run style-spec:restore"
   },
