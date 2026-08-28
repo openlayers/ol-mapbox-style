@@ -33,6 +33,8 @@
   "scripts": {
     "start": "webpack serve --config ./webpack.config.examples.cjs",
     "prepare": "npm run doc && npm run build",
+    "prebuild": "npm run style-spec:generate",
+    "postbuild": "npm run style-spec:restore",
     "build": "tsc --project tsconfig-build.json && rollup -c && webpack-cli --mode=production --config ./webpack.config.examples.cjs",
     "doc": "typedoc --plugin typedoc-plugin-missing-exports src/index.js --excludeExternals --tsconfig tsconfig-typecheck.json --out ./_site",
     "style-spec:generate": "node tasks/style-spec.js generate",
