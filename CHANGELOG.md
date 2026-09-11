@@ -1,5 +1,10 @@
 # Changelog
 
+## 13.5.0
+
+* Add support for the `raster-resampling` raster layer property
+* Smaller build size thanks to optimized style spec data
+
 ## 13.4.3
 
 * Fixed icon-rotate along lines
