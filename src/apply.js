@@ -95,6 +95,8 @@ import {
  * Function that returns an image for an icon name. If the result is an HTMLImageElement, it must already be
  * loaded. The layer can be used to call layer.changed() when the loading and processing of the image has finished.
  * This function be used for icons not in the sprite or to override sprite icons.
+ * @property {boolean} [interpolate=true] Use interpolated values when resampling raster sources. Can be
+ * overridden per raster layer with the `raster-resampling` paint property.
  * @property {string} [accessTokenParam='access_token'] Access token param. For internal use.
  */
 
@@ -743,13 +745,25 @@ function getBboxTemplate(projection) {
   return `{bbox-${projCode.toLowerCase().replace(/[^a-z0-9]/g, '-')}}`;
 }
 
-function setupRasterSource(glSource, styleUrl, options) {
+/**
+ * @param {Object} glSource glStyle source.
+ * @param {string} styleUrl Style URL.
+ * @param {Options} options Options.
+ * @param {boolean} [interpolate] Whether to use interpolated values when resampling. When
+ * `undefined`, the `interpolate` option is used.
+ * @return {Promise<TileJSON>} Promise resolving to a TileJSON source.
+ */
+function setupRasterSource(glSource, styleUrl, options, interpolate) {
   return new Promise(function (resolve, reject) {
     getTileJson(glSource, styleUrl, options)
       .then(function ({tileJson, tileLoadFunction}) {
         const source = new TileJSON({
           interpolate:
-            options.interpolate === undefined ? true : options.interpolate,
+            interpolate !== undefined
+              ? interpolate
+              : options.interpolate === undefined
+                ? true
+                : options.interpolate,
           transition: 0,
           crossOrigin: 'anonymous',
           tileJSON: tileJson,
@@ -787,9 +801,17 @@ function setupRasterSource(glSource, styleUrl, options) {
   });
 }
 
-function setupRasterLayer(glSource, styleUrl, options) {
+/**
+ * @param {Object} glSource glStyle source.
+ * @param {string} styleUrl Style URL.
+ * @param {Options} options Options.
+ * @param {boolean} [interpolate] Whether to use interpolated values when resampling. When
+ * `undefined`, the `interpolate` option is used.
+ * @return {TileLayer} Configured raster tile layer.
+ */
+function setupRasterLayer(glSource, styleUrl, options, interpolate) {
   const layer = new TileLayer();
-  setupRasterSource(glSource, styleUrl, options)
+  setupRasterSource(glSource, styleUrl, options, interpolate)
     .then(function (source) {
       layer.setSource(source);
     })
@@ -952,12 +974,28 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
       },
     );
 
+    const interpolate =
+      getValue(
+        glLayer,
+        'paint',
+        'raster-resampling',
+        emptyObj,
+        functionCache,
+      ) === 'nearest'
+        ? false
+        : undefined;
+
     if (requiresOperations) {
-      const tileLayer = setupRasterLayer(glSource, styleUrl, options);
+      const tileLayer = setupRasterLayer(
+        glSource,
+        styleUrl,
+        options,
+        interpolate,
+      );
       layer = createRasterOpLayer(tileLayer);
       configureRasterOpLayer(layer, glLayer, options, functionCache);
     } else {
-      layer = setupRasterLayer(glSource, styleUrl, options);
+      layer = setupRasterLayer(glSource, styleUrl, options, interpolate);
     }
     layer.setVisible(
       glLayer.layout
@@ -1532,6 +1570,9 @@ export function updateMapboxSource(mapOrGroup, id, mapboxSource) {
         mapboxSource,
         metadata.styleUrl,
         metadata.options,
+        currentSource && 'getInterpolate' in currentSource
+          ? /** @type {TileJSON} */ (currentSource).getInterpolate()
+          : undefined,
       );
       break;
     default:
