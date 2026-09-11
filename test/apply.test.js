@@ -159,6 +159,40 @@ describe('ol-mapbox-style', function () {
         osm.dispatchEvent({type: 'prerender', frameState: {viewState: {}}});
         should(osm.getOpacity()).eql(0.5);
       });
+
+      it('interpolates raster sources by default', function () {
+        const osm = map.getLayers().item(1);
+        should(osm.getSource().getInterpolate()).be.true();
+      });
+
+      it('disables interpolation when raster-resampling is nearest', function (done) {
+        const nearestTarget = document.createElement('div');
+        const style = {
+          version: 8,
+          sources: {
+            osm: {
+              type: 'raster',
+              tileSize: 256,
+              tiles: ['https://a.tile.openstreetmap.org/{z}/{x}/{y}.png'],
+            },
+          },
+          layers: [
+            {
+              id: 'osm',
+              type: 'raster',
+              source: 'osm',
+              paint: {'raster-resampling': 'nearest'},
+            },
+          ],
+        };
+        apply(nearestTarget, style)
+          .then((nearestMap) => {
+            const osm = nearestMap.getLayers().item(0);
+            should(osm.getSource().getInterpolate()).be.false();
+            done();
+          })
+          .catch(done);
+      });
     });
 
     describe('raster-dem sources', function () {
