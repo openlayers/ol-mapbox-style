@@ -552,6 +552,46 @@ describe('stylefunction', function () {
             done(err);
           });
       });
+
+      it('does not share icons between layers with different declutter modes', function (done) {
+        const layout = {
+          'icon-image': 'amenity_firestation',
+          'icon-size': 2,
+        };
+        const paint = {'icon-color': 'rgba(255,255,255,1)'};
+        style.layers = [
+          {
+            id: 'declutter',
+            type: 'symbol',
+            source: 'geojson',
+            layout: Object.assign({'icon-allow-overlap': false}, layout),
+            paint: paint,
+          },
+          {
+            id: 'obstacle',
+            type: 'symbol',
+            source: 'geojson',
+            layout: Object.assign({'icon-allow-overlap': true}, layout),
+            paint: paint,
+          },
+        ];
+        apply(document.createElement('div'), style)
+          .then(function (map) {
+            const layer = map.getLayers().item(0);
+            layer.once('change', () => {
+              const styleFunction = layer.getStyle();
+              const feature = layer.getSource().getFeatures()[0];
+              const styles = styleFunction(feature, 1);
+              should(styles.length).eql(2);
+              should(styles[0].getImage().getDeclutterMode()).eql('declutter');
+              should(styles[1].getImage().getDeclutterMode()).eql('obstacle');
+              done();
+            });
+          })
+          .catch(function (err) {
+            done(err);
+          });
+      });
     });
 
     describe('text decluttering', function () {
