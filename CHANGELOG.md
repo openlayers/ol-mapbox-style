@@ -1,5 +1,9 @@
 # Changelog
 
+## 13.5.1
+
+* Consider `declutterMode` for cached icons
+
 ## 13.5.0
 
 * Add support for the `raster-resampling` raster layer property
