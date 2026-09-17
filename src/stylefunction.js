@@ -1108,18 +1108,18 @@ export function stylefunction(
                     functionCache,
                     featureState,
                   );
-                  let iconCacheKey = `${icon}.${iconSize}.${haloWidth}.${haloColor}.${iconAlignedWithMap}`;
+                  const declutterMode = getDeclutterMode(
+                    layer,
+                    f,
+                    'icon',
+                    functionCache,
+                  );
+                  let iconCacheKey = `${icon}.${iconSize}.${haloWidth}.${haloColor}.${iconAlignedWithMap}.${declutterMode}`;
                   if (iconColor !== null) {
                     iconCacheKey += `.${iconColor}`;
                   }
                   iconImg = iconImageCache[iconCacheKey];
                   if (!iconImg) {
-                    const declutterMode = getDeclutterMode(
-                      layer,
-                      f,
-                      'icon',
-                      functionCache,
-                    );
                     let displacement;
                     if ('icon-offset' in layout) {
                       displacement = getValue(
