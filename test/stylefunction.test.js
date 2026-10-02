@@ -916,6 +916,108 @@ describe('stylefunction', function () {
     });
   });
 
+  describe('Icon along line', function () {
+    function getImage() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 20;
+      canvas.height = 20;
+      return canvas;
+    }
+
+    it('creates one icon style per anchor along the line', function () {
+      const style = {
+        version: 8,
+        id: 'icon-along-line-spaced',
+        sources: {
+          geojson: {
+            type: 'geojson',
+            data: {type: 'FeatureCollection', features: []},
+          },
+        },
+        layers: [
+          {
+            id: 'test',
+            type: 'symbol',
+            source: 'geojson',
+            layout: {
+              'symbol-placement': 'line',
+              'icon-image': 'dynamic',
+              'symbol-spacing': 25,
+            },
+          },
+        ],
+      };
+      const layer = new VectorLayer();
+      applyStylefunction(
+        layer,
+        style,
+        'geojson',
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        getImage,
+      );
+      const feature = new Feature(
+        new LineString([
+          [0, 0],
+          [100, 0],
+        ]),
+      );
+      const styles = layer.getStyle()(feature, 1);
+      // 100-unit line, 25-unit spacing: anchors centered at 12.5, 37.5, 62.5, 87.5
+      should(styles.length).eql(4);
+      const xs = styles.map((s) => s.getGeometry().getFlatCoordinates()[0]);
+      should(xs).eql([12.5, 37.5, 62.5, 87.5]);
+    });
+
+    it('falls back to a single midpoint icon when the line is too short for any spacing anchor', function () {
+      const style = {
+        version: 8,
+        id: 'icon-along-line-short',
+        sources: {
+          geojson: {
+            type: 'geojson',
+            data: {type: 'FeatureCollection', features: []},
+          },
+        },
+        layers: [
+          {
+            id: 'test',
+            type: 'symbol',
+            source: 'geojson',
+            layout: {
+              'symbol-placement': 'line',
+              'icon-image': 'dynamic',
+              'symbol-spacing': 500,
+            },
+          },
+        ],
+      };
+      const layer = new VectorLayer();
+      applyStylefunction(
+        layer,
+        style,
+        'geojson',
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        getImage,
+      );
+      // 200 map units long: big enough on screen (size > 150px) to qualify for the
+      // midpoint fallback, but shorter than half the 500-unit symbol spacing.
+      const feature = new Feature(
+        new LineString([
+          [0, 0],
+          [200, 0],
+        ]),
+      );
+      const styles = layer.getStyle()(feature, 1);
+      should(styles.length).eql(1);
+    });
+  });
+
   describe('Max angle', function () {
     let style;
     beforeEach(function () {

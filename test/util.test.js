@@ -19,7 +19,7 @@ import {
   updateMapboxLayer,
   updateMapboxSource,
 } from '../src/apply.js';
-import {fetchResource} from '../src/util.js';
+import {fetchResource, getPointsAlongLine} from '../src/util.js';
 
 export function createObserver(total) {
   return new Promise((resolve) => {
@@ -135,7 +135,34 @@ describe('util', function () {
         });
     });
   });
+  describe('getPointsAlongLine', function () {
+    it('places anchors at the expected spacing on a straight horizontal line', function () {
+      const flatCoordinates = [0, 0, 100, 0]; // 100-unit horizontal line
+      const anchors = getPointsAlongLine(flatCoordinates, null, 2, 25);
+      should(anchors.length).eql(4); // centered at 12.5, 37.5, 62.5, 87.5
+      should(anchors[0].coordinate[0]).be.approximately(12.5, 1e-6);
+      should(anchors[0].coordinate[1]).be.approximately(0, 1e-6);
+      should(anchors[0].angle).eql(0); // pointing along +x
+    });
 
+    it('returns no anchors for a line shorter than half the spacing', function () {
+      const anchors = getPointsAlongLine([0, 0, 10, 0], null, 2, 100);
+      should(anchors.length).eql(0);
+    });
+
+    it('returns no anchors when spacing is not positive', function () {
+      should(getPointsAlongLine([0, 0, 100, 0], null, 2, 0).length).eql(0);
+      should(getPointsAlongLine([0, 0, 100, 0], null, 2, -10).length).eql(0);
+    });
+
+    it('treats each MultiLineString part independently', function () {
+      // two disconnected 50-unit segments
+      const flatCoordinates = [0, 0, 50, 0, 1000, 0, 1050, 0];
+      const anchors = getPointsAlongLine(flatCoordinates, [4, 8], 2, 25);
+      should(anchors.length).eql(4); // 2 per segment, no bridging across the gap
+      should(anchors[2].coordinate[0]).be.approximately(1012.5, 1e-6);
+    });
+  });
   describe('getLayers', function () {
     let target;
     beforeEach(function () {
