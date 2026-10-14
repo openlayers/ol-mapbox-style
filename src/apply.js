@@ -260,15 +260,33 @@ export function applyStyle(
         if (glStyle.version != 8) {
           return reject(new Error('glStyle version 8 required.'));
         }
-        if (
-          !(layer instanceof VectorLayer || layer instanceof VectorTileLayer)
+        // Prefer checking the source, so layers with other renderers than
+        // the standard Canvas2D ones can be used. Fall back to checking the layer
+        // when it does not have a source yet.
+        const layerSource = /** @type {Layer} */ (layer).getSource();
+        let isVectorTile;
+        if (layerSource) {
+          if (layerSource instanceof VectorTileSource) {
+            isVectorTile = true;
+          } else if (layerSource instanceof VectorSource) {
+            isVectorTile = false;
+          } else {
+            return reject(
+              new Error('Can only apply to VectorSource or VectorTileSource'),
+            );
+          }
+        } else if (
+          layer instanceof VectorLayer ||
+          layer instanceof VectorTileLayer
         ) {
+          isVectorTile = layer instanceof VectorTileLayer;
+        } else {
           return reject(
             new Error('Can only apply to VectorLayer or VectorTileLayer'),
           );
         }
 
-        const type = layer instanceof VectorTileLayer ? 'vector' : 'geojson';
+        const type = isVectorTile ? 'vector' : 'geojson';
         if (!sourceOrLayers) {
           sourceId = glStyle.layers.find(function (layer) {
             return layer.source && glStyle.sources[layer.source].type === type;
@@ -290,15 +308,20 @@ export function applyStyle(
           if (!updateSource) {
             return Promise.resolve();
           }
-          if (layer instanceof VectorTileLayer) {
+          const layerGetSource = () => /** @type {Layer} */ (layer).getSource();
+          const layerSetSource = (source) =>
+            /** @type {Layer} */ (layer).setSource(source);
+          if (isVectorTile) {
             return setupVectorSource(
               glStyle.sources[sourceId],
               styleUrl,
               options,
             ).then(function (source) {
-              const targetSource = layer.getSource();
+              const targetSource = /** @type {VectorTileSource} */ (
+                layerGetSource()
+              );
               if (!targetSource) {
-                layer.setSource(source);
+                layerSetSource(source);
               } else if (source !== targetSource) {
                 targetSource.setTileUrlFunction(source.getTileUrlFunction());
                 if (
@@ -333,7 +356,9 @@ export function applyStyle(
                   targetSource.tileGrid = source.getTileGrid();
                 }
               }
-              const tileGrid = layer.getSource().getTileGrid();
+              const tileGrid = /** @type {VectorTileSource} */ (
+                layerGetSource()
+              ).getTileGrid();
               if (
                 !isFinite(layer.getMaxResolution()) &&
                 !isFinite(layer.getMinZoom()) &&
@@ -350,13 +375,13 @@ export function applyStyle(
           }
 
           const glSource = glStyle.sources[sourceId];
-          let source = layer.getSource();
+          let source = /** @type {VectorSource} */ (layerGetSource());
           if (!source || source.get('mapbox-source') !== glSource) {
             source = setupGeoJSONSource(glSource, styleUrl, options);
           }
-          const targetSource = /** @type {VectorSource} */ (layer.getSource());
+          const targetSource = /** @type {VectorSource} */ (layerGetSource());
           if (!targetSource) {
-            layer.setSource(source);
+            layerSetSource(source);
           } else if (source !== targetSource) {
             if (!targetSource.getAttributions()) {
               targetSource.setAttributions(source.getAttributions());

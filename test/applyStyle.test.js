@@ -2,9 +2,11 @@ import {Feature} from 'ol';
 import MVT from 'ol/format/MVT.js';
 import {Polygon} from 'ol/geom.js';
 import ImageLayer from 'ol/layer/Image.js';
+import Layer from 'ol/layer/Layer.js';
 import VectorLayer from 'ol/layer/Vector.js';
 import VectorTileLayer from 'ol/layer/VectorTile.js';
 import {get} from 'ol/proj.js';
+import Source from 'ol/source/Source.js';
 import VectorSource from 'ol/source/Vector.js';
 import VectorTileSource from 'ol/source/VectorTile.js';
 import {createXYZ} from 'ol/tilegrid.js';
@@ -355,6 +357,115 @@ describe('applyStyle without source creation', function () {
       })
       .catch(function (e) {
         done(e);
+      });
+  });
+});
+
+describe('applyStyle with non-Canvas2D layers', function () {
+  // Layer with a vector source that is neither VectorLayer nor VectorTileLayer
+  class CustomLayer extends Layer {
+    setStyle(style) {
+      this.style_ = style;
+    }
+    getStyle() {
+      return this.style_;
+    }
+    createRenderer() {
+      return null;
+    }
+  }
+
+  it('applies the style based on a vector tile source', function (done) {
+    const layer = new CustomLayer({source: new VectorTileSource({})});
+    applyStyle(layer, '/fixtures/osm-liberty/style.json', 'openmaptiles', {
+      updateSource: false,
+    })
+      .then(function () {
+        try {
+          should(layer.getStyle()).be.an.instanceOf(Function);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      })
+      .catch(done);
+  });
+  it('applies the style based on a vector source', function (done) {
+    const layer = new CustomLayer({source: new VectorSource({})});
+    applyStyle(layer, geojsonWfsStyle, 'wfs', {updateSource: false})
+      .then(function () {
+        try {
+          should(layer.getStyle()).be.an.instanceOf(Function);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      })
+      .catch(done);
+  });
+  it('updates the existing vector tile source', function (done) {
+    const source = new VectorTileSource({});
+    const layer = new CustomLayer({source: source});
+    applyStyle(layer, '/fixtures/osm-liberty/style.json', 'openmaptiles')
+      .then(function () {
+        try {
+          should(layer.getSource()).equal(source);
+          should(source.getUrls()).be.an.Array().with.length(1);
+          should(source.getTileUrlFunction()([0, 0, 0])).be.a.String();
+          should(source.getAttributions()).not.be.null();
+          should(layer.getStyle()).be.an.instanceOf(Function);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      })
+      .catch(done);
+  });
+  it('updates the existing vector source', function (done) {
+    const source = new VectorSource({});
+    const layer = new CustomLayer({source: source});
+    applyStyle(layer, '/fixtures/geojson.json', 'states')
+      .then(function () {
+        try {
+          should(layer.getSource()).equal(source);
+          should(source.getUrl()).equal(
+            `${location.origin}/fixtures/states.geojson`,
+          );
+          should(layer.getStyle()).be.an.instanceOf(Function);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      })
+      .catch(done);
+  });
+  it('rejects when the source is neither vector nor vector tile', function (done) {
+    const layer = new CustomLayer({source: new Source({})});
+    applyStyle(layer, '/fixtures/osm-liberty/style.json', 'openmaptiles')
+      .then(function () {
+        done(new Error('Expected rejection'));
+      })
+      .catch(function (e) {
+        try {
+          should(e.message).match(/VectorSource or VectorTileSource/);
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+  });
+  it('rejects a sourceless layer that is not a vector layer', function (done) {
+    applyStyle(new CustomLayer({}), '/fixtures/osm-liberty/style.json')
+      .then(function () {
+        done(new Error('Expected rejection'));
+      })
+      .catch(function (e) {
+        try {
+          should(e.message).match(/VectorLayer or VectorTileLayer/);
+          done();
+        } catch (err) {
+          done(err);
+        }
       });
   });
 });
