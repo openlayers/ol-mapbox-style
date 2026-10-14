@@ -1,5 +1,9 @@
 # Changelog
 
+## 13.7.1
+
+* Avoid lost patterns after SDFing them
+
 ## 13.7.0
 
 * Use `PatternDescriptor` instead of patterns as color for `fill-pattern`. This is to support other rendering techniques than Canvas 2D.
