@@ -1,8 +1,10 @@
 import deepFreeze from 'deep-freeze';
 import Feature from 'ol/Feature.js';
+import {asColorLike} from 'ol/colorlike.js';
 import LineString from 'ol/geom/LineString.js';
 import Polygon from 'ol/geom/Polygon.js';
 import VectorLayer from 'ol/layer/Vector.js';
+import {shared as sharedIconImageCache} from 'ol/style/IconImageCache.js';
 import Stroke from 'ol/style/Stroke.js';
 import Text from 'ol/style/Text.js';
 import should from 'should';
@@ -16,6 +18,8 @@ import {
   setFeatureState,
 } from '../src/index.js';
 import {getSpriteImageForIcon} from '../src/stylefunction.js';
+import {defaultResolutions} from '../src/util.js';
+import spriteData from './fixtures/sprites.json';
 import states from './fixtures/states.json';
 
 describe('stylefunction', function () {
@@ -748,6 +752,117 @@ describe('stylefunction', function () {
         .catch(function (err) {
           done(err);
         });
+    });
+  });
+
+  describe('Fill patterns', function () {
+    let feature, layer, style;
+    beforeEach(function () {
+      feature = new Feature(
+        new Polygon([
+          [
+            [-1, -1],
+            [-1, 1],
+            [1, 1],
+            [1, -1],
+            [-1, -1],
+          ],
+        ]),
+      );
+      layer = new VectorLayer();
+      style = {
+        version: '8',
+        name: 'test',
+        sources: {
+          'geojson': {
+            type: 'geojson',
+            data: {type: 'FeatureCollection', features: []},
+          },
+        },
+        layers: [
+          {
+            id: 'fill',
+            type: 'fill',
+            source: 'geojson',
+            paint: {
+              'fill-pattern': 'amenity_firestation',
+              'fill-opacity': ['get', 'opacity'],
+            },
+          },
+        ],
+      };
+    });
+
+    function createStyleFunction(sprites = spriteData) {
+      const styleFunction = applyStylefunction(
+        layer,
+        style,
+        'geojson',
+        undefined,
+        sprites,
+        '/fixtures/sprites.png',
+      );
+      return new Promise((resolve) =>
+        layer.once('change', () => resolve(styleFunction)),
+      );
+    }
+
+    function getPattern(styleFunction, opacity, zoom = 15) {
+      feature.set('opacity', opacity);
+      const resolution = defaultResolutions[0] / 2 ** zoom;
+      return styleFunction(feature, resolution)[0].getFill().getColor();
+    }
+
+    it('uses a pattern descriptor that resolves to a CanvasPattern', async function () {
+      const styleFunction = await createStyleFunction();
+      const pattern = getPattern(styleFunction, 1);
+      should(Object.keys(pattern)).eql(['src', 'scale']);
+      should(pattern.scale).equal(1);
+      should(asColorLike(pattern)).be.instanceOf(CanvasPattern);
+    });
+
+    it('scales the pattern by the sprite pixel ratio', async function () {
+      const styleFunction = await createStyleFunction({
+        amenity_firestation: {
+          ...spriteData.amenity_firestation,
+          pixelRatio: 2,
+        },
+      });
+      should(getPattern(styleFunction, 1).scale).equal(0.5);
+    });
+
+    it('keeps the pattern size at fractional zoom levels', async function () {
+      const styleFunction = await createStyleFunction();
+      should(getPattern(styleFunction, 1, 15.5)).equal(
+        getPattern(styleFunction, 1, 15),
+      );
+    });
+
+    it('bakes the opacity into the pattern image', async function () {
+      const styleFunction = await createStyleFunction();
+      const pattern = getPattern(styleFunction, 0.5);
+      should(getPattern(styleFunction, 0.5)).equal(pattern);
+      should(getPattern(styleFunction, 1).src).not.equal(pattern.src);
+      should(getPattern(styleFunction, 0.501)).equal(pattern);
+      should(getPattern(styleFunction, 0.51).src).not.equal(pattern.src);
+
+      const image = sharedIconImageCache.get(pattern.src, null).getImage(1);
+      const ctx = image.getContext('2d');
+      const data = ctx.getImageData(0, 0, image.width, image.height).data;
+      let maxAlpha = 0;
+      for (let i = 3; i < data.length; i += 4) {
+        maxAlpha = Math.max(maxAlpha, data[i]);
+      }
+      should(maxAlpha).be.within(1, 128);
+    });
+
+    it('registers the pattern again when the cache has expired it', async function () {
+      const styleFunction = await createStyleFunction();
+      const pattern = getPattern(styleFunction, 1);
+      sharedIconImageCache.clear();
+      should(asColorLike(pattern)).equal(null);
+      should(getPattern(styleFunction, 1)).equal(pattern);
+      should(asColorLike(pattern)).be.instanceOf(CanvasPattern);
     });
   });
 
