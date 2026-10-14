@@ -17,6 +17,7 @@ import {
 import spec from './stylespec.js';
 
 import mb2css from 'mapbox-to-css-font';
+import ImageState from 'ol/ImageState.js';
 import Map from 'ol/Map.js';
 import {distance} from 'ol/coordinate.js';
 import {getCenter} from 'ol/extent.js';
@@ -25,6 +26,8 @@ import RenderFeature from 'ol/render/Feature.js';
 import Circle from 'ol/style/Circle.js';
 import Fill from 'ol/style/Fill.js';
 import Icon from 'ol/style/Icon.js';
+import {get as getIconImage} from 'ol/style/IconImage.js';
+import {shared as sharedIconImageCache} from 'ol/style/IconImageCache.js';
 import Stroke from 'ol/style/Stroke.js';
 import Style from 'ol/style/Style.js';
 import Text from 'ol/style/Text.js';
@@ -402,6 +405,8 @@ export function recordStyleLayer(record = false) {
 
 export const styleFunctionArgs = {};
 
+let patternKeyCounter = 0;
+
 /**
  * **Caution**: This is a low level API, which is only useful for advanced use cases.
  * If you want to crete a map or layer group from an entire Mapbox/MapLibre style, use
@@ -586,6 +591,7 @@ export function stylefunction(
 
   const iconImageCache = {};
   const patternCache = {};
+  const patternKeyPrefix = `ol-mapbox-style:${++patternKeyCounter}:`;
   const functionCache = getFunctionCache(glStyle);
   const filterCache = getFilterCache(glStyle);
 
@@ -744,9 +750,15 @@ export function stylefunction(
                 }
                 fill = style.getFill();
                 style.setZIndex(index);
-                const icon_cache_key = icon + '.' + opacity;
-                let pattern = patternCache[icon_cache_key];
-                if (!pattern) {
+                // Rounded, so zoom dependent opacity does not create a pattern
+                // for every fractional zoom level.
+                const patternOpacity = Math.round(opacity * 100) / 100;
+                const patternKey =
+                  patternKeyPrefix + icon + '.' + patternOpacity;
+                // The pattern is registered in the shared icon image cache, where
+                // `src` of a pattern descriptor is looked up. The cache may have
+                // expired it, in which case it is registered again.
+                if (!sharedIconImageCache.get(patternKey, null)) {
                   const spriteImageData = spriteData[icon];
                   const canvas = createCanvas(
                     spriteImageData.width,
@@ -755,7 +767,7 @@ export function stylefunction(
                   const ctx = /** @type {CanvasRenderingContext2D} */ (
                     canvas.getContext('2d')
                   );
-                  ctx.globalAlpha = opacity;
+                  ctx.globalAlpha = patternOpacity;
                   ctx.drawImage(
                     spriteImage.image,
                     spriteImageData.x,
@@ -767,10 +779,26 @@ export function stylefunction(
                     spriteImageData.width,
                     spriteImageData.height,
                   );
-                  pattern = ctx.createPattern(canvas, 'repeat');
-                  patternCache[icon_cache_key] = pattern;
+                  getIconImage(
+                    canvas,
+                    patternKey,
+                    undefined,
+                    ImageState.LOADED,
+                    null,
+                    true,
+                  );
                 }
-                fill.setColor(pattern);
+                let pattern = patternCache[patternKey];
+                if (!pattern) {
+                  pattern = {
+                    src: patternKey,
+                    scale: 1 / spriteData[icon].pixelRatio,
+                  };
+                  patternCache[patternKey] = pattern;
+                }
+                if (fill.getColor() !== pattern) {
+                  fill.setColor(pattern);
+                }
               }
             }
           } else {
