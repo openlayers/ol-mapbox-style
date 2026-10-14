@@ -2,6 +2,7 @@ import deepFreeze from 'deep-freeze';
 import Feature from 'ol/Feature.js';
 import {asColorLike} from 'ol/colorlike.js';
 import LineString from 'ol/geom/LineString.js';
+import Point from 'ol/geom/Point.js';
 import Polygon from 'ol/geom/Polygon.js';
 import VectorLayer from 'ol/layer/Vector.js';
 import {shared as sharedIconImageCache} from 'ol/style/IconImageCache.js';
@@ -863,6 +864,45 @@ describe('stylefunction', function () {
       should(asColorLike(pattern)).equal(null);
       should(getPattern(styleFunction, 1)).equal(pattern);
       should(asColorLike(pattern)).be.instanceOf(CanvasPattern);
+    });
+
+    it('draws the pattern from the sprite after an SDF icon was drawn', async function () {
+      style.layers.push({
+        id: 'icon',
+        type: 'symbol',
+        source: 'geojson',
+        layout: {'icon-image': 'sdf_icon'},
+      });
+      const styleFunction = await createStyleFunction({
+        ...spriteData,
+        sdf_icon: {...spriteData.amenity_firestation, sdf: true},
+      });
+      styleFunction(new Feature(new Point([0, 0])), defaultResolutions[0]);
+      const pattern = getPattern(styleFunction, 1);
+
+      const sprite = new Image();
+      sprite.src = '/fixtures/sprites.png';
+      await sprite.decode();
+      const {x, y, width, height} = spriteData.amenity_firestation;
+      const expected = document.createElement('canvas');
+      expected.width = width;
+      expected.height = height;
+      const expectedContext = expected.getContext('2d');
+      expectedContext.drawImage(
+        sprite,
+        x,
+        y,
+        width,
+        height,
+        0,
+        0,
+        width,
+        height,
+      );
+      const image = sharedIconImageCache.get(pattern.src, null).getImage(1);
+      should(image.getContext('2d').getImageData(0, 0, width, height).data).eql(
+        expectedContext.getImageData(0, 0, width, height).data,
+      );
     });
   });
 

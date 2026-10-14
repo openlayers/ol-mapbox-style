@@ -60,7 +60,8 @@ import {
  * @typedef {Object} SpriteImage
  * @property {HTMLImageElement|HTMLCanvasElement} image Image
  * @property {Array<number>} size Size
- * @property {boolean} [unSDFed] Image has been unSDFed
+ * @property {HTMLCanvasElement} [unSDFedImage] Image with SDF icons drawn in
+ * white, created on first use. Non-SDF icons and patterns use `image`.
  */
 
 /** @typedef {Object<string, SpriteImage>} SpriteImages */
@@ -1220,8 +1221,8 @@ export function stylefunction(
                         }
                       } else {
                         if (spriteImageData.sdf) {
-                          if (!spriteImage.unSDFed) {
-                            const spriteImageUnSDFed = drawSDF(
+                          if (!spriteImage.unSDFedImage) {
+                            spriteImage.unSDFedImage = drawSDF(
                               spriteImage.image,
                               {
                                 x: 0,
@@ -1231,11 +1232,11 @@ export function stylefunction(
                               },
                               {r: 1, g: 1, b: 1, a: 1},
                             );
-                            spriteImage.image = spriteImageUnSDFed;
-                            spriteImage.unSDFed = true;
                           }
+                          img = spriteImage.unSDFedImage;
+                        } else {
+                          img = spriteImage.image;
                         }
-                        img = spriteImage.image;
                         size = [spriteImageData.width, spriteImageData.height];
                         offset = [spriteImageData.x, spriteImageData.y];
                       }
