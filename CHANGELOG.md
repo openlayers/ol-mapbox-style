@@ -1,5 +1,9 @@
 # Changelog
 
+## 13.6.0
+
+* Allow other layers than `Vector` or `VectorTile` for `applyStyle()`
+
 ## 13.5.1
 
 * Consider `declutterMode` for cached icons
