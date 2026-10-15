@@ -43,6 +43,7 @@ import {
   emptyObj,
   getFilterCache,
   getFunctionCache,
+  getPointsAlongLine,
   getStyleFunctionKey,
   getZoomForResolution,
 } from './util.js';
@@ -1038,10 +1039,37 @@ export function stylefunction(
                 iconRotationAlignment === 'auto'
                   ? placement !== 'point'
                   : iconRotationAlignment === 'map';
+              let lineAnchors;
               if (type == 2) {
                 const geom = /** @type {*} */ (feature.getGeometry());
                 // ol package and ol-debug.js only
-                if (geom.getFlatMidpoint || geom.getFlatMidpoints) {
+                if (
+                  placement === 'line' &&
+                  typeof geom.getFlatCoordinates === 'function'
+                ) {
+                  const symbolSpacing = getValue(
+                    layer,
+                    'layout',
+                    'symbol-spacing',
+                    f,
+                    functionCache,
+                    featureState,
+                  );
+                  const ends =
+                    typeof geom.getEnds === 'function' ? geom.getEnds() : null;
+                  lineAnchors = getPointsAlongLine(
+                    geom.getFlatCoordinates(),
+                    ends,
+                    geom.getStride(),
+                    symbolSpacing * resolution,
+                  );
+                }
+                // Falls back to a single midpoint icon when line placement yielded no
+                // anchors (e.g. a line shorter than half the symbol spacing).
+                if (
+                  (!lineAnchors || !lineAnchors.length) &&
+                  (geom.getFlatMidpoint || geom.getFlatMidpoints)
+                ) {
                   const extent = geom.getExtent();
                   const size = Math.sqrt(
                     Math.max(
@@ -1100,7 +1128,11 @@ export function stylefunction(
                   }
                 }
               }
-              if (type !== 2 || styleGeom) {
+              if (
+                type !== 2 ||
+                styleGeom ||
+                (lineAnchors && lineAnchors.length)
+              ) {
                 const iconSize = getValue(
                   layer,
                   'layout',
@@ -1257,59 +1289,79 @@ export function stylefunction(
                   }
                 }
                 if (iconImg) {
-                  ++stylesLength;
-                  style = styles[stylesLength];
-                  if (
-                    !style ||
-                    !style.getImage() ||
-                    style.getFill() ||
-                    style.getStroke()
-                  ) {
-                    style = new Style();
-                    styles[stylesLength] = style;
-                  }
-                  style.setGeometry(styleGeom);
-                  iconImg.setRotation(
-                    placementAngle +
-                      deg2rad(
-                        getValue(
-                          layer,
-                          'layout',
-                          'icon-rotate',
-                          f,
-                          functionCache,
-                          featureState,
+                  const anchors =
+                    lineAnchors && lineAnchors.length
+                      ? lineAnchors
+                      : [{coordinate: undefined, angle: placementAngle}];
+                  for (const a of anchors) {
+                    ++stylesLength;
+                    style = styles[stylesLength];
+                    if (
+                      !style ||
+                      !style.getImage() ||
+                      style.getFill() ||
+                      style.getStroke()
+                    ) {
+                      style = new Style();
+                      styles[stylesLength] = style;
+                    }
+                    // Use a fresh Point per anchor
+                    style.setGeometry(
+                      a.coordinate
+                        ? new RenderFeature(
+                            'Point',
+                            a.coordinate,
+                            [],
+                            2,
+                            {},
+                            undefined,
+                          )
+                        : styleGeom,
+                    );
+                    const anchorIcon =
+                      anchors.length > 1 ? iconImg.clone() : iconImg;
+                    anchorIcon.setRotation(
+                      a.angle +
+                        deg2rad(
+                          getValue(
+                            layer,
+                            'layout',
+                            'icon-rotate',
+                            f,
+                            functionCache,
+                            featureState,
+                          ),
                         ),
-                      ),
-                  );
-                  iconImg.setOpacity(
-                    getValue(
-                      layer,
-                      'paint',
-                      'icon-opacity',
-                      f,
-                      functionCache,
-                      featureState,
-                    ),
-                  );
-                  iconImg.setAnchor(
-                    anchor[
+                    );
+                    anchorIcon.setOpacity(
                       getValue(
                         layer,
-                        'layout',
-                        'icon-anchor',
+                        'paint',
+                        'icon-opacity',
                         f,
                         functionCache,
                         featureState,
-                      )
-                    ],
-                  );
-                  style.setImage(iconImg);
-                  text = style.getText();
-                  style.setText(undefined);
-                  style.setZIndex(index);
-                  hasImage = true;
-                  skipLabel = false;
+                      ),
+                    );
+                    anchorIcon.setAnchor(
+                      anchor[
+                        getValue(
+                          layer,
+                          'layout',
+                          'icon-anchor',
+                          f,
+                          functionCache,
+                          featureState,
+                        )
+                      ],
+                    );
+                    style.setImage(anchorIcon);
+                    text = style.getText();
+                    style.setText(undefined);
+                    style.setZIndex(index);
+                    hasImage = true;
+                    skipLabel = false;
+                  }
                 }
               } else {
                 skipLabel = true;
