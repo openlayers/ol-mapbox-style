@@ -883,6 +883,28 @@ export function stylefunction(
               style.setZIndex(index);
             }
           }
+          if (fill && typeof fill.setDisplacement === 'function') {
+            fill.setDisplacement(
+              getValue(
+                layer,
+                'paint',
+                `${/** @type {'fill'|'fill-extrusion'} */ (layer.type)}-translate`,
+                f,
+                functionCache,
+                featureState,
+              ),
+            );
+            fill.setDisplacementAnchor(
+              getValue(
+                layer,
+                'paint',
+                `${/** @type {'fill'|'fill-extrusion'} */ (layer.type)}-translate-anchor`,
+                f,
+                functionCache,
+                featureState,
+              ),
+            );
+          }
         }
         if (type != 1 && layer.type == 'line') {
           if (!('line-pattern' in paint)) {
