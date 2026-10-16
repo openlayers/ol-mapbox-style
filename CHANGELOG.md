@@ -1,5 +1,9 @@
 # Changelog
 
+## 13.8.0
+
+* Support `fill-translate` and `fill-translate-anchor` (and the same for `fill-extrusion`).
+
 ## 13.7.0
 
 * Use `PatternDescriptor` instead of patterns as color for `fill-pattern`. This is to support other rendering techniques than Canvas 2D.
