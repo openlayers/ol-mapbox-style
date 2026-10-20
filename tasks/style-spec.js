@@ -13,8 +13,17 @@ License: https://raw.githubusercontent.com/openlayers/ol-mapbox-style/master/LIC
 import {expressions, v8} from '@maplibre/maplibre-gl-style-spec';
 import {execFileSync} from 'child_process';
 import {copyFileSync, existsSync, rmSync, writeFileSync} from 'fs';
-import {relative} from 'path';
+import {createRequire} from 'module';
+import {dirname, join, relative} from 'path';
 import {fileURLToPath} from 'url';
+
+const require = createRequire(import.meta.url);
+// Invoking eslint's JS entry point through `node` sidesteps the `npx`/`.cmd`
+// shim layer, which Windows refuses to spawn directly without `shell: true`.
+const eslintBin = join(
+  dirname(require.resolve('eslint/package.json')),
+  'bin/eslint.js',
+);
 
 const specFile = fileURLToPath(new URL('../src/stylespec.js', import.meta.url));
 const expressionsFile = fileURLToPath(
@@ -179,7 +188,7 @@ function generate() {
     copyFileSync(specFile, backupFile);
   }
   writeFileSync(specFile, renderSpec(buildSpec()));
-  execFileSync('npx', ['eslint', '--fix', specFile], {cwd: root});
+  execFileSync(process.execPath, [eslintBin, '--fix', specFile], {cwd: root});
   // eslint-disable-next-line no-console
   console.log(`Wrote ${relative(root, specFile)}.`);
 }
