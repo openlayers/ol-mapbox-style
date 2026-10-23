@@ -888,8 +888,7 @@ function setupGeoJSONSource(glSource, styleUrl, options) {
               source.addFeatures(features);
               success(features);
             })
-            .catch((response) => {
-              source.removeLoadedExtent(extent);
+            .catch(() => {
               failure();
             });
         },
@@ -913,8 +912,7 @@ function setupGeoJSONSource(glSource, styleUrl, options) {
             source.addFeatures(features);
             success(features);
           })
-          .catch((response) => {
-            source.removeLoadedExtent(extent);
+          .catch(() => {
             failure();
           });
       },

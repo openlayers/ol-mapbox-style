@@ -1,5 +1,9 @@
 # Changelog
 
+## Next release
+
+* Do not repeat failed requests for GeoJSON sources on every render. A failed extent now stays marked as loaded and is not retried automatically. To retry, call `source.refresh()`, or `source.removeLoadedExtent(extent)` followed by `source.changed()`.
+
 ## 13.8.0
 
 * Support `fill-translate` and `fill-translate-anchor` (and the same for `fill-extrusion`).
