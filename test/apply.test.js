@@ -341,6 +341,64 @@ describe('ol-mapbox-style', function () {
           }
         });
       });
+
+      describe('failed requests', function () {
+        beforeEach(function () {
+          window.fetch = (request) => {
+            if (request instanceof Request === false) {
+              request = new Request(request);
+            }
+            if (request.url.endsWith('.json')) {
+              return originalFetch(request);
+            }
+            requests.push(request.url);
+            return Promise.resolve(new Response('', {status: 500}));
+          };
+        });
+
+        /**
+         * Renders the map a few times after the first load error and returns
+         * the number of data requests.
+         * @param {string} styleUrl Style url.
+         * @return {Promise<number>} Number of data requests.
+         */
+        function countRequestsAfterError(styleUrl) {
+          return apply(map, styleUrl).then(
+            () =>
+              new Promise((resolve, reject) => {
+                const source = map
+                  .getAllLayers()
+                  .find((layer) => layer.getSource() instanceof VectorSource)
+                  .getSource();
+                source.once('featuresloaderror', () => {
+                  let frames = 10;
+                  const render = () => {
+                    map.renderSync();
+                    if (--frames > 0) {
+                      setTimeout(render, 10);
+                    } else {
+                      resolve(requests.length);
+                    }
+                  };
+                  render();
+                });
+                setTimeout(() => reject(new Error('no load error')), 2000);
+              }),
+          );
+        }
+
+        it('does not repeat failed requests for geojson sources', function () {
+          return countRequestsAfterError('./fixtures/geojson.json').then(
+            (count) => should(count).equal(1),
+          );
+        });
+
+        it('does not repeat failed requests for geojson sources with bbox loadingstrategy', function () {
+          return countRequestsAfterError('./fixtures/geojson-wfs.json').then(
+            (count) => should(count).equal(1),
+          );
+        });
+      });
     });
 
     it('sets the correct GeoJON data projection for custom projections', function (done) {
