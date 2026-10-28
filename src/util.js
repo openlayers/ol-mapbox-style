@@ -1,6 +1,7 @@
 import {VectorTile} from 'ol';
 import TileState from 'ol/TileState.js';
 import {toPromise} from 'ol/functions.js';
+import {lineStringCoordinateAtM} from 'ol/geom/flat/interpolate.js';
 import {getUid} from 'ol/util.js';
 import {normalizeSourceUrl, normalizeStyleUrl} from './mapbox.js';
 
@@ -100,6 +101,67 @@ export function getZoomForResolution(resolution, resolutions) {
     }
   }
   return ii - 1;
+}
+
+/**
+ * Computes anchor points and tangent angles at regular arc-length intervals along a line,
+ * delegating the at-distance coordinate lookup to OpenLayers' own lineStringCoordinateAtM().
+ * @param {Array<number>} flatCoordinates Flat line coordinates.
+ * @param {Array<number>|null} ends End offsets per sub-line (MultiLineString), or null for a single LineString.
+ * @param {number} stride Coordinate stride.
+ * @param {number} spacing Target distance between anchors, in map units.
+ * @return {Array<{coordinate: Array<number>, angle: number}>} Anchors.
+ */
+export function getPointsAlongLine(flatCoordinates, ends, stride, spacing) {
+  const anchors = [];
+  if (spacing <= 0) {
+    return anchors;
+  }
+  const segments = ends && ends.length ? ends : [flatCoordinates.length];
+  let start = 0;
+  for (const end of segments) {
+    // Build an XYM-augmented copy of this sub-line: M = cumulative distance from its own start.
+    const xym = [];
+    let travelled = 0;
+    let x1 = flatCoordinates[start],
+      y1 = flatCoordinates[start + 1];
+    xym.push(x1, y1, 0);
+    for (let i = start + stride; i < end; i += stride) {
+      const x2 = flatCoordinates[i],
+        y2 = flatCoordinates[i + 1];
+      travelled += Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+      xym.push(x2, y2, travelled);
+      x1 = x2;
+      y1 = y2;
+    }
+    const lineLength = travelled;
+    let target = spacing / 2; // center the first icon within the first spacing interval
+    while (target <= lineLength) {
+      const coord = lineStringCoordinateAtM(
+        xym,
+        0,
+        xym.length,
+        3,
+        target,
+        false,
+      );
+      const ahead = lineStringCoordinateAtM(
+        xym,
+        0,
+        xym.length,
+        3,
+        Math.min(target + 1, lineLength),
+        false,
+      );
+      anchors.push({
+        coordinate: [coord[0], coord[1]],
+        angle: Math.atan2(coord[1] - ahead[1], ahead[0] - coord[0]),
+      });
+      target += spacing;
+    }
+    start = end; // next sub-line starts fresh — no bridging across the gap
+  }
+  return anchors;
 }
 
 export function getResolutionForZoom(zoom, resolutions) {
