@@ -1,6 +1,7 @@
 const {join} = require('path');
 
-const flags = ['--headless=new'];
+// --expose-gc lets tests check that objects can be garbage collected.
+const flags = ['--headless=new', '--js-flags=--expose-gc'];
 if (process.env.CI) {
   flags.push('--no-sandbox');
 }

@@ -19,6 +19,7 @@ import {
   updateMapboxLayer,
   updateMapboxSource,
 } from '../src/apply.js';
+import {stylefunction} from '../src/stylefunction.js';
 import {fetchResource} from '../src/util.js';
 
 export function createObserver(total) {
@@ -700,6 +701,53 @@ describe('util', function () {
           should(getLayer(mapA, 'fill').getStyle()(feature, 1)).be.undefined();
           const styles = getLayer(mapB, 'fill').getStyle()(feature, 1);
           should(styles[0].getFill().getColor()).eql('rgba(255,0,0,1)');
+          done();
+        })
+        .catch((err) => done(err));
+    });
+
+    it('does not revert a layer restyled with another style object', function (done) {
+      function createStyle(color) {
+        return {
+          version: 8,
+          sources: {
+            geojson: {
+              type: 'geojson',
+              data: {type: 'FeatureCollection', features: []},
+            },
+          },
+          layers: [
+            {
+              id: 'fill',
+              type: 'fill',
+              source: 'geojson',
+              paint: {'fill-color': color},
+            },
+          ],
+        };
+      }
+      const glStyle = createStyle('red');
+      apply(target, glStyle)
+        .then(function (map) {
+          const layer = getLayer(map, 'fill');
+          stylefunction(layer, createStyle('blue'), 'geojson');
+          updateMapboxLayer(map, {
+            ...glStyle.layers[0],
+            paint: {'fill-color': 'green'},
+          });
+          const feature = new Feature({
+            geometry: new Polygon([
+              [
+                [0, 0],
+                [0, 1],
+                [1, 1],
+                [1, 0],
+                [0, 0],
+              ],
+            ]),
+          });
+          const styles = layer.getStyle()(feature, 1);
+          should(styles[0].getFill().getColor()).eql('rgba(0,0,255,1)');
           done();
         })
         .catch((err) => done(err));
