@@ -15,8 +15,12 @@ import {normalizeSourceUrl, normalizeStyleUrl} from './mapbox.js';
 
 export const emptyObj = Object.freeze({});
 
-const functionCacheByStyleId = {};
-const filterCacheByStyleId = {};
+// Keyed by style object, so caches are not shared between styles with the same
+// id, and are released together with their style.
+/** @type {WeakMap<Object, Object>} */
+let functionCacheByStyle = new WeakMap();
+/** @type {WeakMap<Object, Object>} */
+const filterCacheByStyle = new WeakMap();
 
 let styleId = 0;
 export function getStyleId(glStyle) {
@@ -31,35 +35,37 @@ export function getStyleFunctionKey(glStyle, olLayer) {
 }
 
 /**
- * @param {Object} glStyle Mapboox style object.
- * @return {Object} Function cache.
+ * @param {WeakMap<Object, Object>} cacheByStyle Caches by style object.
+ * @param {Object} glStyle Mapbox style object.
+ * @return {Object} Cache.
  */
-export function getFunctionCache(glStyle) {
-  let functionCache = functionCacheByStyleId[glStyle.id];
-  if (!functionCache) {
-    functionCache = {};
-    functionCacheByStyleId[getStyleId(glStyle)] = functionCache;
+function getCache(cacheByStyle, glStyle) {
+  let cache = cacheByStyle.get(glStyle);
+  if (!cache) {
+    cache = {};
+    cacheByStyle.set(glStyle, cache);
   }
-  return functionCache;
-}
-
-export function clearFunctionCache() {
-  for (const key in functionCacheByStyleId) {
-    delete functionCacheByStyleId[key];
-  }
+  return cache;
 }
 
 /**
- * @param {Object} glStyle Mapboox style object.
+ * @param {Object} glStyle Mapbox style object.
+ * @return {Object} Function cache.
+ */
+export function getFunctionCache(glStyle) {
+  return getCache(functionCacheByStyle, glStyle);
+}
+
+export function clearFunctionCache() {
+  functionCacheByStyle = new WeakMap();
+}
+
+/**
+ * @param {Object} glStyle Mapbox style object.
  * @return {Object} Filter cache.
  */
 export function getFilterCache(glStyle) {
-  let filterCache = filterCacheByStyleId[glStyle.id];
-  if (!filterCache) {
-    filterCache = {};
-    filterCacheByStyleId[getStyleId(glStyle)] = filterCache;
-  }
-  return filterCache;
+  return getCache(filterCacheByStyle, glStyle);
 }
 
 export function deg2rad(degrees) {
