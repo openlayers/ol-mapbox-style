@@ -1,7 +1,6 @@
 import {VectorTile} from 'ol';
 import TileState from 'ol/TileState.js';
 import {toPromise} from 'ol/functions.js';
-import {getUid} from 'ol/util.js';
 import {normalizeSourceUrl, normalizeStyleUrl} from './mapbox.js';
 
 /** @typedef {'Style'|'Source'|'Sprite'|'SpriteImage'|'Tiles'|'GeoJSON'} ResourceType */
@@ -21,18 +20,6 @@ export const emptyObj = Object.freeze({});
 let functionCacheByStyle = new WeakMap();
 /** @type {WeakMap<Object, Object>} */
 const filterCacheByStyle = new WeakMap();
-
-let styleId = 0;
-export function getStyleId(glStyle) {
-  if (!glStyle.id) {
-    glStyle.id = styleId++;
-  }
-  return glStyle.id;
-}
-
-export function getStyleFunctionKey(glStyle, olLayer) {
-  return getStyleId(glStyle) + '.' + getUid(olLayer);
-}
 
 /**
  * @param {WeakMap<Object, Object>} cacheByStyle Caches by style object.

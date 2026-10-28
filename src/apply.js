@@ -47,8 +47,8 @@ import {
 import {
   _colorWithOpacity,
   stylefunction as applyStylefunction,
+  getStyleFunctionArgs,
   getValue,
-  styleFunctionArgs,
 } from './stylefunction.js';
 import {getFonts} from './text.js';
 import {
@@ -59,7 +59,6 @@ import {
   getFunctionCache,
   getGlStyle,
   getResolutionForZoom,
-  getStyleFunctionKey,
   getTileJson,
   getZoomForResolution,
 } from './util.js';
@@ -1463,13 +1462,7 @@ export function addMapboxLayer(mapOrGroup, mapboxLayer, beforeLayerId) {
     throw new Error(`Layer with id "${mapboxLayer.id}" already exists.`);
   }
   const sourceLayerId = mapboxLayers[sourceIndex].id;
-  const args =
-    styleFunctionArgs[
-      getStyleFunctionKey(
-        mapOrGroup.get('mapbox-style'),
-        getLayer(mapOrGroup, sourceLayerId),
-      )
-    ];
+  const args = getStyleFunctionArgs(getLayer(mapOrGroup, sourceLayerId));
   mapboxLayers.splice(spliceIndex, 0, mapboxLayer);
   if (args) {
     const [
@@ -1526,13 +1519,7 @@ export function updateMapboxLayer(mapOrGroup, mapboxLayer) {
   delete getFunctionCache(glStyle)[mapboxLayer.id];
   delete getFilterCache(glStyle)[mapboxLayer.id];
   mapboxLayers[index] = mapboxLayer;
-  const args =
-    styleFunctionArgs[
-      getStyleFunctionKey(
-        mapOrGroup.get('mapbox-style'),
-        getLayer(mapOrGroup, mapboxLayer.id),
-      )
-    ];
+  const args = getStyleFunctionArgs(getLayer(mapOrGroup, mapboxLayer.id));
   if (args) {
     applyStylefunction.apply(undefined, args);
     return Promise.resolve();
@@ -1638,7 +1625,7 @@ export function removeMapboxLayer(mapOrGroup, mapboxLayerIdOrLayer) {
     layers.findIndex((layer) => layer.id === mapboxLayerId),
     1,
   );
-  const args = styleFunctionArgs[getStyleFunctionKey(glStyle, layer)];
+  const args = getStyleFunctionArgs(layer);
   if (args) {
     const [
       olLayer,

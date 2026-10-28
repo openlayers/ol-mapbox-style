@@ -109,13 +109,6 @@ describe('stylefunction', function () {
         });
     });
 
-    it('adds an id to the style object when none is set', function () {
-      const style = JSON.parse(JSON.stringify(states));
-      style.id = undefined;
-      applyStylefunction(layer, style, 'states');
-      should.notEqual(style.id, undefined);
-    });
-
     it('creates a style function with all layers of a source', function () {
       const style = applyStylefunction(layer, states, 'states');
       should(style).be.a.Function();

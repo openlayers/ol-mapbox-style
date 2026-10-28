@@ -43,7 +43,6 @@ import {
   emptyObj,
   getFilterCache,
   getFunctionCache,
-  getStyleFunctionKey,
   getZoomForResolution,
 } from './util.js';
 
@@ -404,7 +403,19 @@ export function recordStyleLayer(record = false) {
   recordLayer = record;
 }
 
-export const styleFunctionArgs = {};
+// Keyed by layer, so entries are released together with it. A layer only keeps
+// the style function of its last `stylefunction()` call.
+/** @type {WeakMap<Object, Parameters<typeof stylefunction>>} */
+const styleFunctionArgs = new WeakMap();
+
+/**
+ * @param {Object} olLayer OpenLayers layer.
+ * @return {Parameters<typeof stylefunction>|undefined} Arguments of the last
+ * `stylefunction()` call for this layer.
+ */
+export function getStyleFunctionArgs(olLayer) {
+  return styleFunctionArgs.get(olLayer);
+}
 
 let patternKeyCounter = 0;
 
@@ -509,8 +520,10 @@ export function stylefunction(
   if (glStyle.version != 8) {
     throw new Error('glStyle version 8 required.');
   }
-  styleFunctionArgs[getStyleFunctionKey(glStyle, olLayer)] =
-    Array.from(arguments);
+  styleFunctionArgs.set(
+    olLayer,
+    /** @type {Parameters<typeof stylefunction>} */ (Array.from(arguments)),
+  );
 
   /** @type {SpriteImages} */
   const spriteImages = {};

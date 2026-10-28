@@ -2,6 +2,8 @@
 
 ## Next release
 
+* Release layers and styles once they are no longer used. Before, every layer styled by `stylefunction()` stayed in memory with its style and its map, even after `map.dispose()`.
+* Do not add an `id` to style objects that have none. The generated id was only used internally as a cache key.
 * Do not share cached style values between style objects with the same `id`. Before, a style could render with values cached for another style with the same `id`, and hiding a layer with `updateMapboxLayer()` on one map also hid it on other maps that loaded a copy of the same style.
 * Do not repeat failed requests for GeoJSON sources on every render. A failed extent now stays marked as loaded and is not retried automatically. To retry, call `source.refresh()`, or `source.removeLoadedExtent(extent)` followed by `source.changed()`.
 
