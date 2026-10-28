@@ -654,6 +654,56 @@ describe('util', function () {
         })
         .catch((err) => done(err));
     });
+
+    it('does not affect another map whose style has the same id', function (done) {
+      const glStyle = {
+        version: 8,
+        id: 'shared',
+        sources: {
+          geojson: {
+            type: 'geojson',
+            data: {type: 'FeatureCollection', features: []},
+          },
+        },
+        layers: [
+          {
+            id: 'fill',
+            type: 'fill',
+            source: 'geojson',
+            paint: {'fill-color': 'red'},
+          },
+        ],
+      };
+      Promise.all([
+        apply(target, JSON.parse(JSON.stringify(glStyle))),
+        apply(
+          document.createElement('div'),
+          JSON.parse(JSON.stringify(glStyle)),
+        ),
+      ])
+        .then(function ([mapA, mapB]) {
+          updateMapboxLayer(mapA, {
+            ...glStyle.layers[0],
+            layout: {visibility: 'none'},
+          });
+          const feature = new Feature({
+            geometry: new Polygon([
+              [
+                [0, 0],
+                [0, 1],
+                [1, 1],
+                [1, 0],
+                [0, 0],
+              ],
+            ]),
+          });
+          should(getLayer(mapA, 'fill').getStyle()(feature, 1)).be.undefined();
+          const styles = getLayer(mapB, 'fill').getStyle()(feature, 1);
+          should(styles[0].getFill().getColor()).eql('rgba(255,0,0,1)');
+          done();
+        })
+        .catch((err) => done(err));
+    });
   });
 
   describe('removeMapboxLayer', function () {

@@ -138,6 +138,37 @@ describe('stylefunction', function () {
       should(style(feature, 1)).be.undefined();
     });
 
+    it('does not share cached values between styles with the same id', function () {
+      function createStyle(color) {
+        return {
+          version: 8,
+          id: 'same-id',
+          sources: {
+            geojson: {
+              type: 'geojson',
+              data: {type: 'FeatureCollection', features: []},
+            },
+          },
+          layers: [
+            {
+              id: 'fill',
+              type: 'fill',
+              source: 'geojson',
+              paint: {'fill-color': color},
+            },
+          ],
+        };
+      }
+      const red = applyStylefunction(
+        new VectorLayer(),
+        createStyle('red'),
+        'geojson',
+      );
+      should(red(feature, 1)[0].getFill().getColor()).eql('rgba(255,0,0,1)');
+      const blue = applyStylefunction(layer, createStyle('blue'), 'geojson');
+      should(blue(feature, 1)[0].getFill().getColor()).eql('rgba(0,0,255,1)');
+    });
+
     it('Don not match layer ids to string `sourceOrLayers`', function () {
       const style = applyStylefunction(layer, states, 'population_lt_2m');
       should(style).be.a.Function;
