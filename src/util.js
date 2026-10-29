@@ -129,7 +129,12 @@ export function fetchResource(resourceType, url, options = {}, metadata) {
     if (metadata) {
       metadata.url = pendingRequests[url][0].url;
     }
-    return pendingRequests[url][1];
+    const pendingRequest = pendingRequests[url][1];
+    // Styles are modified after loading, e.g. by updateMapboxLayer(), so each
+    // caller gets its own copy.
+    return resourceType === 'Style'
+      ? pendingRequest.then(structuredClone)
+      : pendingRequest;
   }
   const transformedRequest = options.transformRequest
     ? options.transformRequest(url, resourceType) || url

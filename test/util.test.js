@@ -706,6 +706,57 @@ describe('util', function () {
         .catch((err) => done(err));
     });
 
+    it('does not affect another map that loaded the same style url at the same time', function (done) {
+      const glStyle = {
+        version: 8,
+        sources: {
+          geojson: {
+            type: 'geojson',
+            data: {type: 'FeatureCollection', features: []},
+          },
+        },
+        layers: [
+          {
+            id: 'fill',
+            type: 'fill',
+            source: 'geojson',
+            paint: {'fill-color': 'red'},
+          },
+        ],
+      };
+      const styleUrl =
+        'data:application/json,' + encodeURIComponent(JSON.stringify(glStyle));
+      // Both requests are in flight together, so they are merged into one.
+      Promise.all([
+        apply(target, styleUrl),
+        apply(document.createElement('div'), styleUrl),
+      ])
+        .then(function ([mapA, mapB]) {
+          should(mapA.get('mapbox-style')).not.equal(mapB.get('mapbox-style'));
+          updateMapboxLayer(mapA, {
+            ...glStyle.layers[0],
+            layout: {visibility: 'none'},
+          });
+          should(getMapboxLayer(mapB, 'fill').layout).be.undefined();
+          const feature = new Feature({
+            geometry: new Polygon([
+              [
+                [0, 0],
+                [0, 1],
+                [1, 1],
+                [1, 0],
+                [0, 0],
+              ],
+            ]),
+          });
+          should(getLayer(mapA, 'fill').getStyle()(feature, 1)).be.undefined();
+          const styles = getLayer(mapB, 'fill').getStyle()(feature, 1);
+          should(styles[0].getFill().getColor()).eql('rgba(255,0,0,1)');
+          done();
+        })
+        .catch((err) => done(err));
+    });
+
     it('does not revert a layer restyled with another style object', function (done) {
       function createStyle(color) {
         return {
