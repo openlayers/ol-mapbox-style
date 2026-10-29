@@ -1,4 +1,5 @@
 import should from 'should';
+import sinon from 'sinon';
 import {getFonts, wrapText} from '../src/text.js';
 import {createObserver} from './util.test.js';
 
@@ -54,6 +55,26 @@ describe('text', function () {
       getFonts(['monospace', 'sans-serif']);
       const stylesheets = document.querySelectorAll('link[rel=stylesheet]');
       should(stylesheets.length).eql(0);
+    });
+
+    it('does not load or cache fonts when automatic loading is disabled', async function () {
+      const fonts = ['Disabled Font Regular'];
+      const load = sinon.spy(document.fonts, 'load');
+      try {
+        should(getFonts(fonts, false)).equal(fonts);
+        await document.fonts.ready;
+        should(load.called).eql(false);
+        should(document.querySelectorAll('link[rel=stylesheet]').length).eql(0);
+
+        // An opt-out must not prevent another layer from loading the same font.
+        getFonts(fonts, './fonts/{font-family}/{fontweight}.css');
+        await createObserver(1);
+        should(
+          document.querySelector('link[rel=stylesheet]').getAttribute('href'),
+        ).eql('./fonts/disabled-font/400.css');
+      } finally {
+        load.restore();
+      }
     });
 
     it('loads fonts with a template using {Font+Family} and {fontstyle}', async function () {

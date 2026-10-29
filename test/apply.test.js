@@ -1288,6 +1288,58 @@ describe('ol-mapbox-style', function () {
       });
     });
 
+    for (const metadata of [
+      {'ol:webfonts': false},
+      {'ol:webfonts': 'https://external.example/{font-family}.css'},
+    ]) {
+      it(`disables automatic fonts with metadata ${JSON.stringify(metadata)}`, async function () {
+        const style = {
+          version: 8,
+          metadata,
+          sources: {
+            test: {
+              type: 'geojson',
+              data: {type: 'FeatureCollection', features: []},
+            },
+          },
+          layers: [
+            {
+              id: 'test',
+              type: 'symbol',
+              source: 'test',
+              layout: {
+                'text-field': [
+                  'format',
+                  'first',
+                  {'text-font': ['literal', ['Disabled Chunk Font']]},
+                  'second',
+                  {},
+                ],
+                'text-font': ['Disabled Apply Font'],
+              },
+            },
+          ],
+        };
+        // A style can opt out; an application opt-out takes precedence over a style URL.
+        const options =
+          metadata['ol:webfonts'] === false ? {} : {webfonts: false};
+        const map = await apply(target, style, options);
+        try {
+          const styles = map.getAllLayers()[0].getStyle()(
+            new Feature(new Point([0, 0])),
+            1,
+          );
+          should(styles.length).be.above(0);
+          await new Promise((resolve) => setTimeout(resolve, 50));
+          should(document.querySelectorAll('link[rel=stylesheet]').length).eql(
+            0,
+          );
+        } finally {
+          map.dispose();
+        }
+      });
+    }
+
     it('loads fonts from a style', async function () {
       const map = await apply(target, {
         version: 8,
