@@ -2,6 +2,7 @@
 
 ## Next release
 
+* Do not share one style object between maps that load the same style URL at the same time. Before, `updateMapboxLayer()` on one of them also changed the other.
 * Release layers and styles once they are no longer used. Before, every layer styled by `stylefunction()` stayed in memory with its style and its map, even after `map.dispose()`.
 * Do not add an `id` to style objects that have none. The generated id was only used internally as a cache key.
 * Do not share cached style values between style objects with the same `id`. Before, a style could render with values cached for another style with the same `id`, and hiding a layer with `updateMapboxLayer()` on one map also hid it on other maps that loaded a copy of the same style.
