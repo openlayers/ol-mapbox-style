@@ -14,6 +14,7 @@ import {
   isFunction,
 } from '@maplibre/maplibre-gl-style-spec';
 
+import {createFilterIndex} from './filterindex.js';
 import spec from './stylespec.js';
 
 import mb2css from 'mapbox-to-css-font';
@@ -641,6 +642,12 @@ export function stylefunction(
     }
   }
 
+  const filterIndexes = {};
+  for (const sourceLayer in layersBySourceLayer) {
+    filterIndexes[sourceLayer] = createFilterIndex(
+      layersBySourceLayer[sourceLayer],
+    );
+  }
   const styles = [];
 
   /**
@@ -654,10 +661,11 @@ export function stylefunction(
       //@ts-ignore
       olLayer.getSource?.()?.format_?.layerName_ ?? 'mvt:layer';
     const properties = feature.getProperties();
-    const layers = layersBySourceLayer[properties[layerProperty]];
-    if (!layers) {
+    const filterIndex = filterIndexes[properties[layerProperty]];
+    if (!filterIndex) {
       return undefined;
     }
+    const layers = filterIndex(properties);
     let zoom = resolutions.indexOf(resolution);
     if (zoom == -1) {
       zoom = getZoomForResolution(resolution, resolutions);
