@@ -263,7 +263,6 @@ export function prerenderRasterLayer(glLayer, layer, functionCache) {
       event.frameState.viewState.zoom !== zoom
     ) {
       zoom = event.frameState.viewState.zoom;
-      delete functionCache[glLayer.id];
       updateRasterLayerProperties(glLayer, layer, zoom, functionCache);
     }
   };

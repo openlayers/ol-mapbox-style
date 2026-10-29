@@ -34,7 +34,6 @@ import Text from 'ol/style/Text.js';
 import {cameraObj, styleConfig, wrapImageExtraArgs} from './expressions.js';
 import {applyLetterSpacing, wrapText} from './text.js';
 import {
-  clearFunctionCache,
   createCanvas,
   defaultResolutions,
   deg2rad,
@@ -292,13 +291,10 @@ function getDeclutterMode(layer, feature, prefix, functionCache) {
  * @param {string} layerId Layer id.
  * @param {?} filter Filter.
  * @param {Object} feature Feature.
- * @param {Object} [filterCache] Filter cache.
+ * @param {Object} filterCache Filter cache.
  * @return {boolean} Filter result.
  */
 function evaluateFilter(layerId, filter, feature, filterCache) {
-  if (!filterCache) {
-    console.warn('No filterCache provided to evaluateFilter()'); // eslint-disable-line no-console
-  }
   if (!(layerId in filterCache)) {
     try {
       filterCache[layerId] = createFilter(
@@ -329,10 +325,7 @@ let renderTransparentEnabled = false;
  * Default is `false`.
  */
 export function renderTransparent(enabled) {
-  if (enabled !== renderTransparentEnabled) {
-    clearFunctionCache();
-    renderTransparentEnabled = enabled;
-  }
+  renderTransparentEnabled = enabled;
 }
 
 /**

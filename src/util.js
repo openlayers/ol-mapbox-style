@@ -17,7 +17,7 @@ export const emptyObj = Object.freeze({});
 // Keyed by style object, so caches are not shared between styles with the same
 // id, and are released together with their style.
 /** @type {WeakMap<Object, Object>} */
-let functionCacheByStyle = new WeakMap();
+const functionCacheByStyle = new WeakMap();
 /** @type {WeakMap<Object, Object>} */
 const filterCacheByStyle = new WeakMap();
 
@@ -43,16 +43,23 @@ export function getFunctionCache(glStyle) {
   return getCache(functionCacheByStyle, glStyle);
 }
 
-export function clearFunctionCache() {
-  functionCacheByStyle = new WeakMap();
-}
-
 /**
  * @param {Object} glStyle Mapbox style object.
  * @return {Object} Filter cache.
  */
 export function getFilterCache(glStyle) {
   return getCache(filterCacheByStyle, glStyle);
+}
+
+/**
+ * Removes cached functions and filters of a style layer, so they are compiled
+ * again from the layer's current definition.
+ * @param {Object} glStyle Mapbox style object.
+ * @param {string} layerId Mapbox layer id.
+ */
+export function clearLayerCache(glStyle, layerId) {
+  delete getFunctionCache(glStyle)[layerId];
+  delete getFilterCache(glStyle)[layerId];
 }
 
 export function deg2rad(degrees) {

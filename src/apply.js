@@ -52,10 +52,10 @@ import {
 } from './stylefunction.js';
 import {getFonts} from './text.js';
 import {
+  clearLayerCache,
   defaultResolutions,
   emptyObj,
   fetchResource,
-  getFilterCache,
   getFunctionCache,
   getGlStyle,
   getResolutionForZoom,
@@ -1407,8 +1407,7 @@ export function getMapboxLayer(mapOrGroup, layerId) {
  */
 export function addMapboxLayer(mapOrGroup, mapboxLayer, beforeLayerId) {
   const glStyle = mapOrGroup.get('mapbox-style');
-  delete getFunctionCache(glStyle)[mapboxLayer.id];
-  delete getFilterCache(glStyle)[mapboxLayer.id];
+  clearLayerCache(glStyle, mapboxLayer.id);
 
   const mapboxLayers = glStyle.layers;
   let spliceIndex;
@@ -1516,8 +1515,7 @@ export function updateMapboxLayer(mapOrGroup, mapboxLayer) {
       'Updated layer and previous version must use the same source.',
     );
   }
-  delete getFunctionCache(glStyle)[mapboxLayer.id];
-  delete getFilterCache(glStyle)[mapboxLayer.id];
+  clearLayerCache(glStyle, mapboxLayer.id);
   mapboxLayers[index] = mapboxLayer;
   const args = getStyleFunctionArgs(getLayer(mapOrGroup, mapboxLayer.id));
   if (args) {
@@ -1618,8 +1616,7 @@ export function removeMapboxLayer(mapOrGroup, mapboxLayerIdOrLayer) {
   }
   layerMapboxLayers.splice(layerMapboxLayers.indexOf(mapboxLayerId), 1);
   const glStyle = mapOrGroup.get('mapbox-style');
-  delete getFunctionCache(glStyle)[mapboxLayerId];
-  delete getFilterCache(glStyle)[mapboxLayerId];
+  clearLayerCache(glStyle, mapboxLayerId);
   const layers = glStyle.layers;
   layers.splice(
     layers.findIndex((layer) => layer.id === mapboxLayerId),
