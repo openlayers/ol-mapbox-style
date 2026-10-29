@@ -1846,6 +1846,20 @@ export function stylefunction(
             padding[2] = textPadding;
             padding[3] = textPadding;
           }
+          if (
+            hasImage &&
+            'setImageOptional' in style &&
+            typeof style.setImageOptional === 'function' &&
+            'setTextOptional' in style &&
+            typeof style.setTextOptional === 'function'
+          ) {
+            style.setImageOptional(
+              getValue(layer, 'layout', 'icon-optional', f, functionCache),
+            );
+            style.setTextOptional(
+              getValue(layer, 'layout', 'text-optional', f, functionCache),
+            );
+          }
           style.setZIndex(index);
         }
       }
