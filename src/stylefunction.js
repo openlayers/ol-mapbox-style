@@ -476,7 +476,7 @@ let patternKeyCounter = 0;
  * `sprite` property is specified in the Mapbox/MapLibre Style object. If multiple `sprite`s
  * are defined in the style object, this has to be an object with the sprite id as key and the
  * sprite image URL as value.
- * @param {function(Array<string>, string=):Array<string>} getFonts Function that
+ * @param {function(Array<string>, (string|false)=):Array<string>} getFonts Function that
  * receives a font stack and the url template from the GL style's `metadata['ol:webfonts']`
  * property (if set) as arguments, and returns a (modified) font stack that
  * is available. Font names are the names used in the Mapbox/MapLibre Style object. If
@@ -1540,7 +1540,9 @@ export function stylefunction(
                   ? chunk.fontStack.split(',')
                   : fontArray;
                 const chunkFont = mb2css(
-                  getFonts ? getFonts(fonts) : fonts,
+                  getFonts
+                    ? getFonts(fonts, glStyle.metadata?.['ol:webfonts'])
+                    : fonts,
                   textSize * (chunk.scale || 1),
                   textLineHeight,
                 );

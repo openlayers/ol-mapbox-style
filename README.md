@@ -97,6 +97,11 @@ Note that this low-level API does not create a source for the layer, and extra w
 
 As an alternative, the `webfonts` option of the `apply()` or `applyStyle()` functions can be used.
 
+Set `webfonts: false` in the options to disable automatic font loading, including URLs supplied
+by `metadata['ol:webfonts']`. Fonts loaded by the application through CSS still work; missing
+fonts use the browser's fallback. A style can also set `metadata['ol:webfonts']` to `false` to
+disable automatic loading for that style.
+
 The following placeholders can be used in the template url:
 
 - `{font-family}`: CSS font family converted to lowercase, blanks replaced with -, e.g. noto-sans
