@@ -1,7 +1,6 @@
 import {VectorTile} from 'ol';
 import TileState from 'ol/TileState.js';
 import {toPromise} from 'ol/functions.js';
-import {getUid} from 'ol/util.js';
 import {normalizeSourceUrl, normalizeStyleUrl} from './mapbox.js';
 
 /** @typedef {'Style'|'Source'|'Sprite'|'SpriteImage'|'Tiles'|'GeoJSON'} ResourceType */
@@ -15,51 +14,52 @@ import {normalizeSourceUrl, normalizeStyleUrl} from './mapbox.js';
 
 export const emptyObj = Object.freeze({});
 
-const functionCacheByStyleId = {};
-const filterCacheByStyleId = {};
+// Keyed by style object, so caches are not shared between styles with the same
+// id, and are released together with their style.
+/** @type {WeakMap<Object, Object>} */
+const functionCacheByStyle = new WeakMap();
+/** @type {WeakMap<Object, Object>} */
+const filterCacheByStyle = new WeakMap();
 
-let styleId = 0;
-export function getStyleId(glStyle) {
-  if (!glStyle.id) {
-    glStyle.id = styleId++;
+/**
+ * @param {WeakMap<Object, Object>} cacheByStyle Caches by style object.
+ * @param {Object} glStyle Mapbox style object.
+ * @return {Object} Cache.
+ */
+function getCache(cacheByStyle, glStyle) {
+  let cache = cacheByStyle.get(glStyle);
+  if (!cache) {
+    cache = {};
+    cacheByStyle.set(glStyle, cache);
   }
-  return glStyle.id;
-}
-
-export function getStyleFunctionKey(glStyle, olLayer) {
-  return getStyleId(glStyle) + '.' + getUid(olLayer);
+  return cache;
 }
 
 /**
- * @param {Object} glStyle Mapboox style object.
+ * @param {Object} glStyle Mapbox style object.
  * @return {Object} Function cache.
  */
 export function getFunctionCache(glStyle) {
-  let functionCache = functionCacheByStyleId[glStyle.id];
-  if (!functionCache) {
-    functionCache = {};
-    functionCacheByStyleId[getStyleId(glStyle)] = functionCache;
-  }
-  return functionCache;
-}
-
-export function clearFunctionCache() {
-  for (const key in functionCacheByStyleId) {
-    delete functionCacheByStyleId[key];
-  }
+  return getCache(functionCacheByStyle, glStyle);
 }
 
 /**
- * @param {Object} glStyle Mapboox style object.
+ * @param {Object} glStyle Mapbox style object.
  * @return {Object} Filter cache.
  */
 export function getFilterCache(glStyle) {
-  let filterCache = filterCacheByStyleId[glStyle.id];
-  if (!filterCache) {
-    filterCache = {};
-    filterCacheByStyleId[getStyleId(glStyle)] = filterCache;
-  }
-  return filterCache;
+  return getCache(filterCacheByStyle, glStyle);
+}
+
+/**
+ * Removes cached functions and filters of a style layer, so they are compiled
+ * again from the layer's current definition.
+ * @param {Object} glStyle Mapbox style object.
+ * @param {string} layerId Mapbox layer id.
+ */
+export function clearLayerCache(glStyle, layerId) {
+  delete getFunctionCache(glStyle)[layerId];
+  delete getFilterCache(glStyle)[layerId];
 }
 
 export function deg2rad(degrees) {

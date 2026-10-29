@@ -34,7 +34,6 @@ import Text from 'ol/style/Text.js';
 import {cameraObj, styleConfig, wrapImageExtraArgs} from './expressions.js';
 import {applyLetterSpacing, wrapText} from './text.js';
 import {
-  clearFunctionCache,
   createCanvas,
   defaultResolutions,
   deg2rad,
@@ -43,7 +42,6 @@ import {
   emptyObj,
   getFilterCache,
   getFunctionCache,
-  getStyleFunctionKey,
   getZoomForResolution,
 } from './util.js';
 
@@ -293,13 +291,10 @@ function getDeclutterMode(layer, feature, prefix, functionCache) {
  * @param {string} layerId Layer id.
  * @param {?} filter Filter.
  * @param {Object} feature Feature.
- * @param {Object} [filterCache] Filter cache.
+ * @param {Object} filterCache Filter cache.
  * @return {boolean} Filter result.
  */
 function evaluateFilter(layerId, filter, feature, filterCache) {
-  if (!filterCache) {
-    console.warn('No filterCache provided to evaluateFilter()'); // eslint-disable-line no-console
-  }
   if (!(layerId in filterCache)) {
     try {
       filterCache[layerId] = createFilter(
@@ -330,10 +325,7 @@ let renderTransparentEnabled = false;
  * Default is `false`.
  */
 export function renderTransparent(enabled) {
-  if (enabled !== renderTransparentEnabled) {
-    clearFunctionCache();
-    renderTransparentEnabled = enabled;
-  }
+  renderTransparentEnabled = enabled;
 }
 
 /**
@@ -404,7 +396,19 @@ export function recordStyleLayer(record = false) {
   recordLayer = record;
 }
 
-export const styleFunctionArgs = {};
+// Keyed by layer, so entries are released together with it. A layer only keeps
+// the style function of its last `stylefunction()` call.
+/** @type {WeakMap<Object, Parameters<typeof stylefunction>>} */
+const styleFunctionArgs = new WeakMap();
+
+/**
+ * @param {Object} olLayer OpenLayers layer.
+ * @return {Parameters<typeof stylefunction>|undefined} Arguments of the last
+ * `stylefunction()` call for this layer.
+ */
+export function getStyleFunctionArgs(olLayer) {
+  return styleFunctionArgs.get(olLayer);
+}
 
 let patternKeyCounter = 0;
 
@@ -509,8 +513,10 @@ export function stylefunction(
   if (glStyle.version != 8) {
     throw new Error('glStyle version 8 required.');
   }
-  styleFunctionArgs[getStyleFunctionKey(glStyle, olLayer)] =
-    Array.from(arguments);
+  styleFunctionArgs.set(
+    olLayer,
+    /** @type {Parameters<typeof stylefunction>} */ (Array.from(arguments)),
+  );
 
   /** @type {SpriteImages} */
   const spriteImages = {};

@@ -19,6 +19,7 @@ import {
   apply,
   applyBackground,
   getFeatureState,
+  getLayer,
   setFeatureState,
 } from '../src/index.js';
 import {defaultResolutions, getZoomForResolution} from '../src/util.js';
@@ -53,6 +54,36 @@ describe('ol-mapbox-style', function () {
         .catch(function (error) {
           done(error);
         });
+    });
+
+    it('lets a disposed map, its layers and its style be garbage collected', async function () {
+      should(window.gc).be.a.Function();
+      const collected = new Set();
+      const registry = new FinalizationRegistry((kind) => collected.add(kind));
+      // Keeps the map and style out of this function's scope.
+      async function applyAndDispose() {
+        const glStyle = {
+          version: 8,
+          sources: {
+            geojson: {
+              type: 'geojson',
+              data: {type: 'FeatureCollection', features: []},
+            },
+          },
+          layers: [{id: 'fill', type: 'fill', source: 'geojson'}],
+        };
+        const map = await apply(document.createElement('div'), glStyle);
+        registry.register(map, 'map');
+        registry.register(getLayer(map, 'fill'), 'layer');
+        registry.register(glStyle, 'style');
+        map.dispose();
+      }
+      await applyAndDispose();
+      for (let i = 0; i < 10 && collected.size < 3; ++i) {
+        window.gc();
+        await new Promise((resolve) => setTimeout(resolve, 10));
+      }
+      should([...collected].sort()).eql(['layer', 'map', 'style']);
     });
 
     it('called with a json, rejects when a TileJSON url is invalid', function (done) {

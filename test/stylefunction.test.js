@@ -109,13 +109,6 @@ describe('stylefunction', function () {
         });
     });
 
-    it('adds an id to the style object when none is set', function () {
-      const style = JSON.parse(JSON.stringify(states));
-      style.id = undefined;
-      applyStylefunction(layer, style, 'states');
-      should.notEqual(style.id, undefined);
-    });
-
     it('creates a style function with all layers of a source', function () {
       const style = applyStylefunction(layer, states, 'states');
       should(style).be.a.Function();
@@ -136,6 +129,132 @@ describe('stylefunction', function () {
       should(style(feature, 1)).be.undefined();
       feature.set('PERSONS', 6000000);
       should(style(feature, 1)).be.undefined();
+    });
+
+    it('does not share cached values between styles with the same id', function () {
+      function createStyle(color) {
+        return {
+          version: 8,
+          id: 'same-id',
+          sources: {
+            geojson: {
+              type: 'geojson',
+              data: {type: 'FeatureCollection', features: []},
+            },
+          },
+          layers: [
+            {
+              id: 'fill',
+              type: 'fill',
+              source: 'geojson',
+              paint: {'fill-color': color},
+            },
+          ],
+        };
+      }
+      const red = applyStylefunction(
+        new VectorLayer(),
+        createStyle('red'),
+        'geojson',
+      );
+      should(red(feature, 1)[0].getFill().getColor()).eql('rgba(255,0,0,1)');
+      const blue = applyStylefunction(layer, createStyle('blue'), 'geojson');
+      should(blue(feature, 1)[0].getFill().getColor()).eql('rgba(0,0,255,1)');
+    });
+
+    describe('called directly, without apply() or applyStyle()', function () {
+      function createStyle(paint) {
+        return {
+          version: 8,
+          id: 'same-id',
+          sources: {
+            geojson: {
+              type: 'geojson',
+              data: {type: 'FeatureCollection', features: []},
+            },
+          },
+          layers: [{id: 'fill', type: 'fill', source: 'geojson', paint}],
+        };
+      }
+
+      it('restyles a layer with a new style object', function () {
+        const red = applyStylefunction(
+          layer,
+          createStyle({'fill-color': 'red'}),
+          'geojson',
+        );
+        red(feature, 1);
+        const blue = applyStylefunction(
+          layer,
+          createStyle({'fill-color': 'blue'}),
+          'geojson',
+        );
+        should(blue(feature, 1)[0].getFill().getColor()).eql('rgba(0,0,255,1)');
+      });
+
+      it('restyles a layer with a new style string', function () {
+        const red = applyStylefunction(
+          layer,
+          JSON.stringify(createStyle({'fill-color': 'red'})),
+          'geojson',
+        );
+        red(feature, 1);
+        const blue = applyStylefunction(
+          layer,
+          JSON.stringify(createStyle({'fill-color': 'blue'})),
+          'geojson',
+        );
+        should(blue(feature, 1)[0].getFill().getColor()).eql('rgba(0,0,255,1)');
+      });
+
+      it('reuses the cache when called again with the same style object', function () {
+        const glStyle = createStyle({'fill-color': 'red'});
+        const red = applyStylefunction(layer, glStyle, 'geojson');
+        red(feature, 1);
+        // Cached values are kept until the layer is updated with
+        // updateMapboxLayer(), so an in-place change is not picked up.
+        glStyle.layers[0].paint['fill-color'] = 'blue';
+        const style = applyStylefunction(layer, glStyle, 'geojson');
+        should(style(feature, 1)[0].getFill().getColor()).eql(
+          'rgba(255,0,0,1)',
+        );
+      });
+
+      it('applies renderTransparent() to an existing style function', function () {
+        const style = applyStylefunction(
+          layer,
+          createStyle({
+            'fill-color': 'rgba(0,0,0,0)',
+            'fill-outline-color': 'red',
+          }),
+          'geojson',
+        );
+        should(style(feature, 1)[0].getFill()).be.null();
+        renderTransparent(true);
+        should(style(feature, 1)[0].getFill().getColor()).eql('transparent');
+      });
+
+      it('lets the layer and its style be garbage collected', async function () {
+        should(window.gc).be.a.Function();
+        const collected = new Set();
+        const registry = new FinalizationRegistry((kind) =>
+          collected.add(kind),
+        );
+        // Keeps the layer and style out of this function's scope.
+        function styleLayer() {
+          const olLayer = new VectorLayer();
+          const glStyle = createStyle({'fill-color': 'red'});
+          applyStylefunction(olLayer, glStyle, 'geojson')(feature, 1);
+          registry.register(olLayer, 'layer');
+          registry.register(glStyle, 'style');
+        }
+        styleLayer();
+        for (let i = 0; i < 10 && collected.size < 2; ++i) {
+          window.gc();
+          await new Promise((resolve) => setTimeout(resolve, 10));
+        }
+        should([...collected].sort()).eql(['layer', 'style']);
+      });
     });
 
     it('Don not match layer ids to string `sourceOrLayers`', function () {
