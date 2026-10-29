@@ -1,9 +1,10 @@
 import {featureFilter} from '@maplibre/maplibre-gl-style-spec';
 import deepFreeze from 'deep-freeze';
 import Feature from 'ol/Feature.js';
-import Polygon from 'ol/geom/Polygon.js';
+import {fromExtent} from 'ol/geom/Polygon.js';
 import VectorLayer from 'ol/layer/Vector.js';
 import should from 'should';
+import {spy} from 'sinon';
 import {createFilterIndex} from '../src/filterindex.js';
 import {stylefunction} from '../src/stylefunction.js';
 import {getFilterCache} from '../src/util.js';
@@ -67,35 +68,22 @@ describe('filter index', function () {
         paint: {'fill-color': 'red'},
       })),
     };
-    const feature = new Feature(
-      new Polygon([
-        [
-          [0, 0],
-          [0, 1],
-          [1, 0],
-          [0, 0],
-        ],
-      ]),
-    );
+    const feature = new Feature(fromExtent([0, 0, 1, 1]));
     const fn = stylefunction(new VectorLayer(), style, 'data');
     feature.set('kind', 'road');
     fn(feature, 1);
     feature.set('kind', 'water');
     fn(feature, 1);
     const cache = getFilterCache(style);
-    const calls = [0, 0];
-    ['road', 'water'].forEach((id, i) => {
-      const filter = cache[id];
-      cache[id] = (...args) => {
-        ++calls[i];
-        return filter(...args);
-      };
-    });
+    const road = spy(cache, 'road');
+    const water = spy(cache, 'water');
     feature.set('kind', 'road');
     should(fn(feature, 1).map((item) => item.getZIndex())).eql([0, 2]);
-    should(calls).eql([1, 0]);
+    should(road.callCount).equal(1);
+    should(water.callCount).equal(0);
     should(fn(feature, 1, 'fallback').map((item) => item.getZIndex())).eql([2]);
-    should(calls).eql([1, 0]);
+    should(road.callCount).equal(1);
+    should(water.callCount).equal(0);
   });
 
   it('keeps the same filter results as the style-spec evaluator', function () {

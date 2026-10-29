@@ -1,18 +1,6 @@
 import {expression as styleExpression} from '@maplibre/maplibre-gl-style-spec';
 
 /**
- * @param {*} value Filter value.
- * @return {boolean} Whether the value can be indexed.
- */
-function isLiteral(value) {
-  return (
-    typeof value === 'string' ||
-    typeof value === 'boolean' ||
-    (typeof value === 'number' && Number.isFinite(value))
-  );
-}
-
-/**
  * Extract a necessary equality condition. Unsupported filters remain unindexed.
  * @param {*} filter Layer filter.
  * @param {boolean} expression Whether the filter uses expression syntax.
@@ -22,48 +10,49 @@ function getCondition(filter, expression) {
   if (!Array.isArray(filter)) {
     return undefined;
   }
-  if (filter[0] === 'all') {
-    for (let i = 1; i < filter.length; ++i) {
-      const condition = getCondition(filter[i], expression);
+  const [operator, input, value] = filter;
+  if (operator === 'all') {
+    for (const child of filter.slice(1)) {
+      const condition = getCondition(child, expression);
       if (condition) {
         return condition;
       }
     }
     return undefined;
   }
-  let property = filter[1];
-  if (expression !== Array.isArray(property)) {
+  if (operator !== '==' && operator !== 'in') {
     return undefined;
   }
+  let property = input;
+  let values = filter.slice(2);
   if (expression) {
-    if (property.length !== 2 || property[0] !== 'get') {
+    if (!Array.isArray(input) || input.length !== 2 || input[0] !== 'get') {
       return undefined;
     }
-    property = property[1];
-  }
-  if (typeof property !== 'string' || property.startsWith('$')) {
-    return undefined;
-  }
-  let values;
-  if (filter[0] === '==' && filter.length === 3 && isLiteral(filter[2])) {
-    values = [filter[2]];
-  } else if (filter[0] === 'in') {
-    if (expression) {
-      const literal = filter[2];
+    property = input[1];
+    if (operator === 'in') {
       if (
         filter.length !== 3 ||
-        !Array.isArray(literal) ||
-        literal[0] !== 'literal' ||
-        !Array.isArray(literal[1])
+        !Array.isArray(value) ||
+        value[0] !== 'literal'
       ) {
         return undefined;
       }
-      values = literal[1];
-    } else {
-      values = filter.slice(2);
+      values = value[1];
     }
   }
-  if (!values || !values.every(isLiteral)) {
+  if (
+    typeof property !== 'string' ||
+    property.startsWith('$') ||
+    (operator === '==' && filter.length !== 3) ||
+    !Array.isArray(values) ||
+    !values.every(
+      (value) =>
+        typeof value === 'string' ||
+        typeof value === 'boolean' ||
+        Number.isFinite(value),
+    )
+  ) {
     return undefined;
   }
   return {property, values};
@@ -109,24 +98,18 @@ export function createFilterIndex(layers) {
     }
     for (const value of new Set(condition.values)) {
       if (!buckets.has(value)) {
-        buckets.set(value, []);
+        buckets.set(value, {layers: []});
       }
-      buckets.get(value).push(layer);
+      buckets.get(value).layers.push(layer);
     }
   });
   // Cache only values present in the style, never arbitrary feature values.
-  const candidates = new Map();
   return (properties) => {
-    const value = properties[property];
-    if (!buckets.has(value)) {
-      return fallback;
-    }
-    if (!candidates.has(value)) {
-      candidates.set(
-        value,
-        fallback.concat(buckets.get(value)).sort((a, b) => a.index - b.index),
-      );
-    }
-    return candidates.get(value);
+    const bucket = buckets.get(properties[property]);
+    return bucket
+      ? (bucket.candidates ||= fallback
+          .concat(bucket.layers)
+          .sort((a, b) => a.index - b.index))
+      : fallback;
   };
 }
