@@ -81,6 +81,16 @@ Note that this low-level API does not create a source for the layer, and extra w
 
 ## Compatibility notes
 
+### Symbol dependencies
+
+`icon-optional` and `text-optional` control whether text may be displayed without
+its icon, or the icon without its text. These dependencies are applied when the
+OpenLayers image and text styles provide `setOptional()`. Older OpenLayers
+versions retain their existing placement behavior; for example, a label that
+allows overlap may remain visible when its icon is hidden by a collision.
+The overlap and placement settings continue to determine each part's collision
+mode independently.
+
 ### Font handling
 
 `ol-mapbox-style` cannot use PBF/SDF glyphs for `text-font` layout property, as defined in the Mapbox/MapLibre Style specification. Instead, it relies on web fonts. A `ol:webfonts` metadata property can be set on the root of the Style object to specify a location for webfonts, e.g.

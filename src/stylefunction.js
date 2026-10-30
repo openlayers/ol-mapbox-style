@@ -1171,7 +1171,15 @@ export function stylefunction(
                     'icon',
                     functionCache,
                   );
-                  let iconCacheKey = `${icon}.${iconSize}.${haloWidth}.${haloColor}.${iconAlignedWithMap}.${declutterMode}`;
+                  const iconOptional = getValue(
+                    layer,
+                    'layout',
+                    'icon-optional',
+                    f,
+                    functionCache,
+                    featureState,
+                  );
+                  let iconCacheKey = `${icon}.${iconSize}.${haloWidth}.${haloColor}.${iconAlignedWithMap}.${declutterMode}.${iconOptional}`;
                   if (iconColor !== null) {
                     iconCacheKey += `.${iconColor}`;
                   }
@@ -1280,6 +1288,12 @@ export function stylefunction(
                         displacement: displacement,
                         declutterMode: declutterMode,
                       });
+                    }
+                    if (
+                      'setOptional' in iconImg &&
+                      typeof iconImg.setOptional === 'function'
+                    ) {
+                      iconImg.setOptional(iconOptional);
                     }
                     iconImageCache[iconCacheKey] = iconImg;
                   }
@@ -1846,18 +1860,16 @@ export function stylefunction(
             padding[2] = textPadding;
             padding[3] = textPadding;
           }
-          if (
-            hasImage &&
-            'setImageOptional' in style &&
-            typeof style.setImageOptional === 'function' &&
-            'setTextOptional' in style &&
-            typeof style.setTextOptional === 'function'
-          ) {
-            style.setImageOptional(
-              getValue(layer, 'layout', 'icon-optional', f, functionCache),
-            );
-            style.setTextOptional(
-              getValue(layer, 'layout', 'text-optional', f, functionCache),
+          if ('setOptional' in text && typeof text.setOptional === 'function') {
+            text.setOptional(
+              getValue(
+                layer,
+                'layout',
+                'text-optional',
+                f,
+                functionCache,
+                featureState,
+              ),
             );
           }
           style.setZIndex(index);
