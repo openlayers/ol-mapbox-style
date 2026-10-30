@@ -5,6 +5,7 @@ import {fromExtent} from 'ol/geom/Polygon.js';
 import VectorLayer from 'ol/layer/Vector.js';
 import should from 'should';
 import {spy} from 'sinon';
+import {apply, getLayer, updateMapboxLayer} from '../src/apply.js';
 import {createFilterIndex} from '../src/filterindex.js';
 import {stylefunction} from '../src/stylefunction.js';
 import {getFilterCache} from '../src/util.js';
@@ -84,6 +85,52 @@ describe('filter index', function () {
     should(fn(feature, 1, 'fallback').map((item) => item.getZIndex())).eql([2]);
     should(road.callCount).equal(1);
     should(water.callCount).equal(0);
+    should(fn(feature, 1, 'water')).be.undefined();
+    should(water.callCount).equal(0);
+    should(fn(feature, 1, 'road').map((item) => item.getZIndex())).eql([0]);
+    should(road.callCount).equal(2);
+  });
+
+  it('rebuilds the candidate index when a layer filter is updated', async function () {
+    const style = {
+      version: 8,
+      sources: {
+        data: {
+          type: 'geojson',
+          data: {type: 'FeatureCollection', features: []},
+        },
+      },
+      layers: ['road', 'water'].map((kind) => ({
+        id: kind,
+        type: 'fill',
+        source: 'data',
+        filter: ['==', 'kind', kind],
+        paint: {'fill-color': 'red'},
+      })),
+    };
+    const map = await apply(document.createElement('div'), style);
+    try {
+      const layer = getLayer(map, 'road');
+      const feature = new Feature(fromExtent([0, 0, 1, 1]));
+      feature.set('kind', 'road');
+      const indexes = () =>
+        layer
+          .getStyleFunction()(feature, 1)
+          .map((item) => item.getZIndex());
+      should(indexes()).eql([0]);
+      await updateMapboxLayer(map, {
+        ...style.layers[1],
+        filter: ['==', 'kind', 'road'],
+      });
+      should(indexes()).eql([0, 1]);
+      await updateMapboxLayer(map, {
+        ...style.layers[0],
+        filter: ['==', 'kind', 'other'],
+      });
+      should(indexes()).eql([1]);
+    } finally {
+      map.dispose();
+    }
   });
 
   it('keeps the same filter results as the style-spec evaluator', function () {
@@ -93,10 +140,13 @@ describe('filter index', function () {
       ['in', 'class', 'road', 'path'],
       ['all', ['==', '$type', 'Point'], ['==', 'class', 'road']],
       ['all', ['>', 'width', 2], ['==', 'class', 'road']],
+      ['all', ['all', ['==', 'class', 'road']], ['>', 'width', 2]],
       ['any', ['==', 'class', 'water'], ['>', 'width', 2]],
       ['!=', 'class', 'road'],
       ['==', ['get', 'class'], 'road'],
+      ['==', ['get', 'class'], ['literal', 'road']],
       ['in', ['get', 'class'], ['literal', ['road', 'path']]],
+      ['in', ['get', 'class'], 'road'],
       ['all', ['==', ['get', 'class'], 'road'], ['has', 'width']],
       ['==', ['get', 'class'], null],
       ['in', ['get', 'class'], ['literal', [null, 'road']]],
