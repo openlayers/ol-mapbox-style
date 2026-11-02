@@ -14,6 +14,7 @@ import {
   isFunction,
 } from '@maplibre/maplibre-gl-style-spec';
 
+import {createCandidateLayerLookup} from './filterindex.js';
 import spec from './stylespec.js';
 
 import mb2css from 'mapbox-to-css-font';
@@ -641,6 +642,12 @@ export function stylefunction(
     }
   }
 
+  const candidateLayerLookups = {};
+  for (const sourceLayer in layersBySourceLayer) {
+    candidateLayerLookups[sourceLayer] = createCandidateLayerLookup(
+      layersBySourceLayer[sourceLayer],
+    );
+  }
   const styles = [];
 
   /**
@@ -654,10 +661,14 @@ export function stylefunction(
       //@ts-ignore
       olLayer.getSource?.()?.format_?.layerName_ ?? 'mvt:layer';
     const properties = feature.getProperties();
-    const layers = layersBySourceLayer[properties[layerProperty]];
-    if (!layers) {
+    const getCandidateLayers = candidateLayerLookups[properties[layerProperty]];
+    if (!getCandidateLayers) {
       return undefined;
     }
+    // getCandidateLayers() only skips layers whose filter cannot match. The
+    // returned layers still go through the filter, visibility and zoom checks
+    // below.
+    const layers = getCandidateLayers(properties);
     let zoom = resolutions.indexOf(resolution);
     if (zoom == -1) {
       zoom = getZoomForResolution(resolution, resolutions);
