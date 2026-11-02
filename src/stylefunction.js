@@ -820,7 +820,19 @@ export function stylefunction(
               ),
               opacity,
             );
-            if (layer.type + '-outline-color' in paint) {
+            // The outline is only drawn with antialiasing, which only fill
+            // layers can turn off
+            const antialias =
+              layer.type !== 'fill' ||
+              getValue(
+                layer,
+                'paint',
+                'fill-antialias',
+                f,
+                functionCache,
+                featureState,
+              );
+            if (antialias && layer.type + '-outline-color' in paint) {
               strokeColor = colorWithOpacity(
                 getValue(
                   layer,
@@ -833,7 +845,7 @@ export function stylefunction(
                 opacity,
               );
             }
-            if (!strokeColor) {
+            if (antialias && !strokeColor) {
               strokeColor = color;
             }
             if (color || strokeColor) {

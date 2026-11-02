@@ -363,6 +363,30 @@ describe('stylefunction', function () {
       should(style[0].getStroke().getColor()).eql('rgba(255,0,0,1)');
     });
 
+    it('omits the outline of a fill without antialiasing', function () {
+      const styleObject = JSON.parse(JSON.stringify(states));
+      for (const antialias of [true, false]) {
+        styleObject.layers.push({
+          'id': `antialias-${antialias}`,
+          'type': 'fill',
+          'source': 'states',
+          'paint': {
+            'fill-color': 'blue',
+            'fill-outline-color': 'red',
+            'fill-antialias': antialias,
+          },
+        });
+      }
+      const outline = (id) =>
+        applyStylefunction(layer, styleObject, [id])(feature, 1)[0];
+      should(outline('antialias-true').getStroke().getColor()).eql(
+        'rgba(255,0,0,1)',
+      );
+      const style = outline('antialias-false');
+      should(style.getFill().getColor()).eql('rgba(0,0,255,1)');
+      should(style.getStroke()).be.null();
+    });
+
     it('supports feature-state (layer)', function () {
       feature.setId(1);
       const styleObject = JSON.parse(JSON.stringify(states));
