@@ -7,13 +7,13 @@ License: https://raw.githubusercontent.com/openlayers/ol-mapbox-style/master/LIC
 import {
   Color,
   convertFunction,
-  featureFilter as createFilter,
   createPropertyExpression,
   derefLayers,
   isExpression,
   isFunction,
 } from '@maplibre/maplibre-gl-style-spec';
 
+import {evaluateFilter, getLayerCondition} from './filter.js';
 import spec from './stylespec.js';
 
 import mb2css from 'mapbox-to-css-font';
@@ -284,34 +284,6 @@ function getDeclutterMode(layer, feature, prefix, functionCache) {
     return 'obstacle';
   }
   return 'none';
-}
-
-/**
- * @private
- * @param {string} layerId Layer id.
- * @param {?} filter Filter.
- * @param {Object} feature Feature.
- * @param {Object} filterCache Filter cache.
- * @return {boolean} Filter result.
- */
-function evaluateFilter(layerId, filter, feature, filterCache) {
-  if (!(layerId in filterCache)) {
-    try {
-      filterCache[layerId] = createFilter(
-        filter,
-        `layers[${layerId}].filter`,
-      ).filter;
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        'Filter will evaluate to false: ' + /** @type {Error} */ (e).message,
-      );
-      filterCache[layerId] = function () {
-        return false;
-      };
-    }
-  }
-  return filterCache[layerId](cameraObj, feature);
 }
 
 let renderTransparentEnabled = false;
@@ -636,6 +608,7 @@ export function stylefunction(
       layers.push({
         layer: layer,
         index: i,
+        condition: getLayerCondition(layer.filter),
       });
       mapboxLayers.push(layerId);
     }
@@ -689,6 +662,11 @@ export function stylefunction(
       const layer = layerData.layer;
       const layerId = layer.id;
       if (onlyLayer !== undefined && onlyLayer !== layerId) {
+        continue;
+      }
+      // Skip layers whose filter cannot match, before evaluating anything else
+      const condition = layerData.condition;
+      if (condition && !condition.values.has(properties[condition.property])) {
         continue;
       }
 
@@ -1893,7 +1871,6 @@ export function getStyleForLayer(feature, resolution, olLayer, layerId) {
 
 export {
   colorWithOpacity as _colorWithOpacity,
-  evaluateFilter as _evaluateFilter,
   fromTemplate as _fromTemplate,
   getValue as _getValue,
 };

@@ -13,10 +13,12 @@ import {
   apply,
   stylefunction as applyStylefunction,
   getFeatureState,
+  getLayer,
   getStyleForLayer,
   recordStyleLayer,
   renderTransparent,
   setFeatureState,
+  updateMapboxLayer,
 } from '../src/index.js';
 import {getSpriteImageForIcon} from '../src/stylefunction.js';
 import {defaultResolutions} from '../src/util.js';
@@ -1338,6 +1340,89 @@ describe('stylefunction', function () {
         .catch(function (err) {
           done(err);
         });
+    });
+  });
+
+  describe('Filter preselection', function () {
+    function createStyle(filters) {
+      return {
+        version: 8,
+        sources: {
+          data: {
+            type: 'geojson',
+            data: {type: 'FeatureCollection', features: []},
+          },
+        },
+        layers: filters.map((filter, i) => ({
+          id: `layer${i}`,
+          type: 'fill',
+          source: 'data',
+          filter,
+          paint: {'fill-color': 'red'},
+        })),
+      };
+    }
+
+    function getZIndices(styleFunction, properties) {
+      const feature = new Feature(
+        new Polygon([
+          [
+            [0, 0],
+            [0, 1],
+            [1, 1],
+            [0, 0],
+          ],
+        ]),
+      );
+      feature.setProperties(properties);
+      return (styleFunction(feature, 1) || []).map((style) =>
+        style.getZIndex(),
+      );
+    }
+
+    it('matches the full filter evaluation and keeps style order', function () {
+      const style = createStyle([
+        undefined,
+        ['==', 'class', 'road'],
+        ['==', ['get', 'class'], 'water'],
+        ['in', 'class', 'road', 'path'],
+        ['all', ['==', '$type', 'Polygon'], ['in', 'kind', 'a', 'b']],
+        ['match', ['get', 'class'], ['path', 'water'], true, false],
+        ['in', ['get', 'kind'], ['literal', ['b']]],
+        ['has', 'width'],
+        ['==', 'rank', 1],
+      ]);
+      const styleFunction = applyStylefunction(
+        new VectorLayer(),
+        style,
+        'data',
+      );
+      should(getZIndices(styleFunction, {class: 'road'})).eql([0, 1, 3]);
+      should(getZIndices(styleFunction, {class: 'path', kind: 'b'})).eql([
+        0, 3, 4, 5, 6,
+      ]);
+      should(getZIndices(styleFunction, {class: 'water', width: 6})).eql([
+        0, 2, 5, 7,
+      ]);
+      should(getZIndices(styleFunction, {rank: '1'})).eql([0]);
+      should(getZIndices(styleFunction, {rank: 1})).eql([0, 8]);
+      should(getZIndices(styleFunction, {})).eql([0]);
+    });
+
+    it('uses updated layer filters', async function () {
+      const style = createStyle([
+        ['==', 'kind', 'road'],
+        ['==', 'kind', 'water'],
+      ]);
+      const map = await apply(document.createElement('div'), style);
+      await updateMapboxLayer(map, {
+        ...style.layers[1],
+        filter: ['==', 'kind', 'road'],
+      });
+      const styleFunction = getLayer(map, 'layer0').getStyleFunction();
+      should(getZIndices(styleFunction, {kind: 'road'})).eql([0, 1]);
+      should(getZIndices(styleFunction, {kind: 'water'})).eql([]);
+      map.dispose();
     });
   });
 

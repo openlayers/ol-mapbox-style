@@ -5,9 +5,9 @@ import Point from 'ol/geom/Point.js';
 import should from 'should';
 
 import {cameraObj} from '../src/expressions.js';
+import {evaluateFilter} from '../src/filter.js';
 import {
   _colorWithOpacity as colorWithOpacity,
-  _evaluateFilter as evaluateFilter,
   _fromTemplate as fromTemplate,
   _getValue as getValue,
 } from '../src/stylefunction.js';
