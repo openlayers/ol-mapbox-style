@@ -88,9 +88,9 @@ import {
  * Resolutions for mapping resolution to the `zoom` used in the Mapbox/MapLibre style.
  * @property {string} [styleUrl] URL of the Mapbox GL style. Required for styles that were provided
  * as object, when they contain a relative sprite url, or sources referencing data by relative url.
- * @property {string} [webfonts] Template for resolving webfonts. Can be used to specify where to fetch
+ * @property {string|false} [webfonts] Template for resolving webfonts. Can be used to specify where to fetch
  * web fonts when no `ol:webfonts` metadata is set in the style object. See `getFonts()` and the
- * "Font handling" section in `README.md` for details.
+ * "Font handling" section in `README.md` for details. Set to `false` to not load web fonts.
  * @property {function(VectorLayer|VectorTileLayer, string):HTMLImageElement|HTMLCanvasElement|string|undefined} [getImage=undefined]
  * Function that returns an image for an icon name. If the result is an HTMLImageElement, it must already be
  * loaded. The layer can be used to call layer.changed() when the loading and processing of the image has finished.
