@@ -825,6 +825,29 @@ describe('stylefunction', function () {
         });
       }
     });
+
+    it('sets optional on the icon and text', function (done) {
+      if (!('setOptional' in Text.prototype)) {
+        // Older OpenLayers versions do not have setOptional()
+        this.skip();
+      }
+      style.layers[0].layout['icon-optional'] = true;
+      apply(document.createElement('div'), style)
+        .then(function (map) {
+          const layer = map.getLayers().item(0);
+          layer.once('change', () => {
+            const styleFunction = layer.getStyle();
+            const feature = layer.getSource().getFeatures()[0];
+            const styles = styleFunction(feature, 1);
+            should(styles[0].getImage().getOptional()).be.true();
+            should(styles[0].getText().getOptional()).be.false();
+            done();
+          });
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
   });
 
   describe('Icon color with zero opacity', function () {
