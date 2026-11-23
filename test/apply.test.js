@@ -571,6 +571,33 @@ describe('ol-mapbox-style', function () {
         .catch(done);
     });
 
+    it('shares one source between the layers of a vector or geojson source', async function () {
+      for (const [styleUrl, LayerType] of [
+        ['./fixtures/hot-osm/hot-osm.json', VectorTileLayer],
+        ['./fixtures/geojson.json', VectorLayer],
+      ]) {
+        const glStyle = await fetch(styleUrl).then((response) =>
+          response.json(),
+        );
+        // A background layer in the middle splits the source into two layers.
+        glStyle.layers.splice(3, 0, {
+          id: 'split',
+          type: 'background',
+          paint: {'background-opacity': 0},
+        });
+        const map = await apply(document.createElement('div'), glStyle, {
+          styleUrl,
+        });
+        const layers = map
+          .getLayers()
+          .getArray()
+          .filter((layer) => layer instanceof LayerType);
+        should(layers.length).equal(2);
+        should(layers[0].getSource()).equal(layers[1].getSource());
+        map.dispose();
+      }
+    });
+
     it('handles vector sources with tms scheme', function (done) {
       apply(target, {
         version: 8,

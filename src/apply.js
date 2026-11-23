@@ -60,6 +60,7 @@ import {
   getFunctionCache,
   getGlStyle,
   getResolutionForZoom,
+  getSourceCache,
   getTileJson,
   getZoomForResolution,
 } from './util.js';
@@ -755,12 +756,16 @@ export function setupVectorSource(glSource, styleUrl, options) {
   });
 }
 
-function setupVectorLayer(glSource, styleUrl, options) {
+/**
+ * @param {Promise<import("ol/source/VectorTile.js").default>} sourcePromise Source.
+ * @return {VectorTileLayer} Layer.
+ */
+function setupVectorLayer(sourcePromise) {
   const layer = new VectorTileLayer({
     declutter: true,
     visible: false,
   });
-  setupVectorSource(glSource, styleUrl, options)
+  sourcePromise
     .then(function (source) {
       layer.setSource(source);
     })
@@ -941,10 +946,14 @@ function setupGeoJSONSource(glSource, styleUrl, options) {
   return /** @type {VectorSource} */ (source);
 }
 
-function setupGeoJSONLayer(glSource, styleUrl, options) {
+/**
+ * @param {VectorSource} source Source.
+ * @return {VectorLayer} Layer.
+ */
+function setupGeoJSONLayer(source) {
   return new VectorLayer({
     declutter: true,
-    source: setupGeoJSONSource(glSource, styleUrl, options),
+    source,
     visible: false,
   });
 }
@@ -994,7 +1003,13 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
     // background layers do not have a source
     glSourceId = undefined;
   } else if (glSource.type == 'vector') {
-    layer = setupVectorLayer(glSource, styleUrl, options);
+    const sourceCache = getSourceCache(glStyle);
+    if (!sourceCache[glSourceId]) {
+      sourceCache[glSourceId] = setupVectorSource(glSource, styleUrl, options);
+    }
+    layer = setupVectorLayer(
+      /** @type {Promise<VectorTileSource>} */ (sourceCache[glSourceId]),
+    );
   } else if (glSource.type == 'raster') {
     const requiresOperations = !!Object.keys(glLayer.paint || {}).find(
       (key) => {
@@ -1034,7 +1049,13 @@ export function setupLayer(glStyle, styleUrl, glLayer, options) {
 
     layer.on('prerender', prerenderRasterLayer(glLayer, layer, functionCache));
   } else if (glSource.type == 'geojson') {
-    layer = setupGeoJSONLayer(glSource, styleUrl, options);
+    const sourceCache = getSourceCache(glStyle);
+    if (!sourceCache[glSourceId]) {
+      sourceCache[glSourceId] = setupGeoJSONSource(glSource, styleUrl, options);
+    }
+    layer = setupGeoJSONLayer(
+      /** @type {VectorSource} */ (sourceCache[glSourceId]),
+    );
   } else if (glSource.type == 'raster-dem' && glLayer.type == 'hillshade') {
     const tileLayer = setupRasterLayer(glSource, styleUrl, options);
     layer = createHillshadeLayer(tileLayer);
@@ -1572,12 +1593,18 @@ export function updateMapboxSource(mapOrGroup, id, mapboxSource) {
         metadata.styleUrl,
         metadata.options,
       );
+      getSourceCache(mapOrGroup.get('mapbox-style'))[id] = newSourcePromise;
       break;
-    case 'geojson':
-      newSourcePromise = Promise.resolve(
-        setupGeoJSONSource(mapboxSource, metadata.styleUrl, metadata.options),
+    case 'geojson': {
+      const source = setupGeoJSONSource(
+        mapboxSource,
+        metadata.styleUrl,
+        metadata.options,
       );
+      getSourceCache(mapOrGroup.get('mapbox-style'))[id] = source;
+      newSourcePromise = Promise.resolve(source);
       break;
+    }
     case 'raster':
     case 'raster-dem':
       newSourcePromise = setupRasterSource(

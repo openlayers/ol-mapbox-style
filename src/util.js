@@ -20,6 +20,8 @@ export const emptyObj = Object.freeze({});
 const functionCacheByStyle = new WeakMap();
 /** @type {WeakMap<Object, Object>} */
 const filterCacheByStyle = new WeakMap();
+/** @type {WeakMap<Object, Object>} */
+const sourceCacheByStyle = new WeakMap();
 
 /**
  * @param {WeakMap<Object, Object>} cacheByStyle Caches by style object.
@@ -49,6 +51,17 @@ export function getFunctionCache(glStyle) {
  */
 export function getFilterCache(glStyle) {
   return getCache(filterCacheByStyle, glStyle);
+}
+
+/**
+ * OpenLayers sources created for the style's vector and GeoJSON sources, by
+ * source id, so the layers of one source share it, and its data is loaded and
+ * parsed once. Vector tile sources are cached as a promise.
+ * @param {Object} glStyle Mapbox style object.
+ * @return {Object<string, Promise<import("ol/source/VectorTile.js").default>|import("ol/source/Vector.js").default>} Source cache.
+ */
+export function getSourceCache(glStyle) {
+  return getCache(sourceCacheByStyle, glStyle);
 }
 
 /**
