@@ -122,9 +122,9 @@ describe('ol-mapbox-style', function () {
         .then(function (map) {
           should(map).be.instanceof(Map);
           const layer = map.getLayers().item(0);
-          should(
-            layer.render({viewState: {resolution: 1}}).className,
-          ).be.exactly('ol-mapbox-style-background');
+          should(layer).be.instanceof(VectorLayer);
+          should(layer.getSource().getFeatures()).have.length(0);
+          should(layer.getBackground()).be.a.Function();
           done();
         })
         .catch(done);
@@ -399,7 +399,11 @@ describe('ol-mapbox-style', function () {
               new Promise((resolve, reject) => {
                 const source = map
                   .getAllLayers()
-                  .find((layer) => layer.getSource() instanceof VectorSource)
+                  .find(
+                    (layer) =>
+                      layer.get('mapbox-source') &&
+                      layer.getSource() instanceof VectorSource,
+                  )
                   .getSource();
                 source.once('featuresloaderror', () => {
                   let frames = 10;
@@ -591,7 +595,9 @@ describe('ol-mapbox-style', function () {
         const layers = map
           .getLayers()
           .getArray()
-          .filter((layer) => layer instanceof LayerType);
+          .filter(
+            (layer) => layer instanceof LayerType && layer.get('mapbox-source'),
+          );
         should(layers.length).equal(2);
         should(layers[0].getSource()).equal(layers[1].getSource());
         map.dispose();
@@ -1222,12 +1228,9 @@ describe('ol-mapbox-style', function () {
     it('applies a background for a map', function (done) {
       applyBackground(map, backgroundStyle)
         .then(function () {
-          should(
-            map
-              .getLayers()
-              .item(0)
-              .render({viewState: {resolution: 1}}).style.backgroundColor,
-          ).be.exactly('rgba(248, 244, 240, 0.75)');
+          should(map.getLayers().item(0).getBackground()(1)).be.exactly(
+            'rgba(248,244,240,0.75)',
+          );
           done();
         })
         .catch(done);
@@ -1236,12 +1239,9 @@ describe('ol-mapbox-style', function () {
       const layerGroup = new LayerGroup();
       applyBackground(layerGroup, backgroundStyle)
         .then(function () {
-          should(
-            layerGroup
-              .getLayers()
-              .item(0)
-              .render({viewState: {resolution: 1}}).style.backgroundColor,
-          ).be.exactly('rgba(248, 244, 240, 0.75)');
+          should(layerGroup.getLayers().item(0).getBackground()(1)).be.exactly(
+            'rgba(248,244,240,0.75)',
+          );
           done();
         })
         .catch(done);
@@ -1256,6 +1256,15 @@ describe('ol-mapbox-style', function () {
           done();
         })
         .catch(done);
+    });
+    it('renders the background with the layer renderer', async function () {
+      await applyBackground(map, backgroundStyle);
+      map.renderSync();
+      const containers = map.getViewport().querySelector('.ol-layers').children;
+      should(containers.length).equal(1);
+      should(
+        /** @type {HTMLElement} */ (containers[0]).style.backgroundColor,
+      ).equal('rgba(248, 244, 240, 0.75)');
     });
     it('ignores background if layout: {visibility: "none"} (with map)', function () {
       applyBackground(map, backgroundNoneStyle);
@@ -1290,12 +1299,9 @@ describe('ol-mapbox-style', function () {
       applyBackground(map, './fixtures/background.json')
         .then(function () {
           try {
-            should(
-              map
-                .getLayers()
-                .item(0)
-                .render({viewState: {resolution: 1}}).style.backgroundColor,
-            ).be.exactly('rgba(248, 244, 240, 0.75)');
+            should(map.getLayers().item(0).getBackground()(1)).be.exactly(
+              'rgba(248,244,240,0.75)',
+            );
             done();
           } catch (e) {
             done(e);
