@@ -24,7 +24,6 @@ import {
   getUserProjection,
 } from 'ol/proj.js';
 import {METERS_PER_UNIT} from 'ol/proj/Units.js';
-import Source from 'ol/source/Source.js';
 import TileJSON from 'ol/source/TileJSON.js';
 import VectorSource from 'ol/source/Vector.js';
 import VectorTileSource, {defaultLoadFunction} from 'ol/source/VectorTile.js';
@@ -64,6 +63,8 @@ import {
   getTileJson,
   getZoomForResolution,
 } from './util.js';
+
+/** @typedef {import("ol/source/Source.js").default} Source */
 
 /**
  * @typedef {Object} FeatureIdentifier
@@ -703,28 +704,13 @@ function getBackgroundColor(glLayer, resolution, options, functionCache) {
  * @param {Object} glLayer Mapbox/MapLibre Style layer object.
  * @param {Options} options Options.
  * @param {Object} functionCache Cache for functions.
- * @return {Layer} OpenLayers layer.
+ * @return {VectorLayer} OpenLayers layer.
  */
 function setupBackgroundLayer(glLayer, options, functionCache) {
-  const div = WORKER_OFFSCREEN_CANVAS
-    ? /** @type { HTMLDivElement } */ ({style: {}})
-    : document.createElement('div');
-  div.className = 'ol-mapbox-style-background';
-  div.style.position = 'absolute';
-  div.style.width = '100%';
-  div.style.height = '100%';
-  return new Layer({
-    source: new Source({}),
-    render(frameState) {
-      const color = getBackgroundColor(
-        glLayer,
-        frameState.viewState.resolution,
-        options,
-        functionCache,
-      );
-      div.style.backgroundColor = color;
-      return div;
-    },
+  return new VectorLayer({
+    source: new VectorSource(),
+    background: (resolution) =>
+      getBackgroundColor(glLayer, resolution, options, functionCache),
   });
 }
 
@@ -1319,12 +1305,15 @@ export function finalizeLayer(
 ) {
   let minZoom = 24;
   let maxZoom = 0;
+  // Background layers have an empty vector source, which must not be styled.
+  let background = false;
   const glLayers = glStyle.layers;
   for (let i = 0, ii = glLayers.length; i < ii; ++i) {
     const glLayer = glLayers[i];
     if (layerIds.indexOf(glLayer.id) !== -1) {
       minZoom = Math.min('minzoom' in glLayer ? glLayer.minzoom : 0, minZoom);
       maxZoom = Math.max('maxzoom' in glLayer ? glLayer.maxzoom : 24, maxZoom);
+      background = background || glLayer.type === 'background';
     }
   }
   return new Promise(function (resolve, reject) {
@@ -1376,8 +1365,8 @@ export function finalizeLayer(
         }
       }
       if (
-        source instanceof VectorSource ||
-        source instanceof VectorTileSource
+        !background &&
+        (source instanceof VectorSource || source instanceof VectorTileSource)
       ) {
         applyStyle(
           /** @type {import("ol/layer/Vector.js").default|import("ol/layer/VectorTile.js").default} */ (
