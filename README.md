@@ -95,7 +95,7 @@ Note that this low-level API does not create a source for the layer, and extra w
 }
 ```
 
-As an alternative, the `webfonts` option of the `apply()` or `applyStyle()` functions can be used.
+As an alternative, the `webfonts` option of the `apply()` or `applyStyle()` functions can be used. Setting it to `false` disables automatic font loading for styles without `ol:webfonts` metadata.
 
 The following placeholders can be used in the template url:
 

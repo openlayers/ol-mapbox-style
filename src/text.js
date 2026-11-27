@@ -150,7 +150,7 @@ const processedFontFamilies = {};
 
 /**
  * @param {Array} fonts Fonts.
- * @param {string} [templateUrl] Template URL.
+ * @param {string|false} [templateUrl] Template URL, or `false` to not load fonts.
  * @return {Array} Processed fonts.
  * @private
  */
@@ -158,7 +158,7 @@ export function getFonts(
   fonts,
   templateUrl = 'https://cdn.jsdelivr.net/npm/@fontsource/{font-family}/{fontweight}{-fontstyle}.css',
 ) {
-  if (WORKER_OFFSCREEN_CANVAS) {
+  if (templateUrl === false || WORKER_OFFSCREEN_CANVAS) {
     //FIXME Font handling in web workers
     return fonts;
   }

@@ -1,4 +1,5 @@
 import should from 'should';
+import {spy} from 'sinon';
 import {getFonts, wrapText} from '../src/text.js';
 import {createObserver} from './util.test.js';
 
@@ -48,6 +49,14 @@ describe('text', function () {
         stylesheet.remove();
       });
       document.fonts.clear();
+    });
+
+    it('does not load fonts when the template is false', async function () {
+      const load = spy(document.fonts, 'load');
+      getFonts(['Disabled Font Regular'], false);
+      await document.fonts.ready;
+      load.restore();
+      should(load.called).be.false();
     });
 
     it('does not load standard fonts', function () {
