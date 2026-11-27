@@ -15,6 +15,7 @@ import {execFileSync} from 'child_process';
 import {copyFileSync, existsSync, rmSync, writeFileSync} from 'fs';
 import {relative} from 'path';
 import {fileURLToPath} from 'url';
+import additional from '../src/additionalspec.js';
 
 const specFile = fileURLToPath(new URL('../src/stylespec.js', import.meta.url));
 const expressionsFile = fileURLToPath(
@@ -22,6 +23,16 @@ const expressionsFile = fileURLToPath(
 );
 const backupFile = `${specFile}.bak`;
 const root = fileURLToPath(new URL('..', import.meta.url));
+
+/**
+ * The stock reference with the additional properties of `src/additionalspec.js`,
+ * like `src/stylespec.js` has it.
+ * @type {Object<string, Object<string, Object>>}
+ */
+const reference = {...v8};
+for (const section of Object.keys(additional)) {
+  reference[section] = {...v8[section], ...additional[section]};
+}
 
 /**
  * Descriptor fields the expression engine reads.
@@ -59,7 +70,7 @@ const DROP = new Set([
  * @return {Object} The descriptor, reduced to the fields the engine reads.
  */
 function trimDescriptor(section, property) {
-  const descriptor = v8[section][property];
+  const descriptor = reference[section][property];
   const trimmed = {};
   const unknown = [];
   for (const field of Object.keys(descriptor)) {
@@ -85,12 +96,12 @@ function trimDescriptor(section, property) {
  */
 function buildSpec() {
   const spec = {};
-  const sections = Object.keys(v8)
+  const sections = Object.keys(reference)
     .filter((section) => /^(layout|paint)_/.test(section))
     .sort();
   for (const section of sections) {
     spec[section] = {};
-    for (const property of Object.keys(v8[section]).sort()) {
+    for (const property of Object.keys(reference[section]).sort()) {
       spec[section][property] = trimDescriptor(section, property);
     }
   }
@@ -228,6 +239,30 @@ async function checkExpressions() {
 }
 
 /**
+ * `src/additionalspec.js` adds properties the stock reference lacks. If upstream
+ * adds one, the local definition silently wins.
+ * @return {Array<string>} Problems found.
+ */
+function checkAdditionalSpec() {
+  const overridden = [];
+  for (const section of Object.keys(additional)) {
+    for (const property of Object.keys(additional[section])) {
+      if (v8[section] && property in v8[section]) {
+        overridden.push(`${section}.${property}`);
+      }
+    }
+  }
+  if (overridden.length === 0) {
+    return [];
+  }
+  return [
+    `src/additionalspec.js defines ${overridden.sort().join(', ')}, which the ` +
+      'stock reference now defines itself. The local definition wins silently, ' +
+      'so drop it or record why it has to differ.',
+  ];
+}
+
+/**
  * @return {Promise<Array<string>>} Problems found, empty if all is well.
  */
 async function check() {
@@ -237,7 +272,7 @@ async function check() {
   } catch (error) {
     return [error.message];
   }
-  return checkExpressions();
+  return [...checkAdditionalSpec(), ...(await checkExpressions())];
 }
 
 const [command] = process.argv.slice(2);

@@ -10,6 +10,7 @@ import ImageLayer from 'ol/layer/Image.js';
 import {getPointResolution} from 'ol/proj.js';
 import Raster from 'ol/source/Raster.js';
 import {cameraObj} from './expressions.js';
+import {createRasterColor} from './rastercolor.js';
 import {hillshade, raster as rasterShader} from './shaders.js';
 import {getValue} from './stylefunction.js';
 import {defaultResolutions, emptyObj, getZoomForResolution} from './util.js';
@@ -58,14 +59,17 @@ export function createHillshadeLayer(tileLayer) {
  * @param {Object} functionCache Cache for style functions.
  */
 export function configureRasterOpLayer(layer, glLayer, options, functionCache) {
+  const rasterColor = createRasterColor(glLayer, functionCache);
   layer.getSource().on('beforeoperations', function (event) {
-    cameraObj.zoom = getZoomForResolution(
+    const zoom = getZoomForResolution(
       event.resolution,
       options.resolutions || defaultResolutions,
     );
+    cameraObj.zoom = zoom;
     cameraObj.distanceFromCenter = 0;
 
     const data = event.data;
+    data.color = rasterColor(zoom);
     data.saturation = getValue(
       glLayer,
       'paint',
@@ -240,6 +244,7 @@ export function configureHillshadeLayer(
  * @type {Array<string>}
  */
 export const rasterOperationKeys = [
+  'raster-color',
   'raster-saturation',
   'raster-contrast',
   'raster-brightness-max',

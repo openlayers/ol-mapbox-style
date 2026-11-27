@@ -31,7 +31,12 @@ import {shared as sharedIconImageCache} from 'ol/style/IconImageCache.js';
 import Stroke from 'ol/style/Stroke.js';
 import Style from 'ol/style/Style.js';
 import Text from 'ol/style/Text.js';
-import {cameraObj, styleConfig, wrapImageExtraArgs} from './expressions.js';
+import {
+  cameraObj,
+  rasterValueToGet,
+  styleConfig,
+  wrapImageExtraArgs,
+} from './expressions.js';
 import {applyLetterSpacing, wrapText} from './text.js';
 import {
   createCanvas,
@@ -185,6 +190,9 @@ export function getValue(
       isExpr = true;
     }
     if (isExpr) {
+      if (property === 'raster-color') {
+        value = rasterValueToGet(value);
+      }
       const compiledExpression = expressionData(value, rootKey, propertySpec);
       functions[property] =
         compiledExpression.evaluate.bind(compiledExpression);
