@@ -1,5 +1,15 @@
 # Changelog
 
+## 13.10.0
+
+* Add support for `raster-color`, `raster-color-mix` and `raster-color-range`.
+* Add support for `fill-antialias`.
+* Share sources across layers in a layer group.
+* Use an empty vector layer for background layers.
+* Skip layers whose filters cannot match a feature.
+* Support `icon-optional` and `text-optional`.
+* Allow disabling automatic web font loading.
+
 ## 13.9.0
 
 * Resolve a relative `ol:webfonts` URL in a style's metadata against the style URL.
