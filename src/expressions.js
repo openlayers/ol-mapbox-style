@@ -52,6 +52,23 @@ function rgbaToHsla(rgba) {
   return [h * 360, s * 100, l * 100, a];
 }
 
+/**
+ * Mapbox's `["raster-value"]` cannot be registered like the operators below:
+ * the parser would fold an unknown operator without arguments into a constant.
+ * Instead, `raster-color` reads the raster value like a feature property.
+ * @param {*} expression Expression.
+ * @return {*} The expression with `["get", "raster-value"]` for `["raster-value"]`.
+ */
+export function rasterValueToGet(expression) {
+  if (!Array.isArray(expression) || expression[0] === 'literal') {
+    return expression;
+  }
+  if (expression.length === 1 && expression[0] === 'raster-value') {
+    return ['get', 'raster-value'];
+  }
+  return expression.map(rasterValueToGet);
+}
+
 export function wrapImageExtraArgs(expression) {
   if (Array.isArray(expression)) {
     if (expression.length === 0) {

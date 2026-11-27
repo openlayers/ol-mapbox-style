@@ -371,6 +371,17 @@ export function raster(inputs, data) {
   const bLow = data.brightnessLow;
   const bHigh = data.brightnessHigh;
 
+  // raster-color
+  const color = data.color;
+  const ramp = color && color.ramp;
+  const mix = color && color.mix;
+  const rampMin = color && color.range[0];
+  const rampScale =
+    color && color.range[1] > rampMin
+      ? (ramp.length / 4 - 1) / (color.range[1] - rampMin)
+      : 0;
+  const maxIndex = ramp ? ramp.length / 4 - 1 : 0;
+
   for (pixelY = 0; pixelY <= maxY; ++pixelY) {
     for (pixelX = 0; pixelX <= maxX; ++pixelX) {
       offset = (pixelY * width + pixelX) * 4;
@@ -379,9 +390,26 @@ export function raster(inputs, data) {
       pixel[2] = imageData[offset + 2];
       pixel[3] = imageData[offset + 3];
 
-      const or = pixel[0];
-      const og = pixel[1];
-      const ob = pixel[2];
+      let or = pixel[0];
+      let og = pixel[1];
+      let ob = pixel[2];
+      let alpha = pixel[3];
+
+      if (ramp) {
+        // Channels are premultiplied and scaled to 0-1, which makes the
+        // raster value of semi-transparent pixels depend on their alpha.
+        const value =
+          ((mix[0] * or + mix[1] * og + mix[2] * ob) * alpha) / 65025 + mix[3];
+        const index =
+          Math.min(
+            maxIndex,
+            Math.max(0, Math.round((value - rampMin) * rampScale)),
+          ) * 4;
+        or = ramp[index];
+        og = ramp[index + 1];
+        ob = ramp[index + 2];
+        alpha = (alpha * ramp[index + 3]) / 255;
+      }
 
       const dotProduct = (vector1, vector2) => {
         let result = 0;
@@ -415,7 +443,7 @@ export function raster(inputs, data) {
       shadeData[offset] = r;
       shadeData[offset + 1] = g;
       shadeData[offset + 2] = b;
-      shadeData[offset + 3] = pixel[3];
+      shadeData[offset + 3] = alpha;
     }
   }
 
