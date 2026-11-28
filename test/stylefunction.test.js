@@ -5,6 +5,7 @@ import LineString from 'ol/geom/LineString.js';
 import Point from 'ol/geom/Point.js';
 import Polygon from 'ol/geom/Polygon.js';
 import VectorLayer from 'ol/layer/Vector.js';
+import Icon from 'ol/style/Icon.js';
 import {shared as sharedIconImageCache} from 'ol/style/IconImageCache.js';
 import Stroke from 'ol/style/Stroke.js';
 import Text from 'ol/style/Text.js';
@@ -1232,6 +1233,71 @@ describe('stylefunction', function () {
             should(image).not.be.undefined();
             done();
           });
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+  });
+
+  describe('Icons along lines', function () {
+    // OpenLayers versions without image placement get a single midpoint icon
+    const itWithLinePlacement = 'setPlacement' in Icon.prototype ? it : it.skip;
+
+    itWithLinePlacement('repeats icons along the line', function (done) {
+      const style = {
+        version: '8',
+        name: 'test',
+        sources: {
+          'geojson': {
+            type: 'geojson',
+            data: {
+              type: 'FeatureCollection',
+              features: [
+                {
+                  type: 'Feature',
+                  geometry: {
+                    type: 'LineString',
+                    coordinates: [
+                      [0, 0],
+                      [1, 1],
+                    ],
+                  },
+                  properties: {},
+                },
+              ],
+            },
+          },
+        },
+        layers: [
+          {
+            id: 'test',
+            type: 'symbol',
+            source: 'geojson',
+            layout: {
+              'symbol-placement': 'line',
+              'symbol-spacing': 100,
+              'icon-image': 'dynamic',
+              'icon-rotate': 90,
+            },
+          },
+        ],
+      };
+      apply(document.createElement('div'), style, {
+        getImage: () => '/fixtures/hospital.png',
+      })
+        .then(function (map) {
+          const layer = map.getLayers().item(0);
+          const styleFunction = layer.getStyle();
+          const feature = layer.getSource().getFeatures()[0];
+          const styles = styleFunction(feature, 1);
+          should(styles[0].getGeometry()).not.be.ok();
+          const image = styles[0].getImage();
+          should(image.getPlacement()).eql('line');
+          should(image.getRepeat()).eql(100);
+          should(image.getRotation()).eql(Math.PI / 2);
+          should(image.getRotateWithView()).be.true();
+          done();
         })
         .catch(function (err) {
           done(err);
