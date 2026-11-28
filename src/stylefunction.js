@@ -1064,6 +1064,10 @@ export function stylefunction(
                 iconRotationAlignment === 'auto'
                   ? placement !== 'point'
                   : iconRotationAlignment === 'map';
+              // OpenLayers versions > 10.11 can repeat icons along lines themselves
+              const canPlaceAlongLine =
+                placement === 'line' && 'setPlacement' in Icon.prototype;
+              let placeAlongLine = false;
               if (type == 2) {
                 const geom = /** @type {*} */ (feature.getGeometry());
                 // ol package and ol-debug.js only
@@ -1075,8 +1079,10 @@ export function stylefunction(
                       Math.pow((extent[3] - extent[1]) / resolution, 2),
                     ),
                   );
-                  if (size > 150) {
-                    //FIXME Do not hard-code a size of 150
+                  //FIXME Do not hard-code a size of 150
+                  if (size > 150 && canPlaceAlongLine) {
+                    placeAlongLine = true;
+                  } else if (size > 150) {
                     const midpoint =
                       geom.getType() === 'MultiLineString'
                         ? geom.getFlatMidpoints()
@@ -1126,7 +1132,7 @@ export function stylefunction(
                   }
                 }
               }
-              if (type !== 2 || styleGeom) {
+              if (type !== 2 || styleGeom || placeAlongLine) {
                 const iconSize = getValue(
                   layer,
                   'layout',
@@ -1345,6 +1351,24 @@ export function stylefunction(
                       )
                     ],
                   );
+                  // cached icons are shared, so placement is set for every use
+                  if ('setPlacement' in iconImg && 'setRepeat' in iconImg) {
+                    /** @type {*} */ (iconImg).setPlacement(
+                      placeAlongLine ? 'line' : 'point',
+                    );
+                    /** @type {*} */ (iconImg).setRepeat(
+                      placeAlongLine
+                        ? getValue(
+                            layer,
+                            'layout',
+                            'symbol-spacing',
+                            f,
+                            functionCache,
+                            featureState,
+                          )
+                        : undefined,
+                    );
+                  }
                   style.setImage(iconImg);
                   text = style.getText();
                   style.setText(undefined);
